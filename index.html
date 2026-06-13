@@ -253,23 +253,21 @@ footer span{color:#FFB800}
 <div class="signup-inner">
   <h2 class="signup-h2">Ready to know exactly<br>what you've earned?</h2>
   <p class="signup-sub">Enter your details and we'll get your personal CommissionPro set up within 24 hours.</p>
-  <div class="signup-form" id="signupForm">
+  <form action="https://formspree.io/f/maqzawkv" method="POST" style="display:flex;flex-direction:column;gap:12px">
+    <input type="hidden" name="_subject" value="🎉 New CommissionPro signup!">
+    <input type="hidden" name="_next" value="https://shaz010.github.io/mgm-studio/thankyou.html">
     <div class="signup-row">
-      <input class="signup-input" type="text" id="sName" placeholder="Your name">
-      <input class="signup-input" type="text" id="sSalon" placeholder="Salon name">
+      <input class="signup-input" type="text" name="name" placeholder="Your name" required>
+      <input class="signup-input" type="text" name="salon" placeholder="Salon name" required>
     </div>
-    <input class="signup-input" type="email" id="sEmail" placeholder="Your email address">
+    <input class="signup-input" type="email" name="email" placeholder="Your email address" required>
     <div class="signup-row">
-      <input class="signup-input" type="text" id="sRate" placeholder="Your commission rate (e.g. 60%)">
-      <input class="signup-input" type="text" id="sPhone" placeholder="Phone (optional)">
+      <input class="signup-input" type="text" name="commission_rate" placeholder="Your commission rate (e.g. 60%)">
+      <input class="signup-input" type="text" name="phone" placeholder="Phone (optional)">
     </div>
-    <button class="signup-btn" onclick="submitSignup()">✂ &nbsp;Get CommissionPro — $49</button>
+    <button class="signup-btn" type="submit">✂ &nbsp;Get CommissionPro — $49</button>
     <div class="signup-terms">By signing up you'll receive a payment link via email. Setup within 24 hours.</div>
-  </div>
-  <div class="signup-success" id="signupSuccess">
-    <h3>✓ You're on the list!</h3>
-    <p>Thanks! We'll email you a payment link within 24 hours and get your CommissionPro set up right away.</p>
-  </div>
+  </form>
 </div>
 </div>
 
