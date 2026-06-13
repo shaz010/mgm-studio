@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MGM Studio — Shahbaz Mirshahi</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CommissionPro">
 <meta name="theme-color" content="#FFB800">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>MGM Studio — Shahbaz Mirshahi</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -636,14 +636,7 @@ function printInvoice(){
   .inv-note{margin-top:18px;padding:11px 15px;background:#fffbeb;border-radius:6px;font-size:11px;color:#854d0e;border:0.5px solid #fde68a}
   .inv-footer{margin-top:16px;text-align:center;font-size:10px;color:#bbb;padding-top:12px;border-top:0.5px solid #eee}
   @media print{body{padding:18px}}</style>
-  </head><body>${content}<script>
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("sw.js")
-    .then(()=>console.log("CommissionPro PWA ready"))
-    .catch(e=>console.log("SW error",e));
-}
-</script>
-</body></html>`);
+  </head><body>${content}</body></html>`);
   w.document.close();setTimeout(()=>w.print(),500);
 }
 function showTab(t){
