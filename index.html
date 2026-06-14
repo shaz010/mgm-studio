@@ -253,21 +253,19 @@ footer span{color:#FFB800}
 <div class="signup-inner">
   <h2 class="signup-h2">Ready to know exactly<br>what you've earned?</h2>
   <p class="signup-sub">Enter your details and we'll get your personal CommissionPro set up within 24 hours.</p>
-  <form action="https://formspree.io/f/maqzawkv" method="POST" style="display:flex;flex-direction:column;gap:12px">
-    <input type="hidden" name="_subject" value="🎉 New CommissionPro signup!">
-    <input type="hidden" name="_next" value="https://shaz010.github.io/mgm-studio/thankyou.html"><input type="hidden" name="_subject" value="New CommissionPro signup!">
+  <div style="display:flex;flex-direction:column;gap:12px">
     <div class="signup-row">
-      <input class="signup-input" type="text" name="name" placeholder="Your name" required>
-      <input class="signup-input" type="text" name="salon" placeholder="Salon name" required>
+      <input class="signup-input" type="text" id="sName" placeholder="Your name">
+      <input class="signup-input" type="text" id="sSalon" placeholder="Salon name">
     </div>
-    <input class="signup-input" type="email" name="email" placeholder="Your email address" required>
+    <input class="signup-input" type="email" id="sEmail" placeholder="Your email address">
     <div class="signup-row">
-      <input class="signup-input" type="text" name="commission_rate" placeholder="Your commission rate (e.g. 60%)">
-      <input class="signup-input" type="text" name="phone" placeholder="Phone (optional)">
+      <input class="signup-input" type="text" id="sRate" placeholder="Your commission rate (e.g. 60%)">
+      <input class="signup-input" type="text" id="sPhone" placeholder="Phone (optional)">
     </div>
-    <button class="signup-btn" type="submit">✂ &nbsp;Get CommissionPro — $49</button>
-    <div class="signup-terms">By signing up you agree to our <a href="terms.html" style="color:#888;text-decoration:underline">Terms of Service</a> and <a href="privacy.html" style="color:#888;text-decoration:underline">Privacy Policy</a>. You'll receive a payment link via email. All sales final — no refunds on digital products.</div>
-  </form>
+    <button class="signup-btn" onclick="submitForm()" id="submitBtn">✂ &nbsp;Get CommissionPro — $49</button>
+    <div class="signup-terms">By signing up you agree to our <a href="terms.html" style="color:#888;text-decoration:underline">Terms of Service</a> and <a href="privacy.html" style="color:#888;text-decoration:underline">Privacy Policy</a>. All sales final — no refunds on digital products.</div>
+  </div>
 </div>
 </div>
 
@@ -277,7 +275,6 @@ footer span{color:#FFB800}
 </footer>
 
 <script>
-// Smooth scroll
 document.querySelectorAll('a[href^="#"]').forEach(a=>{
   a.addEventListener('click',e=>{
     e.preventDefault();
@@ -285,45 +282,22 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
   });
 });
 
-// Formspree Ajax submission
-function submitSignup(){
+function submitForm(){
   const name=document.getElementById('sName').value.trim();
   const email=document.getElementById('sEmail').value.trim();
   const salon=document.getElementById('sSalon').value.trim();
   const rate=document.getElementById('sRate').value.trim();
   const phone=document.getElementById('sPhone').value.trim();
-
-  if(!name||!email||!salon){
-    alert('Please fill in your name, salon name and email.');return;
-  }
-
-  const btn=document.querySelector('.signup-btn');
-  btn.textContent='Sending...';
-  btn.disabled=true;
-
+  if(!name||!email||!salon){alert('Please fill in your name, salon and email.');return;}
+  const btn=document.getElementById('submitBtn');
+  btn.textContent='Sending...';btn.disabled=true;
   fetch('https://formspree.io/f/maqzawkv',{
     method:'POST',
     headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify({
-      name,email,salon,rate,phone,
-      _subject:'🎉 New CommissionPro signup — '+name+' @ '+salon
-    })
-  })
-  .then(r=>r.json())
-  .then(data=>{
-    if(data.ok){
-      document.getElementById('signupForm').style.display='none';
-      document.getElementById('signupSuccess').style.display='block';
-    } else {
-      btn.textContent='✂ Get CommissionPro — $49';
-      btn.disabled=false;
-      alert('Something went wrong. Please try again or email us directly.');
-    }
-  })
-  .catch(()=>{
-    // Still show success - Formspree received it
-    document.getElementById('signupForm').style.display='none';
-    document.getElementById('signupSuccess').style.display='block';
+    body:JSON.stringify({name,email,salon,commission_rate:rate,phone,
+      _subject:'New CommissionPro signup — '+name+' @ '+salon})
+  }).finally(()=>{
+    window.location.href='https://shaz010.github.io/mgm-studio/thankyou.html';
   });
 }
 </script>
