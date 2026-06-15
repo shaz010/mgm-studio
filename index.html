@@ -137,6 +137,15 @@ footer span{color:#FFB800}
   nav{padding:14px 20px}
   .nav-links{display:none}
 }
+
+.cookie-banner{position:fixed;bottom:0;left:0;right:0;background:#141414;border-top:1px solid #2a2a2a;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;z-index:999;flex-wrap:wrap}
+.cookie-text{font-size:13px;color:#888;flex:1;min-width:200px}
+.cookie-text a{color:#FFB800;text-decoration:none}
+.cookie-btn{padding:9px 20px;background:#FFB800;border:none;border-radius:8px;color:#000;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.cookie-decline{padding:9px 16px;background:transparent;border:1px solid #333;border-radius:8px;color:#666;font-size:13px;cursor:pointer;white-space:nowrap;margin-right:4px}
+.consent-check{display:flex;align-items:flex-start;gap:10px;margin-top:10px;font-size:12px;color:#666;line-height:1.5}
+.consent-check input{margin-top:2px;flex-shrink:0;accent-color:#FFB800}
+.consent-check a{color:#888;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -263,8 +272,11 @@ footer span{color:#FFB800}
       <input class="signup-input" type="text" id="sRate" placeholder="Your commission rate (e.g. 60%)">
       <input class="signup-input" type="text" id="sPhone" placeholder="Phone (optional)">
     </div>
+    <div class="consent-check">
+      <input type="checkbox" id="consentCheck">
+      <label for="consentCheck">I have read and agree to the <a href="terms.html" style="color:#aaa">Terms of Service</a> and <a href="privacy.html" style="color:#aaa">Privacy Policy</a>. I understand all sales are final. I confirm I am 18 or older.</label>
+    </div>
     <button class="signup-btn" onclick="submitForm()" id="submitBtn">✂ &nbsp;Get CommissionPro — $49</button>
-    <div class="signup-terms">By signing up you agree to our <a href="terms.html" style="color:#888;text-decoration:underline">Terms of Service</a> and <a href="privacy.html" style="color:#888;text-decoration:underline">Privacy Policy</a>. All sales final — no refunds on digital products.</div>
   </div>
 </div>
 </div>
@@ -288,6 +300,8 @@ function submitForm(){
   const salon=document.getElementById('sSalon').value.trim();
   const rate=document.getElementById('sRate').value.trim();
   const phone=document.getElementById('sPhone').value.trim();
+  const consent = document.getElementById('consentCheck');
+  if(!consent.checked){ alert('Please agree to the Terms of Service and Privacy Policy to continue.'); return; }
   if(!name||!email||!salon){alert('Please fill in your name, salon and email.');return;}
   const btn=document.getElementById('submitBtn');
   btn.textContent='Sending...';btn.disabled=true;
@@ -300,6 +314,36 @@ function submitForm(){
     window.location.href='https://shaz010.github.io/mgm-studio/thankyou.html';
   });
 }
+</script>
+
+<!-- COOKIE CONSENT BANNER -->
+<div class="cookie-banner" id="cookieBanner" style="display:none">
+  <div class="cookie-text">
+    🍪 We use technically necessary storage only — no tracking, no ads. 
+    See our <a href="privacy.html">Privacy Policy</a> for details.
+  </div>
+  <div style="display:flex;gap:8px;flex-shrink:0">
+    <button class="cookie-decline" onclick="declineCookies()">Decline non-essential</button>
+    <button class="cookie-btn" onclick="acceptCookies()">Accept & continue</button>
+  </div>
+</div>
+
+<script>
+// Cookie consent
+function showCookieBanner(){
+  if(!localStorage.getItem('cp_cookie_consent')){
+    document.getElementById('cookieBanner').style.display='flex';
+  }
+}
+function acceptCookies(){
+  localStorage.setItem('cp_cookie_consent','accepted');
+  document.getElementById('cookieBanner').style.display='none';
+}
+function declineCookies(){
+  localStorage.setItem('cp_cookie_consent','declined');
+  document.getElementById('cookieBanner').style.display='none';
+}
+setTimeout(showCookieBanner, 2000);
 </script>
 </body>
 </html>
