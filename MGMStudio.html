@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MGM Studio — Shahbaz Mirshahi</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CommissionPro">
+<meta name="theme-color" content="#FFB800">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#f0f0f0;min-height:100vh}
+:root{
+  --bg:#0a0a0a;
+  --bg2:#141414;
+  --bg3:#1e1e1e;
+  --border:#333;
+  --border-bright:#444;
+  --gold:#FFB800;
+  --gold-dim:#2a1f00;
+  --gold-border:#554000;
+  --text:#f5f5f5;
+  --text2:#cccccc;
+  --muted:#999;
+  --blue:#7eb8ff;
+  --bgblue:#0d1a2e;
+  --bblue:#1a3a6a;
+  --green:#5ddb7c;
+  --bggreen:#0a1f12;
+  --bgreen:#1a4a2a;
+  --purple:#cc99ff;
+}
+.app-shell{max-width:980px;margin:0 auto;padding:16px}
+
+/* TOPBAR */
+.topbar{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.topbar-brand{display:flex;align-items:center;gap:12px}
+.topbar-icon{width:38px;height:38px;background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px}
+.topbar-name{font-size:18px;font-weight:600;color:var(--text)}.topbar-name span{color:var(--gold)}
+.topbar-sub{font-size:12px;color:var(--muted);margin-top:2px;font-weight:400}
+
+/* SYNC BADGE */
+.sync-badge{font-size:12px;padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:6px;font-weight:500}
+.sync-ok{background:#0a2a14;border:1.5px solid #2a7a3a;color:#5ddb7c}
+.sync-err{background:#2a0a0a;border:1.5px solid #7a2a2a;color:#ff7070}
+.sync-loading{background:#0d1a2e;border:1.5px solid #1a3a6a;color:#7eb8ff}
+
+/* TABS */
+.tabs{display:flex;gap:3px;background:#0a0a0a;border-radius:10px;padding:4px;border:1px solid var(--border-bright);flex-wrap:wrap}
+.tab{padding:7px 14px;border-radius:7px;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;white-space:nowrap;font-weight:500}
+.tab.active{background:var(--bg3);color:var(--gold);font-weight:600;border:1px solid var(--gold-border)}
+
+.panel{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;overflow:hidden}
+
+/* FORM */
+.form-wrap{padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.form-wrap{grid-template-columns:1fr}}
+.card{background:#111;border:1px solid var(--border-bright);border-radius:12px;padding:18px}
+.ctitle{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.ctitle i{color:var(--gold);font-size:15px}
+label{display:block;font-size:13px;color:var(--text2);margin-bottom:5px;margin-top:12px;font-weight:500}
+label:first-of-type{margin-top:0}
+input,select{width:100%;padding:9px 12px;background:#1a1a1a;border:1.5px solid #444;border-radius:8px;color:#fff;font-size:14px;font-weight:500;outline:none;transition:border .2s;-webkit-appearance:none}
+input:focus,select:focus{border-color:var(--gold);background:#1e1e1e}
+input::placeholder{color:#555;font-weight:400}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+
+/* SPLIT GRID */
+.split-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:2px}
+.sc{border-radius:10px;padding:14px;text-align:center}
+.sc-s{background:var(--bgblue);border:1.5px solid var(--bblue)}
+.sc-m{background:var(--bggreen);border:1.5px solid var(--bgreen)}
+.sc-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px;font-weight:700}
+.sc-s .sc-lbl{color:#7eb8ff}.sc-m .sc-lbl{color:#5ddb7c}
+.sc-pct{font-size:11px;color:#666;margin-bottom:6px}
+.sc-amt{font-size:26px;font-weight:700}
+.sc-s .sc-amt{color:#7eb8ff}.sc-m .sc-amt{color:#5ddb7c}
+
+/* ROW BOXES */
+.row-box{margin-top:10px;border-radius:9px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.tip-rb{background:var(--bggreen);border:1.5px solid var(--bgreen)}
+.total-rb{background:var(--gold-dim);border:1.5px solid var(--gold-border)}
+.box-lbl{font-size:13px;color:#ccc;font-weight:500}
+.tip-v{font-size:20px;font-weight:700;color:#5ddb7c}
+.total-v{font-size:22px;font-weight:700;color:var(--gold)}
+
+/* EDIT BANNER */
+.edit-banner{background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:8px;padding:9px 13px;font-size:13px;color:var(--gold);margin-bottom:13px;display:none;align-items:center;gap:7px;font-weight:600}
+
+/* CALC HINT */
+.calc-hint{margin-top:10px;padding:10px 13px;background:#111;border-radius:8px;border:1px solid #333;font-size:12px;color:#aaa;line-height:1.9}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:9px;margin-top:14px}
+.btn-save{flex:1;padding:12px;background:var(--gold);border:none;border-radius:9px;color:#000;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;letter-spacing:0.3px}
+.btn-save:hover{opacity:.88}
+.btn-cancel{padding:12px 16px;background:#1a1a1a;border:1.5px solid #444;border-radius:9px;color:#ccc;font-size:13px;cursor:pointer;font-weight:500}
+
+/* HISTORY */
+.hist-wrap{padding:18px}
+.filter-row{display:flex;gap:7px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.fbtn{padding:7px 14px;border-radius:7px;font-size:12px;cursor:pointer;border:1.5px solid #444;background:#1a1a1a;color:#bbb;transition:all .2s;font-weight:500}
+.fbtn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold);font-weight:700}
+.fbtn:hover{border-color:#666;color:#eee}
+
+/* SUMMARY ROW */
+.sum-row{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:18px}
+@media(max-width:520px){.sum-row{grid-template-columns:repeat(2,1fr)}}
+.sum-c{background:#111;border:1px solid #333;border-radius:9px;padding:12px;text-align:center}
+.sum-lbl{font-size:10px;color:#777;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;font-weight:600}
+.sum-val{font-size:19px;font-weight:700}
+.sv-g{color:var(--gold)}.sv-b{color:var(--blue)}.sv-gr{color:var(--green)}
+
+/* WEEKLY */
+.week-section{margin-bottom:20px}
+.week-header{font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.6px;padding:9px 0 7px;border-bottom:1px solid #2a2a2a;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+.week-totals span{color:var(--green);font-weight:600}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:660px}
+thead tr{border-bottom:1.5px solid #333}
+th{padding:10px 10px;color:#aaa;font-weight:700;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+th.r,td.r{text-align:right}
+tbody tr{border-bottom:1px solid #1e1e1e;transition:background .15s}
+tbody tr:hover{background:#161616}
+td{padding:12px 10px;vertical-align:middle}
+.td-c{font-weight:600;color:#fff;font-size:13px}
+.td-m{color:#888;font-size:12px}
+.td-g{color:var(--gold);font-weight:700}
+.td-b{color:var(--blue);font-weight:600}
+.td-gr{color:var(--green);font-weight:600}
+.td-cat{color:var(--purple);font-size:12px;font-weight:500}
+.act-btn{background:none;border:none;cursor:pointer;padding:5px 6px;border-radius:6px;font-size:15px;color:#555;transition:color .2s}
+.act-btn.ed:hover{color:var(--gold)}.act-btn.dl:hover{color:#ff5555}
+.empty{text-align:center;padding:50px 20px;color:#444}
+.empty i{font-size:36px;display:block;margin-bottom:10px;color:#2a2a2a}
+.th-b{color:var(--blue)!important}.th-gr{color:var(--green)!important}.th-g{color:var(--gold)!important}
+
+/* MGM */
+.mgm-wrap{padding:18px}
+.mgm-hero{background:var(--bgblue);border:1.5px solid var(--bblue);border-radius:14px;padding:22px;margin-bottom:18px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
+@media(max-width:520px){.mgm-hero{grid-template-columns:1fr}}
+.mgm-owed-lbl{font-size:11px;color:#7eb8ff;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:700}
+.mgm-owed-val{font-size:46px;font-weight:700;color:#7eb8ff;line-height:1}
+.mgm-sub{font-size:12px;color:#888;margin-top:7px}
+.mgm-right{text-align:right}
+.mgm-month-lbl{font-size:11px;color:#777;margin-bottom:4px;font-weight:500}
+.mgm-month-val{font-size:16px;font-weight:600;color:var(--text)}
+.btn-paid-main{padding:10px 18px;background:var(--bggreen);border:1.5px solid var(--bgreen);border-radius:9px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;display:inline-block}
+
+/* MONTH ROWS */
+.month-rows{display:flex;flex-direction:column;gap:9px}
+.month-item{background:#111;border:1px solid #2a2a2a;border-radius:11px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.month-item.unpaid{border-color:var(--bblue)}
+.month-item.paid{opacity:.5}
+.mi-month{font-size:15px;font-weight:700;color:#fff}
+.mi-appts{font-size:12px;color:#888;margin-top:3px;font-weight:400}
+.mi-amt{font-size:20px;font-weight:700}
+.mi-amt.ua{color:var(--blue)}.mi-amt.pa{color:var(--green)}
+.mi-status{font-size:11px;margin-top:3px;font-weight:600}
+.su{color:var(--blue)}.sp{color:var(--green)}
+.mi-date-lbl{font-size:11px;margin-top:2px;font-weight:500}
+.mi-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.btn-invoice{padding:7px 13px;background:#0d1a2a;border:1.5px solid #1a4a6a;border-radius:7px;color:#7eb8ff;font-size:12px;cursor:pointer;font-weight:600}
+.btn-mark-paid{padding:7px 13px;background:var(--bggreen);border:1.5px solid var(--bgreen);border-radius:7px;color:var(--green);font-size:12px;cursor:pointer;font-weight:600}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:#141414;border:1px solid #333;border-radius:16px;width:100%;max-width:660px;margin:auto}
+.modal-bar{background:#0a0a0a;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2a2a2a;border-radius:16px 16px 0 0}
+.modal-title{font-size:14px;font-weight:700;color:var(--gold)}
+.modal-close{background:none;border:none;color:#666;font-size:20px;cursor:pointer;line-height:1}
+.modal-close:hover{color:#ccc}
+.modal-body{padding:20px}
+.export-sel-row{display:flex;gap:9px;margin-bottom:18px;align-items:center}
+.export-sel-row label{margin:0;font-size:13px;color:#bbb;white-space:nowrap;font-weight:600}
+.export-sel-row select{flex:1;max-width:240px}
+
+/* INVOICE */
+.invoice-preview{background:#fff;border-radius:10px;padding:22px;color:#1a1a1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;padding-bottom:16px;border-bottom:2.5px solid #111}
+.inv-from-name{font-size:19px;font-weight:700;color:#111;margin-bottom:4px}
+.inv-from-detail{font-size:11px;color:#555;line-height:1.8}
+.inv-to{text-align:right;font-size:12px;color:#444}
+.inv-to-label{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.inv-to-salon{font-size:15px;font-weight:700;color:#111}
+.inv-meta{display:flex;justify-content:space-between;margin-bottom:18px;padding:11px 16px;background:#f5f5f5;border-radius:8px;flex-wrap:wrap;gap:10px}
+.inv-meta-item{text-align:center}
+.inv-meta-lbl{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.inv-meta-val{font-size:13px;font-weight:700;color:#222}
+.inv-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px}
+.inv-tbl th{padding:8px 10px;background:#111;color:#fff;font-weight:600;text-align:left;font-size:11px}
+.inv-tbl th.r,.inv-tbl td.r{text-align:right}
+.inv-tbl td{padding:8px 10px;border-bottom:0.5px solid #ececec}
+.inv-totals{border-top:2px solid #111;padding-top:13px}
+.inv-total-row{display:flex;justify-content:space-between;font-size:12px;color:#666;margin-bottom:6px}
+.inv-total-row.final{font-size:17px;font-weight:700;color:#111;margin-top:8px;padding-top:8px;border-top:0.5px solid #ddd}
+.inv-note{margin-top:14px;padding:10px 13px;background:#fffbeb;border-radius:6px;font-size:11px;color:#854d0e;border:0.5px solid #fde68a}
+.inv-footer{margin-top:14px;text-align:center;font-size:10px;color:#bbb;padding-top:10px;border-top:0.5px solid #eee}
+.btn-print{width:100%;padding:13px;background:var(--gold);border:none;border-radius:9px;color:#000;font-size:14px;font-weight:700;cursor:pointer;margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-print:hover{opacity:.88}
+
+/* SPINNER */
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid #333;border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── THEMES ── */
+body.theme-light{
+  --bg:#f5f5f0;--bg2:#ffffff;--bg3:#eeede8;--border:#ddddd8;
+  --text:#1a1a1a;--muted:#666;--bg-input:#fff;--border-input:#ccc;
+}
+body.theme-light .app-shell{background:#f5f5f0}
+body.theme-light .panel{background:#fff;border-color:#ddd}
+body.theme-light .card{background:#f8f8f4;border-color:#ddd}
+body.theme-light input,body.theme-light select{background:#fff;border-color:#ccc;color:#1a1a1a}
+body.theme-light .sc-s{background:#e8eeff;border-color:#aabbee}
+body.theme-light .sc-s .sc-lbl{color:#3355bb}
+body.theme-light .sc-s .sc-amt{color:#3355bb}
+body.theme-light .sc-m{background:#e8fff0;border-color:#aaeebb}
+body.theme-light .sc-m .sc-lbl{color:#227744}
+body.theme-light .sc-m .sc-amt{color:#227744}
+body.theme-light .tip-rb{background:#e8fff0;border-color:#aaeebb}
+body.theme-light .tip-v{color:#227744}
+body.theme-light .total-rb{background:#fff8e0;border-color:#ddcc66}
+body.theme-light .total-v{color:#aa7700}
+body.theme-light .topbar{background:#fff;border-color:#ddd}
+body.theme-light .topbar-name{color:#1a1a1a}
+body.theme-light .topbar-sub{color:#888}
+body.theme-light .tabs{background:#eee;border-color:#ddd}
+body.theme-light .tab{color:#888}
+body.theme-light .tab.active{background:#fff;color:var(--gold)}
+body.theme-light .sum-c{background:#fff;border-color:#ddd}
+body.theme-light .sum-lbl{color:#888}
+body.theme-light .fbtn{background:#fff;border-color:#ddd;color:#666}
+body.theme-light .fbtn.active{background:#fff8e0;border-color:var(--gold);color:var(--gold)}
+body.theme-light td{color:#1a1a1a}
+body.theme-light .td-m{color:#888}
+body.theme-light tbody tr{border-color:#eee}
+body.theme-light tbody tr:hover{background:#f8f8f4}
+body.theme-light .mgm-hero{background:#e8eeff;border-color:#aabbee}
+body.theme-light .mgm-owed-lbl{color:#3355bb}
+body.theme-light .mgm-owed-val{color:#3355bb}
+body.theme-light .month-item{background:#fff;border-color:#ddd}
+body.theme-light .month-item.unpaid{border-color:#aabbee}
+body.theme-light .mi-month{color:#1a1a1a}
+body.theme-light .mi-appts{color:#888}
+body.theme-light .calc-hint{background:#f0f0ec;border-color:#ddd;color:#666}
+body.theme-light .edit-banner{background:#fff8e0;border-color:#ddcc66;color:#aa7700}
+body.theme-light .week-header{border-color:#ddd;color:#888}
+body.theme-light thead tr{border-color:#ddd}
+body.theme-light th{color:#888}
+
+/* ── ACCENT COLORS ── */
+body.accent-rose{--gold:#E8527A;--gold2:#2a0a14;--gold3:#661a2a;--gold-light:#ff7a9a}
+body.accent-ocean{--gold:#2299DD;--gold2:#0a1a2a;--gold3:#1a4a7a;--gold-light:#44bbff}
+body.accent-forest{--gold:#22AA66;--gold2:#0a1a12;--gold3:#1a5a36;--gold-light:#44cc88}
+body.accent-purple{--gold:#9966DD;--gold2:#1a0a2a;--gold3:#4a1a7a;--gold-light:#bb88ff}
+body.accent-gold{--gold:#FFB800;--gold2:#2a1f00;--gold3:#665522;--gold-light:#FFB800}
+
+/* ── SETUP SCREEN ── */
+.setup-screen{position:fixed;inset:0;background:#0a0a0a;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.setup-card{background:#141414;border:1px solid #2a2a2a;border-radius:20px;padding:36px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.setup-logo{font-size:32px;text-align:center;margin-bottom:6px}
+.setup-title{font-family:-apple-system,sans-serif;font-size:24px;font-weight:700;color:#FFB800;text-align:center;margin-bottom:6px}
+.setup-sub{font-size:13px;color:#666;text-align:center;margin-bottom:28px}
+.setup-section{margin-bottom:20px}
+.setup-section-title{font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+.setup-input{width:100%;padding:10px 14px;background:#1e1e1e;border:1.5px solid #333;border-radius:9px;color:#f0f0f0;font-size:14px;outline:none;transition:border .2s;font-family:-apple-system,sans-serif}
+.setup-input:focus{border-color:#FFB800}
+.setup-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.setup-label{font-size:12px;color:#888;margin-bottom:5px;margin-top:10px;display:block}
+.setup-label:first-child{margin-top:0}
+
+/* Theme buttons */
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.theme-btn{padding:10px 8px;border-radius:9px;border:1.5px solid #333;background:#1e1e1e;color:#888;font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s}
+.theme-btn.sel{border-color:#FFB800;background:#2a1f00;color:#FFB800}
+.theme-btn .theme-icon{font-size:18px;display:block;margin-bottom:4px}
+
+/* Accent color swatches */
+.accent-grid{display:flex;gap:10px;flex-wrap:wrap}
+.accent-swatch{width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .2s;position:relative}
+.accent-swatch.sel{border-color:#fff;transform:scale(1.15)}
+.accent-swatch::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;opacity:0}
+.accent-swatch.sel::after{opacity:1}
+
+/* Setup button */
+.setup-btn{width:100%;padding:14px;background:#FFB800;border:none;border-radius:10px;color:#000;font-size:15px;font-weight:700;cursor:pointer;margin-top:24px;transition:opacity .2s;font-family:-apple-system,sans-serif}
+.setup-btn:hover{opacity:.88}
+
+/* Settings panel */
+.settings-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;align-items:flex-end;justify-content:center;padding:0}
+.settings-panel.open{display:flex}
+.settings-sheet{background:#141414;border:1px solid #2a2a2a;border-radius:20px 20px 0 0;padding:28px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto}
+.settings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.settings-title{font-size:17px;font-weight:700;color:#f0f0f0}
+.settings-close{background:none;border:none;color:#666;font-size:22px;cursor:pointer;padding:4px}
+.settings-close:hover{color:#aaa}
+.gear-btn{background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;color:#666;font-size:20px;transition:color .2s}
+.gear-btn:hover{color:var(--gold)}
+
+.currency-grid{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.currency-btn{padding:10px 18px;border-radius:9px;border:1.5px solid #333;background:#1e1e1e;color:#888;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;min-width:60px;text-align:center}
+.currency-btn.sel{border-color:var(--gold);background:var(--gold2);color:var(--gold)}
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div class="setup-screen" id="setupScreen" style="display:none">
+  <div class="setup-card">
+    <div class="setup-logo">✂</div>
+    <div class="setup-title">Welcome to CommissionPro</div>
+    <div class="setup-sub">Set up your personal workspace in 30 seconds</div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Your details</div>
+      <label class="setup-label">Your name</label>
+      <input class="setup-input" type="text" id="setupName" placeholder="e.g. Shahbaz Mirshahi">
+      <div class="setup-row" style="margin-top:10px">
+        <div>
+          <label class="setup-label">Salon name</label>
+          <input class="setup-input" type="text" id="setupSalon" placeholder="e.g. MGM Salon">
+        </div>
+        <div>
+          <label class="setup-label">Your commission %</label>
+          <input class="setup-input" type="number" id="setupRate" placeholder="60" value="60" min="1" max="99">
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Currency</div>
+      <div class="currency-grid">
+        <button class="currency-btn sel" onclick="selCurrency('$',this)" id="cur-usd">$ USD</button>
+        <button class="currency-btn" onclick="selCurrency('£',this)" id="cur-gbp">£ GBP</button>
+        <button class="currency-btn" onclick="selCurrency('€',this)" id="cur-eur">€ EUR</button>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Theme</div>
+      <div class="theme-grid">
+        <button class="theme-btn sel" onclick="selTheme('dark',this)" id="themeDark">
+          <span class="theme-icon">🌙</span>Dark
+        </button>
+        <button class="theme-btn" onclick="selTheme('light',this)" id="themeLight">
+          <span class="theme-icon">☀️</span>Light
+        </button>
+        <button class="theme-btn" onclick="selTheme('auto',this)" id="themeAuto">
+          <span class="theme-icon">⚡</span>Auto
+        </button>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Accent colour</div>
+      <div class="accent-grid">
+        <div class="accent-swatch sel" style="background:#FFB800" onclick="selAccent('gold',this)" title="Gold"></div>
+        <div class="accent-swatch" style="background:#E8527A" onclick="selAccent('rose',this)" title="Rose"></div>
+        <div class="accent-swatch" style="background:#2299DD" onclick="selAccent('ocean',this)" title="Ocean"></div>
+        <div class="accent-swatch" style="background:#22AA66" onclick="selAccent('forest',this)" title="Forest"></div>
+        <div class="accent-swatch" style="background:#9966DD" onclick="selAccent('purple',this)" title="Purple"></div>
+      </div>
+    </div>
+
+    <button class="setup-btn" onclick="saveSetup()">✂ &nbsp;Open CommissionPro</button>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-sheet">
+    <div class="settings-header">
+      <span class="settings-title">⚙️ Settings</span>
+      <button class="settings-close" onclick="closeSettings()">×</button>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Your details</div>
+      <label class="setup-label">Your name</label>
+      <input class="setup-input" type="text" id="settingName" placeholder="Your name">
+      <div class="setup-row" style="margin-top:10px">
+        <div>
+          <label class="setup-label">Salon name</label>
+          <input class="setup-input" type="text" id="settingSalon" placeholder="Salon name">
+        </div>
+        <div>
+          <label class="setup-label">Commission %</label>
+          <input class="setup-input" type="number" id="settingRate" placeholder="60" min="1" max="99">
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Currency</div>
+      <div class="currency-grid">
+        <button class="currency-btn" onclick="selCurrencyS('$',this)" id="scur-usd">$ USD</button>
+        <button class="currency-btn" onclick="selCurrencyS('£',this)" id="scur-gbp">£ GBP</button>
+        <button class="currency-btn" onclick="selCurrencyS('€',this)" id="scur-eur">€ EUR</button>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Theme</div>
+      <div class="theme-grid">
+        <button class="theme-btn" onclick="selThemeS('dark',this)"><span class="theme-icon">🌙</span>Dark</button>
+        <button class="theme-btn" onclick="selThemeS('light',this)"><span class="theme-icon">☀️</span>Light</button>
+        <button class="theme-btn" onclick="selThemeS('auto',this)"><span class="theme-icon">⚡</span>Auto</button>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Accent colour</div>
+      <div class="accent-grid">
+        <div class="accent-swatch" style="background:#FFB800" onclick="selAccentS('gold',this)" title="Gold"></div>
+        <div class="accent-swatch" style="background:#E8527A" onclick="selAccentS('rose',this)" title="Rose"></div>
+        <div class="accent-swatch" style="background:#2299DD" onclick="selAccentS('ocean',this)" title="Ocean"></div>
+        <div class="accent-swatch" style="background:#22AA66" onclick="selAccentS('forest',this)" title="Forest"></div>
+        <div class="accent-swatch" style="background:#9966DD" onclick="selAccentS('purple',this)" title="Purple"></div>
+      </div>
+    </div>
+
+    <button class="setup-btn" onclick="saveSettings()">Save settings</button>
+  </div>
+</div>
+
+<div class="app-shell">
+
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-icon"><i class="ti ti-scissors"></i></div>
+      <div>
+        <div class="topbar-name"><span>MGM</span> Studio</div>
+        <div class="topbar-sub">Shahbaz Mirshahi · Commission tracker</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="gear-btn" onclick="openSettings()" title="Settings"><i class="ti ti-settings"></i></button>
+      <div class="sync-badge sync-loading" id="syncBadge"><span class="spinner"></span> Connecting...</div>
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('book')"><i class="ti ti-calendar-plus" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>New booking</button>
+        <button class="tab" onclick="showTab('hist')"><i class="ti ti-list" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Appointments</button>
+        <button class="tab" onclick="showTab('mgm')"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>MGM owes me</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="exportModal">
+    <div class="modal">
+      <div class="modal-bar">
+        <span class="modal-title"><i class="ti ti-file-invoice" style="font-size:14px;vertical-align:-2px;margin-right:7px"></i>Payment request — MGM Salon</span>
+        <button class="modal-close" onclick="closeExport()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="export-sel-row">
+          <label>Month:</label>
+          <select id="exportMonth" onchange="renderInvoice()"></select>
+        </div>
+        <div class="invoice-preview" id="invoicePreview"></div>
+        <button class="btn-print" onclick="printInvoice()"><i class="ti ti-printer" style="font-size:16px"></i>Print / Save as PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+
+    <!-- BOOK -->
+    <div id="pBook">
+    <div class="form-wrap">
+      <div class="card">
+        <div class="edit-banner" id="editBanner"><i class="ti ti-pencil"></i>Editing existing appointment</div>
+        <div class="ctitle"><i class="ti ti-user"></i>Client details</div>
+        <label>Client name</label><input type="text" id="cName" placeholder="e.g. Sarah Mitchell">
+        <label>Category / service</label><input type="text" id="cCat" placeholder="e.g. Balayage, Color, Haircut...">
+        <label>Date</label><input type="date" id="cDate">
+        <label>Time</label><input type="time" id="cTime" value="09:00">
+        <label>Charge amount ($)</label><input type="number" id="cCharge" placeholder="0.00" oninput="calc()">
+        <label>Tip received ($)</label><input type="number" id="cTip" placeholder="0.00" oninput="calc()">
+      </div>
+      <div class="card">
+        <div class="ctitle"><i class="ti ti-calculator"></i>Earnings breakdown</div>
+        <div class="split-grid">
+          <div class="sc sc-s"><div class="sc-lbl">MGM Salon</div><div class="sc-pct">40% of charge</div><div class="sc-amt" id="eSalon">$0</div></div>
+          <div class="sc sc-m"><div class="sc-lbl">Shahbaz</div><div class="sc-pct">60% of charge</div><div class="sc-amt" id="eMe">$0</div></div>
+        </div>
+        <div class="row-box tip-rb"><span class="box-lbl"><i class="ti ti-heart" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Tip — 100% mine</span><span class="tip-v" id="eTip">$0.00</span></div>
+        <div class="row-box total-rb" style="margin-top:7px"><span class="box-lbl" style="font-size:14px;color:var(--gold);font-weight:600">My total take-home</span><span class="total-v" id="eTotal">$0.00</span></div>
+        <div class="calc-hint" id="calcHint">Enter a charge and tip above to see the breakdown</div>
+        <div class="btn-row">
+          <button class="btn-cancel" id="btnCancel" onclick="cancelEdit()" style="display:none">Cancel</button>
+          <button class="btn-save" onclick="save()"><i class="ti ti-calendar-plus" style="font-size:14px;vertical-align:-2px;margin-right:6px"></i><span id="btnLbl">Save appointment</span></button>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="pHist" style="display:none">
+    <div class="hist-wrap">
+      <div class="filter-row">
+        <span style="font-size:12px;color:#777;font-weight:600"><i class="ti ti-filter" style="font-size:13px;vertical-align:-1px"></i> View:</span>
+        <button class="fbtn active" onclick="setFilter('all',this)">All time</button>
+        <button class="fbtn" onclick="setFilter('month',this)">This month</button>
+        <button class="fbtn" onclick="setFilter('week',this)">This week</button>
+        <button class="fbtn" onclick="setFilter('today',this)">Today</button>
+        <button class="fbtn" onclick="setFilter('weekly',this)">Weekly summary</button>
+      </div>
+      <div class="sum-row">
+        <div class="sum-c"><div class="sum-lbl">Total charged</div><div class="sum-val sv-g" id="sCharge">$0</div></div>
+        <div class="sum-c"><div class="sum-lbl">MGM 40%</div><div class="sum-val sv-b" id="sSalon">$0</div></div>
+        <div class="sum-c"><div class="sum-lbl">My 60%</div><div class="sum-val sv-gr" id="sMe">$0</div></div>
+        <div class="sum-c"><div class="sum-lbl">Tips + my total</div><div class="sum-val sv-g" id="sTotal">$0</div></div>
+      </div>
+      <div id="tableView">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>Client</th><th>Date</th><th>Wk</th><th>Category</th>
+              <th class="r">Charge</th><th class="r th-b">MGM 40%</th>
+              <th class="r th-gr">Me 60%</th><th class="r th-gr">Tip</th>
+              <th class="r th-g">My total</th><th></th>
+            </tr></thead>
+            <tbody id="tBody"></tbody>
+          </table>
+          <div class="empty" id="emptyMsg" style="display:none"><i class="ti ti-calendar-off"></i>No appointments found.</div>
+        </div>
+      </div>
+      <div id="weeklyView" style="display:none"></div>
+    </div>
+    </div>
+
+    <!-- MGM OWES ME -->
+    <div id="pMgm" style="display:none">
+    <div class="mgm-wrap">
+      <div class="mgm-hero">
+        <div>
+          <div class="mgm-owed-lbl" id="mgmOwedLbl"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>MGM owes Shahbaz</div>
+          <div class="mgm-owed-val" id="mgmOwed">$0</div>
+          <div class="mgm-sub" id="mgmSubtext">Unpaid 60% commission accumulating</div>
+        </div>
+        <div class="mgm-right">
+          <div class="mgm-month-lbl">Next payment due</div>
+          <div class="mgm-month-val" id="mgmNextDue">—</div>
+          <div style="font-size:11px;color:#666;margin-top:3px">End of current month</div>
+          <button class="btn-paid-main" onclick="markThisMonthPaid()"><i class="ti ti-check" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Mark this month paid</button>
+        </div>
+      </div>
+      <div class="month-rows" id="monthRows"></div>
+    </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const STYLIST='Shahbaz Mirshahi';
+const SUPABASE_URL='https://vvqllhcwxqmchgrbkglh.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2cWxsaGN3eHFtY2hncmJrZ2xoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyOTkxMjUsImV4cCI6MjA5Njg3NTEyNX0.qmp0S6BCI2sl84ilbPvNhaZFtWC6aCe30yDM12nfFpk';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let data=[],paidMonths={},activeFilter='all',editingId=null;
+const todayDate=new Date();
+document.getElementById('cDate').value=todayDate.toISOString().split('T')[0];
+function $(i){return document.getElementById(i)}
+function fmt(n){return '$'+(+n||0).toFixed(2)}
+function fmtR(n){return '$'+Math.round(+n||0)}
+function fmtMonth(ym){const[y,m]=ym.split('-');return new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'})}
+function toYM(d){return d.slice(0,7)}
+function weekNum(ds){const d=new Date(ds+'T12:00:00'),j=new Date(d.getFullYear(),0,1);return Math.ceil(((d-j)/86400000+j.getDay()+1)/7)}
+function setSyncBadge(state,msg){
+  const b=$('syncBadge');
+  b.className='sync-badge sync-'+state;
+  b.innerHTML=state==='loading'?`<span class="spinner"></span> ${msg}`:`<i class="ti ti-${state==='ok'?'cloud-check':'cloud-off'}" style="font-size:13px"></i> ${msg}`;
+}
+async function loadAll(){
+  setSyncBadge('loading','Loading...');
+  try{
+    const[{data:appts,error:e1},{data:paid,error:e2}]=await Promise.all([
+      sb.from('appointments').select('*').order('date',{ascending:true}).order('time',{ascending:true}),
+      sb.from('paid_months').select('*')
+    ]);
+    if(e1||e2)throw e1||e2;
+    data=appts.map(a=>({...a,myTotal:+(a.me+a.tip).toFixed(2)}));
+    paidMonths={};(paid||[]).forEach(p=>{paidMonths[p.month]=p.paid_at;});
+    setSyncBadge('ok','Synced');renderTable();
+  }catch(err){setSyncBadge('err','Offline');console.error(err);}
+}
+function calc(){
+  const charge=parseFloat($('cCharge').value)||0,tip=parseFloat($('cTip').value)||0;
+  const me=charge*0.6;
+  $('eSalon').textContent=fmtR(charge*0.4);
+  $('eMe').textContent=fmtR(me);
+  $('eTip').textContent=fmt(tip);
+  $('eTotal').textContent=fmt(me+tip);
+  $('calcHint').innerHTML=(charge||tip)?
+    `Charge <strong style="color:#fff">$${charge.toFixed(2)}</strong> &times; 60% = <span style="color:#5ddb7c;font-weight:700">$${me.toFixed(2)}</span><br>+ Tip <span style="color:#5ddb7c;font-weight:700">$${tip.toFixed(2)}</span> <span style="color:#666">(100% yours)</span><br>= Your take-home <span style="color:var(--gold);font-weight:700">$${(me+tip).toFixed(2)}</span>`
+    :'Enter a charge and tip above to see the breakdown';
+}
+async function save(){
+  const name=$('cName').value.trim(),date=$('cDate').value,time=$('cTime').value;
+  const charge=parseFloat($('cCharge').value)||0,tip=parseFloat($('cTip').value)||0;
+  const cat=$('cCat').value.trim();
+  if(!name||!date||!charge){alert('Please fill in client name, date and charge.');return;}
+  const salon=+(charge*0.4).toFixed(2),me=+(charge*0.6).toFixed(2);
+  const id=editingId||Date.now();
+  const rec={id,name,date,time,charge,tip,salon,me,mytotal:+(me+tip).toFixed(2),cat};
+  setSyncBadge('loading','Saving...');
+  try{
+    const{error}=await sb.from('appointments').upsert(rec);
+    if(error)throw error;
+    setSyncBadge('ok','Saved ✓');resetForm();await loadAll();showTab('hist');
+  }catch(err){setSyncBadge('err','Save failed');alert('Could not save — check your connection.');console.error(err);}
+}
+async function delAppt(id){
+  if(!confirm('Delete this appointment?'))return;
+  setSyncBadge('loading','Deleting...');
+  try{
+    const{error}=await sb.from('appointments').delete().eq('id',id);
+    if(error)throw error;
+    setSyncBadge('ok','Synced');await loadAll();
+  }catch(err){setSyncBadge('err','Error');console.error(err);}
+}
+function editAppt(id){
+  const a=data.find(x=>x.id===id);if(!a)return;
+  editingId=id;
+  $('cName').value=a.name;$('cDate').value=a.date;$('cTime').value=a.time;
+  $('cCharge').value=a.charge;$('cTip').value=a.tip;$('cCat').value=a.cat||'';
+  $('editBanner').style.display='flex';$('btnCancel').style.display='block';
+  $('btnLbl').textContent='Update appointment';calc();showTab('book');
+}
+function cancelEdit(){resetForm();}
+function resetForm(){
+  editingId=null;['cName','cCharge','cTip','cCat'].forEach(i=>$(i).value='');
+  $('cDate').value=todayDate.toISOString().split('T')[0];$('cTime').value='09:00';
+  $('editBanner').style.display='none';$('btnCancel').style.display='none';
+  $('btnLbl').textContent='Save appointment';calc();
+}
+function getFiltered(){
+  const now=new Date(),ts=now.toISOString().split('T')[0];
+  const sow=new Date(now);sow.setDate(now.getDate()-now.getDay());
+  const som=new Date(now.getFullYear(),now.getMonth(),1);
+  return data.filter(a=>{
+    if(activeFilter==='all'||activeFilter==='weekly')return true;
+    const d=new Date(a.date+'T12:00:00');
+    if(activeFilter==='today')return a.date===ts;
+    if(activeFilter==='week')return d>=sow;
+    if(activeFilter==='month')return d>=som;
+    return true;
+  });
+}
+function setFilter(f,el){
+  activeFilter=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');renderTable();
+}
+function updateSummary(filtered){
+  $('sCharge').textContent=fmtR(filtered.reduce((s,a)=>s+a.charge,0));
+  $('sSalon').textContent=fmtR(filtered.reduce((s,a)=>s+a.salon,0));
+  $('sMe').textContent=fmtR(filtered.reduce((s,a)=>s+a.me,0));
+  $('sTotal').textContent=fmtR(filtered.reduce((s,a)=>s+a.me+a.tip,0));
+}
+function renderTable(){
+  const filtered=getFiltered().sort((a,b)=>a.date===b.date?a.time.localeCompare(b.time):a.date.localeCompare(b.date));
+  updateSummary(filtered);
+  $('tableView').style.display=activeFilter==='weekly'?'none':'block';
+  $('weeklyView').style.display=activeFilter==='weekly'?'block':'none';
+  if(activeFilter==='weekly'){renderWeekly();return;}
+  const tbody=$('tBody'),empty=$('emptyMsg');
+  if(!filtered.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  tbody.innerHTML=filtered.map(a=>{
+    const d=new Date(a.date+'T12:00:00');
+    const ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const[h,m]=a.time.split(':');const hr=+h;
+    const ts=(hr%12||12)+':'+m+(hr>=12?'pm':'am');
+    return`<tr>
+      <td class="td-c">${a.name}</td><td class="td-m">${ds}</td>
+      <td class="td-m" style="color:#555">Wk${weekNum(a.date)}</td>
+      <td class="td-cat">${a.cat||'—'}</td>
+      <td class="td-g r">${fmt(a.charge)}</td>
+      <td class="td-b r">${fmt(a.salon)}</td>
+      <td class="td-gr r">${fmt(a.me)}</td>
+      <td class="td-gr r">${fmt(a.tip)}</td>
+      <td class="td-g r">${fmt(a.me+a.tip)}</td>
+      <td style="white-space:nowrap">
+        <button class="act-btn ed" onclick="editAppt(${a.id})" title="Edit"><i class="ti ti-pencil"></i></button>
+        <button class="act-btn dl" onclick="delAppt(${a.id})" title="Delete"><i class="ti ti-trash"></i></button>
+      </td></tr>`;
+  }).join('');
+}
+function renderWeekly(){
+  const all=[...data].sort((a,b)=>a.date.localeCompare(b.date));
+  if(!all.length){$('weeklyView').innerHTML='<div class="empty"><i class="ti ti-calendar-off"></i>No appointments yet.</div>';return;}
+  const byWeek={};
+  all.forEach(a=>{
+    const wk=weekNum(a.date),yr=a.date.slice(0,4);
+    const key=`${yr}-W${String(wk).padStart(2,'0')}`;
+    if(!byWeek[key])byWeek[key]={wk,yr,appts:[],totC:0,totS:0,totM:0,totT:0};
+    byWeek[key].appts.push(a);byWeek[key].totC+=a.charge;byWeek[key].totS+=a.salon;byWeek[key].totM+=a.me;byWeek[key].totT+=a.tip;
+  });
+  $('weeklyView').innerHTML=Object.entries(byWeek).sort((a,b)=>b[0].localeCompare(a[0])).map(([key,wk])=>{
+    const myT=wk.totM+wk.totT;
+    const rows=wk.appts.map(a=>{
+      const ds=new Date(a.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      return`<tr><td class="td-c">${a.name}</td><td class="td-m">${ds}</td>
+        <td class="td-cat">${a.cat||'—'}</td>
+        <td class="td-g r">${fmt(a.charge)}</td><td class="td-b r">${fmt(a.salon)}</td>
+        <td class="td-gr r">${fmt(a.me)}</td><td class="td-gr r">${fmt(a.tip)}</td>
+        <td class="td-g r">${fmt(a.me+a.tip)}</td></tr>`;
+    }).join('');
+    return`<div class="week-section">
+      <div class="week-header">
+        <span style="color:#eee;font-size:13px;font-weight:700">Week ${wk.wk} <span style="color:#444;font-size:11px;font-weight:400">${wk.yr}</span></span>
+        <span class="week-totals" style="font-size:12px">${wk.appts.length} client${wk.appts.length!==1?'s':''} &nbsp;·&nbsp; ${fmtR(wk.totC)} charged &nbsp;·&nbsp; Me <span>${fmtR(wk.totM)}</span> &nbsp;·&nbsp; Tips <span>${fmtR(wk.totT)}</span> &nbsp;·&nbsp; Total <span style="color:var(--gold)">${fmtR(myT)}</span></span>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Client</th><th>Date</th><th>Category</th>
+          <th class="r">Charge</th><th class="r th-b">MGM 40%</th>
+          <th class="r th-gr">Me 60%</th><th class="r th-gr">Tip</th><th class="r th-g">My total</th>
+        </tr></thead><tbody>${rows}</tbody>
+      </table></div></div>`;
+  }).join('');
+}
+function renderMgm(){
+  const byMonth={};
+  data.forEach(a=>{
+    const ym=toYM(a.date);
+    if(!byMonth[ym])byMonth[ym]={ym,appts:0,totMe:0,totTip:0,totCharge:0};
+    byMonth[ym].appts++;byMonth[ym].totMe+=a.me;byMonth[ym].totTip+=a.tip;byMonth[ym].totCharge+=a.charge;
+  });
+  let totalOwed=0;
+  Object.entries(byMonth).forEach(([ym,mo])=>{if(!paidMonths[ym])totalOwed+=mo.totMe;});
+  $('mgmOwed').textContent=fmtR(totalOwed);
+  const now=new Date();
+  $('mgmNextDue').textContent=new Date(now.getFullYear(),now.getMonth()+1,0).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  $('mgmSubtext').textContent=totalOwed>0?'Unpaid 60% commission accumulating':'All commissions paid — you\'re square!';
+  const sorted=Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0]));
+  if(!sorted.length){$('monthRows').innerHTML='<div class="empty"><i class="ti ti-building-store"></i>Start booking clients to track what MGM owes you.</div>';return;}
+  $('monthRows').innerHTML=sorted.map(([ym,mo])=>{
+    const paid=!!paidMonths[ym];
+    const paidDate=paid?new Date(paidMonths[ym]).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):null;
+    return`<div class="month-item ${paid?'paid':'unpaid'}">
+      <div>
+        <div class="mi-month">${fmtMonth(ym)}</div>
+        <div class="mi-appts">${mo.appts} appointment${mo.appts!==1?'s':''} &nbsp;·&nbsp; Commission $${mo.totMe.toFixed(2)} &nbsp;·&nbsp; Tips $${mo.totTip.toFixed(2)} (direct)</div>
+        <div class="mi-date-lbl ${paid?'sp':'su'}">${paid?'Paid on '+paidDate:'Awaiting payment from MGM'}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="mi-amt ${paid?'pa':'ua'}">$${mo.totMe.toFixed(2)}</div>
+        <div class="mi-status ${paid?'sp':'su'}" style="margin-bottom:8px">${paid?'✓ Paid':'Unpaid'}</div>
+        <div class="mi-actions" style="justify-content:flex-end">
+          ${!paid?`<button class="btn-invoice" onclick="openExport('${ym}')"><i class="ti ti-file-invoice" style="font-size:12px;vertical-align:-1px;margin-right:4px"></i>Invoice</button>`:''}
+          ${!paid?`<button class="btn-mark-paid" onclick="markPaid('${ym}')"><i class="ti ti-check" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>Mark paid</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function markPaid(ym){
+  const paid_at=Date.now();
+  setSyncBadge('loading','Saving...');
+  try{
+    const{error}=await sb.from('paid_months').upsert({month:ym,paid_at});
+    if(error)throw error;
+    paidMonths[ym]=paid_at;setSyncBadge('ok','Synced');renderMgm();
+  }catch(err){setSyncBadge('err','Error');console.error(err);}
+}
+function markThisMonthPaid(){markPaid(new Date().toISOString().slice(0,7));}
+function openExport(ym){
+  const sel=$('exportMonth');sel.innerHTML='';
+  const byMonth={};
+  data.forEach(a=>{const k=toYM(a.date);if(!byMonth[k])byMonth[k]=true;});
+  const months=Object.keys(byMonth).sort((a,b)=>b.localeCompare(a));
+  if(!months.length){alert('No appointments to export yet.');return;}
+  months.forEach(m=>{
+    const opt=document.createElement('option');
+    opt.value=m;opt.textContent=fmtMonth(m);
+    if(m===ym)opt.selected=true;
+    sel.appendChild(opt);
+  });
+  renderInvoice();$('exportModal').classList.add('open');
+}
+function closeExport(){$('exportModal').classList.remove('open');}
+function renderInvoice(){
+  const ym=$('exportMonth').value;if(!ym)return;
+  const appts=data.filter(a=>toYM(a.date)===ym).sort((a,b)=>a.date.localeCompare(b.date));
+  if(!appts.length){$('invoicePreview').innerHTML='<p style="color:#888;text-align:center;padding:20px">No appointments this month.</p>';return;}
+  const totCharge=appts.reduce((s,a)=>s+a.charge,0);
+  const totSalon=appts.reduce((s,a)=>s+a.salon,0);
+  const totMe=appts.reduce((s,a)=>s+a.me,0);
+  const totTip=appts.reduce((s,a)=>s+a.tip,0);
+  const issued=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const[y,m]=ym.split('-');
+  const dueDate=new Date(+y,+m,0).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const invNum='INV-'+ym.replace('-','')+'-'+String(appts.length).padStart(2,'0');
+  const rows=appts.map((a,i)=>{
+    const ds=new Date(a.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return`<tr><td style="color:#999">${i+1}</td><td style="font-weight:600">${a.name}</td>
+      <td style="color:#777">${ds}</td><td style="color:#777">${a.cat||'—'}</td>
+      <td class="r" style="color:#333;font-weight:600">$${a.charge.toFixed(2)}</td>
+      <td class="r" style="color:#1e40af;font-weight:600">$${a.salon.toFixed(2)}</td>
+      <td class="r" style="color:#166534;font-weight:700">$${a.me.toFixed(2)}</td></tr>`;
+  }).join('');
+  $('invoicePreview').innerHTML=`
+    <div class="inv-header">
+      <div><div class="inv-from-name">${STYLIST}</div>
+        <div class="inv-from-detail">Hair Stylist &nbsp;·&nbsp; MGM Salon<br>${fmtMonth(ym)} &nbsp;·&nbsp; Commission rate: 60%<br>Invoice #: ${invNum}</div></div>
+      <div class="inv-to"><div class="inv-to-label">Payment request to</div>
+        <div class="inv-to-salon">MGM Salon</div>
+        <div style="font-size:11px;color:#888;margin-top:4px;line-height:1.6">Issued: ${issued}<br>Due by: ${dueDate}</div></div>
+    </div>
+    <div class="inv-meta">
+      <div class="inv-meta-item"><div class="inv-meta-lbl">Appointments</div><div class="inv-meta-val">${appts.length}</div></div>
+      <div class="inv-meta-item"><div class="inv-meta-lbl">Revenue generated</div><div class="inv-meta-val">$${totCharge.toFixed(2)}</div></div>
+      <div class="inv-meta-item"><div class="inv-meta-lbl">MGM share (40%)</div><div class="inv-meta-val" style="color:#1e40af">$${totSalon.toFixed(2)}</div></div>
+      <div class="inv-meta-item"><div class="inv-meta-lbl">Amount owed (60%)</div><div class="inv-meta-val" style="color:#166534">$${totMe.toFixed(2)}</div></div>
+    </div>
+    <table class="inv-tbl">
+      <thead><tr><th>#</th><th>Client</th><th>Date</th><th>Service</th><th class="r">Charged</th><th class="r">MGM 40%</th><th class="r">My 60%</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="inv-totals">
+      <div class="inv-total-row"><span>Total revenue generated</span><span>$${totCharge.toFixed(2)}</span></div>
+      <div class="inv-total-row"><span>MGM salon share (40%)</span><span style="color:#1e40af">– $${totSalon.toFixed(2)}</span></div>
+      <div class="inv-total-row final"><span>Amount owed to ${STYLIST}</span><span style="color:#166534">$${totMe.toFixed(2)}</span></div>
+    </div>
+    <div class="inv-note"><strong>Note:</strong> Tips totalling $${totTip.toFixed(2)} were paid directly by clients and are not included in this commission statement.</div>
+    <div class="inv-footer">MGM Studio · Generated ${issued} · ${invNum}</div>`;
+}
+function printInvoice(){
+  const content=$('invoicePreview').innerHTML;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Commission Statement — ${STYLIST}</title>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:32px;color:#1a1a1a;max-width:720px;margin:0 auto}
+  .inv-header{display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:2.5px solid #111}
+  .inv-from-name{font-size:22px;font-weight:700;margin-bottom:5px}.inv-from-detail{font-size:12px;color:#555;line-height:1.8}
+  .inv-to{text-align:right}.inv-to-label{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+  .inv-to-salon{font-size:17px;font-weight:700}
+  .inv-meta{display:flex;justify-content:space-between;margin-bottom:20px;padding:13px 18px;background:#f5f5f5;border-radius:8px;flex-wrap:wrap;gap:10px}
+  .inv-meta-item{text-align:center}.inv-meta-lbl{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+  .inv-meta-val{font-size:14px;font-weight:700;color:#222}
+  .inv-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:18px}
+  .inv-tbl th{padding:9px 11px;background:#111;color:#fff;font-weight:600;text-align:left;font-size:11px}
+  .inv-tbl th.r,.inv-tbl td.r{text-align:right}.inv-tbl td{padding:9px 11px;border-bottom:0.5px solid #ececec}
+  .inv-totals{border-top:2px solid #111;padding-top:14px}
+  .inv-total-row{display:flex;justify-content:space-between;font-size:13px;color:#666;margin-bottom:7px}
+  .inv-total-row.final{font-size:19px;font-weight:700;color:#111;margin-top:10px;padding-top:10px;border-top:0.5px solid #ddd}
+  .inv-note{margin-top:18px;padding:11px 15px;background:#fffbeb;border-radius:6px;font-size:11px;color:#854d0e;border:0.5px solid #fde68a}
+  .inv-footer{margin-top:16px;text-align:center;font-size:10px;color:#bbb;padding-top:12px;border-top:0.5px solid #eee}
+  @media print{body{padding:18px}}</style>
+  </head><body>${content}</body></html>`);
+  w.document.close();setTimeout(()=>w.print(),500);
+}
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  ['pBook','pHist','pMgm'].forEach(p=>$(p).style.display='none');
+  if(t==='book'){$('pBook').style.display='block';document.querySelectorAll('.tab')[0].classList.add('active');}
+  if(t==='hist'){$('pHist').style.display='block';document.querySelectorAll('.tab')[1].classList.add('active');renderTable();}
+  if(t==='mgm'){$('pMgm').style.display='block';document.querySelectorAll('.tab')[2].classList.add('active');renderMgm();}
+}
+calc();loadAll();
+</script>
+<script>
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js")
+    .then(()=>console.log("CommissionPro PWA ready"))
+    .catch(e=>console.log("SW error",e));
+}
+
+
+
+// ── CURRENCY ──
+let setupCurrency = '$';
+let settingsCurrency = '$';
+
+function selCurrency(c, el){
+  setupCurrency = c;
+  document.querySelectorAll('#setupScreen .currency-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function selCurrencyS(c, el){
+  settingsCurrency = c;
+  document.querySelectorAll('#settingsPanel .currency-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function applyCurrency(symbol){
+  window.CURRENCY = symbol || '$';
+}
+
+function fmtCurrency(n){
+  const s = window.CURRENCY || '$';
+  return s + (+(n||0)).toFixed(2);
+}
+
+function fmtCurrencyR(n){
+  const s = window.CURRENCY || '$';
+  return s + Math.round(+(n||0));
+}
+
+// ── CUSTOMISATION SYSTEM ──
+const PREFS_KEY = 'cp_prefs';
+let prefs = {};
+let setupTheme = 'dark';
+let setupAccent = 'gold';
+let settingsTheme = 'dark';
+let settingsAccent = 'gold';
+
+function loadPrefs(){
+  try{ prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||'{}'); }catch(e){ prefs={}; }
+  return prefs;
+}
+
+function savePrefsToStorage(){
+  try{ localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); }catch(e){}
+}
+
+function applyTheme(theme, accent){
+  const body = document.body;
+  body.classList.remove('theme-dark','theme-light','theme-auto');
+  body.classList.remove('accent-gold','accent-rose','accent-ocean','accent-forest','accent-purple');
+  
+  if(theme === 'auto'){
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
+  } else {
+    body.classList.add('theme-' + theme);
+  }
+  body.classList.add('accent-' + (accent||'gold'));
+}
+
+function updateBranding(name, salon){
+  const stylistName = name || 'Stylist';
+  const salonName = salon || 'Your Salon';
+  // Update topbar
+  const topbarName = document.querySelector('.topbar-name');
+  if(topbarName) topbarName.innerHTML = '<span>' + salonName + '</span>';
+  const topbarSub = document.querySelector('.topbar-sub');
+  if(topbarSub) topbarSub.textContent = stylistName + ' · Commission tracker';
+  // Update commission card label
+  const meLabel = document.querySelector('.sc-m .sc-lbl');
+  if(meLabel) meLabel.textContent = stylistName.split(' ')[0];
+  // Update MGM owes label
+  const mgmLabel = document.getElementById('mgmOwedLbl');
+  if(mgmLabel) mgmLabel.textContent = salonName + ' owes ' + stylistName.split(' ')[0];
+}
+
+function updateCommissionRate(rate){
+  const r = parseInt(rate) || 60;
+  const salonR = 100 - r;
+  // Update split card percentages
+  const pcts = document.querySelectorAll('.sc-pct');
+  if(pcts[0]) pcts[0].textContent = salonR + '% of charge';
+  if(pcts[1]) pcts[1].textContent = r + '% of charge';
+  // Store rate globally
+  window.MY_RATE = r / 100;
+  window.SALON_RATE = salonR / 100;
+}
+
+// Override calc to use dynamic rates
+const _origCalc = calc;
+window.calc = function(){
+  const charge = parseFloat(document.getElementById('cCharge').value)||0;
+  const tip = parseFloat(document.getElementById('cTip').value)||0;
+  const rate = window.MY_RATE || 0.6;
+  const sRate = window.SALON_RATE || 0.4;
+  const me = charge * rate;
+  const salon = charge * sRate;
+  document.getElementById('eSalon').textContent = '$' + Math.round(salon);
+  document.getElementById('eMe').textContent = '$' + Math.round(me);
+  document.getElementById('eTip').textContent = '$' + (tip).toFixed(2);
+  document.getElementById('eTotal').textContent = '$' + (me + tip).toFixed(2);
+  document.getElementById('calcHint').innerHTML = (charge||tip)?
+    'Charge $'+charge.toFixed(2)+' &times; '+(rate*100)+'% = <span style="color:var(--green)">$'+me.toFixed(2)+'</span><br>+ Tip <span style="color:var(--green)">$'+tip.toFixed(2)+'</span> (100% yours)<br>= Take-home <span style="color:var(--gold);font-weight:500">$'+(me+tip).toFixed(2)+'</span>'
+    :'Enter a charge and tip above to see the breakdown';
+}
+
+// Setup screen
+function selTheme(t, el){
+  setupTheme = t;
+  document.querySelectorAll('#setupScreen .theme-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  applyTheme(t, setupAccent);
+}
+function selAccent(a, el){
+  setupAccent = a;
+  document.querySelectorAll('#setupScreen .accent-swatch').forEach(s=>s.classList.remove('sel'));
+  el.classList.add('sel');
+  applyTheme(setupTheme, a);
+  // Update setup button color
+  document.querySelector('.setup-btn').style.background = el.style.background;
+}
+function saveSetup(){
+  const name = document.getElementById('setupName').value.trim();
+  const salon = document.getElementById('setupSalon').value.trim();
+  const rate = document.getElementById('setupRate').value;
+  if(!name){ alert('Please enter your name!'); return; }
+  prefs = { name, salon: salon||'My Salon', rate: parseInt(rate)||60, theme: setupTheme, accent: setupAccent, currency: setupCurrency, setup: true };
+  savePrefsToStorage();
+  document.getElementById('setupScreen').style.display = 'none';
+  applyTheme(prefs.theme, prefs.accent);
+  updateBranding(prefs.name, prefs.salon);
+  updateCommissionRate(prefs.rate);
+  applyCurrency(prefs.currency);
+}
+
+// Settings panel
+function openSettings(){
+  loadPrefs();
+  document.getElementById('settingName').value = prefs.name || '';
+  document.getElementById('settingSalon').value = prefs.salon || '';
+  document.getElementById('settingRate').value = prefs.rate || 60;
+  settingsTheme = prefs.theme || 'dark';
+  settingsAccent = prefs.accent || 'gold';
+  // Mark current theme
+  document.querySelectorAll('#settingsPanel .theme-btn').forEach(b=>b.classList.remove('sel'));
+  const tBtn = document.querySelector('#settingsPanel [onclick*="' + settingsTheme + '"]');
+  if(tBtn) tBtn.classList.add('sel');
+  // Mark current accent
+  document.querySelectorAll('#settingsPanel .accent-swatch').forEach(s=>s.classList.remove('sel'));
+  const aSwatches = document.querySelectorAll('#settingsPanel .accent-swatch');
+  const accentMap = ['gold','rose','ocean','forest','purple'];
+  aSwatches.forEach((s,i)=>{ if(accentMap[i]===settingsAccent) s.classList.add('sel'); });
+  document.getElementById('settingsPanel').classList.add('open');
+}
+function closeSettings(){ document.getElementById('settingsPanel').classList.remove('open'); }
+function selThemeS(t, el){
+  settingsTheme = t;
+  document.querySelectorAll('#settingsPanel .theme-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  applyTheme(t, settingsAccent);
+}
+function selAccentS(a, el){
+  settingsAccent = a;
+  document.querySelectorAll('#settingsPanel .accent-swatch').forEach(s=>s.classList.remove('sel'));
+  el.classList.add('sel');
+  applyTheme(settingsTheme, a);
+}
+function saveSettings(){
+  prefs.name = document.getElementById('settingName').value.trim() || prefs.name;
+  prefs.salon = document.getElementById('settingSalon').value.trim() || prefs.salon;
+  prefs.rate = parseInt(document.getElementById('settingRate').value) || prefs.rate;
+  prefs.theme = settingsTheme;
+  prefs.accent = settingsAccent;
+  savePrefsToStorage();
+  applyTheme(prefs.theme, prefs.accent);
+  updateBranding(prefs.name, prefs.salon);
+  updateCommissionRate(prefs.rate);
+  closeSettings();
+}
+
+// Initialise on load
+function initApp(){
+  loadPrefs();
+  if(!prefs.setup){
+    // First time — show setup screen
+    document.getElementById('setupScreen').style.display = 'flex';
+  } else {
+    applyTheme(prefs.theme || 'dark', prefs.accent || 'gold');
+    updateBranding(prefs.name, prefs.salon);
+    updateCommissionRate(prefs.rate || 60);
+    applyCurrency(prefs.currency || '$');
+    setupCurrency = prefs.currency || '$';
+    settingsCurrency = prefs.currency || '$';
+  }
+}
+
+initApp();
+
+// ── OFFLINE MODE ──
+const OFFLINE_QUEUE_KEY = 'cp_offline_queue';
+const OFFLINE_PAID_KEY = 'cp_offline_paid';
+let isOnline = navigator.onLine;
+
+// Update sync badge based on connection
+function updateOnlineStatus(){
+  isOnline = navigator.onLine;
+  if(!isOnline){
+    setSyncBadge('err', 'Offline — saving locally');
+  }
+}
+
+window.addEventListener('online', async () => {
+  isOnline = true;
+  setSyncBadge('loading', 'Back online — syncing...');
+  await flushOfflineQueue();
+  await loadAll();
+});
+
+window.addEventListener('offline', () => {
+  isOnline = false;
+  setSyncBadge('err', 'Offline — saving locally');
+});
+
+// Save to offline queue
+function saveToOfflineQueue(rec){
+  try{
+    const q = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY)||'[]');
+    q.push({...rec, _offlineAt: Date.now()});
+    localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(q));
+  }catch(e){}
+}
+
+function savePaidMonthOffline(ym, paid_at){
+  try{
+    const p = JSON.parse(localStorage.getItem(OFFLINE_PAID_KEY)||'{}');
+    p[ym] = paid_at;
+    localStorage.setItem(OFFLINE_PAID_KEY, JSON.stringify(p));
+  }catch(e){}
+}
+
+// Flush offline queue to Supabase when back online
+async function flushOfflineQueue(){
+  try{
+    const q = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY)||'[]');
+    if(!q.length) return;
+    
+    setSyncBadge('loading', 'Syncing offline data...');
+    
+    for(const rec of q){
+      const {_offlineAt, ...data} = rec;
+      await sb.from('appointments').upsert(data);
+    }
+    localStorage.removeItem(OFFLINE_QUEUE_KEY);
+    
+    // Flush offline paid months
+    const p = JSON.parse(localStorage.getItem(OFFLINE_PAID_KEY)||'{}');
+    for(const [ym, paid_at] of Object.entries(p)){
+      await sb.from('paid_months').upsert({month:ym, paid_at});
+    }
+    localStorage.removeItem(OFFLINE_PAID_KEY);
+    
+    setSyncBadge('ok', 'All synced ✓');
+  }catch(e){
+    console.error('Flush failed:', e);
+  }
+}
+
+// Override save to handle offline
+const _originalSave = save;
+window.save = async function(){
+  const name=$('cName').value.trim(),date=$('cDate').value,time=$('cTime').value;
+  const charge=parseFloat($('cCharge').value)||0,tip=parseFloat($('cTip').value)||0;
+  const cat=$('cCat').value.trim();
+  if(!name||!date||!charge){alert('Please fill in client name, date and charge.');return;}
+  const salon=+(charge*0.4).toFixed(2),me=+(charge*0.6).toFixed(2);
+  const id=editingId||Date.now();
+  const rec={id,name,date,time,charge,tip,salon,me,mytotal:+(me+tip).toFixed(2),cat};
+  
+  if(!isOnline){
+    // Save locally
+    saveToOfflineQueue(rec);
+    // Also add to local data array for immediate display
+    if(editingId){data=data.map(a=>a.id===editingId?{...rec,myTotal:rec.mytotal}:a);}
+    else{data.push({...rec,myTotal:rec.mytotal});}
+    setSyncBadge('err','Saved offline — will sync when online');
+    resetForm();showTab('hist');renderTable();
+    return;
+  }
+  
+  // Online — save to Supabase as normal
+  setSyncBadge('loading','Saving...');
+  try{
+    const{error}=await sb.from('appointments').upsert(rec);
+    if(error)throw error;
+    setSyncBadge('ok','Saved ✓');resetForm();await loadAll();showTab('hist');
+  }catch(err){
+    // If Supabase fails, save locally
+    saveToOfflineQueue(rec);
+    if(editingId){data=data.map(a=>a.id===editingId?{...rec,myTotal:rec.mytotal}:a);}
+    else{data.push({...rec,myTotal:rec.mytotal});}
+    setSyncBadge('err','Saved offline — will sync when online');
+    resetForm();showTab('hist');renderTable();
+  }
+}
+
+// Override markPaid to handle offline
+const _originalMarkPaid = markPaid;
+window.markPaid = async function(ym){
+  const paid_at=Date.now();
+  if(!isOnline){
+    savePaidMonthOffline(ym, paid_at);
+    paidMonths[ym]=paid_at;
+    setSyncBadge('err','Saved offline — will sync when online');
+    renderMgm();return;
+  }
+  setSyncBadge('loading','Saving...');
+  try{
+    const{error}=await sb.from('paid_months').upsert({month:ym,paid_at});
+    if(error)throw error;
+    paidMonths[ym]=paid_at;setSyncBadge('ok','Synced');renderMgm();
+  }catch(err){
+    savePaidMonthOffline(ym, paid_at);
+    paidMonths[ym]=paid_at;
+    setSyncBadge('err','Saved offline — will sync when online');
+    renderMgm();
+  }
+}
+
+// Check for offline queue on load and flush if online
+async function checkOfflineQueue(){
+  try{
+    const q = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY)||'[]');
+    const p = JSON.parse(localStorage.getItem(OFFLINE_PAID_KEY)||'{}');
+    if((q.length || Object.keys(p).length) && isOnline){
+      setSyncBadge('loading', 'Syncing offline data...');
+      await flushOfflineQueue();
+    }
+  }catch(e){}
+}
+
+checkOfflineQueue();
+</script>
+</body>
+</html>
