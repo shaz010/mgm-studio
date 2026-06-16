@@ -306,6 +306,26 @@ body.accent-gold{--gold:#FFB800;--gold2:#2a1f00;--gold3:#665522;--gold-light:#FF
 .settings-close:hover{color:#aaa}
 .gear-btn{background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;color:#666;font-size:20px;transition:color .2s}
 .gear-btn:hover{color:var(--gold)}
+
+/* ── WALLPAPERS ── */
+.wp-swatch{height:36px;border-radius:8px;cursor:pointer;border:2.5px solid transparent;transition:all .2s;position:relative}
+.wp-swatch.sel{border-color:#fff;transform:scale(1.1)}
+.wp-swatch.sel::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700}
+body.wp-midnight{background:linear-gradient(135deg,#0a0a1a 0%,#1a1a3a 50%,#0d0d2b 100%) fixed!important}
+body.wp-salon{background:linear-gradient(160deg,#1a0a0a 0%,#2d1515 40%,#1a0d0d 100%) fixed!important}
+body.wp-gold{background:linear-gradient(135deg,#1a1400 0%,#2a2000 40%,#1a1600 100%) fixed!important}
+body.wp-ocean{background:linear-gradient(180deg,#001a2a 0%,#002a3a 50%,#001520 100%) fixed!important}
+body.wp-forest{background:linear-gradient(135deg,#001a0a 0%,#002a14 50%,#001208 100%) fixed!important}
+body.wp-rose{background:linear-gradient(135deg,#1a0010 0%,#2a0018 50%,#150008 100%) fixed!important}
+body.wp-purple{background:linear-gradient(135deg,#0d0014 0%,#1a0028 50%,#0a000f 100%) fixed!important}
+body.wp-carbon{background:repeating-linear-gradient(45deg,#111 0px,#111 2px,#151515 2px,#151515 4px) fixed!important}
+body.wp-slate{background:linear-gradient(160deg,#0f1117 0%,#1a1d26 50%,#0d0f14 100%) fixed!important}
+body.wp-copper{background:linear-gradient(135deg,#1a0f00 0%,#2a1800 40%,#150c00 100%) fixed!important}
+body.wp-steel{background:linear-gradient(135deg,#0f1418 0%,#1a2028 50%,#0d1015 100%) fixed!important}
+body.wp-ember{background:radial-gradient(ellipse at bottom,#2a0800 0%,#0a0200 60%,#000 100%) fixed!important}
+body.wp-aurora{background:linear-gradient(160deg,#001a1a 0%,#001428 30%,#0d0028 70%,#001a0a 100%) fixed!important}
+body.wp-dusk{background:linear-gradient(180deg,#0a0014 0%,#1a0828 30%,#280a14 70%,#0a0a0a 100%) fixed!important}
+body.wp-grid{background:#0a0a0a;background-image:linear-gradient(rgba(255,184,0,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,184,0,.06) 1px,transparent 1px);background-size:40px 40px!important}
 </style>
 </head>
 <body>
@@ -850,6 +870,27 @@ function printInvoice(){
       <input id="settingRate" type="number" placeholder="60" min="1" max="99" style="padding:10px 14px;background:#1e1e1e;border:1.5px solid #333;border-radius:9px;color:#f0f0f0;font-size:14px;outline:none;font-family:-apple-system,sans-serif">
     </div>
   </div>
+  <div style="margin-bottom:16px;margin-top:16px">
+    <div style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Wallpaper</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px" id="wpGrid">
+      <div class="wp-swatch sel" data-wp="none" onclick="selWP(this,'none')" style="background:#1a1a1a" title="None"></div>
+      <div class="wp-swatch" data-wp="midnight" onclick="selWP(this,'midnight')" style="background:linear-gradient(135deg,#0a0a1a,#1a1a3a)" title="Midnight"></div>
+      <div class="wp-swatch" data-wp="salon" onclick="selWP(this,'salon')" style="background:linear-gradient(135deg,#1a0a0a,#2d1515)" title="Salon"></div>
+      <div class="wp-swatch" data-wp="gold" onclick="selWP(this,'gold')" style="background:linear-gradient(135deg,#1a1400,#2a2000)" title="Gold"></div>
+      <div class="wp-swatch" data-wp="ocean" onclick="selWP(this,'ocean')" style="background:linear-gradient(135deg,#001a2a,#002a3a)" title="Ocean"></div>
+      <div class="wp-swatch" data-wp="forest" onclick="selWP(this,'forest')" style="background:linear-gradient(135deg,#001a0a,#002a14)" title="Forest"></div>
+      <div class="wp-swatch" data-wp="rose" onclick="selWP(this,'rose')" style="background:linear-gradient(135deg,#1a0010,#2a0018)" title="Rose"></div>
+      <div class="wp-swatch" data-wp="purple" onclick="selWP(this,'purple')" style="background:linear-gradient(135deg,#0d0014,#1a0028)" title="Purple"></div>
+      <div class="wp-swatch" data-wp="carbon" onclick="selWP(this,'carbon')" style="background:repeating-linear-gradient(45deg,#111 0px,#111 2px,#151515 2px,#151515 4px)" title="Carbon"></div>
+      <div class="wp-swatch" data-wp="slate" onclick="selWP(this,'slate')" style="background:linear-gradient(135deg,#0f1117,#1a1d26)" title="Slate"></div>
+      <div class="wp-swatch" data-wp="copper" onclick="selWP(this,'copper')" style="background:linear-gradient(135deg,#1a0f00,#2a1800)" title="Copper"></div>
+      <div class="wp-swatch" data-wp="steel" onclick="selWP(this,'steel')" style="background:linear-gradient(135deg,#0f1418,#1a2028)" title="Steel"></div>
+      <div class="wp-swatch" data-wp="ember" onclick="selWP(this,'ember')" style="background:radial-gradient(ellipse at bottom,#2a0800,#0a0200)" title="Ember"></div>
+      <div class="wp-swatch" data-wp="aurora" onclick="selWP(this,'aurora')" style="background:linear-gradient(135deg,#001a1a,#0d0028)" title="Aurora"></div>
+      <div class="wp-swatch" data-wp="dusk" onclick="selWP(this,'dusk')" style="background:linear-gradient(135deg,#0a0014,#280a14)" title="Dusk"></div>
+      <div class="wp-swatch" data-wp="grid" onclick="selWP(this,'grid')" style="background:#0a0a0a;background-image:linear-gradient(rgba(255,184,0,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(255,184,0,.15) 1px,transparent 1px);background-size:8px 8px" title="Grid"></div>
+    </div>
+  </div>
   <button onclick="saveSettings()" style="width:100%;padding:14px;background:#FFB800;border:none;border-radius:10px;color:#000;font-size:15px;font-weight:700;cursor:pointer;margin-top:12px;font-family:-apple-system,sans-serif">Save settings</button>
 </div>
 </div>
@@ -870,6 +911,30 @@ if("serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js")
     .then(()=>console.log("CommissionPro PWA ready"))
     .catch(e=>console.log("SW error",e));
+}
+
+
+// ── WALLPAPERS ──
+const WP_LIST = ['none','midnight','salon','gold','ocean','forest','rose','purple','carbon','slate','copper','steel','ember','aurora','dusk','grid'];
+
+function applyWallpaper(wp){
+  WP_LIST.forEach(w => document.body.classList.remove('wp-'+w));
+  if(wp && wp!=='none') document.body.classList.add('wp-'+wp);
+  window.CURRENT_WP = wp||'none';
+}
+
+function selWP(el, wp){
+  document.querySelectorAll('#wpGrid .wp-swatch').forEach(s=>s.classList.remove('sel'));
+  el.classList.add('sel');
+  applyWallpaper(wp);
+  prefs.wallpaper = wp;
+}
+
+function markCurrentWP(){
+  const wp = prefs.wallpaper||'none';
+  document.querySelectorAll('#wpGrid .wp-swatch').forEach(s=>{
+    s.classList.toggle('sel', s.dataset.wp===wp);
+  });
 }
 
 // ── SETTINGS & CUSTOMISATION ──
@@ -928,7 +993,7 @@ function openSettings(){
   if(si) si.value = prefs.salon||'';
   if(ri) ri.value = prefs.rate||60;
   const panel = document.getElementById('settingsPanel');
-  if(panel){ panel.style.display='flex'; }
+  if(panel){ panel.style.display='flex'; markCurrentWP(); }
 }
 
 function closeSettings(){
@@ -946,6 +1011,7 @@ function saveSettings(){
   if(r) prefs.rate = parseInt(r)||60;
   prefs.setup = true;
   savePrefsToStorage();
+  applyWallpaper(prefs.wallpaper||'none');
   updateBranding(prefs.name, prefs.salon);
   updateCommissionRate(prefs.rate);
   closeSettings();
@@ -957,6 +1023,7 @@ function initPrefs(){
     applyTheme(prefs.theme||'dark', prefs.accent||'gold');
     updateBranding(prefs.name, prefs.salon);
     updateCommissionRate(prefs.rate||60);
+    applyWallpaper(prefs.wallpaper||'none');
   }
 }
 
