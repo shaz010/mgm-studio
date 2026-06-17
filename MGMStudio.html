@@ -307,25 +307,32 @@ body.accent-gold{--gold:#FFB800;--gold2:#2a1f00;--gold3:#665522;--gold-light:#FF
 .gear-btn{background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;color:#666;font-size:20px;transition:color .2s}
 .gear-btn:hover{color:var(--gold)}
 
-/* ── WALLPAPERS ── */
-.wp-swatch{height:36px;border-radius:8px;cursor:pointer;border:2.5px solid transparent;transition:all .2s;position:relative}
+/* ── WALLPAPERS (animated) ── */
+.wp-swatch{height:36px;border-radius:8px;cursor:pointer;border:2.5px solid transparent;transition:all .2s;position:relative;background-size:cover!important}
 .wp-swatch.sel{border-color:#fff;transform:scale(1.1)}
-.wp-swatch.sel::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700}
-body.wp-midnight{background:linear-gradient(135deg,#0a0a1a 0%,#1a1a3a 50%,#0d0d2b 100%) fixed!important}
-body.wp-salon{background:linear-gradient(160deg,#1a0a0a 0%,#2d1515 40%,#1a0d0d 100%) fixed!important}
-body.wp-gold{background:linear-gradient(135deg,#1a1400 0%,#2a2000 40%,#1a1600 100%) fixed!important}
-body.wp-ocean{background:linear-gradient(180deg,#001a2a 0%,#002a3a 50%,#001520 100%) fixed!important}
-body.wp-forest{background:linear-gradient(135deg,#001a0a 0%,#002a14 50%,#001208 100%) fixed!important}
-body.wp-rose{background:linear-gradient(135deg,#1a0010 0%,#2a0018 50%,#150008 100%) fixed!important}
-body.wp-purple{background:linear-gradient(135deg,#0d0014 0%,#1a0028 50%,#0a000f 100%) fixed!important}
-body.wp-carbon{background:repeating-linear-gradient(45deg,#111 0px,#111 2px,#151515 2px,#151515 4px) fixed!important}
-body.wp-slate{background:linear-gradient(160deg,#0f1117 0%,#1a1d26 50%,#0d0f14 100%) fixed!important}
-body.wp-copper{background:linear-gradient(135deg,#1a0f00 0%,#2a1800 40%,#150c00 100%) fixed!important}
-body.wp-steel{background:linear-gradient(135deg,#0f1418 0%,#1a2028 50%,#0d1015 100%) fixed!important}
-body.wp-ember{background:radial-gradient(ellipse at bottom,#2a0800 0%,#0a0200 60%,#000 100%) fixed!important}
-body.wp-aurora{background:linear-gradient(160deg,#001a1a 0%,#001428 30%,#0d0028 70%,#001a0a 100%) fixed!important}
-body.wp-dusk{background:linear-gradient(180deg,#0a0014 0%,#1a0828 30%,#280a14 70%,#0a0a0a 100%) fixed!important}
-body.wp-grid{background:#0a0a0a;background-image:linear-gradient(rgba(255,184,0,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,184,0,.06) 1px,transparent 1px);background-size:40px 40px!important}
+.wp-swatch.sel::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+@keyframes wpShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes wpShiftV{0%{background-position:50% 0%}50%{background-position:50% 100%}100%{background-position:50% 0%}}
+@keyframes wpDrift{from{background-position:0 0,0 0,0 0,0 0,0 0}to{background-position:-700px 500px,-500px 350px,-900px 650px,-600px 420px,0 0}}
+@keyframes wpDriftR{from{background-position:0 0,0 0,0 0,0 0,0 0}to{background-position:700px -480px,520px -340px,880px -620px,600px -400px,0 0}}
+@keyframes wpGridMove{from{background-position:0 0,0 0,0 0}to{background-position:44px 44px,44px 44px,0 0}}
+@keyframes wpMeteor{0%{background-position:0 0,0 0,0 0,130% -30%}100%{background-position:-700px 500px,-500px 350px,-900px 650px,-30% 130%}}
+body.wp-starfield{background:radial-gradient(1.5px 1.5px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 75% 65%,#cfe3ff,transparent),radial-gradient(1.5px 1.5px at 50% 85%,#fff,transparent),radial-gradient(1px 1px at 85% 20%,#bcd,transparent),linear-gradient(160deg,#05060f,#0a0a22 60%,#06040f)!important;background-size:700px 700px,500px 500px,900px 900px,600px 600px,100% 100%!important;background-attachment:fixed!important;animation:wpDrift 90s linear infinite}
+body.wp-nebula{background:radial-gradient(1px 1px at 30% 40%,#fff,transparent),radial-gradient(1px 1px at 80% 70%,#fde,transparent),radial-gradient(1.5px 1.5px at 60% 20%,#fff,transparent),radial-gradient(1px 1px at 15% 80%,#cdf,transparent),linear-gradient(125deg,#1a0a2e,#3a1a5a 35%,#0f3460 70%,#1a0a2e)!important;background-size:800px 800px,600px 600px,700px 700px,500px 500px,400% 400%!important;background-attachment:fixed!important;animation:wpDrift 110s linear infinite,wpShift 24s ease infinite}
+body.wp-aurora{background:linear-gradient(135deg,#001a1a 0%,#003a2a 25%,#0d3a5a 50%,#1a0d4a 75%,#001a1a 100%)!important;background-size:400% 400%!important;background-attachment:fixed!important;animation:wpShift 16s ease infinite}
+body.wp-galaxy{background:radial-gradient(1.5px 1.5px at 25% 35%,#fff,transparent),radial-gradient(1px 1px at 70% 60%,#dce,transparent),radial-gradient(1px 1px at 45% 80%,#fff,transparent),radial-gradient(1.5px 1.5px at 88% 25%,#fbd,transparent),radial-gradient(ellipse 70% 55% at 50% 50%,#3a1a6a 0%,#160a2e 45%,#08040f 100%)!important;background-size:650px 650px,520px 520px,800px 800px,560px 560px,100% 100%!important;background-attachment:fixed!important;animation:wpDriftR 100s linear infinite}
+body.wp-cosmos{background:radial-gradient(1.5px 1.5px at 18% 28%,#fff,transparent),radial-gradient(1px 1px at 68% 62%,#cde,transparent),radial-gradient(1px 1px at 52% 82%,#fff,transparent),radial-gradient(1.5px 1.5px at 82% 18%,#bcf,transparent),linear-gradient(180deg,#02030c,#0a1840 55%,#040a1f)!important;background-size:720px 720px,540px 540px,860px 860px,600px 600px,100% 200%!important;background-attachment:fixed!important;animation:wpDrift 95s linear infinite,wpShiftV 30s ease infinite}
+body.wp-meteor{background:radial-gradient(1.5px 1.5px at 22% 32%,#fff,transparent),radial-gradient(1px 1px at 72% 64%,#cde,transparent),radial-gradient(1px 1px at 48% 84%,#fff,transparent),linear-gradient(120deg,transparent 46%,rgba(150,200,255,.5) 50%,transparent 54%),linear-gradient(125deg,#070710,#13112e 60%,#070512)!important;background-size:680px 680px,520px 520px,820px 820px,300px 300px,100% 100%!important;background-attachment:fixed!important;animation:wpMeteor 7s linear infinite}
+body.wp-ocean{background:linear-gradient(180deg,#001520,#003a4a 40%,#00536a 70%,#001a2a)!important;background-size:200% 400%!important;background-attachment:fixed!important;animation:wpShiftV 14s ease infinite}
+body.wp-ember{background:radial-gradient(ellipse at bottom,#3a1000 0%,#1a0600 40%,#000 100%)!important;background-size:160% 160%!important;background-attachment:fixed!important;animation:wpShiftV 9s ease-in-out infinite}
+body.wp-sunset{background:linear-gradient(160deg,#2a0a2a,#7a2a10 40%,#c25a1a 60%,#2a0a14)!important;background-size:400% 400%!important;background-attachment:fixed!important;animation:wpShift 17s ease infinite}
+body.wp-neon{background:linear-gradient(120deg,#0a0024,#2a0a4a 30%,#0a2a5a 60%,#3a0a3a 100%)!important;background-size:400% 400%!important;background-attachment:fixed!important;animation:wpShift 12s linear infinite}
+body.wp-plasma{background:linear-gradient(120deg,#3a0a4a,#0a2a5a 25%,#0a4a3a 50%,#4a0a2a 75%,#3a0a4a)!important;background-size:500% 500%!important;background-attachment:fixed!important;animation:wpShift 15s ease infinite}
+body.wp-midnight{background:linear-gradient(135deg,#06061a,#14143a 45%,#0a0a28 70%,#06061a)!important;background-size:400% 400%!important;background-attachment:fixed!important;animation:wpShift 22s ease infinite}
+body.wp-emerald{background:linear-gradient(135deg,#001208,#0a3a1a 40%,#0d5a2a 65%,#001a0a)!important;background-size:400% 400%!important;background-attachment:fixed!important;animation:wpShift 18s ease infinite}
+body.wp-rosegold{background:linear-gradient(135deg,#1a0610,#3a1420 35%,#5a3018 60%,#1a0a10)!important;background-size:400% 400%!important;background-attachment:fixed!important;animation:wpShift 20s ease infinite}
+body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.12) 1px,transparent 1px),radial-gradient(circle at 50% 0%,#0b1326,#050810)!important;background-size:44px 44px,44px 44px,100% 100%!important;background-attachment:fixed!important;animation:wpGridMove 6s linear infinite}
+@media (prefers-reduced-motion: reduce){body[class*="wp-"]{animation:none!important}}
 </style>
 </head>
 <body>
@@ -431,21 +438,21 @@ body.wp-grid{background:#0a0a0a;background-image:linear-gradient(rgba(255,184,0,
       <div class="setup-section-title">Wallpaper</div>
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px" id="wpGrid">
       <div class="wp-swatch sel" data-wp="none" onclick="selWP(this,'none')" style="background:#1a1a1a" title="None"></div>
-      <div class="wp-swatch" data-wp="midnight" onclick="selWP(this,'midnight')" style="background:linear-gradient(135deg,#0a0a1a,#1a1a3a)" title="Midnight"></div>
-      <div class="wp-swatch" data-wp="salon" onclick="selWP(this,'salon')" style="background:linear-gradient(135deg,#1a0a0a,#2d1515)" title="Salon"></div>
-      <div class="wp-swatch" data-wp="gold" onclick="selWP(this,'gold')" style="background:linear-gradient(135deg,#1a1400,#2a2000)" title="Gold"></div>
-      <div class="wp-swatch" data-wp="ocean" onclick="selWP(this,'ocean')" style="background:linear-gradient(135deg,#001a2a,#002a3a)" title="Ocean"></div>
-      <div class="wp-swatch" data-wp="forest" onclick="selWP(this,'forest')" style="background:linear-gradient(135deg,#001a0a,#002a14)" title="Forest"></div>
-      <div class="wp-swatch" data-wp="rose" onclick="selWP(this,'rose')" style="background:linear-gradient(135deg,#1a0010,#2a0018)" title="Rose"></div>
-      <div class="wp-swatch" data-wp="purple" onclick="selWP(this,'purple')" style="background:linear-gradient(135deg,#0d0014,#1a0028)" title="Purple"></div>
-      <div class="wp-swatch" data-wp="carbon" onclick="selWP(this,'carbon')" style="background:repeating-linear-gradient(45deg,#111 0px,#111 2px,#151515 2px,#151515 4px)" title="Carbon"></div>
-      <div class="wp-swatch" data-wp="slate" onclick="selWP(this,'slate')" style="background:linear-gradient(135deg,#0f1117,#1a1d26)" title="Slate"></div>
-      <div class="wp-swatch" data-wp="copper" onclick="selWP(this,'copper')" style="background:linear-gradient(135deg,#1a0f00,#2a1800)" title="Copper"></div>
-      <div class="wp-swatch" data-wp="steel" onclick="selWP(this,'steel')" style="background:linear-gradient(135deg,#0f1418,#1a2028)" title="Steel"></div>
-      <div class="wp-swatch" data-wp="ember" onclick="selWP(this,'ember')" style="background:radial-gradient(ellipse at bottom,#2a0800,#0a0200)" title="Ember"></div>
-      <div class="wp-swatch" data-wp="aurora" onclick="selWP(this,'aurora')" style="background:linear-gradient(135deg,#001a1a,#0d0028)" title="Aurora"></div>
-      <div class="wp-swatch" data-wp="dusk" onclick="selWP(this,'dusk')" style="background:linear-gradient(135deg,#0a0014,#280a14)" title="Dusk"></div>
-      <div class="wp-swatch" data-wp="grid" onclick="selWP(this,'grid')" style="background:#0a0a0a;background-image:linear-gradient(rgba(255,184,0,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(255,184,0,.15) 1px,transparent 1px);background-size:8px 8px" title="Grid"></div>
+      <div class="wp-swatch" data-wp="starfield" onclick="selWP(this,'starfield')" style="background:radial-gradient(1px 1px at 30% 35%,#fff,transparent),radial-gradient(1px 1px at 70% 65%,#fff,transparent),linear-gradient(160deg,#05060f,#0a0a22)" title="Starfield"></div>
+      <div class="wp-swatch" data-wp="nebula" onclick="selWP(this,'nebula')" style="background:linear-gradient(125deg,#1a0a2e,#3a1a5a,#0f3460)" title="Nebula"></div>
+      <div class="wp-swatch" data-wp="aurora" onclick="selWP(this,'aurora')" style="background:linear-gradient(135deg,#001a1a,#0d3a2a,#1a0d4a)" title="Aurora"></div>
+      <div class="wp-swatch" data-wp="galaxy" onclick="selWP(this,'galaxy')" style="background:radial-gradient(ellipse at 50% 50%,#3a1a6a,#160a2e,#08040f)" title="Galaxy"></div>
+      <div class="wp-swatch" data-wp="cosmos" onclick="selWP(this,'cosmos')" style="background:linear-gradient(180deg,#02030c,#0a1840,#040a1f)" title="Cosmos"></div>
+      <div class="wp-swatch" data-wp="meteor" onclick="selWP(this,'meteor')" style="background:linear-gradient(120deg,#070710,#13112e),linear-gradient(120deg,transparent 46%,rgba(150,200,255,.6) 50%,transparent 54%)" title="Meteor"></div>
+      <div class="wp-swatch" data-wp="ocean" onclick="selWP(this,'ocean')" style="background:linear-gradient(180deg,#001520,#00536a)" title="Ocean"></div>
+      <div class="wp-swatch" data-wp="ember" onclick="selWP(this,'ember')" style="background:radial-gradient(ellipse at bottom,#3a1000,#000)" title="Ember"></div>
+      <div class="wp-swatch" data-wp="sunset" onclick="selWP(this,'sunset')" style="background:linear-gradient(160deg,#2a0a2a,#c25a1a)" title="Sunset"></div>
+      <div class="wp-swatch" data-wp="neon" onclick="selWP(this,'neon')" style="background:linear-gradient(120deg,#0a0024,#0a2a5a,#3a0a3a)" title="Neon"></div>
+      <div class="wp-swatch" data-wp="plasma" onclick="selWP(this,'plasma')" style="background:linear-gradient(120deg,#3a0a4a,#0a4a3a,#4a0a2a)" title="Plasma"></div>
+      <div class="wp-swatch" data-wp="midnight" onclick="selWP(this,'midnight')" style="background:linear-gradient(135deg,#06061a,#14143a)" title="Midnight"></div>
+      <div class="wp-swatch" data-wp="emerald" onclick="selWP(this,'emerald')" style="background:linear-gradient(135deg,#001208,#0d5a2a)" title="Emerald"></div>
+      <div class="wp-swatch" data-wp="rosegold" onclick="selWP(this,'rosegold')" style="background:linear-gradient(135deg,#1a0610,#5a3018)" title="Rose gold"></div>
+      <div class="wp-swatch" data-wp="grid" onclick="selWP(this,'grid')" style="background:#0a0a0a;background-image:linear-gradient(rgba(120,180,255,.25) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.25) 1px,transparent 1px);background-size:8px 8px" title="Grid"></div>
       </div>
     </div>
 
@@ -897,7 +904,7 @@ if("serviceWorker" in navigator){
 
 
 // ── WALLPAPERS ──
-const WP_LIST = ['none','midnight','salon','gold','ocean','forest','rose','purple','carbon','slate','copper','steel','ember','aurora','dusk','grid'];
+const WP_LIST = ['none','starfield','nebula','aurora','galaxy','cosmos','meteor','ocean','ember','sunset','neon','plasma','midnight','emerald','rosegold','grid'];
 
 function applyWallpaper(wp){
   WP_LIST.forEach(w => document.body.classList.remove('wp-'+w));
