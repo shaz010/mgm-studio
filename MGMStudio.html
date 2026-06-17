@@ -910,6 +910,7 @@ function selWP(el, wp){
   el.classList.add('sel');
   applyWallpaper(wp);
   prefs.wallpaper = wp;
+  savePrefsToStorage();
 }
 
 function markCurrentWP(){
@@ -944,6 +945,30 @@ function applyTheme(theme, accent){
   }
   body.classList.add('accent-'+(accent||'gold'));
 }
+function selThemeS(theme, btn){
+  if(btn){ document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
+  prefs.theme = theme;
+  applyTheme(prefs.theme, prefs.accent||'gold');
+  savePrefsToStorage();
+}
+function selAccentS(accent, el){
+  if(el){ document.querySelectorAll('.accent-swatch').forEach(s=>s.classList.remove('sel')); el.classList.add('sel'); }
+  prefs.accent = accent;
+  applyTheme(prefs.theme||'dark', prefs.accent);
+  savePrefsToStorage();
+}
+function markCurrentThemeAccent(){
+  const th = prefs.theme||'dark';
+  document.querySelectorAll('.theme-btn').forEach(b=>{
+    const m = (b.getAttribute('onclick')||'').match(/selThemeS\('(\w+)'/);
+    b.classList.toggle('sel', !!m && m[1]===th);
+  });
+  const ac = prefs.accent||'gold';
+  document.querySelectorAll('.accent-swatch').forEach(s=>{
+    const m = (s.getAttribute('onclick')||'').match(/selAccentS\('(\w+)'/);
+    s.classList.toggle('sel', !!m && m[1]===ac);
+  });
+}
 
 function updateBranding(name, salon){
   const n = name||'Stylist';
@@ -975,7 +1000,7 @@ function openSettings(){
   if(si) si.value = prefs.salon||'';
   if(ri) ri.value = prefs.rate||60;
   const panel = document.getElementById('settingsPanel');
-  if(panel){ panel.style.display='flex'; markCurrentWP(); }
+  if(panel){ panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); }
 }
 
 function closeSettings(){
