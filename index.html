@@ -144,6 +144,25 @@ td{padding:12px 10px;vertical-align:middle}
 .empty i{font-size:36px;display:block;margin-bottom:10px;color:#2a2a2a}
 .th-b{color:var(--blue)!important}.th-gr{color:var(--green)!important}.th-g{color:var(--gold)!important}
 
+/* MOBILE: stacked cards so the wide table never overflows the screen */
+@media(max-width:640px){
+  .tbl-wrap{overflow-x:hidden;-webkit-overflow-scrolling:auto}
+  .tbl-wrap table{min-width:0;width:100%}
+  .tbl-wrap thead{display:none}
+  .tbl-wrap tbody,.tbl-wrap tbody tr,.tbl-wrap td{display:block;width:100%}
+  .tbl-wrap tbody tr{border:1px solid var(--border-bright);border-radius:11px;padding:10px 14px;margin-bottom:11px;background:#111}
+  .tbl-wrap tbody tr:hover{background:#111}
+  .tbl-wrap td{display:flex;justify-content:space-between;align-items:center;text-align:right;padding:6px 0;border:none;white-space:normal}
+  .tbl-wrap td::before{content:attr(data-label);color:#888;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;text-align:left;margin-right:12px;flex-shrink:0}
+  .tbl-wrap td:first-child{font-size:15px;border-bottom:1px solid #242424;padding-bottom:9px;margin-bottom:5px}
+  .tbl-wrap td.actions-cell{justify-content:flex-end;padding-top:9px;margin-top:5px;border-top:1px solid #242424}
+  .tbl-wrap td.actions-cell::before{content:''}
+  body.theme-light .tbl-wrap tbody tr{background:#fff}
+  body.theme-light .tbl-wrap tbody tr:hover{background:#fff}
+  body.theme-light .tbl-wrap td:first-child{border-color:#eee}
+  body.theme-light .tbl-wrap td.actions-cell{border-color:#eee}
+}
+
 /* MGM */
 .mgm-wrap{padding:18px}
 .mgm-hero{background:var(--bgblue);border:1.5px solid var(--bblue);border-radius:14px;padding:22px;margin-bottom:18px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
@@ -710,15 +729,15 @@ function renderTable(){
     const[h,m]=a.time.split(':');const hr=+h;
     const ts=(hr%12||12)+':'+m+(hr>=12?'pm':'am');
     return`<tr>
-      <td class="td-c">${a.name}</td><td class="td-m">${ds}</td>
-      <td class="td-m" style="color:#555">Wk${weekNum(a.date)}</td>
-      <td class="td-cat">${a.cat||'—'}</td>
-      <td class="td-g r">${fmt(a.charge)}</td>
-      <td class="td-b r">${fmt(a.salon)}</td>
-      <td class="td-gr r">${fmt(a.me)}</td>
-      <td class="td-gr r">${fmt(a.tip)}</td>
-      <td class="td-g r">${fmt(a.me+a.tip)}</td>
-      <td style="white-space:nowrap">
+      <td class="td-c" data-label="Client">${a.name}</td><td class="td-m" data-label="Date">${ds}</td>
+      <td class="td-m" style="color:#555" data-label="Week">Wk${weekNum(a.date)}</td>
+      <td class="td-cat" data-label="Category">${a.cat||'—'}</td>
+      <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td>
+      <td class="td-b r" data-label="MGM 40%">${fmt(a.salon)}</td>
+      <td class="td-gr r" data-label="Me 60%">${fmt(a.me)}</td>
+      <td class="td-gr r" data-label="Tip">${fmt(a.tip)}</td>
+      <td class="td-g r" data-label="My total">${fmt(a.me+a.tip)}</td>
+      <td class="actions-cell" style="white-space:nowrap">
         <button class="act-btn ed" onclick="editAppt(${a.id})" title="Edit"><i class="ti ti-pencil"></i></button>
         <button class="act-btn dl" onclick="delAppt(${a.id})" title="Delete"><i class="ti ti-trash"></i></button>
       </td></tr>`;
@@ -738,11 +757,11 @@ function renderWeekly(){
     const myT=wk.totM+wk.totT;
     const rows=wk.appts.map(a=>{
       const ds=new Date(a.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
-      return`<tr><td class="td-c">${a.name}</td><td class="td-m">${ds}</td>
-        <td class="td-cat">${a.cat||'—'}</td>
-        <td class="td-g r">${fmt(a.charge)}</td><td class="td-b r">${fmt(a.salon)}</td>
-        <td class="td-gr r">${fmt(a.me)}</td><td class="td-gr r">${fmt(a.tip)}</td>
-        <td class="td-g r">${fmt(a.me+a.tip)}</td></tr>`;
+      return`<tr><td class="td-c" data-label="Client">${a.name}</td><td class="td-m" data-label="Date">${ds}</td>
+        <td class="td-cat" data-label="Category">${a.cat||'—'}</td>
+        <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td><td class="td-b r" data-label="MGM 40%">${fmt(a.salon)}</td>
+        <td class="td-gr r" data-label="Me 60%">${fmt(a.me)}</td><td class="td-gr r" data-label="Tip">${fmt(a.tip)}</td>
+        <td class="td-g r" data-label="My total">${fmt(a.me+a.tip)}</td></tr>`;
     }).join('');
     return`<div class="week-section">
       <div class="week-header">
