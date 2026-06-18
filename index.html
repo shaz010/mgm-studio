@@ -113,9 +113,36 @@ body.theme-light .svc-chip.sel{background:#fff8e0;border-color:var(--gold);color
 .svc-star{margin-left:6px;color:#555;font-size:14px;cursor:pointer}
 .svc-star.on{color:var(--gold)}
 .svc-star:hover{color:var(--gold)}
-.svc-more{margin-top:13px;padding:9px 15px;border-radius:9px;border:1.5px dashed #555;background:transparent;color:#aaa;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
-.svc-more:hover{border-color:var(--gold);color:var(--gold)}
+.svc-more{position:relative;margin-top:14px;padding:10px 18px;border-radius:10px;border:none;background:#1a1a1a;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;isolation:isolate}
+.svc-more::before{content:'';position:absolute;inset:0;border-radius:10px;padding:2px;background:conic-gradient(from var(--ang),transparent 0deg,var(--gold) 60deg,#fff 95deg,var(--gold) 130deg,transparent 200deg,transparent 360deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;animation:moreSpin 2.6s linear infinite;z-index:-1}
+.svc-more .more-chev{color:var(--gold);font-size:15px}
+.svc-more .more-txt{background:linear-gradient(90deg,var(--gold) 0%,#fff 50%,var(--gold) 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:moreShimmer 2.6s linear infinite}
+@keyframes moreSpin{to{--ang:360deg}}
+@keyframes moreShimmer{to{background-position:-200% center}}
+body.theme-light .svc-more{background:#fff}
+@media (prefers-reduced-motion: reduce){
+  .svc-chip.sel,.svc-ghost.go,.svc-more::before,.svc-more .more-txt,#cCat.slot-hit{animation:none!important}
+  .svc-more::before{background:var(--gold)}
+  .svc-more .more-txt{-webkit-text-fill-color:var(--gold);color:var(--gold)}
+}
 .svc-empty{font-size:12px;color:#777;padding:4px 2px}
+
+/* ── PICKER ANIMATIONS ── */
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+.svc-chip.sel{animation:chipGlow 1.8s ease-in-out infinite}
+@keyframes chipGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,184,0,0)}50%{box-shadow:0 0 9px 0 rgba(255,184,0,.5)}}
+.svc-ghost{position:fixed;z-index:9000;pointer-events:none;display:inline-flex;align-items:center;justify-content:center;padding:7px 12px;border-radius:20px;background:var(--gold-dim);border:1.5px solid var(--gold);color:var(--gold);font-size:12.5px;font-weight:700;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.45);left:0;top:0}
+.svc-ghost.go{animation:ghostDance 1.35s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes ghostDance{
+  0%{transform:translate(0,0) rotate(0) scale(1);opacity:1}
+  12%{transform:translate(0,0) rotate(-7deg) scale(1.09)}
+  24%{transform:translate(0,0) rotate(7deg) scale(1.09)}
+  36%{transform:translate(0,0) rotate(-4deg) scale(1.05)}
+  48%{transform:translate(0,0) rotate(0) scale(1);opacity:1}
+  100%{transform:translate(var(--dx),var(--dy)) rotate(0) scale(.5);opacity:0}
+}
+#cCat.slot-hit{animation:slotHit 1s ease}
+@keyframes slotHit{0%{box-shadow:0 0 0 0 rgba(255,184,0,0)}28%{box-shadow:0 0 0 3px rgba(255,184,0,.4);border-color:var(--gold)}100%{box-shadow:0 0 0 0 rgba(255,184,0,0)}}
 .svc-mode{display:inline-flex;border:1.5px solid #444;border-radius:10px;overflow:hidden;margin-bottom:4px}
 .svc-mode-btn{padding:9px 24px;background:#1a1a1a;color:#bbb;border:none;font-size:13.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
 .svc-mode-btn i{font-size:15px}
@@ -382,7 +409,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 13</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 14</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -564,7 +591,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
           </div>
           <div class="svc-cat">Quick picks</div>
           <div class="svc-row" id="favRow"></div>
-          <button type="button" class="svc-more" id="svcMoreBtn" onclick="toggleMore()"><i class="ti ti-chevron-down"></i> More services</button>
+          <button type="button" class="svc-more" id="svcMoreBtn" onclick="toggleMore()"><i class="ti ti-chevron-down more-chev"></i> <span class="more-txt">More services</span></button>
           <div id="svcMore" style="display:none"></div>
         </div>
         <label>Date</label><input type="date" id="cDate">
@@ -978,7 +1005,7 @@ function jsq(n){return n.replace(/'/g,"\\'");}
 function chipHTML(name,icon,isFav){
   var safe=name.replace(/"/g,'&quot;');
   var star=isFav?'ti-star-filled svc-star on':'ti-star svc-star';
-  return '<button type="button" class="svc-chip" data-name="'+safe+'" onclick="pickService(\''+jsq(name)+'\')"><i class="ti ti-'+(icon||'point')+'"></i>'+name+'<i class="ti '+star+'" onclick="event.stopPropagation();toggleFav(\''+jsq(name)+'\')"></i></button>';
+  return '<button type="button" class="svc-chip" data-name="'+safe+'" onclick="pickService(\''+jsq(name)+'\',this)"><i class="ti ti-'+(icon||'point')+'"></i>'+name+'<i class="ti '+star+'" onclick="event.stopPropagation();toggleFav(\''+jsq(name)+'\')"></i></button>';
 }
 function buildServiceChips(){
   var favs=getFavorites();
@@ -1006,8 +1033,28 @@ function buildServiceChips(){
   syncServiceChips();
 }
 function setMode(m){saveMode(m);buildServiceChips();}
-function pickService(name){
-  $('cCat').value=name;syncServiceChips();
+function pickService(name,el){
+  $('cCat').value=name;syncServiceChips();flyToSlot(el,name);
+}
+function flyToSlot(chipEl,name){
+  try{
+    var input=$('cCat');if(!input)return;
+    var ir=input.getBoundingClientRect();
+    var cr=chipEl?chipEl.getBoundingClientRect():ir;
+    var ghost=document.createElement('div');
+    ghost.className='svc-ghost';ghost.textContent=name;
+    document.body.appendChild(ghost);
+    ghost.style.left=cr.left+'px';ghost.style.top=cr.top+'px';
+    ghost.style.minWidth=cr.width+'px';ghost.style.height=cr.height+'px';
+    ghost.getBoundingClientRect();
+    var dx=(ir.left+16)-cr.left;
+    var dy=(ir.top+ir.height/2)-(cr.top+cr.height/2);
+    ghost.style.setProperty('--dx',dx+'px');
+    ghost.style.setProperty('--dy',dy+'px');
+    ghost.classList.add('go');
+    setTimeout(function(){if(ghost&&ghost.parentNode)ghost.parentNode.removeChild(ghost);},1450);
+    input.classList.remove('slot-hit');void input.offsetWidth;input.classList.add('slot-hit');
+  }catch(e){}
 }
 function toggleFav(name){
   var favs=getFavorites();var i=favs.indexOf(name);
@@ -1024,7 +1071,7 @@ function toggleMore(){
   var m=$('svcMore'),b=$('svcMoreBtn');if(!m||!b)return;
   var open=m.style.display!=='none';
   m.style.display=open?'none':'block';
-  b.innerHTML=open?'<i class="ti ti-chevron-down"></i> More services':'<i class="ti ti-chevron-up"></i> Hide services';
+  b.innerHTML=open?'<i class="ti ti-chevron-down more-chev"></i> <span class="more-txt">More services</span>':'<i class="ti ti-chevron-up more-chev"></i> <span class="more-txt">Hide services</span>';
 }
 buildServiceChips();
 calc();loadAll();
