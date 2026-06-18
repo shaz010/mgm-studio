@@ -122,7 +122,7 @@ body.theme-light .svc-chip.sel{background:#fff8e0;border-color:var(--gold);color
 @keyframes moreHue{to{filter:hue-rotate(360deg)}}
 body.theme-light .svc-more{background:#fff}
 @media (prefers-reduced-motion: reduce){
-  .svc-chip.sel,.svc-ghost.go,.svc-more,.svc-more::before,.svc-more .more-txt,#cCat.slot-hit{animation:none!important}
+  .svc-chip.sel,.svc-ghost.go,.svc-more,.svc-more::before,.svc-more .more-txt,.svc-mode-btn,#cCat.slot-hit{animation:none!important}
   .svc-more::before{background:var(--gold)}
   .svc-more .more-txt{-webkit-text-fill-color:var(--gold);color:var(--gold)}
 }
@@ -144,23 +144,23 @@ body.theme-light .svc-more{background:#fff}
 }
 #cCat.slot-hit{animation:slotHit 1s ease}
 @keyframes slotHit{0%{box-shadow:0 0 0 0 rgba(255,184,0,0)}28%{box-shadow:0 0 0 3px rgba(255,184,0,.4);border-color:var(--gold)}100%{box-shadow:0 0 0 0 rgba(255,184,0,0)}}
-.svc-mode{display:inline-flex;border:1.5px solid #444;border-radius:10px;overflow:hidden;margin-bottom:4px}
-.svc-mode-btn{position:relative;padding:9px 24px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55);background:linear-gradient(120deg,#E8527A,#9966DD,#2299DD,#22AA66,#E8527A);background-size:300% 300%;animation:modePulse var(--fxModeDur,9s) ease infinite,modeHue var(--fxHueDur,18s) linear infinite}
-.svc-mode-btn i{font-size:15px}
-.svc-mode-btn:not(.on){opacity:.45}
-.svc-mode-btn.on{box-shadow:inset 0 0 0 2px rgba(255,255,255,.85)}
-@keyframes modePulse{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-@keyframes modeHue{to{filter:hue-rotate(360deg)}}
+.svc-mode{display:inline-flex;gap:26px;align-items:center;margin-bottom:6px;padding-left:2px}
+.svc-mode-btn{border:none;background:transparent;cursor:pointer;font-size:18px;font-weight:800;letter-spacing:.5px;padding:4px 2px;line-height:1.15;background-image:linear-gradient(90deg,#777,#999);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;opacity:.4;transition:opacity .25s;transform-origin:center;display:inline-block}
+.svc-mode-btn.on{opacity:1}
+.svc-mode-btn.on[data-mode="hair"]{background-image:linear-gradient(90deg,#FFB800,#FF6FA3,#FF8A3D,#FFD24A,#FFB800);background-size:240% auto;animation:fxColorMove var(--fxModeDur,9s) linear infinite,hairScale calc(var(--fxModeDur,9s) * .55) ease-in-out infinite}
+.svc-mode-btn.on[data-mode="nail"]{background-image:linear-gradient(90deg,#FF4FB0,#A24BFF,#22C3DD,#FF7AD9,#FF4FB0);background-size:240% auto;animation:fxColorMove calc(var(--fxModeDur,9s) * 1.2) linear infinite,nailScale calc(var(--fxModeDur,9s) * .7) ease-in-out infinite}
+@keyframes fxColorMove{to{background-position:-240% center}}
+@keyframes hairScale{0%,100%{transform:scale(1)}50%{transform:scale(1.17)}}
+@keyframes nailScale{0%,100%{transform:scale(1.15)}50%{transform:scale(.9)}}
 /* FX intensity presets (set via Settings) */
 body.fx-gentle{--fxModeDur:11s;--fxHueDur:22s;--fxMoreSpin:3.4s;--fxMoreHue:22s}
 body.fx-lively{--fxModeDur:6s;--fxHueDur:12s;--fxMoreSpin:1.8s;--fxMoreHue:11s}
 body.fx-party{--fxModeDur:3s;--fxHueDur:6s;--fxMoreSpin:1s;--fxMoreHue:5s}
 body.fx-off .svc-mode-btn,body.fx-off .svc-more,body.fx-off .svc-more::before,body.fx-off .svc-more .more-txt{animation:none!important}
-body.fx-off .svc-mode-btn{background:#1a1a1a!important;color:#bbb!important;opacity:1!important;text-shadow:none!important;box-shadow:none!important}
-body.fx-off .svc-mode-btn.on{background:var(--gold-dim)!important;color:var(--gold)!important}
+body.fx-off .svc-mode-btn{background-image:none!important;-webkit-text-fill-color:#888!important;opacity:.5!important}
+body.fx-off .svc-mode-btn.on{-webkit-text-fill-color:var(--gold)!important;opacity:1!important}
 body.fx-off .svc-more::before{background:var(--gold)!important}
 body.fx-off .svc-more .more-txt{-webkit-text-fill-color:var(--gold)!important;color:var(--gold)!important}
-body.theme-light.fx-off .svc-mode-btn{background:#fff!important;color:#888!important}
 
 /* BUTTONS */
 .btn-row{display:flex;gap:9px;margin-top:14px}
@@ -421,7 +421,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 16</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 17</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -604,12 +604,12 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
         <div class="edit-banner" id="editBanner"><i class="ti ti-pencil"></i>Editing existing appointment</div>
         <div class="ctitle"><i class="ti ti-user"></i>Client details</div>
         <label>Client name</label><input type="text" id="cName" placeholder="e.g. Sarah Mitchell">
-        <label>Service</label><input type="text" id="cCat" placeholder="Tap a service below, or type your own…" oninput="syncServiceChips()">
+        <label>Service</label><input type="text" id="cCat" placeholder="Tap services below to combine, or type your own…" oninput="syncServiceChips()">
         <div class="svc-panel" id="svcPanel">
           <div class="svc-cat">Services</div>
           <div class="svc-mode">
-            <button type="button" class="svc-mode-btn on" data-mode="hair" onclick="setMode('hair')"><i class="ti ti-scissors"></i> Hair</button>
-            <button type="button" class="svc-mode-btn" data-mode="nail" onclick="setMode('nail')"><i class="ti ti-hand-stop"></i> Nail</button>
+            <button type="button" class="svc-mode-btn on" data-mode="hair" onclick="setMode('hair')">Hair</button>
+            <button type="button" class="svc-mode-btn" data-mode="nail" onclick="setMode('nail')">Nail</button>
           </div>
           <div class="svc-cat">Quick picks</div>
           <div class="svc-row" id="favRow"></div>
@@ -1076,12 +1076,19 @@ function flyGhost(srcRect,tgtRect,name){
     setTimeout(function(){if(ghost&&ghost.parentNode)ghost.parentNode.removeChild(ghost);},1450);
   }catch(e){}
 }
-// Tap a Quick pick -> fill the booking slot (dances up into the Service field)
+// Tap a Quick pick -> ADD it to the booking (services accumulate); tap again to remove
+function servicesInField(){return ($('cCat').value||'').split('+').map(function(s){return s.trim();}).filter(Boolean);}
 function pickService(name,el){
   var input=$('cCat');if(!input)return;
-  input.value=name;syncServiceChips();
-  if(el)flyGhost(el.getBoundingClientRect(),input.getBoundingClientRect(),name);
-  input.classList.remove('slot-hit');void input.offsetWidth;input.classList.add('slot-hit');
+  var list=servicesInField();
+  var low=list.map(function(s){return s.toLowerCase();});
+  var idx=low.indexOf(name.toLowerCase());
+  var adding=idx===-1;
+  if(adding){ list.push(name); if(el)flyGhost(el.getBoundingClientRect(),input.getBoundingClientRect(),name); }
+  else { list.splice(idx,1); }
+  input.value=list.join(' + ');
+  syncServiceChips();
+  if(adding){ input.classList.remove('slot-hit');void input.offsetWidth;input.classList.add('slot-hit'); }
 }
 // Tap a More service -> promote it up into Quick picks (staged for future use)
 function promoteFav(name,el){
@@ -1099,9 +1106,9 @@ function demoteFav(name){
   buildServiceChips();
 }
 function syncServiceChips(){
-  var v=($('cCat').value||'').trim().toLowerCase();
+  var list=servicesInField().map(function(s){return s.toLowerCase();});
   document.querySelectorAll('.svc-chip').forEach(function(c){
-    c.classList.toggle('sel',(c.dataset.name||'').toLowerCase()===v);
+    c.classList.toggle('sel',list.indexOf((c.dataset.name||'').toLowerCase())>-1);
   });
 }
 function toggleMore(){
