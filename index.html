@@ -98,6 +98,25 @@ input,select,textarea,.setup-input{font-size:16px!important}
 /* CALC HINT */
 .calc-hint{margin-top:10px;padding:10px 13px;background:#111;border-radius:8px;border:1px solid #333;font-size:12px;color:#aaa;line-height:1.9}
 
+/* SERVICE PICKER CHIPS */
+.svc-panel{margin-top:9px}
+.svc-cat{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.6px;margin:13px 0 7px}
+.svc-cat:first-child{margin-top:6px}
+.svc-row{display:flex;flex-wrap:wrap;gap:6px}
+.svc-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;border:1.5px solid #444;background:#1a1a1a;color:#ccc;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.svc-chip i{font-size:14px;color:var(--gold)}
+.svc-chip:hover{border-color:#666;color:#fff}
+.svc-chip.sel{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.svc-chip.sel i{color:var(--gold)}
+body.theme-light .svc-chip{background:#fff;border-color:#ddd;color:#555}
+body.theme-light .svc-chip.sel{background:#fff8e0;border-color:var(--gold);color:#aa7700}
+.svc-star{margin-left:6px;color:#555;font-size:14px;cursor:pointer}
+.svc-star.on{color:var(--gold)}
+.svc-star:hover{color:var(--gold)}
+.svc-more{margin-top:13px;padding:9px 15px;border-radius:9px;border:1.5px dashed #555;background:transparent;color:#aaa;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.svc-more:hover{border-color:var(--gold);color:var(--gold)}
+.svc-empty{font-size:12px;color:#777;padding:4px 2px}
+
 /* BUTTONS */
 .btn-row{display:flex;gap:9px;margin-top:14px}
 .btn-save{flex:1;padding:12px;background:var(--gold);border:none;border-radius:9px;color:#000;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;letter-spacing:0.3px}
@@ -357,7 +376,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 9</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 12</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -530,7 +549,13 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
         <div class="edit-banner" id="editBanner"><i class="ti ti-pencil"></i>Editing existing appointment</div>
         <div class="ctitle"><i class="ti ti-user"></i>Client details</div>
         <label>Client name</label><input type="text" id="cName" placeholder="e.g. Sarah Mitchell">
-        <label>Category / service</label><input type="text" id="cCat" placeholder="e.g. Balayage, Color, Haircut...">
+        <label>Service</label><input type="text" id="cCat" placeholder="Tap a service below, or type your own…" oninput="syncServiceChips()">
+        <div class="svc-panel" id="svcPanel">
+          <div class="svc-cat">Quick picks</div>
+          <div class="svc-row" id="favRow"></div>
+          <button type="button" class="svc-more" id="svcMoreBtn" onclick="toggleMore()"><i class="ti ti-chevron-down"></i> More services</button>
+          <div id="svcMore" style="display:none"></div>
+        </div>
         <label>Date</label><input type="date" id="cDate">
         <label>Time</label><input type="time" id="cTime" value="09:00">
         <label>Charge amount ($)</label><input type="number" id="cCharge" placeholder="0.00" oninput="calc()">
@@ -684,14 +709,14 @@ function editAppt(id){
   $('cName').value=a.name;$('cDate').value=a.date;$('cTime').value=a.time;
   $('cCharge').value=a.charge;$('cTip').value=a.tip;$('cCat').value=a.cat||'';
   $('editBanner').style.display='flex';$('btnCancel').style.display='block';
-  $('btnLbl').textContent='Update appointment';calc();showTab('book');
+  $('btnLbl').textContent='Update appointment';calc();syncServiceChips();showTab('book');
 }
 function cancelEdit(){resetForm();}
 function resetForm(){
   editingId=null;['cName','cCharge','cTip','cCat'].forEach(i=>$(i).value='');
   $('cDate').value=todayDate.toISOString().split('T')[0];$('cTime').value='09:00';
   $('editBanner').style.display='none';$('btnCancel').style.display='none';
-  $('btnLbl').textContent='Save appointment';calc();
+  $('btnLbl').textContent='Save appointment';calc();syncServiceChips();
 }
 function getFiltered(){
   const now=new Date(),ts=now.toISOString().split('T')[0];
@@ -915,6 +940,68 @@ function showTab(t){
   if(t==='hist'){$('pHist').style.display='block';document.querySelectorAll('.tab')[1].classList.add('active');renderTable();}
   if(t==='mgm'){$('pMgm').style.display='block';document.querySelectorAll('.tab')[2].classList.add('active');renderMgm();}
 }
+// ── SERVICE PICKER ──
+const SERVICE_GROUPS=[
+  {c:'Cuts & Styling',s:[['Haircut','scissors'],['Cut & Style','scissors'],["Women's Cut",'scissors'],["Men's Cut",'user'],['Kids Cut','mood-kid'],['Bang Trim','cut'],['Blow Dry','wind'],['Silk Press','flame'],['Curls','wave-sine'],['Updo','crown'],['Special Occasion','sparkles'],['Bridal','heart'],['Braids','line'],['Roller Set','circle']]},
+  {c:'Color',s:[['Color','palette'],['Root Touch-up','brush'],['Root Smudge','brush'],['All-Over Color','palette'],['Gray Coverage','palette'],["Men's Color",'palette'],['Vivid Color','diamond'],['Color Correction','palette'],['Toner / Gloss','droplet']]},
+  {c:'Highlights',s:[['Highlights','sparkles'],['Partial Highlight','sparkles'],['Full Highlight','sparkles'],['Lowlights','sparkles'],['Balayage','sparkles'],['Foilage','sparkles'],['Ombré','color-swatch'],['Babylights','sparkles']]},
+  {c:'Treatments',s:[['Treatment','flask'],['Deep Conditioning','droplet'],['Olaplex','flask'],['Scalp Treatment','massage'],['Keratin','flame'],['Brazilian Blowout','flame'],['Clarifying','droplet'],['Gloss / Shine','droplet']]},
+  {c:'Texture',s:[['Perm','wave-sine'],['Relaxer','wave-sine'],['Permanent Straightening','wave-sine']]},
+  {c:'Length & Volume',s:[['Extensions','plus'],['Tape-In','plus'],['Sew-In / Weave','plus'],['Fusion','plus']]},
+  {c:"Men's Grooming",s:[['Beard Trim','mustache'],['Hot Towel Shave','cut'],['Line-up','cut'],['Fade','cut'],['Buzz Cut','cut'],['Head Shave','user'],['Mustache Trim','mustache']]},
+  {c:'Brows & Lashes',s:[['Brow Shaping','eye'],['Brow Wax','eye'],['Brow Tint','palette'],['Lash Lift','eye'],['Lash Extensions','sparkles'],['Lash Fill','sparkles']]},
+  {c:'Waxing',s:[['Face Wax','droplet'],['Lip / Chin Wax','droplet'],['Body Wax','droplet'],['Threading','needle']]},
+  {c:'Nails — Hands',s:[['Manicure','hand-stop'],['Gel Manicure','hand-stop'],['Spa Manicure','hand-stop'],['Dip Powder','diamond'],['Polish Change','droplet']]},
+  {c:'Nails — Feet',s:[['Pedicure','shoe'],['Gel Pedicure','shoe'],['Spa Pedicure','shoe']]},
+  {c:'Nails — Enhancements',s:[['Acrylic Full Set','diamond'],['Acrylic Fill','diamond'],['Gel-X Extensions','diamond'],['Builder Gel','diamond'],['Polygel','diamond'],['Overlay','diamond'],['Nail Art','star'],['French / Ombré','color-swatch'],['Nail Repair','tool'],['Removal / Soak-Off','eraser']]},
+  {c:'Skin & Extras',s:[['Facial','mood-happy'],['Makeup','brush'],['Spray Tan','spray'],['Massage','massage']]}
+];
+const DEFAULT_FAVES=['Haircut','Cut & Style',"Women's Cut","Men's Cut",'Kids Cut','Blow Dry','Color','Root Touch-up','Balayage','Highlights','Toner / Gloss','Treatment','Keratin','Updo','Beard Trim'];
+const ICON_OF=(function(){var m={};SERVICE_GROUPS.forEach(function(g){g.s.forEach(function(it){m[it[0]]=it[1];});});return m;})();
+function getFavorites(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return Array.isArray(p.favorites)?p.favorites:DEFAULT_FAVES.slice();}catch(e){return DEFAULT_FAVES.slice();}}
+function saveFavorites(arr){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.favorites=arr;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.favorites=arr;}
+function jsq(n){return n.replace(/'/g,"\\'");}
+function chipHTML(name,icon,isFav){
+  var safe=name.replace(/"/g,'&quot;');
+  var star=isFav?'ti-star-filled svc-star on':'ti-star svc-star';
+  return '<button type="button" class="svc-chip" data-name="'+safe+'" onclick="pickService(\''+jsq(name)+'\')"><i class="ti ti-'+(icon||'point')+'"></i>'+name+'<i class="ti '+star+'" onclick="event.stopPropagation();toggleFav(\''+jsq(name)+'\')"></i></button>';
+}
+function buildServiceChips(){
+  var favs=getFavorites();
+  var favRow=$('favRow');
+  if(favRow){
+    favRow.innerHTML=favs.length?favs.map(function(n){return chipHTML(n,ICON_OF[n],true);}).join(''):'<div class="svc-empty">Tap the ☆ on any service under “More” to add it here.</div>';
+  }
+  var more=$('svcMore');
+  if(more){
+    more.innerHTML=SERVICE_GROUPS.map(function(g){
+      var chips=g.s.map(function(it){return chipHTML(it[0],it[1],favs.indexOf(it[0])>-1);}).join('');
+      return '<div class="svc-cat">'+g.c+'</div><div class="svc-row">'+chips+'</div>';
+    }).join('');
+  }
+  syncServiceChips();
+}
+function pickService(name){
+  $('cCat').value=name;syncServiceChips();
+}
+function toggleFav(name){
+  var favs=getFavorites();var i=favs.indexOf(name);
+  if(i>-1)favs.splice(i,1);else favs.push(name);
+  saveFavorites(favs);buildServiceChips();
+}
+function syncServiceChips(){
+  var v=($('cCat').value||'').trim().toLowerCase();
+  document.querySelectorAll('.svc-chip').forEach(function(c){
+    c.classList.toggle('sel',(c.dataset.name||'').toLowerCase()===v);
+  });
+}
+function toggleMore(){
+  var m=$('svcMore'),b=$('svcMoreBtn');if(!m||!b)return;
+  var open=m.style.display!=='none';
+  m.style.display=open?'none':'block';
+  b.innerHTML=open?'<i class="ti ti-chevron-down"></i> More services':'<i class="ti ti-chevron-up"></i> Hide services';
+}
+buildServiceChips();
 calc();loadAll();
 </script>
 <script>
