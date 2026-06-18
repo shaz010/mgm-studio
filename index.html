@@ -128,6 +128,20 @@ body.theme-light .svc-more{background:#fff}
 }
 .svc-empty{font-size:12px;color:#777;padding:4px 2px}
 
+/* ── PRICE BOOK ── */
+.price-hint{font-size:12.5px;color:#999;line-height:1.6;margin-bottom:14px}
+.price-cat{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.6px;margin:14px 0 6px}
+.price-cat:first-child{margin-top:0}
+.price-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #222}
+.price-name{font-size:13.5px;color:#e5e5e5;font-weight:500}
+.price-in-wrap{position:relative;flex-shrink:0}
+.price-in-wrap::before{content:'$';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#888;font-size:14px;pointer-events:none}
+.price-in{width:104px;padding:8px 10px 8px 22px;background:#1a1a1a;border:1.5px solid #444;border-radius:8px;color:#fff;font-size:16px;font-weight:600;outline:none;text-align:right}
+.price-in:focus{border-color:var(--gold);background:#1e1e1e}
+body.theme-light .price-row{border-color:#eee}
+body.theme-light .price-name{color:#222}
+body.theme-light .price-in{background:#fff;border-color:#ccc;color:#1a1a1a}
+
 /* ── PICKER ANIMATIONS ── */
 @property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
 .svc-chip.sel{animation:chipGlow 1.8s ease-in-out infinite}
@@ -144,21 +158,19 @@ body.theme-light .svc-more{background:#fff}
 }
 #cCat.slot-hit{animation:slotHit 1s ease}
 @keyframes slotHit{0%{box-shadow:0 0 0 0 rgba(255,184,0,0)}28%{box-shadow:0 0 0 3px rgba(255,184,0,.4);border-color:var(--gold)}100%{box-shadow:0 0 0 0 rgba(255,184,0,0)}}
-.svc-mode{display:inline-flex;gap:26px;align-items:center;margin-bottom:6px;padding-left:2px}
-.svc-mode-btn{border:none;background:transparent;cursor:pointer;font-size:18px;font-weight:800;letter-spacing:.5px;padding:4px 2px;line-height:1.15;background-image:linear-gradient(90deg,#777,#999);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;opacity:.4;transition:opacity .25s;transform-origin:center;display:inline-block}
-.svc-mode-btn.on{opacity:1}
-.svc-mode-btn.on[data-mode="hair"]{background-image:linear-gradient(90deg,#FFB800,#FF6FA3,#FF8A3D,#FFD24A,#FFB800);background-size:240% auto;animation:fxColorMove var(--fxModeDur,9s) linear infinite,hairScale calc(var(--fxModeDur,9s) * .55) ease-in-out infinite}
-.svc-mode-btn.on[data-mode="nail"]{background-image:linear-gradient(90deg,#FF4FB0,#A24BFF,#22C3DD,#FF7AD9,#FF4FB0);background-size:240% auto;animation:fxColorMove calc(var(--fxModeDur,9s) * 1.2) linear infinite,nailScale calc(var(--fxModeDur,9s) * .7) ease-in-out infinite}
+.svc-mode{display:inline-flex;gap:30px;align-items:center;margin-bottom:8px;padding:6px 4px 8px}
+.svc-mode-btn{position:relative;border:none;background:transparent;cursor:pointer;font-size:18px;font-weight:800;letter-spacing:.5px;padding:4px 4px;line-height:1.2;background-image:linear-gradient(90deg,#888,#aaa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;transform-origin:center;display:inline-block}
+.svc-mode-btn[data-mode="hair"],.svc-mode-btn[data-pmode="hair"]{background-image:linear-gradient(90deg,#FFB800,#FF6FA3,#FF8A3D,#FFD24A,#FFB800);background-size:240% auto;animation:fxColorMove var(--fxModeDur,9s) linear infinite,hairWave calc(var(--fxModeDur,9s) * .6) ease-in-out infinite}
+.svc-mode-btn[data-mode="nail"],.svc-mode-btn[data-pmode="nail"]{background-image:linear-gradient(90deg,#FF4FB0,#A24BFF,#22C3DD,#FF7AD9,#FF4FB0);background-size:240% auto;animation:fxColorMove calc(var(--fxModeDur,9s) * 1.25) linear infinite,nailWave calc(var(--fxModeDur,9s) * .8) ease-in-out infinite}
+.svc-mode-btn.on{filter:drop-shadow(0 0 7px rgba(255,205,90,.9))}
 @keyframes fxColorMove{to{background-position:-240% center}}
-@keyframes hairScale{0%,100%{transform:scale(1)}50%{transform:scale(1.17)}}
-@keyframes nailScale{0%,100%{transform:scale(1.15)}50%{transform:scale(.9)}}
+@keyframes hairWave{0%{transform:translateY(0) scale(1) rotate(0)}25%{transform:translateY(-3px) scale(1.16) rotate(-4deg)}50%{transform:translateY(0) scale(1) rotate(0)}75%{transform:translateY(3px) scale(.88) rotate(4deg)}100%{transform:translateY(0) scale(1) rotate(0)}}
+@keyframes nailWave{0%{transform:translateY(0) scale(1.14) rotate(3deg)}25%{transform:translateY(4px) scale(.88) rotate(0)}50%{transform:translateY(-3px) scale(1.16) rotate(-3deg)}75%{transform:translateY(2px) scale(1) rotate(0)}100%{transform:translateY(0) scale(1.14) rotate(3deg)}}
 /* FX intensity presets (set via Settings) */
 body.fx-gentle{--fxModeDur:11s;--fxHueDur:22s;--fxMoreSpin:3.4s;--fxMoreHue:22s}
 body.fx-lively{--fxModeDur:6s;--fxHueDur:12s;--fxMoreSpin:1.8s;--fxMoreHue:11s}
 body.fx-party{--fxModeDur:3s;--fxHueDur:6s;--fxMoreSpin:1s;--fxMoreHue:5s}
 body.fx-off .svc-mode-btn,body.fx-off .svc-more,body.fx-off .svc-more::before,body.fx-off .svc-more .more-txt{animation:none!important}
-body.fx-off .svc-mode-btn{background-image:none!important;-webkit-text-fill-color:#888!important;opacity:.5!important}
-body.fx-off .svc-mode-btn.on{-webkit-text-fill-color:var(--gold)!important;opacity:1!important}
 body.fx-off .svc-more::before{background:var(--gold)!important}
 body.fx-off .svc-more .more-txt{-webkit-text-fill-color:var(--gold)!important;color:var(--gold)!important}
 
@@ -421,7 +433,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 17</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 19</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -567,6 +579,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="gear-btn" onclick="openPrices()" title="Price book"><i class="ti ti-currency-dollar"></i></button>
       <button class="gear-btn" onclick="openSettings()" title="Settings"><i class="ti ti-settings"></i></button>
       <div class="sync-badge sync-loading" id="syncBadge"><span class="spinner"></span> Connecting...</div>
       <div class="tabs">
@@ -591,6 +604,25 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
         </div>
         <div class="invoice-preview" id="invoicePreview"></div>
         <button class="btn-print" onclick="printInvoice()"><i class="ti ti-printer" style="font-size:16px"></i>Print / Save as PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICE BOOK MODAL -->
+  <div class="modal-overlay" id="priceModal">
+    <div class="modal">
+      <div class="modal-bar">
+        <span class="modal-title"><i class="ti ti-tag" style="font-size:14px;vertical-align:-2px;margin-right:7px"></i>Your price book</span>
+        <button class="modal-close" onclick="closePrices()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="price-hint">Set what you charge for each service. Leave blank for ones you don't offer. When you combine services in a booking, the Charge auto-fills with the total — you can still adjust it.</p>
+        <div class="svc-mode" style="margin-bottom:12px">
+          <button type="button" class="svc-mode-btn on" data-pmode="hair" onclick="setPriceMode('hair')">Hair</button>
+          <button type="button" class="svc-mode-btn" data-pmode="nail" onclick="setPriceMode('nail')">Nail</button>
+        </div>
+        <div id="priceList"></div>
+        <button class="btn-print" onclick="closePrices()"><i class="ti ti-check" style="font-size:16px"></i>Done</button>
       </div>
     </div>
   </div>
@@ -1088,6 +1120,7 @@ function pickService(name,el){
   else { list.splice(idx,1); }
   input.value=list.join(' + ');
   syncServiceChips();
+  applyAutoPrice();
   if(adding){ input.classList.remove('slot-hit');void input.offsetWidth;input.classList.add('slot-hit'); }
 }
 // Tap a More service -> promote it up into Quick picks (staged for future use)
@@ -1122,6 +1155,39 @@ function saveFx(fx){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}')
 function applyFx(fx){document.body.classList.remove('fx-off','fx-gentle','fx-lively','fx-party');document.body.classList.add('fx-'+(fx||'gentle'));}
 function setFx(fx,btn){saveFx(fx);applyFx(fx);if(btn){var g=btn.parentNode;if(g)g.querySelectorAll('.fx-btn').forEach(function(b){b.classList.remove('sel');});btn.classList.add('sel');}}
 function markFx(){var fx=getFx();document.querySelectorAll('#fxGrid .fx-btn').forEach(function(b){b.classList.toggle('sel',b.dataset.fx===fx);});}
+// ── PRICE BOOK ──
+var priceMode='hair';
+function getPrices(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.prices&&typeof p.prices==='object')?p.prices:{};}catch(e){return {};}}
+function savePrices(obj){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.prices=obj;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.prices=obj;}
+function setPrice(name,val){
+  var prices=getPrices();
+  var v=parseFloat(val);
+  if(isNaN(v)||val===''){ delete prices[name]; } else { prices[name]=v; }
+  savePrices(prices);
+}
+function applyAutoPrice(){
+  var prices=getPrices();
+  var list=servicesInField();
+  var sum=0,any=false;
+  list.forEach(function(n){var p=parseFloat(prices[n]);if(!isNaN(p)){sum+=p;any=true;}});
+  if(any){ var cc=$('cCharge'); if(cc){ cc.value=(Math.round(sum*100)/100); calc(); } }
+}
+function setPriceMode(m){priceMode=m;document.querySelectorAll('#priceModal .svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.pmode===m);});buildPriceList();}
+function buildPriceList(){
+  var prices=getPrices();
+  var groups=SERVICE_GROUPS.filter(function(g){return g.d===priceMode||g.d==='both';});
+  var html=groups.map(function(g){
+    var rows=g.s.map(function(it){
+      var n=it[0];var safe=n.replace(/"/g,'&quot;');
+      var val=(prices[n]!==undefined&&prices[n]!==null)?prices[n]:'';
+      return '<div class="price-row"><span class="price-name">'+n+'</span><span class="price-in-wrap"><input class="price-in" type="number" inputmode="decimal" placeholder="0" value="'+val+'" oninput="setPrice(\''+n.replace(/'/g,"\\'")+'\',this.value)"></span></div>';
+    }).join('');
+    return '<div class="price-cat">'+g.c+'</div>'+rows;
+  }).join('');
+  var el=$('priceList');if(el)el.innerHTML=html;
+}
+function openPrices(){priceMode=getMode();document.querySelectorAll('#priceModal .svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.pmode===priceMode);});buildPriceList();$('priceModal').classList.add('open');}
+function closePrices(){$('priceModal').classList.remove('open');applyAutoPrice();}
 applyFx(getFx());
 buildServiceChips();
 calc();loadAll();
