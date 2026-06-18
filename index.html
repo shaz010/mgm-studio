@@ -100,7 +100,7 @@ input,select,textarea,.setup-input{font-size:16px!important}
 
 /* SERVICE PICKER CHIPS */
 .svc-panel{margin-top:9px}
-.svc-cat{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.6px;margin:13px 0 7px}
+.svc-cat{font-size:13px;font-weight:800;color:#b9b9b9;letter-spacing:.3px;margin:15px 0 7px}
 .svc-cat:first-child{margin-top:6px}
 .svc-row{display:flex;flex-wrap:wrap;gap:6px}
 .svc-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;border:1.5px solid #444;background:#1a1a1a;color:#ccc;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
@@ -124,7 +124,7 @@ body.theme-light .svc-chip.sel{background:#fff8e0;border-color:var(--gold);color
 body.theme-light .svc-more{background:#fff}
 body.theme-light .svc-more::after{background:#fff}
 @media (prefers-reduced-motion: reduce){
-  .svc-chip.sel,.svc-ghost.go,.svc-more,.svc-more::before,.svc-more .more-txt,.svc-mode-btn,#cCat.slot-hit{animation:none!important}
+  .svc-chip.sel,.svc-ghost.go,.svc-more,.svc-more::before,.svc-more .more-txt,.svc-mode-btn .m-word,.svc-mode-btn::after,#cCat.slot-hit{animation:none!important}
   .svc-more::before{background:var(--gold)}
   .svc-more .more-txt{-webkit-text-fill-color:var(--gold);color:var(--gold)}
 }
@@ -132,10 +132,11 @@ body.theme-light .svc-more::after{background:#fff}
 
 /* ── PRICE BOOK ── */
 .price-hint{font-size:12.5px;color:#999;line-height:1.6;margin-bottom:14px}
-.price-cat{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.6px;margin:14px 0 6px}
+.price-cat{font-size:14.5px;font-weight:800;color:var(--gold);letter-spacing:.2px;margin:20px 0 4px;padding-bottom:6px;border-bottom:1px solid #2c2c2c}
 .price-cat:first-child{margin-top:0}
+body.theme-light .price-cat{color:#b8860b;border-color:#e8e8e8}
 .price-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #222}
-.price-name{font-size:13.5px;color:#e5e5e5;font-weight:500}
+.price-name{font-size:14px;color:#ededed;font-weight:600}
 .price-in-wrap{position:relative;flex-shrink:0}
 .price-in-wrap::before{content:'$';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#888;font-size:14px;pointer-events:none}
 .price-in{width:104px;padding:8px 10px 8px 22px;background:#1a1a1a;border:1.5px solid #444;border-radius:8px;color:#fff;font-size:16px;font-weight:600;outline:none;text-align:right}
@@ -160,11 +161,18 @@ body.theme-light .price-in{background:#fff;border-color:#ccc;color:#1a1a1a}
 }
 #cCat.slot-hit{animation:slotHit 1s ease}
 @keyframes slotHit{0%{box-shadow:0 0 0 0 rgba(255,184,0,0)}28%{box-shadow:0 0 0 3px rgba(255,184,0,.4);border-color:var(--gold)}100%{box-shadow:0 0 0 0 rgba(255,184,0,0)}}
-.svc-mode{display:inline-flex;gap:30px;align-items:center;margin-bottom:8px;padding:6px 4px 8px}
-.svc-mode-btn{position:relative;border:none;background:transparent;cursor:pointer;font-size:18px;font-weight:800;letter-spacing:.5px;padding:4px 4px;line-height:1.2;background-image:linear-gradient(90deg,#888,#aaa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;transform-origin:center;display:inline-block}
-.svc-mode-btn[data-mode="hair"],.svc-mode-btn[data-pmode="hair"]{background-image:linear-gradient(90deg,#FFB800,#FF6FA3,#FF8A3D,#FFD24A,#FFB800);background-size:240% auto;animation:fxColorMove var(--fxModeDur,9s) linear infinite,hairWave var(--fxHairWave,6s) ease-in-out infinite}
-.svc-mode-btn[data-mode="nail"],.svc-mode-btn[data-pmode="nail"]{background-image:linear-gradient(90deg,#FF4FB0,#A24BFF,#22C3DD,#FF7AD9,#FF4FB0);background-size:240% auto;animation:fxColorMove var(--fxNailColor,11s) linear infinite,nailWave var(--fxNailWave,8s) ease-in-out infinite}
-.svc-mode-btn.on{filter:drop-shadow(0 0 7px rgba(255,205,90,.9))}
+.svc-mode{display:inline-flex;gap:30px;align-items:flex-end;margin-bottom:8px;padding:6px 4px 6px}
+.svc-mode-btn{position:relative;border:none;background:transparent;cursor:pointer;font-size:18px;font-weight:800;letter-spacing:.5px;padding:4px 6px 12px;line-height:1.2;display:inline-block}
+.svc-mode-btn .m-word{display:inline-block;transform-origin:center;background-image:linear-gradient(90deg,#888,#aaa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.svc-mode-btn[data-mode="hair"] .m-word,.svc-mode-btn[data-pmode="hair"] .m-word{background-image:linear-gradient(90deg,#FFB800,#FF6FA3,#FF8A3D,#FFD24A,#FFB800);background-size:240% auto;animation:fxColorMove var(--fxModeDur,9s) linear infinite,hairWave var(--fxHairWave,6s) ease-in-out infinite}
+.svc-mode-btn[data-mode="nail"] .m-word,.svc-mode-btn[data-pmode="nail"] .m-word{background-image:linear-gradient(90deg,#FF4FB0,#A24BFF,#22C3DD,#FF7AD9,#FF4FB0);background-size:240% auto;animation:fxColorMove var(--fxNailColor,11s) linear infinite,nailWave var(--fxNailWave,8s) ease-in-out infinite}
+.svc-mode-btn:not(.on){opacity:.5}
+.svc-mode-btn:not(.on) .m-word{filter:saturate(.55) brightness(.92)}
+.svc-mode-btn.on .m-word{filter:drop-shadow(0 0 10px rgba(255,210,110,.98))}
+.svc-mode-btn::after{content:'';position:absolute;left:3px;right:3px;bottom:1px;height:4px;border-radius:4px;background:linear-gradient(90deg,var(--gold),#fff,var(--gold));background-size:200% auto;opacity:0;transform:scaleX(.3);transform-origin:center;transition:opacity .25s ease,transform .3s cubic-bezier(.3,1.5,.5,1)}
+.svc-mode-btn[data-mode="hair"]::after,.svc-mode-btn[data-pmode="hair"]::after{background:linear-gradient(90deg,#FFB800,#FF6FA3,#FFD24A,#FFB800);background-size:200% auto}
+.svc-mode-btn[data-mode="nail"]::after,.svc-mode-btn[data-pmode="nail"]::after{background:linear-gradient(90deg,#FF4FB0,#A24BFF,#22C3DD,#FF4FB0);background-size:200% auto}
+.svc-mode-btn.on::after{opacity:1;transform:scaleX(1);animation:moreShimmer 2.4s linear infinite;box-shadow:0 1px 9px rgba(255,170,70,.65)}
 @keyframes fxColorMove{to{background-position:-240% center}}
 @keyframes hairWave{0%{transform:translateY(0) scale(1) rotate(0)}25%{transform:translateY(-3px) scale(1.18) rotate(-4deg)}50%{transform:translateY(0) scale(1) rotate(0)}75%{transform:translateY(3px) scale(.86) rotate(4deg)}100%{transform:translateY(0) scale(1) rotate(0)}}
 @keyframes nailWave{0%{transform:translateY(0) scale(1.16) rotate(3deg)}25%{transform:translateY(4px) scale(.86) rotate(0)}50%{transform:translateY(-3px) scale(1.18) rotate(-3deg)}75%{transform:translateY(2px) scale(1) rotate(0)}100%{transform:translateY(0) scale(1.16) rotate(3deg)}}
@@ -172,11 +180,11 @@ body.theme-light .price-in{background:#fff;border-color:#ccc;color:#1a1a1a}
 body.fx-gentle{--fxModeDur:11s;--fxNailColor:13s;--fxHairWave:6.5s;--fxNailWave:8.5s;--fxMoreSpin:3.4s;--fxMoreHue:22s}
 body.fx-lively{--fxModeDur:6s;--fxNailColor:7.5s;--fxHairWave:3.6s;--fxNailWave:4.6s;--fxMoreSpin:1.8s;--fxMoreHue:11s}
 body.fx-party{--fxModeDur:3s;--fxNailColor:3.6s;--fxHairWave:1.8s;--fxNailWave:2.4s;--fxMoreSpin:1s;--fxMoreHue:5s}
-body.fx-off .svc-mode-btn,body.fx-off .svc-more,body.fx-off .svc-more::before,body.fx-off .svc-more .more-txt{animation:none!important}
+body.fx-off .svc-mode-btn .m-word,body.fx-off .svc-mode-btn::after,body.fx-off .svc-more,body.fx-off .svc-more::before,body.fx-off .svc-more .more-txt{animation:none!important}
 body.fx-off .svc-more::before{background:var(--gold)!important}
 body.fx-off .svc-more .more-txt{-webkit-text-fill-color:var(--gold)!important;color:var(--gold)!important}
 /* Pause background picker motion while a modal (e.g. Price book) is open */
-body.modal-open #svcPanel .svc-mode-btn,body.modal-open #svcMoreBtn::before,body.modal-open #svcMoreBtn .more-txt,body.modal-open #svcPanel .svc-chip.sel{animation-play-state:paused!important}
+body.modal-open #svcPanel .svc-mode-btn .m-word,body.modal-open #svcPanel .svc-mode-btn::after,body.modal-open #svcMoreBtn::before,body.modal-open #svcMoreBtn .more-txt,body.modal-open #svcPanel .svc-chip.sel{animation-play-state:paused!important}
 
 /* BUTTONS */
 .btn-row{display:flex;gap:9px;margin-top:14px}
@@ -437,7 +445,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 20</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 21</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -622,8 +630,8 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
       <div class="modal-body">
         <p class="price-hint">Set what you charge for each service. Leave blank for ones you don't offer. When you combine services in a booking, the Charge auto-fills with the total — you can still adjust it.</p>
         <div class="svc-mode" style="margin-bottom:12px">
-          <button type="button" class="svc-mode-btn on" data-pmode="hair" onclick="setPriceMode('hair')">Hair</button>
-          <button type="button" class="svc-mode-btn" data-pmode="nail" onclick="setPriceMode('nail')">Nail</button>
+          <button type="button" class="svc-mode-btn on" data-pmode="hair" onclick="setPriceMode('hair')"><span class="m-word">Hair</span></button>
+          <button type="button" class="svc-mode-btn" data-pmode="nail" onclick="setPriceMode('nail')"><span class="m-word">Nail</span></button>
         </div>
         <div id="priceList"></div>
         <button class="btn-print" onclick="closePrices()"><i class="ti ti-check" style="font-size:16px"></i>Done</button>
@@ -644,8 +652,8 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
         <div class="svc-panel" id="svcPanel">
           <div class="svc-cat">Services</div>
           <div class="svc-mode">
-            <button type="button" class="svc-mode-btn on" data-mode="hair" onclick="setMode('hair')">Hair</button>
-            <button type="button" class="svc-mode-btn" data-mode="nail" onclick="setMode('nail')">Nail</button>
+            <button type="button" class="svc-mode-btn on" data-mode="hair" onclick="setMode('hair')"><span class="m-word">Hair</span></button>
+            <button type="button" class="svc-mode-btn" data-mode="nail" onclick="setMode('nail')"><span class="m-word">Nail</span></button>
           </div>
           <div class="svc-cat">Quick picks</div>
           <div class="svc-row" id="favRow"></div>
@@ -1054,6 +1062,8 @@ const SERVICE_GROUPS=[
 ];
 const DEFAULT_FAVES=['Haircut','Cut & Style',"Women's Cut","Men's Cut",'Kids Cut','Blow Dry','Color','Root Touch-up','Balayage','Highlights','Toner / Gloss','Treatment','Keratin','Updo','Beard Trim','Manicure','Gel Manicure','Spa Manicure','Pedicure','Gel Pedicure','Spa Pedicure','Acrylic Full Set','Acrylic Fill','Gel-X Extensions','Dip Powder','Polish Change','Nail Art','Removal / Soak-Off'];
 const ICON_OF=(function(){var m={};SERVICE_GROUPS.forEach(function(g){g.s.forEach(function(it){m[it[0]]=it[1];});});return m;})();
+var CAT_COLORS={'Cuts & Styling':'#FFC04D','Color':'#FF7AB0','Highlights':'#FFE15A','Treatments':'#5FD6C6','Texture':'#B79CFF','Length & Volume':'#7FB4FF',"Men's Grooming":'#8FD17A','Nails — Hands':'#FF93A6','Nails — Feet':'#5FC8EC','Nails — Enhancements':'#CBA6FF','Brows & Lashes':'#E6B07E','Waxing':'#F4A6C8','Skin & Extras':'#9AD9A6'};
+function catColorOf(c){return CAT_COLORS[c]||'#FFC04D';}
 function getFavorites(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return Array.isArray(p.favorites)?p.favorites:DEFAULT_FAVES.slice();}catch(e){return DEFAULT_FAVES.slice();}}
 function saveFavorites(arr){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.favorites=arr;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.favorites=arr;}
 function getMode(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return p.svcMode||'hair';}catch(e){return 'hair';}}
@@ -1087,7 +1097,7 @@ function buildServiceChips(){
       var rest=g.s.filter(function(it){return favs.indexOf(it[0])===-1;}).slice().sort(function(a,b){return a[0].localeCompare(b[0]);});
       if(!rest.length)return '';
       var chips=rest.map(function(it){return chipHTML(it[0],it[1],false);}).join('');
-      return '<div class="svc-cat">'+g.c+'</div><div class="svc-row">'+chips+'</div>';
+      return '<div class="svc-cat" style="color:'+catColorOf(g.c)+'">'+g.c+'</div><div class="svc-row">'+chips+'</div>';
     }).join('');
   }
   // reflect active mode button
@@ -1187,7 +1197,7 @@ function buildPriceList(){
       var val=(prices[n]!==undefined&&prices[n]!==null)?prices[n]:'';
       return '<div class="price-row"><span class="price-name">'+n+'</span><span class="price-in-wrap"><input class="price-in" type="number" inputmode="decimal" placeholder="0" value="'+val+'" oninput="setPrice(\''+n.replace(/'/g,"\\'")+'\',this.value)"></span></div>';
     }).join('');
-    return '<div class="price-cat">'+g.c+'</div>'+rows;
+    return '<div class="price-cat" style="color:'+catColorOf(g.c)+';border-color:'+catColorOf(g.c)+'55">'+g.c+'</div>'+rows;
   }).join('');
   var el=$('priceList');if(el)el.innerHTML=html;
 }
