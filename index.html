@@ -94,6 +94,8 @@ input,select,textarea,.setup-input{font-size:16px!important}
 #earnCard.big-read .total-rb{flex-wrap:wrap;row-gap:2px}
 #earnCard.big-read .total-rb .box-lbl{font-size:15px!important;width:100%}
 #earnCard.big-read .total-v{font-size:52px;width:100%;text-align:right;line-height:1.1}
+#earnCard .calc-hint{transition:font-size .28s ease}
+#earnCard.big-read .calc-hint{font-size:17px;line-height:2}
 
 /* ROW BOXES */
 .row-box{margin-top:10px;border-radius:9px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
@@ -140,6 +142,10 @@ body.theme-light .svc-more::after{background:#fff}
   .svc-more .more-txt{-webkit-text-fill-color:var(--gold);color:var(--gold)}
 }
 .svc-empty{font-size:12px;color:#777;padding:4px 2px}
+.qp-hint{font-size:9.5px;font-weight:600;color:#777;text-transform:none;letter-spacing:0;background:#222;padding:2px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:3px}
+#favRow .svc-chip{touch-action:none}
+#favRow .svc-chip.chip-placeholder{opacity:.32}
+.chip-drag-clone{box-shadow:0 10px 24px rgba(0,0,0,.55)!important;transform:scale(1.06);border-color:var(--gold)!important}
 
 /* ── PRICE BOOK ── */
 .price-hint{font-size:12.5px;color:#999;line-height:1.6;margin-bottom:14px}
@@ -160,6 +166,9 @@ body.theme-light .price-cat{color:#b8860b;border-color:#e8e8e8}
 .price-in:focus{border-color:var(--gold);background:#1e1e1e}
 body.theme-light .price-row{border-color:#eee}
 body.theme-light .price-name{color:#222}body.theme-light .price-in{background:#fff;border-color:#ccc;color:#1a1a1a}
+.reset-qp-btn{width:100%;padding:11px;background:#1a1a1a;border:1.5px solid #444;border-radius:9px;color:#ddd;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.reset-qp-btn:active{border-color:var(--gold);color:var(--gold)}
+.reset-qp-hint{font-size:11.5px;color:#888;line-height:1.5;margin-top:8px}
 
 /* ── CLIENT CARDS ── */
 .client-list{margin-top:14px;display:flex;flex-direction:column;gap:10px}
@@ -516,7 +525,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 24</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 26</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -645,6 +654,13 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
         <button class="theme-btn fx-btn" data-fx="lively" onclick="setFx('lively',this)">Lively</button>
         <button class="theme-btn fx-btn" data-fx="party" onclick="setFx('party',this)">Party</button>
       </div>
+      <button class="cf-disc-edit" onclick="resetQuickPicks()" style="margin-top:14px"><i class="ti ti-rotate" style="font-size:13px"></i> Reset Quick Picks to defaults</button>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Quick Picks</div>
+      <button class="reset-qp-btn" onclick="resetQuickPicks()"><i class="ti ti-rotate" style="font-size:15px;vertical-align:-2px;margin-right:6px"></i>Reset Quick Picks to defaults</button>
+      <div class="reset-qp-hint">Restores the starting set of favourite services for both Hair and Nail. Your prices and client cards are not affected.</div>
     </div>
 
     <button class="setup-btn" onclick="saveSettings()">Save settings</button>
@@ -797,7 +813,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
             <button type="button" class="svc-mode-btn on" data-mode="hair" onclick="setMode('hair')"><span class="m-word">Hair</span></button>
             <button type="button" class="svc-mode-btn" data-mode="nail" onclick="setMode('nail')"><span class="m-word">Nail</span></button>
           </div>
-          <div class="svc-cat">Quick picks</div>
+          <div class="svc-cat" style="display:flex;align-items:center;gap:7px">Quick picks <span class="qp-hint"><i class="ti ti-arrows-move" style="font-size:11px;vertical-align:-1px"></i> drag to arrange</span></div>
           <div class="svc-row" id="favRow"></div>
           <button type="button" class="svc-more" id="svcMoreBtn" onclick="toggleMore()"><i class="ti ti-chevron-down more-chev"></i> <span class="more-txt">More services</span></button>
           <div id="svcMore" style="display:none"></div>
@@ -1190,7 +1206,7 @@ function showTab(t){
 const SERVICE_GROUPS=[
   {c:'Color',d:'hair',s:[['Color','palette'],['Root Touch-up','brush'],['Root Smudge','brush'],['All-Over Color','palette'],['Gray Coverage','palette'],["Men's Color",'palette'],['Vivid Color','diamond'],['Color Correction','palette'],['Toner / Gloss','droplet']]},
   {c:'Highlights',d:'hair',s:[['Highlights','sparkles'],['Partial Highlight','sparkles'],['Full Highlight','sparkles'],['Lowlights','sparkles'],['Balayage','sparkles'],['Foilage','sparkles'],['Ombré','color-swatch'],['Babylights','sparkles']]},
-  {c:'Cuts & Styling',d:'hair',s:[['Haircut','scissors'],['Cut & Style','scissors'],["Women's Cut",'scissors'],["Men's Cut",'user'],['Kids Cut','mood-kid'],['Bang Trim','cut'],['Blow Dry','wind'],['Silk Press','flame'],['Curls','wave-sine'],['Updo','crown'],['Special Occasion','sparkles'],['Bridal','heart'],['Braids','line'],['Roller Set','circle']]},
+  {c:'Cuts & Styling',d:'hair',s:[["Women's Haircut",'scissors'],["Men's Haircut",'user'],['Kids Haircut','mood-kid'],['Cut & Style','scissors'],['Bang Trim','cut'],['Blow Dry','wind'],['Silk Press','flame'],['Curls','wave-sine'],['Updo','crown'],['Special Occasion','sparkles'],['Bridal','heart'],['Braids','line'],['Roller Set','circle']]},
   {c:'Treatments',d:'hair',s:[['Treatment','flask'],['Deep Conditioning','droplet'],['Olaplex','flask'],['Scalp Treatment','massage'],['Keratin','flame'],['Brazilian Blowout','flame'],['Clarifying','droplet'],['Gloss / Shine','droplet']]},
   {c:'Texture',d:'hair',s:[['Perm','wave-sine'],['Relaxer','wave-sine'],['Permanent Straightening','wave-sine']]},
   {c:'Length & Volume',d:'hair',s:[['Extensions','plus'],['Tape-In','plus'],['Sew-In / Weave','plus'],['Fusion','plus']]},
@@ -1202,12 +1218,13 @@ const SERVICE_GROUPS=[
   {c:'Nails — Feet',d:'nail',s:[['Pedicure','shoe'],['Gel Pedicure','shoe'],['Spa Pedicure','shoe']]},
   {c:'Nails — Enhancements',d:'nail',s:[['Acrylic Full Set','diamond'],['Acrylic Fill','diamond'],['Gel-X Extensions','diamond'],['Builder Gel','diamond'],['Polygel','diamond'],['Overlay','diamond'],['Nail Art','star'],['French / Ombré','color-swatch'],['Nail Repair','tool'],['Removal / Soak-Off','eraser']]}
 ];
-const DEFAULT_FAVES=['Haircut','Cut & Style',"Women's Cut","Men's Cut",'Kids Cut','Blow Dry','Color','Root Touch-up','Balayage','Highlights','Toner / Gloss','Treatment','Keratin','Updo','Beard Trim','Manicure','Gel Manicure','Spa Manicure','Pedicure','Gel Pedicure','Spa Pedicure','Acrylic Full Set','Acrylic Fill','Gel-X Extensions','Dip Powder','Polish Change','Nail Art','Removal / Soak-Off'];
+const DEFAULT_FAVES=["Women's Haircut","Color","Highlights","Men's Haircut",'Cut & Style','Blow Dry','Balayage','Root Touch-up','Toner / Gloss','Treatment','Keratin','Updo','Beard Trim','Kids Haircut','Manicure','Gel Manicure','Spa Manicure','Pedicure','Gel Pedicure','Spa Pedicure','Acrylic Full Set','Acrylic Fill','Gel-X Extensions','Dip Powder','Polish Change','Nail Art','Removal / Soak-Off'];
 const ICON_OF=(function(){var m={};SERVICE_GROUPS.forEach(function(g){g.s.forEach(function(it){m[it[0]]=it[1];});});return m;})();
 var CAT_COLORS={'Cuts & Styling':'#FFC04D','Color':'#FF7AB0','Highlights':'#FFE15A','Treatments':'#5FD6C6','Texture':'#B79CFF','Length & Volume':'#7FB4FF',"Men's Grooming":'#8FD17A','Nails — Hands':'#FF93A6','Nails — Feet':'#5FC8EC','Nails — Enhancements':'#CBA6FF','Brows & Lashes':'#E6B07E','Waxing':'#F4A6C8','Skin & Extras':'#9AD9A6'};
 function catColorOf(c){return CAT_COLORS[c]||'#FFC04D';}
 function getFavorites(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return Array.isArray(p.favorites)?p.favorites:DEFAULT_FAVES.slice();}catch(e){return DEFAULT_FAVES.slice();}}
 function saveFavorites(arr){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.favorites=arr;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.favorites=arr;}
+function resetQuickPicks(){if(!confirm('Reset Quick Picks to the default set for Hair and Nail?'))return;saveFavorites(DEFAULT_FAVES.slice());buildServiceChips();}
 function getMode(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return p.svcMode||'hair';}catch(e){return 'hair';}}
 function saveMode(m){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.svcMode=m;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.svcMode=m;}
 function groupsForMode(m){return SERVICE_GROUPS.filter(function(g){return g.d===m||g.d==='both';});}
@@ -1226,8 +1243,8 @@ function buildServiceChips(){
   var mode=getMode();
   var groups=groupsForMode(mode);
   var modeNames={};groups.forEach(function(g){g.s.forEach(function(it){modeNames[it[0]]=1;});});
-  // Quick picks: favorites that belong to this mode (alphabetical)
-  var favHere=favs.filter(function(n){return modeNames[n];}).sort(function(a,b){return a.localeCompare(b);});
+  // Quick picks: favorites for this mode, in the user's saved order (drag to rearrange)
+  var favHere=favs.filter(function(n){return modeNames[n];});
   var favRow=$('favRow');
   if(favRow){
     favRow.innerHTML=favHere.length?favHere.map(function(n){return chipHTML(n,ICON_OF[n],true);}).join(''):'<div class="svc-empty">Tap any service under “More” to add it up here.</div>';
@@ -1247,6 +1264,68 @@ function buildServiceChips(){
   syncServiceChips();
 }
 function setMode(m){saveMode(m);buildServiceChips();}
+// ── Quick Picks drag-to-reorder ──
+var dragState=null;
+function commitFavOrder(){
+  var order=[].slice.call(document.querySelectorAll('#favRow .svc-chip')).map(function(c){return c.dataset.name;});
+  var favs=getFavorites();
+  var mode=getMode();var modeNames={};groupsForMode(mode).forEach(function(g){g.s.forEach(function(it){modeNames[it[0]]=1;});});
+  var q=order.slice();
+  var newFavs=favs.map(function(n){return modeNames[n]?q.shift():n;});
+  saveFavorites(newFavs);
+}
+function initFavDrag(){
+  var row=$('favRow');if(!row||row._dragInit)return;row._dragInit=true;
+  row.addEventListener('pointerdown',function(e){
+    var chip=e.target.closest&&e.target.closest('.svc-chip');
+    if(!chip||chip.parentNode!==row)return;
+    if(e.target.closest('.svc-star'))return;
+    dragState={chip:chip,sx:e.clientX,sy:e.clientY,dragging:false,clone:null,pid:e.pointerId};
+    try{row.setPointerCapture(e.pointerId);}catch(_){}
+  });
+  row.addEventListener('pointermove',function(e){
+    if(!dragState)return;
+    var dx=e.clientX-dragState.sx,dy=e.clientY-dragState.sy;
+    if(!dragState.dragging){
+      if(Math.abs(dx)+Math.abs(dy)<9)return;
+      dragState.dragging=true;
+      var ch=dragState.chip,r=ch.getBoundingClientRect();
+      var clone=ch.cloneNode(true);
+      clone.classList.add('chip-drag-clone');
+      clone.style.cssText='position:fixed;left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;z-index:9999;pointer-events:none;margin:0';
+      document.body.appendChild(clone);
+      dragState.clone=clone;dragState.offX=dragState.sx-r.left;dragState.offY=dragState.sy-r.top;
+      ch.classList.add('chip-placeholder');
+    }
+    e.preventDefault();
+    var clone=dragState.clone;
+    clone.style.left=(e.clientX-dragState.offX)+'px';
+    clone.style.top=(e.clientY-dragState.offY)+'px';
+    clone.style.display='none';
+    var under=document.elementFromPoint(e.clientX,e.clientY);
+    clone.style.display='';
+    var tgt=under&&under.closest?under.closest('.svc-chip'):null;
+    if(tgt&&tgt!==dragState.chip&&tgt.parentNode===row){
+      var tr=tgt.getBoundingClientRect();
+      if(e.clientX<tr.left+tr.width/2)row.insertBefore(dragState.chip,tgt);
+      else row.insertBefore(dragState.chip,tgt.nextSibling);
+    }
+  });
+  function endDrag(){
+    if(!dragState)return;
+    var was=dragState.dragging;
+    if(dragState.clone&&dragState.clone.parentNode)dragState.clone.parentNode.removeChild(dragState.clone);
+    if(dragState.chip)dragState.chip.classList.remove('chip-placeholder');
+    if(was){commitFavOrder();_suppressClick=true;setTimeout(function(){_suppressClick=false;},60);}
+    dragState=null;
+  }
+  row.addEventListener('pointerup',endDrag);
+  row.addEventListener('pointercancel',endDrag);
+}
+function resetQuickPicks(){
+  if(!confirm('Reset your Quick Picks to the default set and order?'))return;
+  saveFavorites(DEFAULT_FAVES.slice());buildServiceChips();
+}
 function flyGhost(srcRect,tgtRect,name){
   try{
     if(!srcRect||!tgtRect)return;
@@ -1266,7 +1345,9 @@ function flyGhost(srcRect,tgtRect,name){
 }
 // Tap a Quick pick -> ADD it to the booking (services accumulate); tap again to remove
 function servicesInField(){return ($('cCat').value||'').split('+').map(function(s){return s.trim();}).filter(Boolean);}
+var _suppressClick=false;
 function pickService(name,el){
+  if(_suppressClick)return;
   var input=$('cCat');if(!input)return;
   var list=servicesInField();
   var low=list.map(function(s){return s.toLowerCase();});
@@ -1279,13 +1360,18 @@ function pickService(name,el){
   applyAutoPrice();
   if(adding){ input.classList.remove('slot-hit');void input.offsetWidth;input.classList.add('slot-hit'); }
 }
-// Tap a More service -> promote it up into Quick picks (staged for future use)
+// Tap a More service -> add it to the booking AND promote it to Quick picks for next time
 function promoteFav(name,el){
   var favs=getFavorites();
   if(favs.indexOf(name)===-1){favs.push(name);saveFavorites(favs);}
+  var input=$('cCat');
+  if(input){
+    var list=servicesInField();
+    if(list.map(function(s){return s.toLowerCase();}).indexOf(name.toLowerCase())===-1){list.push(name);input.value=list.join(' + ');}
+  }
   var src=el?el.getBoundingClientRect():null;
   var favRow=$('favRow');var tgt=favRow?favRow.getBoundingClientRect():null;
-  buildServiceChips();
+  buildServiceChips();syncServiceChips();applyAutoPrice();
   if(src&&tgt)flyGhost(src,tgt,name);
 }
 // Tap the ★ on a Quick pick -> send it back down to More
@@ -1309,8 +1395,7 @@ function toggleMore(){
 function getFx(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return p.fx||'gentle';}catch(e){return 'gentle';}}
 function saveFx(fx){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.fx=fx;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.fx=fx;}
 function applyFx(fx){document.body.classList.remove('fx-off','fx-gentle','fx-lively','fx-party');document.body.classList.add('fx-'+(fx||'gentle'));}
-function setFx(fx,btn){saveFx(fx);applyFx(fx);if(btn){var g=btn.parentNode;if(g)g.querySelectorAll('.fx-btn').forEach(function(b){b.classList.remove('sel');});btn.classList.add('sel');}}
-function markFx(){var fx=getFx();document.querySelectorAll('#fxGrid .fx-btn').forEach(function(b){b.classList.toggle('sel',b.dataset.fx===fx);});}
+function setFx(fx,btn){saveFx(fx);applyFx(fx);if(btn){var g=btn.parentNode;if(g)g.querySelectorAll('.fx-btn').forEach(function(b){b.classList.remove('sel');});btn.classList.add('sel');}}function markFx(){var fx=getFx();document.querySelectorAll('#fxGrid .fx-btn').forEach(function(b){b.classList.toggle('sel',b.dataset.fx===fx);});}
 // ── PRICE BOOK ──
 var priceMode='hair';
 function getPrices(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.prices&&typeof p.prices==='object')?p.prices:{};}catch(e){return {};}}
@@ -1478,6 +1563,7 @@ function deleteClientConfirm(){
 
 applyFx(getFx());
 buildServiceChips();
+initFavDrag();
 calc();loadAll();
 </script>
 <script>
