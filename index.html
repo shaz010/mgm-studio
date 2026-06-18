@@ -116,6 +116,12 @@ body.theme-light .svc-chip.sel{background:#fff8e0;border-color:var(--gold);color
 .svc-more{margin-top:13px;padding:9px 15px;border-radius:9px;border:1.5px dashed #555;background:transparent;color:#aaa;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
 .svc-more:hover{border-color:var(--gold);color:var(--gold)}
 .svc-empty{font-size:12px;color:#777;padding:4px 2px}
+.svc-mode{display:inline-flex;border:1.5px solid #444;border-radius:10px;overflow:hidden;margin-bottom:4px}
+.svc-mode-btn{padding:9px 24px;background:#1a1a1a;color:#bbb;border:none;font-size:13.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.svc-mode-btn i{font-size:15px}
+.svc-mode-btn.on{background:var(--gold-dim);color:var(--gold)}
+body.theme-light .svc-mode-btn{background:#fff;color:#888}
+body.theme-light .svc-mode-btn.on{background:#fff8e0;color:#aa7700}
 
 /* BUTTONS */
 .btn-row{display:flex;gap:9px;margin-top:14px}
@@ -376,7 +382,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 12</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 13</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -551,6 +557,11 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
         <label>Client name</label><input type="text" id="cName" placeholder="e.g. Sarah Mitchell">
         <label>Service</label><input type="text" id="cCat" placeholder="Tap a service below, or type your own…" oninput="syncServiceChips()">
         <div class="svc-panel" id="svcPanel">
+          <div class="svc-cat">Services</div>
+          <div class="svc-mode">
+            <button type="button" class="svc-mode-btn on" data-mode="hair" onclick="setMode('hair')"><i class="ti ti-scissors"></i> Hair</button>
+            <button type="button" class="svc-mode-btn" data-mode="nail" onclick="setMode('nail')"><i class="ti ti-hand-stop"></i> Nail</button>
+          </div>
           <div class="svc-cat">Quick picks</div>
           <div class="svc-row" id="favRow"></div>
           <button type="button" class="svc-more" id="svcMoreBtn" onclick="toggleMore()"><i class="ti ti-chevron-down"></i> More services</button>
@@ -942,24 +953,27 @@ function showTab(t){
 }
 // ── SERVICE PICKER ──
 const SERVICE_GROUPS=[
-  {c:'Cuts & Styling',s:[['Haircut','scissors'],['Cut & Style','scissors'],["Women's Cut",'scissors'],["Men's Cut",'user'],['Kids Cut','mood-kid'],['Bang Trim','cut'],['Blow Dry','wind'],['Silk Press','flame'],['Curls','wave-sine'],['Updo','crown'],['Special Occasion','sparkles'],['Bridal','heart'],['Braids','line'],['Roller Set','circle']]},
-  {c:'Color',s:[['Color','palette'],['Root Touch-up','brush'],['Root Smudge','brush'],['All-Over Color','palette'],['Gray Coverage','palette'],["Men's Color",'palette'],['Vivid Color','diamond'],['Color Correction','palette'],['Toner / Gloss','droplet']]},
-  {c:'Highlights',s:[['Highlights','sparkles'],['Partial Highlight','sparkles'],['Full Highlight','sparkles'],['Lowlights','sparkles'],['Balayage','sparkles'],['Foilage','sparkles'],['Ombré','color-swatch'],['Babylights','sparkles']]},
-  {c:'Treatments',s:[['Treatment','flask'],['Deep Conditioning','droplet'],['Olaplex','flask'],['Scalp Treatment','massage'],['Keratin','flame'],['Brazilian Blowout','flame'],['Clarifying','droplet'],['Gloss / Shine','droplet']]},
-  {c:'Texture',s:[['Perm','wave-sine'],['Relaxer','wave-sine'],['Permanent Straightening','wave-sine']]},
-  {c:'Length & Volume',s:[['Extensions','plus'],['Tape-In','plus'],['Sew-In / Weave','plus'],['Fusion','plus']]},
-  {c:"Men's Grooming",s:[['Beard Trim','mustache'],['Hot Towel Shave','cut'],['Line-up','cut'],['Fade','cut'],['Buzz Cut','cut'],['Head Shave','user'],['Mustache Trim','mustache']]},
-  {c:'Brows & Lashes',s:[['Brow Shaping','eye'],['Brow Wax','eye'],['Brow Tint','palette'],['Lash Lift','eye'],['Lash Extensions','sparkles'],['Lash Fill','sparkles']]},
-  {c:'Waxing',s:[['Face Wax','droplet'],['Lip / Chin Wax','droplet'],['Body Wax','droplet'],['Threading','needle']]},
-  {c:'Nails — Hands',s:[['Manicure','hand-stop'],['Gel Manicure','hand-stop'],['Spa Manicure','hand-stop'],['Dip Powder','diamond'],['Polish Change','droplet']]},
-  {c:'Nails — Feet',s:[['Pedicure','shoe'],['Gel Pedicure','shoe'],['Spa Pedicure','shoe']]},
-  {c:'Nails — Enhancements',s:[['Acrylic Full Set','diamond'],['Acrylic Fill','diamond'],['Gel-X Extensions','diamond'],['Builder Gel','diamond'],['Polygel','diamond'],['Overlay','diamond'],['Nail Art','star'],['French / Ombré','color-swatch'],['Nail Repair','tool'],['Removal / Soak-Off','eraser']]},
-  {c:'Skin & Extras',s:[['Facial','mood-happy'],['Makeup','brush'],['Spray Tan','spray'],['Massage','massage']]}
+  {c:'Cuts & Styling',d:'hair',s:[['Haircut','scissors'],['Cut & Style','scissors'],["Women's Cut",'scissors'],["Men's Cut",'user'],['Kids Cut','mood-kid'],['Bang Trim','cut'],['Blow Dry','wind'],['Silk Press','flame'],['Curls','wave-sine'],['Updo','crown'],['Special Occasion','sparkles'],['Bridal','heart'],['Braids','line'],['Roller Set','circle']]},
+  {c:'Color',d:'hair',s:[['Color','palette'],['Root Touch-up','brush'],['Root Smudge','brush'],['All-Over Color','palette'],['Gray Coverage','palette'],["Men's Color",'palette'],['Vivid Color','diamond'],['Color Correction','palette'],['Toner / Gloss','droplet']]},
+  {c:'Highlights',d:'hair',s:[['Highlights','sparkles'],['Partial Highlight','sparkles'],['Full Highlight','sparkles'],['Lowlights','sparkles'],['Balayage','sparkles'],['Foilage','sparkles'],['Ombré','color-swatch'],['Babylights','sparkles']]},
+  {c:'Treatments',d:'hair',s:[['Treatment','flask'],['Deep Conditioning','droplet'],['Olaplex','flask'],['Scalp Treatment','massage'],['Keratin','flame'],['Brazilian Blowout','flame'],['Clarifying','droplet'],['Gloss / Shine','droplet']]},
+  {c:'Texture',d:'hair',s:[['Perm','wave-sine'],['Relaxer','wave-sine'],['Permanent Straightening','wave-sine']]},
+  {c:'Length & Volume',d:'hair',s:[['Extensions','plus'],['Tape-In','plus'],['Sew-In / Weave','plus'],['Fusion','plus']]},
+  {c:"Men's Grooming",d:'hair',s:[['Beard Trim','mustache'],['Hot Towel Shave','cut'],['Line-up','cut'],['Fade','cut'],['Buzz Cut','cut'],['Head Shave','user'],['Mustache Trim','mustache']]},
+  {c:'Nails — Hands',d:'nail',s:[['Manicure','hand-stop'],['Gel Manicure','hand-stop'],['Spa Manicure','hand-stop'],['Dip Powder','diamond'],['Polish Change','droplet']]},
+  {c:'Nails — Feet',d:'nail',s:[['Pedicure','shoe'],['Gel Pedicure','shoe'],['Spa Pedicure','shoe']]},
+  {c:'Nails — Enhancements',d:'nail',s:[['Acrylic Full Set','diamond'],['Acrylic Fill','diamond'],['Gel-X Extensions','diamond'],['Builder Gel','diamond'],['Polygel','diamond'],['Overlay','diamond'],['Nail Art','star'],['French / Ombré','color-swatch'],['Nail Repair','tool'],['Removal / Soak-Off','eraser']]},
+  {c:'Brows & Lashes',d:'both',s:[['Brow Shaping','eye'],['Brow Wax','eye'],['Brow Tint','palette'],['Lash Lift','eye'],['Lash Extensions','sparkles'],['Lash Fill','sparkles']]},
+  {c:'Waxing',d:'both',s:[['Face Wax','droplet'],['Lip / Chin Wax','droplet'],['Body Wax','droplet'],['Threading','needle']]},
+  {c:'Skin & Extras',d:'both',s:[['Facial','mood-happy'],['Makeup','brush'],['Spray Tan','spray'],['Massage','massage']]}
 ];
-const DEFAULT_FAVES=['Haircut','Cut & Style',"Women's Cut","Men's Cut",'Kids Cut','Blow Dry','Color','Root Touch-up','Balayage','Highlights','Toner / Gloss','Treatment','Keratin','Updo','Beard Trim'];
+const DEFAULT_FAVES=['Haircut','Cut & Style',"Women's Cut","Men's Cut",'Kids Cut','Blow Dry','Color','Root Touch-up','Balayage','Highlights','Toner / Gloss','Treatment','Keratin','Updo','Beard Trim','Manicure','Gel Manicure','Spa Manicure','Pedicure','Gel Pedicure','Spa Pedicure','Acrylic Full Set','Acrylic Fill','Gel-X Extensions','Dip Powder','Polish Change','Nail Art','Removal / Soak-Off'];
 const ICON_OF=(function(){var m={};SERVICE_GROUPS.forEach(function(g){g.s.forEach(function(it){m[it[0]]=it[1];});});return m;})();
 function getFavorites(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return Array.isArray(p.favorites)?p.favorites:DEFAULT_FAVES.slice();}catch(e){return DEFAULT_FAVES.slice();}}
 function saveFavorites(arr){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.favorites=arr;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.favorites=arr;}
+function getMode(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return p.svcMode||'hair';}catch(e){return 'hair';}}
+function saveMode(m){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.svcMode=m;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.svcMode=m;}
+function groupsForMode(m){return SERVICE_GROUPS.filter(function(g){return g.d===m||g.d==='both';});}
 function jsq(n){return n.replace(/'/g,"\\'");}
 function chipHTML(name,icon,isFav){
   var safe=name.replace(/"/g,'&quot;');
@@ -968,19 +982,30 @@ function chipHTML(name,icon,isFav){
 }
 function buildServiceChips(){
   var favs=getFavorites();
+  var mode=getMode();
+  var groups=groupsForMode(mode);
+  var modeNames={};groups.forEach(function(g){g.s.forEach(function(it){modeNames[it[0]]=1;});});
+  // Quick picks: favorites that belong to this mode
+  var favHere=favs.filter(function(n){return modeNames[n];});
   var favRow=$('favRow');
   if(favRow){
-    favRow.innerHTML=favs.length?favs.map(function(n){return chipHTML(n,ICON_OF[n],true);}).join(''):'<div class="svc-empty">Tap the ☆ on any service under “More” to add it here.</div>';
+    favRow.innerHTML=favHere.length?favHere.map(function(n){return chipHTML(n,ICON_OF[n],true);}).join(''):'<div class="svc-empty">Tap the ☆ on any service under “More” to add it here.</div>';
   }
+  // More: this mode's services that are NOT already favorites (no repeats); skip empty groups
   var more=$('svcMore');
   if(more){
-    more.innerHTML=SERVICE_GROUPS.map(function(g){
-      var chips=g.s.map(function(it){return chipHTML(it[0],it[1],favs.indexOf(it[0])>-1);}).join('');
+    more.innerHTML=groups.map(function(g){
+      var rest=g.s.filter(function(it){return favs.indexOf(it[0])===-1;});
+      if(!rest.length)return '';
+      var chips=rest.map(function(it){return chipHTML(it[0],it[1],false);}).join('');
       return '<div class="svc-cat">'+g.c+'</div><div class="svc-row">'+chips+'</div>';
     }).join('');
   }
+  // reflect active mode button
+  document.querySelectorAll('.svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.mode===mode);});
   syncServiceChips();
 }
+function setMode(m){saveMode(m);buildServiceChips();}
 function pickService(name){
   $('cCat').value=name;syncServiceChips();
 }
