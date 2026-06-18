@@ -127,13 +127,15 @@ body.theme-light .svc-chip.sel{background:#fff8e0;border-color:var(--gold);color
 .svc-star.on{color:var(--gold)}
 .svc-star:hover{color:var(--gold)}
 .svc-more{position:relative;margin-top:14px;padding:10px 18px;border-radius:10px;border:none;background:#1a1a1a;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;overflow:hidden;z-index:0}
-.svc-more::before{content:'';position:absolute;left:50%;top:50%;width:320%;height:320%;transform:translate(-50%,-50%);background:conic-gradient(transparent 0deg,var(--gold) 55deg,#fff 90deg,var(--gold) 125deg,transparent 210deg,transparent 360deg);animation:moreSpin var(--fxMoreSpin,2.6s) linear infinite,moreHue var(--fxMoreHue,16s) linear infinite;z-index:-2}
+.svc-more::before{content:'';position:absolute;left:50%;top:50%;width:320%;height:320%;transform:translate(-50%,-50%);background:conic-gradient(transparent 0deg,var(--gold) 55deg,#fff 90deg,var(--gold) 125deg,transparent 210deg,transparent 360deg);animation:moreSpin var(--fxMoreSpin,2.6s) linear infinite;z-index:-2}
 .svc-more::after{content:'';position:absolute;inset:2px;border-radius:8px;background:#1a1a1a;z-index:-1}
 .svc-more .more-chev{color:var(--gold);font-size:15px}
 .svc-more .more-txt{background:linear-gradient(90deg,var(--gold) 0%,#fff 50%,var(--gold) 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:moreShimmer var(--fxMoreSpin,2.6s) linear infinite}
 @keyframes moreSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
 @keyframes moreShimmer{to{background-position:-200% center}}
 @keyframes moreHue{to{filter:hue-rotate(360deg)}}
+/* Idle pause: stop decorative motion when the user isn't interacting (saves battery/heat) */
+body.anim-idle .m-word,body.anim-idle .svc-more::before,body.anim-idle .svc-more .more-txt,body.anim-idle .svc-mode-btn.on::after,body.anim-idle .svc-chip.sel{animation-play-state:paused!important}
 body.theme-light .svc-more{background:#fff}
 body.theme-light .svc-more::after{background:#fff}
 @media (prefers-reduced-motion: reduce){
@@ -157,15 +159,12 @@ body.theme-light .svc-more::after{background:#fff}
 .pc-count{display:inline-block;font-size:10px;font-weight:700;background:rgba(255,255,255,.13);color:inherit;border-radius:20px;padding:2px 8px;margin-left:7px;vertical-align:middle}
 .price-cat-body{padding-top:2px}
 .price-cat:first-child{margin-top:0}
-body.theme-light .price-cat{color:#b8860b;border-color:#e8e8e8}
 .price-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #222}
 .price-name{font-size:14px;color:#ededed;font-weight:600}
 .price-in-wrap{position:relative;flex-shrink:0}
 .price-in-wrap::before{content:'$';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#888;font-size:14px;pointer-events:none}
 .price-in{width:104px;padding:8px 10px 8px 22px;background:#1a1a1a;border:1.5px solid #444;border-radius:8px;color:#fff;font-size:16px;font-weight:600;outline:none;text-align:right}
 .price-in:focus{border-color:var(--gold);background:#1e1e1e}
-body.theme-light .price-row{border-color:#eee}
-body.theme-light .price-name{color:#222}body.theme-light .price-in{background:#fff;border-color:#ccc;color:#1a1a1a}
 .reset-qp-btn{width:100%;padding:11px;background:#1a1a1a;border:1.5px solid #444;border-radius:9px;color:#ddd;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .reset-qp-btn:active{border-color:var(--gold);color:var(--gold)}
 .reset-qp-hint{font-size:11.5px;color:#888;line-height:1.5;margin-top:8px}
@@ -201,8 +200,6 @@ body.theme-light .price-name{color:#222}body.theme-light .price-in{background:#f
 .ck-row{border-bottom:1px solid #222;padding:9px 2px}
 .ck-agree{margin-top:10px}
 .ck-agree .ck-txt{color:#fff;font-weight:600}
-body.theme-light .ck-box{background:#fff;border-color:#bbb}
-body.theme-light .ck-txt{color:#333}
 .cf-seg{display:inline-flex;border:1.5px solid #444;border-radius:9px;overflow:hidden}
 .cf-seg-btn{padding:9px 12px;background:#1a1a1a;color:#aaa;border:none;font-size:12.5px;font-weight:700;cursor:pointer}
 .cf-seg-btn.on[data-res="none"]{background:rgba(95,219,124,.18);color:#5ddb7c}
@@ -220,10 +217,6 @@ body.theme-light .ck-txt{color:#333}
 .cf-save{width:100%;margin-top:20px}
 .cf-del{width:100%;margin-top:9px;display:none;color:#ff8585;border-color:rgba(255,90,90,.4)}
 .cc-sig-thumb{height:30px;background:#fff;border-radius:5px;padding:2px 6px;vertical-align:middle}
-body.theme-light .client-card{background:#fff;border-color:#e2e2e2}
-body.theme-light .client-card .cc-name{color:#1a1a1a}
-body.theme-light .cf-in{background:#fff;border-color:#ccc;color:#1a1a1a}
-body.theme-light .cf-disc{background:#faf9f6;color:#444;border-color:#e2e2e2}
 
 /* ── PICKER ANIMATIONS ── */
 @property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
@@ -248,7 +241,7 @@ body.theme-light .cf-disc{background:#faf9f6;color:#444;border-color:#e2e2e2}
 .svc-mode-btn[data-mode="nail"] .m-word,.svc-mode-btn[data-pmode="nail"] .m-word{background-image:linear-gradient(90deg,#FF4FB0,#A24BFF,#22C3DD,#FF7AD9,#FF4FB0);background-size:240% auto;animation:fxColorMove var(--fxNailColor,11s) linear infinite,nailWave var(--fxNailWave,8s) ease-in-out infinite}
 .svc-mode-btn:not(.on){opacity:.5}
 .svc-mode-btn:not(.on) .m-word{filter:saturate(.55) brightness(.92)}
-.svc-mode-btn.on .m-word{filter:drop-shadow(0 0 10px rgba(255,210,110,.98))}
+.svc-mode-btn.on .m-word{filter:none}
 .svc-mode-btn::after{content:'';position:absolute;left:3px;right:3px;bottom:1px;height:4px;border-radius:4px;background:linear-gradient(90deg,var(--gold),#fff,var(--gold));background-size:200% auto;opacity:0;transform:scaleX(.3);transform-origin:center;transition:opacity .25s ease,transform .3s cubic-bezier(.3,1.5,.5,1)}
 .svc-mode-btn[data-mode="hair"]::after,.svc-mode-btn[data-pmode="hair"]::after{background:linear-gradient(90deg,#FFB800,#FF6FA3,#FFD24A,#FFB800);background-size:200% auto}
 .svc-mode-btn[data-mode="nail"]::after,.svc-mode-btn[data-pmode="nail"]::after{background:linear-gradient(90deg,#FF4FB0,#A24BFF,#22C3DD,#FF4FB0);background-size:200% auto}
@@ -525,7 +518,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 26</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 28</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -655,6 +648,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
         <button class="theme-btn fx-btn" data-fx="party" onclick="setFx('party',this)">Party</button>
       </div>
       <button class="cf-disc-edit" onclick="resetQuickPicks()" style="margin-top:14px"><i class="ti ti-rotate" style="font-size:13px"></i> Reset Quick Picks to defaults</button>
+      <button class="cf-disc-edit" onclick="forceUpdate()" style="margin-top:6px;display:block"><i class="ti ti-refresh" style="font-size:13px"></i> Force update to latest version</button>
     </div>
 
     <div class="setup-section">
@@ -1570,12 +1564,40 @@ calc();loadAll();
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js").then(function(reg){
     reg.update();
-    var reloaded=false;
+    // No auto-reload (it can loop & overheat). If a new version takes over, show a gentle banner.
+    var shown=false;
     navigator.serviceWorker.addEventListener("controllerchange",function(){
-      if(reloaded)return; reloaded=true; location.reload();
+      if(shown)return;shown=true;showUpdateBanner();
     });
   }).catch(function(e){console.log("SW error",e);});
 }
+function showUpdateBanner(){
+  if(document.getElementById('updBanner'))return;
+  var d=document.createElement('div');
+  d.id='updBanner';
+  d.style.cssText='position:fixed;left:12px;right:12px;bottom:16px;z-index:99999;background:var(--gold,#e3a008);color:#000;padding:13px 16px;border-radius:12px;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.5)';
+  d.innerHTML='<span>New version ready</span><button style="background:#000;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer">Refresh</button>';
+  d.querySelector('button').onclick=function(){location.reload();};
+  document.body.appendChild(d);
+}
+// Force a clean update: drop service worker + caches, then reload
+function forceUpdate(){
+  if(!confirm('Refresh the app to the latest version? This clears the local app cache (your saved data stays).'))return;
+  var done=function(){location.reload();};
+  try{
+    var jobs=[];
+    if('caches' in window){jobs.push(caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k);}));}));}
+    if(navigator.serviceWorker){jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister();}));}));}
+    Promise.all(jobs).then(done).catch(done);
+    setTimeout(done,1500);
+  }catch(e){done();}
+}
+// Idle pause for decorative animations (cuts CPU/heat when not interacting)
+var _idleT=null;
+function resetIdle(){document.body.classList.remove('anim-idle');if(_idleT)clearTimeout(_idleT);_idleT=setTimeout(function(){document.body.classList.add('anim-idle');},5000);}
+['pointerdown','touchstart','keydown','scroll','pointermove'].forEach(function(ev){window.addEventListener(ev,resetIdle,{passive:true});});
+document.addEventListener('visibilitychange',function(){if(document.hidden){document.body.classList.add('anim-idle');}else{resetIdle();}});
+resetIdle();
 
 
 // ── WALLPAPERS ──
