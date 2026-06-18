@@ -113,15 +113,16 @@ body.theme-light .svc-chip.sel{background:#fff8e0;border-color:var(--gold);color
 .svc-star{margin-left:6px;color:#555;font-size:14px;cursor:pointer}
 .svc-star.on{color:var(--gold)}
 .svc-star:hover{color:var(--gold)}
-.svc-more{position:relative;margin-top:14px;padding:10px 18px;border-radius:10px;border:none;background:#1a1a1a;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;isolation:isolate}
+.svc-more{position:relative;margin-top:14px;padding:10px 18px;border-radius:10px;border:none;background:#1a1a1a;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;isolation:isolate;animation:moreHue 16s linear infinite}
 .svc-more::before{content:'';position:absolute;inset:0;border-radius:10px;padding:2px;background:conic-gradient(from var(--ang),transparent 0deg,var(--gold) 60deg,#fff 95deg,var(--gold) 130deg,transparent 200deg,transparent 360deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;animation:moreSpin 2.6s linear infinite;z-index:-1}
 .svc-more .more-chev{color:var(--gold);font-size:15px}
 .svc-more .more-txt{background:linear-gradient(90deg,var(--gold) 0%,#fff 50%,var(--gold) 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:moreShimmer 2.6s linear infinite}
 @keyframes moreSpin{to{--ang:360deg}}
 @keyframes moreShimmer{to{background-position:-200% center}}
+@keyframes moreHue{to{filter:hue-rotate(360deg)}}
 body.theme-light .svc-more{background:#fff}
 @media (prefers-reduced-motion: reduce){
-  .svc-chip.sel,.svc-ghost.go,.svc-more::before,.svc-more .more-txt,#cCat.slot-hit{animation:none!important}
+  .svc-chip.sel,.svc-ghost.go,.svc-more,.svc-more::before,.svc-more .more-txt,#cCat.slot-hit{animation:none!important}
   .svc-more::before{background:var(--gold)}
   .svc-more .more-txt{-webkit-text-fill-color:var(--gold);color:var(--gold)}
 }
@@ -409,7 +410,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 14</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 15</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -1004,8 +1005,12 @@ function groupsForMode(m){return SERVICE_GROUPS.filter(function(g){return g.d===
 function jsq(n){return n.replace(/'/g,"\\'");}
 function chipHTML(name,icon,isFav){
   var safe=name.replace(/"/g,'&quot;');
-  var star=isFav?'ti-star-filled svc-star on':'ti-star svc-star';
-  return '<button type="button" class="svc-chip" data-name="'+safe+'" onclick="pickService(\''+jsq(name)+'\',this)"><i class="ti ti-'+(icon||'point')+'"></i>'+name+'<i class="ti '+star+'" onclick="event.stopPropagation();toggleFav(\''+jsq(name)+'\')"></i></button>';
+  if(isFav){
+    // Quick pick: tap fills the booking slot; ★ removes it back to More
+    return '<button type="button" class="svc-chip" data-name="'+safe+'" onclick="pickService(\''+jsq(name)+'\',this)"><i class="ti ti-'+(icon||'point')+'"></i>'+name+'<i class="ti ti-star-filled svc-star on" onclick="event.stopPropagation();demoteFav(\''+jsq(name)+'\')"></i></button>';
+  }
+  // More: tap promotes it up into Quick picks for future use
+  return '<button type="button" class="svc-chip svc-add" data-name="'+safe+'" onclick="promoteFav(\''+jsq(name)+'\',this)"><i class="ti ti-'+(icon||'point')+'"></i>'+name+'<i class="ti ti-star svc-star"></i></button>';
 }
 function buildServiceChips(){
   var favs=getFavorites();
@@ -1016,7 +1021,7 @@ function buildServiceChips(){
   var favHere=favs.filter(function(n){return modeNames[n];});
   var favRow=$('favRow');
   if(favRow){
-    favRow.innerHTML=favHere.length?favHere.map(function(n){return chipHTML(n,ICON_OF[n],true);}).join(''):'<div class="svc-empty">Tap the ☆ on any service under “More” to add it here.</div>';
+    favRow.innerHTML=favHere.length?favHere.map(function(n){return chipHTML(n,ICON_OF[n],true);}).join(''):'<div class="svc-empty">Tap any service under “More” to add it up here.</div>';
   }
   // More: this mode's services that are NOT already favorites (no repeats); skip empty groups
   var more=$('svcMore');
@@ -1033,33 +1038,44 @@ function buildServiceChips(){
   syncServiceChips();
 }
 function setMode(m){saveMode(m);buildServiceChips();}
-function pickService(name,el){
-  $('cCat').value=name;syncServiceChips();flyToSlot(el,name);
-}
-function flyToSlot(chipEl,name){
+function flyGhost(srcRect,tgtRect,name){
   try{
-    var input=$('cCat');if(!input)return;
-    var ir=input.getBoundingClientRect();
-    var cr=chipEl?chipEl.getBoundingClientRect():ir;
+    if(!srcRect||!tgtRect)return;
     var ghost=document.createElement('div');
     ghost.className='svc-ghost';ghost.textContent=name;
     document.body.appendChild(ghost);
-    ghost.style.left=cr.left+'px';ghost.style.top=cr.top+'px';
-    ghost.style.minWidth=cr.width+'px';ghost.style.height=cr.height+'px';
+    ghost.style.left=srcRect.left+'px';ghost.style.top=srcRect.top+'px';
+    ghost.style.minWidth=srcRect.width+'px';ghost.style.height=srcRect.height+'px';
     ghost.getBoundingClientRect();
-    var dx=(ir.left+16)-cr.left;
-    var dy=(ir.top+ir.height/2)-(cr.top+cr.height/2);
+    var dx=(tgtRect.left+16)-srcRect.left;
+    var dy=(tgtRect.top+tgtRect.height/2)-(srcRect.top+srcRect.height/2);
     ghost.style.setProperty('--dx',dx+'px');
     ghost.style.setProperty('--dy',dy+'px');
     ghost.classList.add('go');
     setTimeout(function(){if(ghost&&ghost.parentNode)ghost.parentNode.removeChild(ghost);},1450);
-    input.classList.remove('slot-hit');void input.offsetWidth;input.classList.add('slot-hit');
   }catch(e){}
 }
-function toggleFav(name){
+// Tap a Quick pick -> fill the booking slot (dances up into the Service field)
+function pickService(name,el){
+  var input=$('cCat');if(!input)return;
+  input.value=name;syncServiceChips();
+  if(el)flyGhost(el.getBoundingClientRect(),input.getBoundingClientRect(),name);
+  input.classList.remove('slot-hit');void input.offsetWidth;input.classList.add('slot-hit');
+}
+// Tap a More service -> promote it up into Quick picks (staged for future use)
+function promoteFav(name,el){
+  var favs=getFavorites();
+  if(favs.indexOf(name)===-1){favs.push(name);saveFavorites(favs);}
+  var src=el?el.getBoundingClientRect():null;
+  var favRow=$('favRow');var tgt=favRow?favRow.getBoundingClientRect():null;
+  buildServiceChips();
+  if(src&&tgt)flyGhost(src,tgt,name);
+}
+// Tap the ★ on a Quick pick -> send it back down to More
+function demoteFav(name){
   var favs=getFavorites();var i=favs.indexOf(name);
-  if(i>-1)favs.splice(i,1);else favs.push(name);
-  saveFavorites(favs);buildServiceChips();
+  if(i>-1){favs.splice(i,1);saveFavorites(favs);}
+  buildServiceChips();
 }
 function syncServiceChips(){
   var v=($('cCat').value||'').trim().toLowerCase();
