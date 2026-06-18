@@ -83,6 +83,16 @@ input,select,textarea,.setup-input{font-size:16px!important}
 .sc-pct{font-size:11px;color:#666;margin-bottom:6px}
 .sc-amt{font-size:26px;font-weight:700}
 .sc-s .sc-amt{color:#7eb8ff}.sc-m .sc-amt{color:#5ddb7c}
+/* Tap-to-enlarge earnings (comfortable reading) */
+#earnCard{cursor:pointer}
+#earnCard .ctitle,#earnCard .sc-lbl,#earnCard .sc-pct,#earnCard .sc-amt,#earnCard .box-lbl,#earnCard .tip-v,#earnCard .total-v{transition:font-size .28s ease}
+#earnCard.big-read .ctitle{font-size:15px}
+#earnCard.big-read .sc-lbl{font-size:14px}
+#earnCard.big-read .sc-pct{font-size:13px}
+#earnCard.big-read .sc-amt{font-size:36px}
+#earnCard.big-read .box-lbl{font-size:18px!important}
+#earnCard.big-read .tip-v{font-size:28px}
+#earnCard.big-read .total-v{font-size:32px}
 
 /* ROW BOXES */
 .row-box{margin-top:10px;border-radius:9px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
@@ -142,8 +152,48 @@ body.theme-light .price-cat{color:#b8860b;border-color:#e8e8e8}
 .price-in{width:104px;padding:8px 10px 8px 22px;background:#1a1a1a;border:1.5px solid #444;border-radius:8px;color:#fff;font-size:16px;font-weight:600;outline:none;text-align:right}
 .price-in:focus{border-color:var(--gold);background:#1e1e1e}
 body.theme-light .price-row{border-color:#eee}
-body.theme-light .price-name{color:#222}
-body.theme-light .price-in{background:#fff;border-color:#ccc;color:#1a1a1a}
+body.theme-light .price-name{color:#222}body.theme-light .price-in{background:#fff;border-color:#ccc;color:#1a1a1a}
+
+/* ── CLIENT CARDS ── */
+.client-list{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.client-card{background:#161616;border:1.5px solid #333;border-radius:11px;padding:13px 14px;cursor:pointer;transition:border-color .15s}
+.client-card:active{border-color:var(--gold)}
+.client-card .cc-name{font-size:15px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.client-card .cc-sub{font-size:12px;color:#999;margin-top:3px}
+.client-card .cc-flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.cc-flag{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.3px}
+.cc-flag.warn{background:rgba(255,90,90,.16);color:#ff8585;border:1px solid rgba(255,90,90,.4)}
+.cc-flag.ok{background:rgba(95,219,124,.14);color:#5ddb7c;border:1px solid rgba(95,219,124,.35)}
+.cc-flag.muted{background:#222;color:#999;border:1px solid #3a3a3a}
+.client-empty{text-align:center;color:#777;font-size:13px;padding:24px 10px;line-height:1.6}
+.cf-label{display:block;font-size:12px;color:#aaa;font-weight:600;margin:12px 0 5px}
+.cf-in{width:100%;padding:11px 12px;background:#1a1a1a;border:1.5px solid #444;border-radius:9px;color:#fff;font-size:16px;outline:none;font-family:inherit}
+.cf-in:focus{border-color:var(--gold);background:#1e1e1e}
+.cf-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cf-section{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:20px 0 4px;padding-bottom:6px;border-bottom:1.5px solid #2c2c2c}
+.cf-chk{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#ddd;cursor:pointer;margin-top:10px}
+.cf-chk input{width:19px;height:19px;accent-color:var(--gold);flex-shrink:0}
+.cf-seg{display:inline-flex;border:1.5px solid #444;border-radius:9px;overflow:hidden}
+.cf-seg-btn{padding:9px 12px;background:#1a1a1a;color:#aaa;border:none;font-size:12.5px;font-weight:700;cursor:pointer}
+.cf-seg-btn.on[data-res="none"]{background:rgba(95,219,124,.18);color:#5ddb7c}
+.cf-seg-btn.on[data-res="reaction"]{background:rgba(255,90,90,.18);color:#ff8585}
+.cf-checks{display:flex;flex-direction:column;gap:2px}
+.cf-cond{display:flex;align-items:center;gap:9px;font-size:13px;color:#ddd;cursor:pointer;padding:7px 0;border-bottom:1px solid #222}
+.cf-cond input{width:18px;height:18px;accent-color:#ff8585;flex-shrink:0}
+.cf-disc{background:#141414;border:1px solid #333;border-radius:9px;padding:12px;font-size:12px;color:#bbb;line-height:1.65;max-height:150px;overflow-y:auto;white-space:pre-wrap}
+.cf-disc-edit{margin-top:8px;background:none;border:none;color:var(--gold);font-size:12px;cursor:pointer;padding:4px 0;display:inline-flex;align-items:center;gap:5px}
+.cf-agree{margin-top:12px;font-weight:600;color:#fff}
+.sig-wrap{position:relative;margin-top:6px}
+.sig-pad{width:100%;height:150px;background:#fff;border:2px dashed #888;border-radius:10px;touch-action:none;display:block}
+.sig-clear{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);border:none;color:#fff;font-size:11px;font-weight:700;padding:5px 9px;border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.sig-line{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#bbb;font-size:11px;pointer-events:none;letter-spacing:.5px}
+.cf-save{width:100%;margin-top:20px}
+.cf-del{width:100%;margin-top:9px;display:none;color:#ff8585;border-color:rgba(255,90,90,.4)}
+.cc-sig-thumb{height:30px;background:#fff;border-radius:5px;padding:2px 6px;vertical-align:middle}
+body.theme-light .client-card{background:#fff;border-color:#e2e2e2}
+body.theme-light .client-card .cc-name{color:#1a1a1a}
+body.theme-light .cf-in{background:#fff;border-color:#ccc;color:#1a1a1a}
+body.theme-light .cf-disc{background:#faf9f6;color:#444;border-color:#e2e2e2}
 
 /* ── PICKER ANIMATIONS ── */
 @property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
@@ -445,7 +495,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 21</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 22</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -591,6 +641,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="gear-btn" onclick="openClients()" title="Client cards"><i class="ti ti-address-book"></i></button>
       <button class="gear-btn" onclick="openPrices()" title="Price book"><i class="ti ti-currency-dollar"></i></button>
       <button class="gear-btn" onclick="openSettings()" title="Settings"><i class="ti ti-settings"></i></button>
       <div class="sync-badge sync-loading" id="syncBadge"><span class="spinner"></span> Connecting...</div>
@@ -639,6 +690,76 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
     </div>
   </div>
 
+  <!-- CLIENT CARDS: LIST -->
+  <div class="modal-overlay" id="clientsModal">
+    <div class="modal">
+      <div class="modal-bar">
+        <span class="modal-title"><i class="ti ti-address-book" style="font-size:14px;vertical-align:-2px;margin-right:7px"></i>Client cards</span>
+        <button class="modal-close" onclick="closeClients()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input class="cf-in" id="clientSearch" type="text" placeholder="Search clients…" oninput="renderClientList()" style="margin-bottom:12px">
+        <button class="btn-print" onclick="newClient()"><i class="ti ti-user-plus" style="font-size:16px"></i>New client card</button>
+        <div id="clientList" class="client-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLIENT CARDS: FORM -->
+  <div class="modal-overlay" id="clientFormModal">
+    <div class="modal">
+      <div class="modal-bar">
+        <span class="modal-title"><i class="ti ti-user" style="font-size:14px;vertical-align:-2px;margin-right:7px"></i><span id="clientFormTitle">New client</span></span>
+        <button class="modal-close" onclick="closeClientForm()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="clId">
+        <label class="cf-label">Full name *</label>
+        <input class="cf-in" id="clName" type="text" placeholder="Client name">
+        <div class="cf-2col">
+          <div><label class="cf-label">Phone</label><input class="cf-in" id="clPhone" type="tel" placeholder="(555) 555-5555"></div>
+          <div><label class="cf-label">Date of birth</label><input class="cf-in" id="clDob" type="date"></div>
+        </div>
+        <label class="cf-label">Email</label>
+        <input class="cf-in" id="clEmail" type="email" placeholder="name@email.com">
+
+        <div class="cf-section" style="color:#5fd6c6;border-color:#5fd6c655">Sensitivity / patch test</div>
+        <label class="cf-chk"><input type="checkbox" id="clPatchDone"> Patch test performed</label>
+        <div class="cf-2col" style="margin-top:8px">
+          <div><label class="cf-label">Test date</label><input class="cf-in" id="clPatchDate" type="date"></div>
+          <div><label class="cf-label">Result</label>
+            <div class="cf-seg" id="clPatchResult">
+              <button type="button" class="cf-seg-btn on" data-res="none" onclick="setPatchRes('none')">No reaction</button>
+              <button type="button" class="cf-seg-btn" data-res="reaction" onclick="setPatchRes('reaction')">Reaction</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cf-section" style="color:#ff93a6;border-color:#ff93a655">Medical / conditions to know</div>
+        <div class="cf-checks" id="clConditions"></div>
+        <label class="cf-label">Allergies / medications</label>
+        <textarea class="cf-in" id="clMeds" rows="2" placeholder="e.g. PPD allergy, latex, Accutane…"></textarea>
+        <label class="cf-label">Other notes</label>
+        <textarea class="cf-in" id="clNotes" rows="2" placeholder="Anything else the stylist should know"></textarea>
+
+        <div class="cf-section" style="color:#ffc04d;border-color:#ffc04d55">Consent &amp; liability</div>
+        <div class="cf-disc" id="clDisc"></div>
+        <button type="button" class="cf-disc-edit" id="discEditBtn" onclick="editDisclaimer()"><i class="ti ti-pencil" style="font-size:13px"></i> Edit disclaimer text</button>
+        <label class="cf-chk cf-agree"><input type="checkbox" id="clAgree"> The client has read and agrees to the above.</label>
+
+        <div class="cf-section" style="color:#b79cff;border-color:#b79cff55">Client signature</div>
+        <div class="sig-wrap">
+          <canvas id="sigPad" class="sig-pad"></canvas>
+          <button type="button" class="sig-clear" onclick="clearSig()"><i class="ti ti-eraser" style="font-size:13px"></i> Clear</button>
+          <div class="sig-line">Sign above</div>
+        </div>
+
+        <button class="btn-save cf-save" onclick="saveClient()"><i class="ti ti-device-floppy" style="font-size:16px;vertical-align:-3px;margin-right:5px"></i>Save client card</button>
+        <button class="btn-cancel cf-del" id="clDelBtn" onclick="deleteClientConfirm()"><i class="ti ti-trash" style="font-size:15px;vertical-align:-2px;margin-right:5px"></i>Delete card</button>
+      </div>
+    </div>
+  </div>
+
   <div class="panel">
 
     <!-- BOOK -->
@@ -665,7 +786,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
         <label>Charge amount ($)</label><input type="number" id="cCharge" placeholder="0.00" oninput="calc()">
         <label>Tip received ($)</label><input type="number" id="cTip" placeholder="0.00" oninput="calc()">
       </div>
-      <div class="card">
+      <div class="card" id="earnCard" onclick="zoomEarnings()" title="Tap to enlarge">
         <div class="ctitle"><i class="ti ti-calculator"></i>Earnings breakdown</div>
         <div class="split-grid">
           <div class="sc sc-s"><div class="sc-lbl">MGM Salon</div><div class="sc-pct">40% of charge</div><div class="sc-amt" id="eSalon">$0</div></div>
@@ -1203,6 +1324,128 @@ function buildPriceList(){
 }
 function openPrices(){priceMode=getMode();document.querySelectorAll('#priceModal .svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.pmode===priceMode);});buildPriceList();$('priceModal').classList.add('open');document.body.classList.add('modal-open');}
 function closePrices(){$('priceModal').classList.remove('open');document.body.classList.remove('modal-open');applyAutoPrice();}
+var _earnZoomT=null;
+function zoomEarnings(){
+  var c=$('earnCard');if(!c)return;
+  c.classList.add('big-read');
+  if(_earnZoomT)clearTimeout(_earnZoomT);
+  _earnZoomT=setTimeout(function(){c.classList.remove('big-read');},3000);
+}
+
+// ── CLIENT CARDS ──
+var CLIENT_CONDITIONS=['Hair dye / PPD allergy','Latex allergy','Sensitive skin or scalp','Eczema / Psoriasis / Dermatitis','Open cuts or scalp irritation','Recent chemical service','Pregnant / breastfeeding','Rosacea / skin condition','Skin medication (e.g. Accutane)','Medical hair loss / chemotherapy','Prior reaction to salon products'];
+var DEFAULT_DISCLAIMER="I confirm the information I have provided is accurate and complete to the best of my knowledge.\n\nI understand that hair and beauty services are performed using professional skill and best effort, and that results can vary due to factors outside the stylist's control — including my hair's history, products previously used, and individual sensitivities.\n\nI agree to release the salon and stylist from liability for reactions, damage, or dissatisfaction arising from services rendered, except in cases of proven negligence. I understand that services performed are non-refundable.\n\nI consent to the service(s) being performed today.";
+var clPatchRes='none';var _editingSig='';
+var sigCtx=null,sigDrawing=false,sigHasInk=false;
+function escHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escAttr(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');}
+function getClients(){try{var a=JSON.parse(localStorage.getItem('cp_clients')||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
+function saveClients(a){try{localStorage.setItem('cp_clients',JSON.stringify(a));}catch(e){alert('Could not save — storage may be full.');}}
+function getDisclaimer(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return p.disclaimer||DEFAULT_DISCLAIMER;}catch(e){return DEFAULT_DISCLAIMER;}}
+function saveDisclaimer(t){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.disclaimer=t;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}}
+function openClients(){renderClientList();$('clientsModal').classList.add('open');document.body.classList.add('modal-open');}
+function closeClients(){$('clientsModal').classList.remove('open');document.body.classList.remove('modal-open');}
+function renderClientList(){
+  var q=(($('clientSearch')&&$('clientSearch').value)||'').toLowerCase();
+  var clients=getClients().slice().sort(function(a,b){return a.name.localeCompare(b.name);});
+  if(q)clients=clients.filter(function(c){return (c.name+' '+(c.phone||'')+' '+(c.email||'')).toLowerCase().indexOf(q)>-1;});
+  var el=$('clientList');if(!el)return;
+  if(!clients.length){el.innerHTML='<div class="client-empty">No client cards yet.<br>Tap “New client card” to create one.</div>';return;}
+  el.innerHTML=clients.map(function(c){
+    var flags='';
+    var hasMed=(c.conditions&&c.conditions.length)||c.meds;
+    var reaction=c.patchDone&&c.patchRes==='reaction';
+    if(reaction)flags+='<span class="cc-flag warn">⚠ Patch reaction</span>';
+    if(hasMed)flags+='<span class="cc-flag warn">Medical notes</span>';
+    flags+=c.signature?'<span class="cc-flag ok">Signed'+(c.signedDate?' '+c.signedDate:'')+'</span>':'<span class="cc-flag muted">Unsigned</span>';
+    var sub=[c.phone,c.email].filter(Boolean).join(' · ');
+    return '<div class="client-card" onclick="editClient(\''+c.id+'\')"><div class="cc-name">'+escHtml(c.name)+'</div>'+(sub?'<div class="cc-sub">'+escHtml(sub)+'</div>':'')+'<div class="cc-flags">'+flags+'</div></div>';
+  }).join('');
+}
+function buildConditionChecks(sel){
+  sel=sel||[];
+  $('clConditions').innerHTML=CLIENT_CONDITIONS.map(function(c){
+    var ck=sel.indexOf(c)>-1?'checked':'';
+    return '<label class="cf-cond"><input type="checkbox" data-cond="'+escAttr(c)+'" '+ck+'> '+c+'</label>';
+  }).join('');
+}
+function gatherConditions(){return [].slice.call(document.querySelectorAll('#clConditions input:checked')).map(function(i){return i.getAttribute('data-cond');});}
+function setPatchRes(r){clPatchRes=r;document.querySelectorAll('#clPatchResult .cf-seg-btn').forEach(function(b){b.classList.toggle('on',b.dataset.res===r);});}
+function renderDisclaimer(){var d=$('clDisc');if(d)d.textContent=getDisclaimer();}
+var discEditing=false;
+function editDisclaimer(){
+  var d=$('clDisc');var btn=$('discEditBtn');
+  if(!discEditing){
+    discEditing=true;
+    d.innerHTML='<textarea id="discEdit" class="cf-in" rows="10" style="font-size:13px">'+escHtml(getDisclaimer())+'</textarea>';
+    btn.innerHTML='<i class="ti ti-check" style="font-size:13px"></i> Save disclaimer text';
+  } else {
+    var t=$('discEdit');saveDisclaimer(t?t.value:getDisclaimer());
+    discEditing=false;renderDisclaimer();
+    btn.innerHTML='<i class="ti ti-pencil" style="font-size:13px"></i> Edit disclaimer text';
+  }
+}
+function initSigPad(){
+  var c=$('sigPad');if(!c)return;
+  var r=c.getBoundingClientRect();var dpr=window.devicePixelRatio||1;
+  c.width=Math.max(1,r.width*dpr);c.height=Math.max(1,r.height*dpr);
+  sigCtx=c.getContext('2d');sigCtx.scale(dpr,dpr);
+  sigCtx.lineWidth=2.4;sigCtx.lineCap='round';sigCtx.lineJoin='round';sigCtx.strokeStyle='#111';
+  sigHasInk=false;
+  function pos(e){var rr=c.getBoundingClientRect();var t=(e.touches&&e.touches[0])||e;return {x:t.clientX-rr.left,y:t.clientY-rr.top};}
+  function start(e){e.preventDefault();sigDrawing=true;var p=pos(e);sigCtx.beginPath();sigCtx.moveTo(p.x,p.y);}
+  function move(e){if(!sigDrawing)return;e.preventDefault();var p=pos(e);sigCtx.lineTo(p.x,p.y);sigCtx.stroke();sigHasInk=true;}
+  function end(){sigDrawing=false;}
+  c.onpointerdown=start;c.onpointermove=move;c.onpointerup=end;c.onpointerleave=end;
+  c.ontouchstart=start;c.ontouchmove=move;c.ontouchend=end;
+}
+function clearSig(){if(!sigCtx){return;}var c=$('sigPad');sigCtx.clearRect(0,0,c.width,c.height);sigHasInk=false;}
+function drawSavedSig(dataURL){if(!dataURL||!sigCtx)return;var img=new Image();img.onload=function(){var c=$('sigPad');var r=c.getBoundingClientRect();sigCtx.drawImage(img,0,0,r.width,r.height);sigHasInk=true;};img.src=dataURL;}
+function fillClientForm(c){
+  $('clId').value=c.id||'';
+  $('clName').value=c.name||'';$('clPhone').value=c.phone||'';$('clEmail').value=c.email||'';$('clDob').value=c.dob||'';
+  $('clPatchDone').checked=!!c.patchDone;$('clPatchDate').value=c.patchDate||'';setPatchRes(c.patchRes||'none');
+  buildConditionChecks(c.conditions||[]);
+  $('clMeds').value=c.meds||'';$('clNotes').value=c.notes||'';$('clAgree').checked=!!c.agreed;
+  _editingSig=c.signature||'';
+}
+function showClientForm(){$('clientFormModal').classList.add('open');document.body.classList.add('modal-open');discEditing=false;renderDisclaimer();$('discEditBtn').innerHTML='<i class="ti ti-pencil" style="font-size:13px"></i> Edit disclaimer text';setTimeout(function(){initSigPad();if(_editingSig)drawSavedSig(_editingSig);},90);}
+function newClient(){
+  fillClientForm({});$('clientFormTitle').textContent='New client';$('clDelBtn').style.display='none';
+  showClientForm();
+}
+function editClient(id){
+  var c=getClients().filter(function(x){return x.id===id;})[0];if(!c)return;
+  fillClientForm(c);$('clientFormTitle').textContent=c.name||'Client';$('clDelBtn').style.display='block';
+  showClientForm();
+}
+function closeClientForm(){$('clientFormModal').classList.remove('open');}
+function saveClient(){
+  var name=$('clName').value.trim();
+  if(!name){alert("Please enter the client's name.");return;}
+  var clients=getClients();
+  var id=$('clId').value||('c'+Date.now()+Math.floor(Math.random()*1000));
+  var i=clients.map(function(c){return c.id;}).indexOf(id);
+  var prev=i>-1?clients[i]:null;
+  var sig=sigHasInk?$('sigPad').toDataURL('image/png'):(_editingSig||'');
+  var today=new Date().toISOString().slice(0,10);
+  var obj={id:id,name:name,phone:$('clPhone').value.trim(),email:$('clEmail').value.trim(),dob:$('clDob').value,
+    patchDone:$('clPatchDone').checked,patchDate:$('clPatchDate').value,patchRes:clPatchRes,
+    conditions:gatherConditions(),meds:$('clMeds').value.trim(),notes:$('clNotes').value.trim(),
+    agreed:$('clAgree').checked,signature:sig,
+    signedDate:sig?((prev&&prev.signedDate)?prev.signedDate:today):'',
+    created:prev?(prev.created||Date.now()):Date.now(),updated:Date.now()};
+  if(i>-1)clients[i]=obj;else clients.push(obj);
+  saveClients(clients);
+  closeClientForm();renderClientList();
+}
+function deleteClientConfirm(){
+  var id=$('clId').value;if(!id)return;
+  if(!confirm('Delete this client card permanently?'))return;
+  var clients=getClients().filter(function(c){return c.id!==id;});
+  saveClients(clients);closeClientForm();renderClientList();
+}
+
 applyFx(getFx());
 buildServiceChips();
 calc();loadAll();
