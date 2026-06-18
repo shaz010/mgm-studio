@@ -86,13 +86,14 @@ input,select,textarea,.setup-input{font-size:16px!important}
 /* Tap-to-enlarge earnings (comfortable reading) */
 #earnCard{cursor:pointer}
 #earnCard .ctitle,#earnCard .sc-lbl,#earnCard .sc-pct,#earnCard .sc-amt,#earnCard .box-lbl,#earnCard .tip-v,#earnCard .total-v{transition:font-size .28s ease}
-#earnCard.big-read .ctitle{font-size:15px}
-#earnCard.big-read .sc-lbl{font-size:14px}
-#earnCard.big-read .sc-pct{font-size:13px}
-#earnCard.big-read .sc-amt{font-size:36px}
-#earnCard.big-read .box-lbl{font-size:18px!important}
-#earnCard.big-read .tip-v{font-size:28px}
-#earnCard.big-read .total-v{font-size:32px}
+#earnCard.big-read .ctitle{font-size:14px}
+#earnCard.big-read .sc-lbl{font-size:13px}
+#earnCard.big-read .sc-pct{font-size:12px}
+#earnCard.big-read .sc-amt{font-size:30px}
+#earnCard.big-read .tip-v{font-size:24px}
+#earnCard.big-read .total-rb{flex-wrap:wrap;row-gap:2px}
+#earnCard.big-read .total-rb .box-lbl{font-size:15px!important;width:100%}
+#earnCard.big-read .total-v{font-size:52px;width:100%;text-align:right;line-height:1.1}
 
 /* ROW BOXES */
 .row-box{margin-top:10px;border-radius:9px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
@@ -143,6 +144,12 @@ body.theme-light .svc-more::after{background:#fff}
 /* ── PRICE BOOK ── */
 .price-hint{font-size:12.5px;color:#999;line-height:1.6;margin-bottom:14px}
 .price-cat{font-size:14.5px;font-weight:800;color:var(--gold);letter-spacing:.2px;margin:20px 0 4px;padding-bottom:6px;border-bottom:1px solid #2c2c2c}
+.price-group{margin-bottom:6px}
+.price-cat-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:14.5px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;padding:13px 2px;border-bottom:1.5px solid #2c2c2c;user-select:none;-webkit-tap-highlight-color:transparent}
+.price-chev{font-size:18px;transition:transform .22s ease;opacity:.85}
+.price-cat-head.open .price-chev{transform:rotate(180deg)}
+.pc-count{display:inline-block;font-size:10px;font-weight:700;background:rgba(255,255,255,.13);color:inherit;border-radius:20px;padding:2px 8px;margin-left:7px;vertical-align:middle}
+.price-cat-body{padding-top:2px}
 .price-cat:first-child{margin-top:0}
 body.theme-light .price-cat{color:#b8860b;border-color:#e8e8e8}
 .price-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #222}
@@ -173,6 +180,20 @@ body.theme-light .price-name{color:#222}body.theme-light .price-in{background:#f
 .cf-section{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:20px 0 4px;padding-bottom:6px;border-bottom:1.5px solid #2c2c2c}
 .cf-chk{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#ddd;cursor:pointer;margin-top:10px}
 .cf-chk input{width:19px;height:19px;accent-color:var(--gold);flex-shrink:0}
+/* Big custom checkbox (reliable tap target on iOS) */
+.ck{display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:11px 2px;-webkit-tap-highlight-color:transparent;user-select:none}
+.ck input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.ck-box{flex:0 0 auto;width:27px;height:27px;border:2px solid #6a6a6a;border-radius:8px;background:#1a1a1a;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s}
+.ck-box::after{content:'';width:13px;height:7px;border-left:3px solid #000;border-bottom:3px solid #000;transform:rotate(-45deg) scale(0);transform-origin:center;transition:transform .15s ease;margin-top:-3px}
+.ck input:checked + .ck-box{background:var(--gold);border-color:var(--gold)}
+.ck input:checked + .ck-box::after{transform:rotate(-45deg) scale(1)}
+.ck-cond input:checked + .ck-box{background:#ff8585;border-color:#ff8585}
+.ck-txt{font-size:14px;color:#ddd;line-height:1.45;padding-top:3px}
+.ck-row{border-bottom:1px solid #222;padding:9px 2px}
+.ck-agree{margin-top:10px}
+.ck-agree .ck-txt{color:#fff;font-weight:600}
+body.theme-light .ck-box{background:#fff;border-color:#bbb}
+body.theme-light .ck-txt{color:#333}
 .cf-seg{display:inline-flex;border:1.5px solid #444;border-radius:9px;overflow:hidden}
 .cf-seg-btn{padding:9px 12px;background:#1a1a1a;color:#aaa;border:none;font-size:12.5px;font-weight:700;cursor:pointer}
 .cf-seg-btn.on[data-res="none"]{background:rgba(95,219,124,.18);color:#5ddb7c}
@@ -495,7 +516,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 22</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 24</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -724,7 +745,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
         <input class="cf-in" id="clEmail" type="email" placeholder="name@email.com">
 
         <div class="cf-section" style="color:#5fd6c6;border-color:#5fd6c655">Sensitivity / patch test</div>
-        <label class="cf-chk"><input type="checkbox" id="clPatchDone"> Patch test performed</label>
+        <label class="ck"><input type="checkbox" id="clPatchDone"><span class="ck-box"></span><span class="ck-txt">Patch test performed</span></label>
         <div class="cf-2col" style="margin-top:8px">
           <div><label class="cf-label">Test date</label><input class="cf-in" id="clPatchDate" type="date"></div>
           <div><label class="cf-label">Result</label>
@@ -745,7 +766,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
         <div class="cf-section" style="color:#ffc04d;border-color:#ffc04d55">Consent &amp; liability</div>
         <div class="cf-disc" id="clDisc"></div>
         <button type="button" class="cf-disc-edit" id="discEditBtn" onclick="editDisclaimer()"><i class="ti ti-pencil" style="font-size:13px"></i> Edit disclaimer text</button>
-        <label class="cf-chk cf-agree"><input type="checkbox" id="clAgree"> The client has read and agrees to the above.</label>
+        <label class="ck ck-agree"><input type="checkbox" id="clAgree"><span class="ck-box"></span><span class="ck-txt">The client has read and agrees to the above.</span></label>
 
         <div class="cf-section" style="color:#b79cff;border-color:#b79cff55">Client signature</div>
         <div class="sig-wrap">
@@ -1167,19 +1188,19 @@ function showTab(t){
 }
 // ── SERVICE PICKER ──
 const SERVICE_GROUPS=[
-  {c:'Cuts & Styling',d:'hair',s:[['Haircut','scissors'],['Cut & Style','scissors'],["Women's Cut",'scissors'],["Men's Cut",'user'],['Kids Cut','mood-kid'],['Bang Trim','cut'],['Blow Dry','wind'],['Silk Press','flame'],['Curls','wave-sine'],['Updo','crown'],['Special Occasion','sparkles'],['Bridal','heart'],['Braids','line'],['Roller Set','circle']]},
   {c:'Color',d:'hair',s:[['Color','palette'],['Root Touch-up','brush'],['Root Smudge','brush'],['All-Over Color','palette'],['Gray Coverage','palette'],["Men's Color",'palette'],['Vivid Color','diamond'],['Color Correction','palette'],['Toner / Gloss','droplet']]},
   {c:'Highlights',d:'hair',s:[['Highlights','sparkles'],['Partial Highlight','sparkles'],['Full Highlight','sparkles'],['Lowlights','sparkles'],['Balayage','sparkles'],['Foilage','sparkles'],['Ombré','color-swatch'],['Babylights','sparkles']]},
+  {c:'Cuts & Styling',d:'hair',s:[['Haircut','scissors'],['Cut & Style','scissors'],["Women's Cut",'scissors'],["Men's Cut",'user'],['Kids Cut','mood-kid'],['Bang Trim','cut'],['Blow Dry','wind'],['Silk Press','flame'],['Curls','wave-sine'],['Updo','crown'],['Special Occasion','sparkles'],['Bridal','heart'],['Braids','line'],['Roller Set','circle']]},
   {c:'Treatments',d:'hair',s:[['Treatment','flask'],['Deep Conditioning','droplet'],['Olaplex','flask'],['Scalp Treatment','massage'],['Keratin','flame'],['Brazilian Blowout','flame'],['Clarifying','droplet'],['Gloss / Shine','droplet']]},
   {c:'Texture',d:'hair',s:[['Perm','wave-sine'],['Relaxer','wave-sine'],['Permanent Straightening','wave-sine']]},
   {c:'Length & Volume',d:'hair',s:[['Extensions','plus'],['Tape-In','plus'],['Sew-In / Weave','plus'],['Fusion','plus']]},
+  {c:'Brows & Lashes',d:'hair',s:[['Brow Shaping','eye'],['Brow Wax','eye'],['Brow Tint','palette'],['Lash Lift','eye'],['Lash Extensions','sparkles'],['Lash Fill','sparkles']]},
+  {c:'Skin & Extras',d:'hair',s:[['Facial','mood-happy'],['Makeup','brush'],['Spray Tan','spray'],['Massage','massage']]},
+  {c:'Waxing',d:'hair',s:[['Face Wax','droplet'],['Lip / Chin Wax','droplet'],['Body Wax','droplet'],['Threading','needle']]},
   {c:"Men's Grooming",d:'hair',s:[['Beard Trim','mustache'],['Hot Towel Shave','cut'],['Line-up','cut'],['Fade','cut'],['Buzz Cut','cut'],['Head Shave','user'],['Mustache Trim','mustache']]},
   {c:'Nails — Hands',d:'nail',s:[['Manicure','hand-stop'],['Gel Manicure','hand-stop'],['Spa Manicure','hand-stop'],['Dip Powder','diamond'],['Polish Change','droplet']]},
   {c:'Nails — Feet',d:'nail',s:[['Pedicure','shoe'],['Gel Pedicure','shoe'],['Spa Pedicure','shoe']]},
-  {c:'Nails — Enhancements',d:'nail',s:[['Acrylic Full Set','diamond'],['Acrylic Fill','diamond'],['Gel-X Extensions','diamond'],['Builder Gel','diamond'],['Polygel','diamond'],['Overlay','diamond'],['Nail Art','star'],['French / Ombré','color-swatch'],['Nail Repair','tool'],['Removal / Soak-Off','eraser']]},
-  {c:'Brows & Lashes',d:'hair',s:[['Brow Shaping','eye'],['Brow Wax','eye'],['Brow Tint','palette'],['Lash Lift','eye'],['Lash Extensions','sparkles'],['Lash Fill','sparkles']]},
-  {c:'Waxing',d:'hair',s:[['Face Wax','droplet'],['Lip / Chin Wax','droplet'],['Body Wax','droplet'],['Threading','needle']]},
-  {c:'Skin & Extras',d:'hair',s:[['Facial','mood-happy'],['Makeup','brush'],['Spray Tan','spray'],['Massage','massage']]}
+  {c:'Nails — Enhancements',d:'nail',s:[['Acrylic Full Set','diamond'],['Acrylic Fill','diamond'],['Gel-X Extensions','diamond'],['Builder Gel','diamond'],['Polygel','diamond'],['Overlay','diamond'],['Nail Art','star'],['French / Ombré','color-swatch'],['Nail Repair','tool'],['Removal / Soak-Off','eraser']]}
 ];
 const DEFAULT_FAVES=['Haircut','Cut & Style',"Women's Cut","Men's Cut",'Kids Cut','Blow Dry','Color','Root Touch-up','Balayage','Highlights','Toner / Gloss','Treatment','Keratin','Updo','Beard Trim','Manicure','Gel Manicure','Spa Manicure','Pedicure','Gel Pedicure','Spa Pedicure','Acrylic Full Set','Acrylic Fill','Gel-X Extensions','Dip Powder','Polish Change','Nail Art','Removal / Soak-Off'];
 const ICON_OF=(function(){var m={};SERVICE_GROUPS.forEach(function(g){g.s.forEach(function(it){m[it[0]]=it[1];});});return m;})();
@@ -1313,14 +1334,23 @@ function buildPriceList(){
   var groups=SERVICE_GROUPS.filter(function(g){return g.d===priceMode||g.d==='both';});
   var html=groups.map(function(g){
     var items=g.s.slice().sort(function(a,b){return a[0].localeCompare(b[0]);});
+    var priced=items.filter(function(it){return prices[it[0]]!==undefined&&prices[it[0]]!==null&&prices[it[0]]!=='';}).length;
     var rows=items.map(function(it){
-      var n=it[0];var safe=n.replace(/"/g,'&quot;');
+      var n=it[0];
       var val=(prices[n]!==undefined&&prices[n]!==null)?prices[n]:'';
       return '<div class="price-row"><span class="price-name">'+n+'</span><span class="price-in-wrap"><input class="price-in" type="number" inputmode="decimal" placeholder="0" value="'+val+'" oninput="setPrice(\''+n.replace(/'/g,"\\'")+'\',this.value)"></span></div>';
     }).join('');
-    return '<div class="price-cat" style="color:'+catColorOf(g.c)+';border-color:'+catColorOf(g.c)+'55">'+g.c+'</div>'+rows;
+    var col=catColorOf(g.c);
+    var badge=priced?'<span class="pc-count">'+priced+'</span>':'';
+    return '<div class="price-group"><div class="price-cat-head" onclick="togglePriceCat(this)" style="color:'+col+';border-color:'+col+'66"><span>'+g.c+badge+'</span><i class="ti ti-chevron-down price-chev"></i></div><div class="price-cat-body" style="display:none">'+rows+'</div></div>';
   }).join('');
   var el=$('priceList');if(el)el.innerHTML=html;
+}
+function togglePriceCat(head){
+  var body=head.nextElementSibling;if(!body)return;
+  var open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  head.classList.toggle('open',!open);
 }
 function openPrices(){priceMode=getMode();document.querySelectorAll('#priceModal .svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.pmode===priceMode);});buildPriceList();$('priceModal').classList.add('open');document.body.classList.add('modal-open');}
 function closePrices(){$('priceModal').classList.remove('open');document.body.classList.remove('modal-open');applyAutoPrice();}
@@ -1366,7 +1396,7 @@ function buildConditionChecks(sel){
   sel=sel||[];
   $('clConditions').innerHTML=CLIENT_CONDITIONS.map(function(c){
     var ck=sel.indexOf(c)>-1?'checked':'';
-    return '<label class="cf-cond"><input type="checkbox" data-cond="'+escAttr(c)+'" '+ck+'> '+c+'</label>';
+    return '<label class="ck ck-cond ck-row"><input type="checkbox" data-cond="'+escAttr(c)+'" '+ck+'><span class="ck-box"></span><span class="ck-txt">'+c+'</span></label>';
   }).join('');
 }
 function gatherConditions(){return [].slice.call(document.querySelectorAll('#clConditions input:checked')).map(function(i){return i.getAttribute('data-cond');});}
