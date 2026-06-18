@@ -113,10 +113,10 @@ body.theme-light .svc-chip.sel{background:#fff8e0;border-color:var(--gold);color
 .svc-star{margin-left:6px;color:#555;font-size:14px;cursor:pointer}
 .svc-star.on{color:var(--gold)}
 .svc-star:hover{color:var(--gold)}
-.svc-more{position:relative;margin-top:14px;padding:10px 18px;border-radius:10px;border:none;background:#1a1a1a;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;isolation:isolate;animation:moreHue 16s linear infinite}
-.svc-more::before{content:'';position:absolute;inset:0;border-radius:10px;padding:2px;background:conic-gradient(from var(--ang),transparent 0deg,var(--gold) 60deg,#fff 95deg,var(--gold) 130deg,transparent 200deg,transparent 360deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;animation:moreSpin 2.6s linear infinite;z-index:-1}
+.svc-more{position:relative;margin-top:14px;padding:10px 18px;border-radius:10px;border:none;background:#1a1a1a;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;isolation:isolate;animation:moreHue var(--fxMoreHue,16s) linear infinite}
+.svc-more::before{content:'';position:absolute;inset:0;border-radius:10px;padding:2px;background:conic-gradient(from var(--ang),transparent 0deg,var(--gold) 60deg,#fff 95deg,var(--gold) 130deg,transparent 200deg,transparent 360deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;animation:moreSpin var(--fxMoreSpin,2.6s) linear infinite;z-index:-1}
 .svc-more .more-chev{color:var(--gold);font-size:15px}
-.svc-more .more-txt{background:linear-gradient(90deg,var(--gold) 0%,#fff 50%,var(--gold) 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:moreShimmer 2.6s linear infinite}
+.svc-more .more-txt{background:linear-gradient(90deg,var(--gold) 0%,#fff 50%,var(--gold) 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:moreShimmer var(--fxMoreSpin,2.6s) linear infinite}
 @keyframes moreSpin{to{--ang:360deg}}
 @keyframes moreShimmer{to{background-position:-200% center}}
 @keyframes moreHue{to{filter:hue-rotate(360deg)}}
@@ -145,11 +145,22 @@ body.theme-light .svc-more{background:#fff}
 #cCat.slot-hit{animation:slotHit 1s ease}
 @keyframes slotHit{0%{box-shadow:0 0 0 0 rgba(255,184,0,0)}28%{box-shadow:0 0 0 3px rgba(255,184,0,.4);border-color:var(--gold)}100%{box-shadow:0 0 0 0 rgba(255,184,0,0)}}
 .svc-mode{display:inline-flex;border:1.5px solid #444;border-radius:10px;overflow:hidden;margin-bottom:4px}
-.svc-mode-btn{padding:9px 24px;background:#1a1a1a;color:#bbb;border:none;font-size:13.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.svc-mode-btn{position:relative;padding:9px 24px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55);background:linear-gradient(120deg,#E8527A,#9966DD,#2299DD,#22AA66,#E8527A);background-size:300% 300%;animation:modePulse var(--fxModeDur,9s) ease infinite,modeHue var(--fxHueDur,18s) linear infinite}
 .svc-mode-btn i{font-size:15px}
-.svc-mode-btn.on{background:var(--gold-dim);color:var(--gold)}
-body.theme-light .svc-mode-btn{background:#fff;color:#888}
-body.theme-light .svc-mode-btn.on{background:#fff8e0;color:#aa7700}
+.svc-mode-btn:not(.on){opacity:.45}
+.svc-mode-btn.on{box-shadow:inset 0 0 0 2px rgba(255,255,255,.85)}
+@keyframes modePulse{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes modeHue{to{filter:hue-rotate(360deg)}}
+/* FX intensity presets (set via Settings) */
+body.fx-gentle{--fxModeDur:11s;--fxHueDur:22s;--fxMoreSpin:3.4s;--fxMoreHue:22s}
+body.fx-lively{--fxModeDur:6s;--fxHueDur:12s;--fxMoreSpin:1.8s;--fxMoreHue:11s}
+body.fx-party{--fxModeDur:3s;--fxHueDur:6s;--fxMoreSpin:1s;--fxMoreHue:5s}
+body.fx-off .svc-mode-btn,body.fx-off .svc-more,body.fx-off .svc-more::before,body.fx-off .svc-more .more-txt{animation:none!important}
+body.fx-off .svc-mode-btn{background:#1a1a1a!important;color:#bbb!important;opacity:1!important;text-shadow:none!important;box-shadow:none!important}
+body.fx-off .svc-mode-btn.on{background:var(--gold-dim)!important;color:var(--gold)!important}
+body.fx-off .svc-more::before{background:var(--gold)!important}
+body.fx-off .svc-more .more-txt{-webkit-text-fill-color:var(--gold)!important;color:var(--gold)!important}
+body.theme-light.fx-off .svc-mode-btn{background:#fff!important;color:#888!important}
 
 /* BUTTONS */
 .btn-row{display:flex;gap:9px;margin-top:14px}
@@ -410,7 +421,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 15</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 16</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -528,6 +539,16 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
       <div class="wp-swatch" data-wp="emerald" onclick="selWP(this,'emerald')" style="background:linear-gradient(135deg,#001208,#0d5a2a)" title="Emerald"></div>
       <div class="wp-swatch" data-wp="rosegold" onclick="selWP(this,'rosegold')" style="background:linear-gradient(135deg,#1a0610,#5a3018)" title="Rose gold"></div>
       <div class="wp-swatch" data-wp="grid" onclick="selWP(this,'grid')" style="background:#0a0a0a;background-image:linear-gradient(rgba(120,180,255,.25) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.25) 1px,transparent 1px);background-size:8px 8px" title="Grid"></div>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Fun FX ✨</div>
+      <div class="theme-grid" id="fxGrid" style="grid-template-columns:repeat(4,1fr)">
+        <button class="theme-btn fx-btn" data-fx="off" onclick="setFx('off',this)">Off</button>
+        <button class="theme-btn fx-btn" data-fx="gentle" onclick="setFx('gentle',this)">Gentle</button>
+        <button class="theme-btn fx-btn" data-fx="lively" onclick="setFx('lively',this)">Lively</button>
+        <button class="theme-btn fx-btn" data-fx="party" onclick="setFx('party',this)">Party</button>
       </div>
     </div>
 
@@ -1089,6 +1110,12 @@ function toggleMore(){
   m.style.display=open?'none':'block';
   b.innerHTML=open?'<i class="ti ti-chevron-down more-chev"></i> <span class="more-txt">More services</span>':'<i class="ti ti-chevron-up more-chev"></i> <span class="more-txt">Hide services</span>';
 }
+function getFx(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return p.fx||'gentle';}catch(e){return 'gentle';}}
+function saveFx(fx){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.fx=fx;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.fx=fx;}
+function applyFx(fx){document.body.classList.remove('fx-off','fx-gentle','fx-lively','fx-party');document.body.classList.add('fx-'+(fx||'gentle'));}
+function setFx(fx,btn){saveFx(fx);applyFx(fx);if(btn){var g=btn.parentNode;if(g)g.querySelectorAll('.fx-btn').forEach(function(b){b.classList.remove('sel');});btn.classList.add('sel');}}
+function markFx(){var fx=getFx();document.querySelectorAll('#fxGrid .fx-btn').forEach(function(b){b.classList.toggle('sel',b.dataset.fx===fx);});}
+applyFx(getFx());
 buildServiceChips();
 calc();loadAll();
 </script>
@@ -1208,7 +1235,7 @@ function openSettings(){
   if(si) si.value = prefs.salon||'';
   if(ri) ri.value = prefs.rate||60;
   const panel = document.getElementById('settingsPanel');
-  if(panel){ panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); }
+  if(panel){ panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); }
 }
 
 function closeSettings(){
