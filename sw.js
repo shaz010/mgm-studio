@@ -1,5 +1,5 @@
 // CommissionPro service worker — network-first so the app always updates.
-const CACHE = 'commissionpro-v14';
+const CACHE = 'commissionpro-v15';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png'];
 
 // Install: pre-cache the shell, take over immediately.
