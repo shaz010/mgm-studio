@@ -14,7 +14,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html{overflow-x:hidden;width:100%;-webkit-text-size-adjust:100%}
+html{overflow-x:hidden;width:100%;-webkit-text-size-adjust:100%;background:#0a0a0a}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#f0f0f0;min-height:100vh;overflow-x:hidden;width:100%;max-width:100%;touch-action:pan-y}
 :root{
   --bg:#0a0a0a;
@@ -397,8 +397,18 @@ td{padding:12px 10px;vertical-align:middle}
 /* ── THEMES ── */
 body.theme-light{
   --bg:#f5f5f0;--bg2:#ffffff;--bg3:#eeede8;--border:#ddddd8;
-  --text:#1a1a1a;--muted:#666;--bg-input:#fff;--border-input:#ccc;
+  --text:#1a1a1a;--muted:#4a4a4a;--text2:#333333;--bg-input:#fff;--border-input:#ccc;
 }
+body.theme-light .ctitle{color:#3a3a3a}
+body.theme-light .svc-cat{color:#3a3a3a}
+body.theme-light .box-lbl{color:#333}
+body.theme-light input::placeholder,body.theme-light textarea::placeholder{color:#8a8a8a}
+body.theme-light .calc-hint{color:#444}
+body.theme-light .sc-pct{color:#555}
+body.theme-light .sum-lbl{color:#555}
+body.theme-light .setup-label{color:#444}
+body.theme-light .topbar-sub{color:#666}
+body.theme-light .qp-hint{background:#e6e6e0;color:#555}
 body.theme-light .app-shell{background:#f5f5f0}
 body.theme-light .panel{background:#fff;border-color:#ddd}
 body.theme-light .card{background:#f8f8f4;border-color:#ddd}
@@ -436,7 +446,7 @@ body.theme-light .mi-month{color:#1a1a1a}
 body.theme-light .mi-appts{color:#888}
 body.theme-light .calc-hint{background:#f0f0ec;border-color:#ddd;color:#666}
 body.theme-light .edit-banner{background:#fff8e0;border-color:#ddcc66;color:#aa7700}
-body.theme-light .week-header{border-color:#ddd;color:#888}
+body.theme-light .week-header{border-color:#ddd;color:#555}
 body.theme-light thead tr{border-color:#ddd}
 body.theme-light th{color:#888}
 
@@ -518,7 +528,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 28</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 29</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -1277,7 +1287,7 @@ function initFavDrag(){
     dragState={chip:chip,sx:e.clientX,sy:e.clientY,dragging:false,clone:null,pid:e.pointerId};
     try{row.setPointerCapture(e.pointerId);}catch(_){}
   });
-  row.addEventListener('pointermove',function(e){
+  function onMove(e){
     if(!dragState)return;
     var dx=e.clientX-dragState.sx,dy=e.clientY-dragState.sy;
     if(!dragState.dragging){
@@ -1291,7 +1301,7 @@ function initFavDrag(){
       dragState.clone=clone;dragState.offX=dragState.sx-r.left;dragState.offY=dragState.sy-r.top;
       ch.classList.add('chip-placeholder');
     }
-    e.preventDefault();
+    if(e.cancelable)e.preventDefault();
     var clone=dragState.clone;
     clone.style.left=(e.clientX-dragState.offX)+'px';
     clone.style.top=(e.clientY-dragState.offY)+'px';
@@ -1304,17 +1314,24 @@ function initFavDrag(){
       if(e.clientX<tr.left+tr.width/2)row.insertBefore(dragState.chip,tgt);
       else row.insertBefore(dragState.chip,tgt.nextSibling);
     }
-  });
+  }
   function endDrag(){
     if(!dragState)return;
     var was=dragState.dragging;
-    if(dragState.clone&&dragState.clone.parentNode)dragState.clone.parentNode.removeChild(dragState.clone);
+    cleanupDragClones();
     if(dragState.chip)dragState.chip.classList.remove('chip-placeholder');
     if(was){commitFavOrder();_suppressClick=true;setTimeout(function(){_suppressClick=false;},60);}
     dragState=null;
   }
-  row.addEventListener('pointerup',endDrag);
-  row.addEventListener('pointercancel',endDrag);
+  // Listen on window so an interrupted/edge gesture can't strand the ghost
+  window.addEventListener('pointermove',onMove,{passive:false});
+  window.addEventListener('pointerup',endDrag);
+  window.addEventListener('pointercancel',endDrag);
+  window.addEventListener('blur',endDrag);
+}
+function cleanupDragClones(){
+  var c=document.querySelectorAll('.chip-drag-clone');for(var i=0;i<c.length;i++){if(c[i].parentNode)c[i].parentNode.removeChild(c[i]);}
+  var ph=document.querySelectorAll('.chip-placeholder');for(var j=0;j<ph.length;j++)ph[j].classList.remove('chip-placeholder');
 }
 function resetQuickPicks(){
   if(!confirm('Reset your Quick Picks to the default set and order?'))return;
@@ -1603,10 +1620,16 @@ resetIdle();
 // ── WALLPAPERS ──
 const WP_LIST = ['none','starfield','nebula','aurora','galaxy','cosmos','meteor','ocean','ember','sunset','neon','plasma','midnight','emerald','rosegold','grid'];
 
+function syncRootBg(){
+  var wp=window.CURRENT_WP||'none';
+  var light=document.body.classList.contains('theme-light');
+  document.documentElement.style.background = (wp&&wp!=='none') ? '#070710' : (light?'#f5f5f0':'#0a0a0a');
+}
 function applyWallpaper(wp){
   WP_LIST.forEach(w => document.body.classList.remove('wp-'+w));
   if(wp && wp!=='none') document.body.classList.add('wp-'+wp);
   window.CURRENT_WP = wp||'none';
+  syncRootBg();
 }
 
 function selWP(el, wp){
@@ -1648,6 +1671,7 @@ function applyTheme(theme, accent){
     body.classList.add('theme-'+(theme||'dark'));
   }
   body.classList.add('accent-'+(accent||'gold'));
+  if(typeof syncRootBg==='function')syncRootBg();
 }
 function selThemeS(theme, btn){
   if(btn){ document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
