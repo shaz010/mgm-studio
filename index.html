@@ -661,15 +661,15 @@ body.theme-light #luminaLayer{display:none!important}
 @media (prefers-reduced-motion: reduce){#luminaLayer .lm-blob,#luminaLayer .lm-stars,#luminaLayer .lm-blobwrap{animation:none!important}#luminaLayer .lm-comet,#luminaLayer .lm-fin{display:none}}
 
 /* ── EYE REST: deep 670nm-red starburst + 20-20-20 cue ── */
-#eyeRest{position:fixed;inset:0;z-index:9000;pointer-events:none;display:none;align-items:center;justify-content:center}
+#eyeRest{position:fixed;inset:0;z-index:9000;pointer-events:none;display:none;align-items:center;justify-content:center;--erC1:#ff9a9a;--erC2:#ff2424;--erC3:rgba(235,0,18,.78);--erG:rgba(255,40,40,.6)}
 #eyeRest.on{display:flex;background:#000}
-#eyeRest .er-ring{position:absolute;left:50%;top:50%;border-radius:50%;will-change:transform,opacity;opacity:0;border:3px solid rgba(255,40,40,.9);box-shadow:0 0 26px rgba(255,30,30,.7),inset 0 0 18px rgba(255,60,60,.4)}
+#eyeRest .er-ring{position:absolute;left:50%;top:50%;border-radius:50%;will-change:transform,opacity;opacity:0;border:3px solid var(--erC2);box-shadow:0 0 26px var(--erG),inset 0 0 18px var(--erG)}
 #eyeRest .er-veil{position:absolute;inset:0;background:#000;opacity:0;will-change:opacity}
 #eyeRest .er-rays{position:absolute;left:50%;top:50%;width:0;height:0;will-change:transform,opacity;filter:saturate(1.25) brightness(1.15)}
 #eyeRest .er-ray{position:absolute;left:0;top:0;width:80vmax;height:5px;transform-origin:0 50%;border-radius:5px;
-  background:linear-gradient(90deg,rgba(255,120,120,1) 0%,rgba(255,40,40,1) 36%,rgba(235,0,18,.78) 68%,rgba(170,0,12,0) 100%);box-shadow:0 0 8px rgba(255,40,40,.6)}
+  background:linear-gradient(90deg,var(--erC1) 0%,var(--erC2) 36%,var(--erC3) 68%,transparent 100%);box-shadow:0 0 8px var(--erG)}
 #eyeRest .er-core{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;will-change:transform,opacity;opacity:0;
-  background:radial-gradient(circle,#fff 0%,#ff9a9a 26%,#ff2424 54%,rgba(190,0,14,0) 80%);box-shadow:0 0 40px rgba(255,40,40,.7)}
+  background:radial-gradient(circle,#fff 0%,var(--erC1) 26%,var(--erC2) 54%,transparent 80%);box-shadow:0 0 40px var(--erG)}
 #eyeRest .er-msg{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);text-align:center;opacity:0;will-change:opacity;width:84%;max-width:420px}
 #eyeRest .er-big{font-size:21px;font-weight:700;color:#ffdada;letter-spacing:.3px}
 #eyeRest .er-sub{font-size:14px;color:#ffb4b4;margin-top:6px;line-height:1.5}
@@ -683,7 +683,7 @@ body.theme-light #luminaLayer{display:none!important}
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 49</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 50</div>
 
 <div id="luminaLayer" aria-hidden="true">
   <div class="lm-blobwrap"><div class="lm-blob lm-b1"></div><div class="lm-blob lm-b2"></div><div class="lm-blob lm-b3"></div><div class="lm-blob lm-b4"></div></div>
@@ -849,6 +849,15 @@ body.theme-light #luminaLayer{display:none!important}
 
     <div class="setup-section">
       <div class="setup-section-title">Eye rest 👁️</div>
+      <label class="setup-label" style="margin-top:0">Light colour</label>
+      <div class="theme-grid" id="erColorGrid" style="grid-template-columns:repeat(5,1fr);gap:6px">
+        <button class="theme-btn erc-btn" data-v="red" onclick="setErColor('red',this)" style="font-size:11px;padding:9px 4px">Red</button>
+        <button class="theme-btn erc-btn" data-v="amber" onclick="setErColor('amber',this)" style="font-size:11px;padding:9px 4px">Amber</button>
+        <button class="theme-btn erc-btn" data-v="yellow" onclick="setErColor('yellow',this)" style="font-size:11px;padding:9px 4px">Yellow</button>
+        <button class="theme-btn erc-btn" data-v="green" onclick="setErColor('green',this)" style="font-size:11px;padding:9px 4px">Green</button>
+        <button class="theme-btn erc-btn" data-v="cycle" onclick="setErColor('cycle',this)" style="font-size:11px;padding:9px 4px">Cycle</button>
+      </div>
+      <div style="font-size:11px;color:#888;margin:6px 0 4px;line-height:1.5">Deep red (~660nm) is the closest to the most-studied wavelength.</div>
       <button class="cf-disc-edit" onclick="closeSettings();eyeRestFull()" style="margin-top:2px;color:#e2483c;border-color:#e2483c55"><i class="ti ti-eye" style="font-size:14px"></i> Rest my eyes (22s)</button>
       <div style="font-size:11.5px;color:#888;margin-top:8px;line-height:1.5">A calming red starburst plus a 20-second look-into-the-distance break. Also pops when you save a booking or get paid.</div>
     </div>
@@ -1976,7 +1985,7 @@ function openSettings(){
   if(si) si.value = prefs.salon||'';
   if(ri) ri.value = prefs.rate||60;
   const panel = document.getElementById('settingsPanel');
-  if(panel){ panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); }
+  if(panel){ panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); }
 }
 
 function closeSettings(){
@@ -2002,6 +2011,16 @@ function saveSettings(){
 
 // ── EYE REST engine: deep 670nm-red starburst + 22s rest cue ──
 var ER={built:false,active:false};
+var ER_COLORS={
+  red:   {c1:'#ff9a9a',c2:'#ff2424',c3:'rgba(235,0,18,.78)',g:'rgba(255,40,40,.6)'},
+  amber: {c1:'#ffd29a',c2:'#ff9e2c',c3:'rgba(220,120,0,.72)',g:'rgba(255,150,30,.55)'},
+  yellow:{c1:'#fff0b0',c2:'#ffd23c',c3:'rgba(220,170,0,.7)',g:'rgba(255,200,40,.5)'},
+  green: {c1:'#b6f5cf',c2:'#36d07a',c3:'rgba(0,150,80,.7)',g:'rgba(40,210,120,.5)'}
+};
+var ER_ORDER=['red','amber','yellow','green'];
+function erSetColor(key){var c=ER_COLORS[key]||ER_COLORS.red;var el=document.getElementById('eyeRest');if(!el)return;el.style.setProperty('--erC1',c.c1);el.style.setProperty('--erC2',c.c2);el.style.setProperty('--erC3',c.c3);el.style.setProperty('--erG',c.g);}
+function setErColor(key,btn){prefs.erColor=key;savePrefsToStorage();if(key!=='cycle')erSetColor(key);if(btn){btn.parentNode.querySelectorAll('.erc-btn').forEach(function(x){x.classList.remove('sel');});btn.classList.add('sel');}}
+function markErColor(){var v=prefs.erColor||'red';document.querySelectorAll('.erc-btn').forEach(function(x){x.classList.toggle('sel',x.dataset.v===v);});}
 var erReduce=window.matchMedia('(prefers-reduced-motion: reduce)');
 function erBuild(){
   if(ER.built) return;
@@ -2013,6 +2032,7 @@ function erBuild(){
 // one calm breath: gentle fade-in -> bloom rays+rings+core outward -> collapse back in -> fade. no spin.
 function erBreath(){
   erBuild();
+  if(ER.cycling){ erSetColor(ER_ORDER[ER.cycIdx%ER_ORDER.length]); ER.cycIdx++; }
   var core=document.getElementById('erCore'),wrap=document.getElementById('erRays');
   var big=Math.max(innerWidth,innerHeight), ringMax=big/60*1.1;
   var cycle=4200+Math.random()*1400;                 // calmest: ~4.2-5.6s per breath
@@ -2048,6 +2068,7 @@ function eyeBloom(){
   var rest=document.getElementById('eyeRest'),msg=document.getElementById('erMsg');
   if(!rest||ER.active) return;
   ER.active=true; rest.classList.add('on'); rest.style.pointerEvents='none'; if(msg) msg.style.opacity='0';
+  ER.cycling=false; erSetColor(prefs.erColor&&prefs.erColor!=='cycle'?prefs.erColor:'red');
   var cyc=erReduce.matches?1400:erBreath();
   setTimeout(function(){ rest.classList.remove('on'); ER.active=false; if(msg) msg.style.opacity=''; }, cyc*0.72);
 }
@@ -2056,6 +2077,7 @@ function eyeRestFull(){
   var rest=document.getElementById('eyeRest'),msg=document.getElementById('erMsg'),count=document.getElementById('erCount');
   if(!rest||ER.active) return;
   ER.active=true; rest.classList.add('on'); rest.style.pointerEvents='auto'; if(msg) msg.style.opacity='';
+  ER.cycling=(prefs.erColor==='cycle'); ER.cycIdx=0; if(!ER.cycling) erSetColor(prefs.erColor||'red');
   function endRest(){ if(!ER.active) return;
     if(ER._iv){clearInterval(ER._iv);ER._iv=null;} if(ER._bt){clearTimeout(ER._bt);ER._bt=null;}
     if(msg) msg.animate([{opacity:1},{opacity:0}],{duration:600,fill:'forwards'});
