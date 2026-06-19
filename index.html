@@ -137,7 +137,8 @@ body.theme-light .svc-chip.sel{background:#fff8e0;border-color:var(--gold);color
 /* Idle pause: stop decorative motion when the user isn't interacting (saves battery/heat) */
 body.anim-idle .m-word,body.anim-idle .svc-more::before,body.anim-idle .svc-more .more-txt,body.anim-idle .svc-mode-btn.on::after,body.anim-idle .svc-chip.sel{animation-play-state:paused!important}
 body.theme-light .svc-more{background:#fff}
-body.theme-light .svc-more .more-txt{background:linear-gradient(90deg,#8a5a00 0%,#e0a000 50%,#8a5a00 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;font-weight:800}
+body.theme-light .svc-more .more-chev{color:#7a4f00}
+body.theme-light .svc-more .more-txt{background:linear-gradient(90deg,#4a3000 0%,#b87400 50%,#4a3000 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;font-weight:800}
 body.theme-light .svc-more::after{background:#fff}
 @media (prefers-reduced-motion: reduce){
   .svc-chip.sel,.svc-ghost.go,.svc-more,.svc-more::before,.svc-more .more-txt,.svc-mode-btn .m-word,.svc-mode-btn::after,#cCat.slot-hit{animation:none!important}
@@ -146,7 +147,7 @@ body.theme-light .svc-more::after{background:#fff}
 }
 .svc-empty{font-size:12px;color:#777;padding:4px 2px}
 .qp-hint{font-size:9.5px;font-weight:600;color:#777;text-transform:none;letter-spacing:0;background:#222;padding:2px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:3px}
-#favRow .svc-chip{touch-action:none}
+#favRow .svc-chip{touch-action:pan-y}
 #favRow .svc-chip.chip-placeholder{opacity:.32}
 .chip-drag-clone{box-shadow:0 10px 24px rgba(0,0,0,.55)!important;transform:scale(1.06);border-color:var(--gold)!important}
 
@@ -529,7 +530,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 30</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 31</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -818,7 +819,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
             <button type="button" class="svc-mode-btn on" data-mode="hair" onclick="setMode('hair')"><span class="m-word">Hair</span></button>
             <button type="button" class="svc-mode-btn" data-mode="nail" onclick="setMode('nail')"><span class="m-word">Nail</span></button>
           </div>
-          <div class="svc-cat" style="display:flex;align-items:center;gap:7px">Quick picks <span class="qp-hint"><i class="ti ti-arrows-move" style="font-size:11px;vertical-align:-1px"></i> drag to arrange</span></div>
+          <div class="svc-cat" style="display:flex;align-items:center;gap:7px">Quick picks <span class="qp-hint"><i class="ti ti-arrows-move" style="font-size:11px;vertical-align:-1px"></i> hold &amp; drag to arrange</span></div>
           <div class="svc-row" id="favRow"></div>
           <button type="button" class="svc-more" id="svcMoreBtn" onclick="toggleMore()"><i class="ti ti-chevron-down more-chev"></i> <span class="more-txt">More services</span></button>
           <div id="svcMore" style="display:none"></div>
@@ -1281,28 +1282,36 @@ function commitFavOrder(){
 }
 function initFavDrag(){
   var row=$('favRow');if(!row||row._dragInit)return;row._dragInit=true;
+  var ARM_MS=300, MOVE_CANCEL=10;
   row.addEventListener('pointerdown',function(e){
     var chip=e.target.closest&&e.target.closest('.svc-chip');
     if(!chip||chip.parentNode!==row)return;
     if(e.target.closest('.svc-star'))return;
-    dragState={chip:chip,sx:e.clientX,sy:e.clientY,dragging:false,clone:null,pid:e.pointerId};
-    try{row.setPointerCapture(e.pointerId);}catch(_){}
+    dragState={chip:chip,sx:e.clientX,sy:e.clientY,armed:false,clone:null,pid:e.pointerId,timer:null};
+    // Arm a drag only after a brief hold — a quick swipe scrolls the page instead
+    dragState.timer=setTimeout(armDrag,ARM_MS);
   });
+  function armDrag(){
+    if(!dragState||dragState.armed)return;
+    dragState.armed=true;
+    try{row.setPointerCapture(dragState.pid);}catch(_){}
+    var ch=dragState.chip,r=ch.getBoundingClientRect();
+    var clone=ch.cloneNode(true);
+    clone.classList.add('chip-drag-clone');
+    clone.style.cssText='position:fixed;left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;z-index:9999;pointer-events:none;margin:0';
+    document.body.appendChild(clone);
+    dragState.clone=clone;dragState.offX=dragState.sx-r.left;dragState.offY=dragState.sy-r.top;
+    ch.classList.add('chip-placeholder');
+    if(navigator.vibrate){try{navigator.vibrate(12);}catch(_){}}
+  }
   function onMove(e){
     if(!dragState)return;
     var dx=e.clientX-dragState.sx,dy=e.clientY-dragState.sy;
-    if(!dragState.dragging){
-      if(Math.abs(dx)+Math.abs(dy)<9)return;
-      dragState.dragging=true;
-      var ch=dragState.chip,r=ch.getBoundingClientRect();
-      var clone=ch.cloneNode(true);
-      clone.classList.add('chip-drag-clone');
-      clone.style.cssText='position:fixed;left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;z-index:9999;pointer-events:none;margin:0';
-      document.body.appendChild(clone);
-      dragState.clone=clone;dragState.offX=dragState.sx-r.left;dragState.offY=dragState.sy-r.top;
-      ch.classList.add('chip-placeholder');
+    if(!dragState.armed){
+      // moved before the hold completed -> user is scrolling; let the page scroll
+      if(Math.abs(dx)+Math.abs(dy)>MOVE_CANCEL){clearTimeout(dragState.timer);dragState=null;}
+      return;
     }
-    if(e.cancelable)e.preventDefault();
     var clone=dragState.clone;
     clone.style.left=(e.clientX-dragState.offX)+'px';
     clone.style.top=(e.clientY-dragState.offY)+'px';
@@ -1318,14 +1327,16 @@ function initFavDrag(){
   }
   function endDrag(){
     if(!dragState)return;
-    var was=dragState.dragging;
+    if(dragState.timer)clearTimeout(dragState.timer);
+    var wasArmed=dragState.armed;
     cleanupDragClones();
     if(dragState.chip)dragState.chip.classList.remove('chip-placeholder');
-    if(was){commitFavOrder();_suppressClick=true;setTimeout(function(){_suppressClick=false;},60);}
+    if(wasArmed){commitFavOrder();_suppressClick=true;setTimeout(function(){_suppressClick=false;},60);}
     dragState=null;
   }
-  // Listen on window so an interrupted/edge gesture can't strand the ghost
-  window.addEventListener('pointermove',onMove,{passive:false});
+  // Block page scroll ONLY while a drag is armed; otherwise swipes scroll normally
+  window.addEventListener('touchmove',function(e){if(dragState&&dragState.armed&&e.cancelable)e.preventDefault();},{passive:false});
+  window.addEventListener('pointermove',onMove,{passive:true});
   window.addEventListener('pointerup',endDrag);
   window.addEventListener('pointercancel',endDrag);
   window.addEventListener('blur',endDrag);
