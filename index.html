@@ -433,7 +433,7 @@ body.theme-light .topbar-sub{color:#666}
 body.theme-light .qp-hint{background:#e6e6e0;color:#555}
 body.theme-light .app-shell{background:#f5f5f0}
 /* let wallpapers show through in light theme too */
-body[class*="wp-"] .app-shell{background:transparent!important}
+body[class*="wp-"]:not(.theme-light) .app-shell{background:transparent!important}
 body.theme-light .panel{background:#fff;border-color:#ddd}
 body.theme-light .card{background:#f8f8f4;border-color:#ddd}
 body.theme-light input,body.theme-light select{background:#fff;border-color:#ccc;color:#1a1a1a}
@@ -572,15 +572,18 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 /* ── LUMINA animated wallpaper (cool-running: transform/opacity only) ── */
 #luminaLayer{display:none;position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;
   background:radial-gradient(120% 90% at 50% 18%,#0b1233 0%,#070a1c 48%,#04050d 100%)}
-body.wp-lumina #luminaLayer{display:block}
-/* EVERY wallpaper now shows THROUGH the page like a living watermark (translucent surfaces) */
-body.wp-lumina{background:transparent!important}
-body[class*="wp-"] .panel{background:rgba(15,16,26,.56)}
-body[class*="wp-"] .card{background:rgba(20,21,32,.72)}
-body[class*="wp-"] .topbar{background:rgba(15,16,26,.62)}
-body[class*="wp-"] .tabs{background:rgba(13,14,24,.5)}
-body[class*="wp-"] .sum-c{background:rgba(20,21,32,.66)}
-body[class*="wp-"] .hist-wrap,body[class*="wp-"] .mgm-hero{background:rgba(20,21,32,.5)}
+body.wp-lumina:not(.theme-light) #luminaLayer{display:block}
+/* Wallpapers show as a living watermark in DARK mode only (Light mode = clean & readable) */
+body.wp-lumina:not(.theme-light){background:transparent!important}
+body[class*="wp-"]:not(.theme-light) .panel{background:rgba(15,16,26,.56)}
+body[class*="wp-"]:not(.theme-light) .card{background:rgba(20,21,32,.72)}
+body[class*="wp-"]:not(.theme-light) .topbar{background:rgba(15,16,26,.62)}
+body[class*="wp-"]:not(.theme-light) .tabs{background:rgba(13,14,24,.5)}
+body[class*="wp-"]:not(.theme-light) .sum-c{background:rgba(20,21,32,.66)}
+body[class*="wp-"]:not(.theme-light) .hist-wrap,body[class*="wp-"]:not(.theme-light) .mgm-hero{background:rgba(20,21,32,.5)}
+/* in Light mode, switch every wallpaper OFF: no background, no animation, no Lumina layer */
+body.theme-light[class*="wp-"]{background:#f5f5f0!important;animation:none!important}
+body.theme-light #luminaLayer{display:none!important}
 #luminaLayer .lm-blobwrap{position:absolute;inset:0;will-change:filter;animation:lmHue 84s ease-in-out infinite}
 @keyframes lmHue{0%,100%{filter:hue-rotate(-34deg)}50%{filter:hue-rotate(34deg)}}
 #luminaLayer .lm-blob{position:absolute;width:85vmax;height:85vmax;border-radius:50%;mix-blend-mode:screen;will-change:transform,opacity}
@@ -609,7 +612,7 @@ body[class*="wp-"] .hist-wrap,body[class*="wp-"] .mgm-hero{background:rgba(20,21
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 40</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 41</div>
 
 <div id="luminaLayer" aria-hidden="true">
   <div class="lm-blobwrap"><div class="lm-blob lm-b1"></div><div class="lm-blob lm-b2"></div><div class="lm-blob lm-b3"></div><div class="lm-blob lm-b4"></div></div>
@@ -1784,14 +1787,14 @@ const WP_LIST = ['none','starfield','nebula','aurora','galaxy','cosmos','meteor'
 function syncRootBg(){
   var wp=window.CURRENT_WP||'none';
   var light=document.body.classList.contains('theme-light');
-  document.documentElement.style.background = (wp&&wp!=='none') ? '#070710' : (light?'#f5f5f0':'#0a0a0a');
+  document.documentElement.style.background = light ? '#f5f5f0' : ((wp&&wp!=='none') ? '#070710' : '#0a0a0a');
 }
 function applyWallpaper(wp){
   WP_LIST.forEach(w => document.body.classList.remove('wp-'+w));
   if(wp && wp!=='none') document.body.classList.add('wp-'+wp);
   window.CURRENT_WP = wp||'none';
   syncRootBg();
-  if(typeof luminaSet==='function') luminaSet(wp==='lumina');
+  if(typeof luminaSet==='function') luminaSet(wp==='lumina' && !document.body.classList.contains('theme-light'));
 }
 
 function selWP(el, wp){
@@ -1834,6 +1837,7 @@ function applyTheme(theme, accent){
   }
   body.classList.add('accent-'+(accent||'gold'));
   if(typeof syncRootBg==='function')syncRootBg();
+  if(typeof luminaSet==='function') luminaSet(window.CURRENT_WP==='lumina' && !body.classList.contains('theme-light'));
 }
 function selThemeS(theme, btn){
   if(btn){ document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
