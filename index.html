@@ -533,10 +533,6 @@ body.theme-light.lcbg-sepia .tabs{background:#ddd0b4;border-color:#cdbf9e}
 body.theme-light.lctx-high td,body.theme-light.lctx-high .mi-month{color:#0d0d0d;font-weight:700}
 body.theme-light.lctx-high .td-m,body.theme-light.lctx-high th,body.theme-light.lctx-high .week-header,body.theme-light.lctx-high .mi-appts,body.theme-light.lctx-high .sum-lbl,body.theme-light.lctx-high .topbar-sub,body.theme-light.lctx-high .tab,body.theme-light.lctx-high .fbtn,body.theme-light.lctx-high .ins-lbl,body.theme-light.lctx-high .ins-sub,body.theme-light.lctx-high .calc-hint{color:#262626;font-weight:700}
 body.theme-light.lctx-high label,body.theme-light.lctx-high .ctitle,body.theme-light.lctx-high .svc-cat,body.theme-light.lctx-high .setup-label,body.theme-light.lctx-high .topbar-name,body.theme-light.lctx-high .box-lbl{color:#000}
-/* user-adjustable text darkness / sharpness (slider drives these vars) */
-body.theme-light{--lcMuted:#3a3a3a;--lcPrimary:#101010;--lcWt:680}
-body.theme-light .td-m,body.theme-light th,body.theme-light .week-header,body.theme-light .mi-appts,body.theme-light .sum-lbl,body.theme-light .topbar-sub,body.theme-light .tab:not(.active),body.theme-light .fbtn:not(.active),body.theme-light .ins-lbl,body.theme-light .ins-sub,body.theme-light .calc-hint,body.theme-light .sc-pct{color:var(--lcMuted)!important;font-weight:var(--lcWt)!important}
-body.theme-light td,body.theme-light .mi-month,body.theme-light label,body.theme-light .ctitle,body.theme-light .svc-cat,body.theme-light .setup-label,body.theme-light .topbar-name,body.theme-light .box-lbl,body.theme-light .price-name{color:var(--lcPrimary)!important;font-weight:var(--lcWt)!important}
 /* make the topbar Eye-Rest button stand out */
 .gear-btn.er-btn{color:#e2483c}
 .gear-btn.er-btn:hover{color:#ff5b4f}
@@ -666,7 +662,8 @@ body.theme-light #luminaLayer{display:none!important}
 
 /* ── EYE REST: deep 670nm-red starburst + 20-20-20 cue ── */
 #eyeRest{position:fixed;inset:0;z-index:9000;pointer-events:none;display:none;align-items:center;justify-content:center}
-#eyeRest.on{display:flex}
+#eyeRest.on{display:flex;background:#000}
+#eyeRest .er-ring{position:absolute;left:50%;top:50%;border-radius:50%;will-change:transform,opacity;opacity:0;border:3px solid rgba(255,40,40,.9);box-shadow:0 0 26px rgba(255,30,30,.7),inset 0 0 18px rgba(255,60,60,.4)}
 #eyeRest .er-veil{position:absolute;inset:0;background:#000;opacity:0;will-change:opacity}
 #eyeRest .er-rays{position:absolute;left:50%;top:50%;width:0;height:0;will-change:transform,opacity;filter:saturate(1.25) brightness(1.15)}
 #eyeRest .er-ray{position:absolute;left:0;top:0;width:80vmax;height:5px;transform-origin:0 50%;border-radius:5px;
@@ -686,7 +683,7 @@ body.theme-light #luminaLayer{display:none!important}
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 48</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 49</div>
 
 <div id="luminaLayer" aria-hidden="true">
   <div class="lm-blobwrap"><div class="lm-blob lm-b1"></div><div class="lm-blob lm-b2"></div><div class="lm-blob lm-b3"></div><div class="lm-blob lm-b4"></div></div>
@@ -842,9 +839,12 @@ body.theme-light #luminaLayer{display:none!important}
         <button class="theme-btn lcbg-btn" data-v="soft" onclick="setLcbg('soft',this)">Soft</button>
         <button class="theme-btn lcbg-btn" data-v="sepia" onclick="setLcbg('sepia',this)">Sepia</button>
       </div>
-      <label class="setup-label">Text darkness &amp; sharpness <span id="lcContrastVal" style="color:var(--gold);font-weight:700">60%</span></label>
-      <input type="range" id="lcContrast" class="lc-slider" min="0" max="100" value="60" oninput="setContrast(this.value)">
-      <div style="font-size:11.5px;color:#888;margin-top:8px;line-height:1.5">Applies to Light mode. Slide right for darker, sharper fonts. Pair with <b>Sepia</b> for the easiest read.</div>
+      <label class="setup-label">Text contrast</label>
+      <div class="theme-grid" style="grid-template-columns:repeat(2,1fr)">
+        <button class="theme-btn lctx-btn" data-v="normal" onclick="setLctx('normal',this)">Normal</button>
+        <button class="theme-btn lctx-btn" data-v="high" onclick="setLctx('high',this)">High contrast</button>
+      </div>
+      <div style="font-size:11.5px;color:#888;margin-top:8px;line-height:1.5">Applies to Light mode. Try <b>Sepia + High contrast</b> for the easiest read.</div>
     </div>
 
     <div class="setup-section">
@@ -1649,12 +1649,10 @@ function getFx(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');re
 function saveFx(fx){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.fx=fx;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.fx=fx;}
 function applyFx(fx){document.body.classList.remove('fx-off','fx-gentle','fx-lively','fx-party');document.body.classList.add('fx-'+(fx||'gentle'));}
 function setFx(fx,btn){saveFx(fx);applyFx(fx);if(btn){var g=btn.parentNode;if(g)g.querySelectorAll('.fx-btn').forEach(function(b){b.classList.remove('sel');});btn.classList.add('sel');}}function markFx(){var fx=getFx();document.querySelectorAll('#fxGrid .fx-btn').forEach(function(b){b.classList.toggle('sel',b.dataset.fx===fx);});}
-function applyLightComfort(){var b=document.body;b.classList.remove('lcbg-bright','lcbg-soft','lcbg-sepia');b.classList.add('lcbg-'+(prefs.lcbg||'soft'));applyContrast(prefs.lcContrast==null?60:prefs.lcContrast);}
-function applyContrast(v){v=Math.max(0,Math.min(100,parseInt(v,10)||0));var b=document.body;var m=Math.round(104*(1-v/100));var p=Math.round(30*(1-v/100));var wt=600+Math.round(v/100*200);b.style.setProperty('--lcMuted','rgb('+m+','+m+','+m+')');b.style.setProperty('--lcPrimary','rgb('+p+','+p+','+p+')');b.style.setProperty('--lcWt',wt);}
-function setContrast(v){prefs.lcContrast=parseInt(v,10);applyContrast(v);savePrefsToStorage();var l=document.getElementById('lcContrastVal');if(l)l.textContent=prefs.lcContrast+'%';}
+function applyLightComfort(){var b=document.body;b.classList.remove('lcbg-bright','lcbg-soft','lcbg-sepia','lctx-normal','lctx-high');b.classList.add('lcbg-'+(prefs.lcbg||'soft'));b.classList.add('lctx-'+(prefs.lctx||'normal'));}
 function setLcbg(v,btn){prefs.lcbg=v;applyLightComfort();savePrefsToStorage();if(btn){btn.parentNode.querySelectorAll('.lcbg-btn').forEach(function(x){x.classList.remove('sel');});btn.classList.add('sel');}}
 function setLctx(v,btn){prefs.lctx=v;applyLightComfort();savePrefsToStorage();if(btn){btn.parentNode.querySelectorAll('.lctx-btn').forEach(function(x){x.classList.remove('sel');});btn.classList.add('sel');}}
-function markLightComfort(){var bg=prefs.lcbg||'soft';document.querySelectorAll('.lcbg-btn').forEach(function(x){x.classList.toggle('sel',x.dataset.v===bg);});var v=prefs.lcContrast==null?60:prefs.lcContrast;var s=document.getElementById('lcContrast');if(s)s.value=v;var l=document.getElementById('lcContrastVal');if(l)l.textContent=v+'%';}
+function markLightComfort(){var bg=prefs.lcbg||'soft',tx=prefs.lctx||'normal';document.querySelectorAll('.lcbg-btn').forEach(function(x){x.classList.toggle('sel',x.dataset.v===bg);});document.querySelectorAll('.lctx-btn').forEach(function(x){x.classList.toggle('sel',x.dataset.v===tx);});}
 // ── PRICE BOOK ──
 var priceMode='hair';
 function getPrices(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.prices&&typeof p.prices==='object')?p.prices:{};}catch(e){return {};}}
@@ -2007,53 +2005,66 @@ var ER={built:false,active:false};
 var erReduce=window.matchMedia('(prefers-reduced-motion: reduce)');
 function erBuild(){
   if(ER.built) return;
-  var wrap=document.getElementById('erRays'); if(!wrap) return;
-  var N=26; for(var i=0;i<N;i++){ var r=document.createElement('div'); r.className='er-ray'; r.style.transform='rotate('+(i*(360/N))+'deg)'; wrap.appendChild(r); }
+  var rest=document.getElementById('eyeRest'),wrap=document.getElementById('erRays'); if(!wrap||!rest) return;
+  var N=24; for(var i=0;i<N;i++){ var r=document.createElement('div'); r.className='er-ray'; r.style.transform='rotate('+(i*(360/N))+'deg)'; wrap.appendChild(r); }
+  ER.rings=[]; for(var j=0;j<3;j++){ var rg=document.createElement('div'); rg.className='er-ring'; rg.style.width=rg.style.height='60px'; rg.style.margin='-30px 0 0 -30px'; rest.appendChild(rg); ER.rings.push(rg); }
   ER.built=true;
 }
-// one playful burst: random spin direction/amount, random scale, random pace — dances
-function erDance(big){
+// one calm breath: gentle fade-in -> bloom rays+rings+core outward -> collapse back in -> fade. no spin.
+function erBreath(){
   erBuild();
   var core=document.getElementById('erCore'),wrap=document.getElementById('erRays');
-  var dir=Math.random()<.5?1:-1;
-  var spin=dir*(35+Math.random()*150);
-  var sc=(big?1.0:0.7)+Math.random()*0.6;
-  var dur=(big?900:800)+Math.random()*900;
-  if(core) core.animate([{opacity:1,transform:'scale(.28) rotate(0deg)'},{opacity:0,transform:'scale('+(big?6:3)+') rotate('+(spin*0.4)+'deg)'}],{duration:dur,easing:'ease-out'});
+  var big=Math.max(innerWidth,innerHeight), ringMax=big/60*1.1;
+  var cycle=4200+Math.random()*1400;                 // calmest: ~4.2-5.6s per breath
+  var erupt=Math.random()<0.28;                       // occasional larger multi-erupt
+  var rayScale=erupt?1.18:0.96, rk=erupt?ringMax*1.15:ringMax;
+  if(core) core.animate([
+    {opacity:0,transform:'scale(.5)'},
+    {opacity:1,transform:'scale(1)',offset:.18},
+    {opacity:1,transform:'scale('+(erupt?3.2:2.4)+')',offset:.5},
+    {opacity:1,transform:'scale(1)',offset:.82},
+    {opacity:0,transform:'scale(.5)'}
+  ],{duration:cycle,easing:'cubic-bezier(.37,0,.34,1)'});
   if(wrap){ wrap.style.opacity='1';
-    return wrap.animate([
-      {transform:'scale(.05) rotate('+(-spin*0.5)+'deg)',opacity:0},
-      {opacity:1,offset:.16},
-      {transform:'scale('+sc+') rotate('+spin+'deg)',opacity:0}
-    ],{duration:dur,easing:'cubic-bezier(.15,.7,.25,1)'}).finished;
+    wrap.animate([
+      {opacity:0,transform:'scale(.06)'},
+      {opacity:.9,transform:'scale('+(rayScale*0.45)+')',offset:.22},
+      {opacity:1,transform:'scale('+rayScale+')',offset:.5},
+      {opacity:.85,transform:'scale('+(rayScale*0.5)+')',offset:.8},
+      {opacity:0,transform:'scale(.08)'}
+    ],{duration:cycle,easing:'cubic-bezier(.37,0,.34,1)'});
   }
-  return Promise.resolve();
+  (ER.rings||[]).forEach(function(rg,idx){
+    rg.animate([
+      {opacity:0,transform:'scale(.3)'},
+      {opacity:.8,transform:'scale('+(rk*0.5)+')',offset:.4},
+      {opacity:0,transform:'scale('+rk+')'}
+    ],{duration:cycle*0.82,delay:idx*(cycle*0.12),easing:'cubic-bezier(.2,.6,.3,1)'});
+  });
+  return cycle;
 }
-// quick celebratory bloom (save booking / get paid)
+// quick celebratory bloom (save booking / get paid) — one gentle breath
 function eyeBloom(){
-  var rest=document.getElementById('eyeRest'),veil=document.getElementById('erVeil'),msg=document.getElementById('erMsg');
+  var rest=document.getElementById('eyeRest'),msg=document.getElementById('erMsg');
   if(!rest||ER.active) return;
   ER.active=true; rest.classList.add('on'); rest.style.pointerEvents='none'; if(msg) msg.style.opacity='0';
-  if(veil) veil.animate([{opacity:0},{opacity:.5,offset:.3},{opacity:0}],{duration:1400,easing:'ease-out'});
-  erDance(false).then(function(){ rest.classList.remove('on'); ER.active=false; });
+  var cyc=erReduce.matches?1400:erBreath();
+  setTimeout(function(){ rest.classList.remove('on'); ER.active=false; if(msg) msg.style.opacity=''; }, cyc*0.72);
 }
-// full eye-rest: pure black + a lively dancing 670nm starburst + 22s look-away cue (tap to finish)
+// full eye-rest: TOTAL blackout + calm breathing 670nm burst + 22s look-away cue (tap to finish)
 function eyeRestFull(){
-  var rest=document.getElementById('eyeRest'),veil=document.getElementById('erVeil'),msg=document.getElementById('erMsg'),count=document.getElementById('erCount');
+  var rest=document.getElementById('eyeRest'),msg=document.getElementById('erMsg'),count=document.getElementById('erCount');
   if(!rest||ER.active) return;
-  ER.active=true; rest.classList.add('on'); rest.style.pointerEvents='auto';
+  ER.active=true; rest.classList.add('on'); rest.style.pointerEvents='auto'; if(msg) msg.style.opacity='';
   function endRest(){ if(!ER.active) return;
-    if(ER._iv){clearInterval(ER._iv);ER._iv=null;} if(ER._dt){clearTimeout(ER._dt);ER._dt=null;}
+    if(ER._iv){clearInterval(ER._iv);ER._iv=null;} if(ER._bt){clearTimeout(ER._bt);ER._bt=null;}
     if(msg) msg.animate([{opacity:1},{opacity:0}],{duration:600,fill:'forwards'});
-    if(veil) veil.animate([{opacity:1},{opacity:0}],{duration:900,fill:'forwards'});
-    setTimeout(function(){ rest.classList.remove('on'); rest.onclick=null; ER.active=false; },900);
+    setTimeout(function(){ rest.classList.remove('on'); rest.onclick=null; ER.active=false; if(msg) msg.style.opacity=''; },650);
   }
   rest.onclick=endRest;
-  if(veil) veil.animate([{opacity:0},{opacity:1}],{duration:800,fill:'forwards',easing:'ease-out'});
-  if(msg) msg.animate([{opacity:0},{opacity:1}],{duration:900,delay:500,fill:'forwards'});
-  // dancing burst loop — random intervals so it feels alive
-  function danceLoop(){ if(!ER.active) return; if(!erReduce.matches) erDance(true); ER._dt=setTimeout(danceLoop, 420+Math.random()*620); }
-  danceLoop();
+  if(msg) msg.animate([{opacity:0},{opacity:1}],{duration:900,delay:400,fill:'forwards'});
+  function loop(){ if(!ER.active) return; var cyc=erReduce.matches?4000:erBreath(); ER._bt=setTimeout(loop, cyc-350); }
+  loop();
   var n=22; if(count) count.textContent=n;
   ER._iv=setInterval(function(){ n--; if(count) count.textContent=n; if(n<=0){ endRest(); } },1000);
 }
