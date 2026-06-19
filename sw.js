@@ -1,5 +1,5 @@
-// CommissionPro service worker — network-first so the app always updates.
-const CACHE = 'commissionpro-v34';
+// CommissionPro service worker — network-first, bypasses Safari's cache so the app always updates.
+const CACHE = 'commissionpro-v36';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png'];
 
 // Install: pre-cache the shell, take over immediately.
@@ -20,8 +20,9 @@ self.addEventListener('activate', (e) => {
 });
 
 // Fetch:
-//  - For page/HTML loads -> NETWORK FIRST (always get the newest app), fall back to cache offline.
-//  - For everything else -> cache first (fast), fall back to network.
+//  - Page/HTML loads -> NETWORK FIRST with cache:'no-store' so Safari can't serve a stale build.
+//    Always pulls the freshest index.html when online; falls back to cache only when offline.
+//  - Everything else -> cache first (fast), fall back to network.
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   const accept = req.headers.get('accept') || '';
@@ -29,10 +30,11 @@ self.addEventListener('fetch', (e) => {
 
   if (isPage) {
     e.respondWith(
-      fetch(req)
+      // fetch by URL with no-store == go past Safari's hidden HTTP cache, hit the real network.
+      fetch(req.url, { cache: 'no-store' })
         .then((res) => {
           const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+          caches.open(CACHE).then((c) => c.put('./index.html', copy)).catch(() => {});
           return res;
         })
         .catch(() => caches.match(req).then((r) => r || caches.match('./index.html')))
