@@ -540,6 +540,12 @@ body.theme-light td,body.theme-light .mi-month,body.theme-light label,body.theme
 /* make the topbar Eye-Rest button stand out */
 .gear-btn.er-btn{color:#e2483c}
 .gear-btn.er-btn:hover{color:#ff5b4f}
+/* contrast slider — explicit thumb so iOS Safari never drops it */
+.lc-slider{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:6px;background:linear-gradient(90deg,#888,#e0e0e0);outline:none;cursor:pointer;margin:8px 0}
+.lc-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;background:var(--gold);border:3px solid #fff;box-shadow:0 2px 7px rgba(0,0,0,.55);cursor:pointer;margin-top:-9px}
+.lc-slider::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--gold);border:3px solid #fff;box-shadow:0 2px 7px rgba(0,0,0,.55);cursor:pointer}
+.lc-slider::-webkit-slider-runnable-track{height:8px;border-radius:6px;background:transparent}
+.lc-slider::-moz-range-track{height:8px;border-radius:6px;background:transparent}
 
 /* ── ACCENT COLORS ── */
 body.accent-rose{--gold:#E8527A;--gold2:#2a0a14;--gold3:#661a2a;--gold-light:#ff7a9a}
@@ -662,21 +668,25 @@ body.theme-light #luminaLayer{display:none!important}
 #eyeRest{position:fixed;inset:0;z-index:9000;pointer-events:none;display:none;align-items:center;justify-content:center}
 #eyeRest.on{display:flex}
 #eyeRest .er-veil{position:absolute;inset:0;background:#000;opacity:0;will-change:opacity}
-#eyeRest .er-rays{position:absolute;left:50%;top:50%;width:0;height:0;will-change:transform,opacity}
-#eyeRest .er-ray{position:absolute;left:0;top:0;width:52vmax;height:3px;transform-origin:0 50%;border-radius:3px;
-  background:linear-gradient(90deg,rgba(255,56,56,1) 0%,rgba(244,18,24,.92) 40%,rgba(205,0,14,.6) 72%,rgba(150,0,10,0) 100%)}
-#eyeRest .er-core{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;will-change:transform,opacity;opacity:0;
-  background:radial-gradient(circle,#fff 0%,#ff7a7a 30%,#ff2020 58%,rgba(170,0,10,0) 80%)}
+#eyeRest .er-rays{position:absolute;left:50%;top:50%;width:0;height:0;will-change:transform,opacity;filter:saturate(1.25) brightness(1.15)}
+#eyeRest .er-ray{position:absolute;left:0;top:0;width:80vmax;height:5px;transform-origin:0 50%;border-radius:5px;
+  background:linear-gradient(90deg,rgba(255,120,120,1) 0%,rgba(255,40,40,1) 36%,rgba(235,0,18,.78) 68%,rgba(170,0,12,0) 100%);box-shadow:0 0 8px rgba(255,40,40,.6)}
+#eyeRest .er-core{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;will-change:transform,opacity;opacity:0;
+  background:radial-gradient(circle,#fff 0%,#ff9a9a 26%,#ff2424 54%,rgba(190,0,14,0) 80%);box-shadow:0 0 40px rgba(255,40,40,.7)}
 #eyeRest .er-msg{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);text-align:center;opacity:0;will-change:opacity;width:84%;max-width:420px}
 #eyeRest .er-big{font-size:21px;font-weight:700;color:#ffdada;letter-spacing:.3px}
 #eyeRest .er-sub{font-size:14px;color:#ffb4b4;margin-top:6px;line-height:1.5}
 #eyeRest .er-count{font-size:36px;font-weight:800;color:#fff;margin-top:10px;font-variant-numeric:tabular-nums}
 #eyeRest .er-skip{font-size:12px;color:#ff9b9b;margin-top:14px;opacity:.8}
 @media (prefers-reduced-motion: reduce){#eyeRest .er-rays,#eyeRest .er-core{animation:none!important}}
+/* custom comfort slider with an always-visible thumb (iOS-safe) */
+.lc-slider{-webkit-appearance:none;appearance:none;width:100%;height:10px;border-radius:6px;background:linear-gradient(90deg,#cfcfcf,#3a3a3a);outline:none;margin:8px 0 2px}
+.lc-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:28px;height:28px;border-radius:50%;background:var(--gold);border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);cursor:pointer}
+.lc-slider::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:var(--gold);border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);cursor:pointer}
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 46</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 48</div>
 
 <div id="luminaLayer" aria-hidden="true">
   <div class="lm-blobwrap"><div class="lm-blob lm-b1"></div><div class="lm-blob lm-b2"></div><div class="lm-blob lm-b3"></div><div class="lm-blob lm-b4"></div></div>
@@ -833,7 +843,7 @@ body.theme-light #luminaLayer{display:none!important}
         <button class="theme-btn lcbg-btn" data-v="sepia" onclick="setLcbg('sepia',this)">Sepia</button>
       </div>
       <label class="setup-label">Text darkness &amp; sharpness <span id="lcContrastVal" style="color:var(--gold);font-weight:700">60%</span></label>
-      <input type="range" id="lcContrast" min="0" max="100" value="60" oninput="setContrast(this.value)" style="width:100%;height:30px;accent-color:var(--gold);cursor:pointer">
+      <input type="range" id="lcContrast" class="lc-slider" min="0" max="100" value="60" oninput="setContrast(this.value)">
       <div style="font-size:11.5px;color:#888;margin-top:8px;line-height:1.5">Applies to Light mode. Slide right for darker, sharper fonts. Pair with <b>Sepia</b> for the easiest read.</div>
     </div>
 
@@ -1216,37 +1226,7 @@ function clearApptSearch(){
   renderTable();
 }
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(ch){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch];});}
-function renderInsights(list){
-  const box=$('insights');if(!box)return;
-  if(activeFilter==='weekly'||!list.length){box.innerHTML='';return;}
-  // Top client by take-home total
-  const byClient={};list.forEach(a=>{const k=((a.name||'').trim())||'(no name)';byClient[k]=(byClient[k]||0)+(a.me||0)+(a.tip||0);});
-  let topC='—',topCV=-1;Object.keys(byClient).forEach(k=>{if(byClient[k]>topCV){topCV=byClient[k];topC=k;}});
-  // Most-booked service (split combined services on +)
-  const byCat={};list.forEach(a=>{(a.cat||'').split('+').map(s=>s.trim()).filter(Boolean).forEach(s=>{byCat[s]=(byCat[s]||0)+1;});});
-  let topS='—',topSV=0;Object.keys(byCat).forEach(k=>{if(byCat[k]>topSV){topSV=byCat[k];topS=k;}});
-  // Biggest single ticket
-  let big=list.reduce((m,a)=>(a.charge>(m?m.charge:-1)?a:m),null);
-  // Average ticket
-  const totCharge=list.reduce((s,a)=>s+(a.charge||0),0);
-  const avg=list.length?totCharge/list.length:0;
-  // Busiest day of week
-  const DOW=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const byDow={};list.forEach(a=>{const k=new Date(a.date+'T12:00:00').getDay();byDow[k]=(byDow[k]||0)+1;});
-  let bd=-1,bdv=0;Object.keys(byDow).forEach(k=>{if(byDow[k]>bdv){bdv=byDow[k];bd=+k;}});
-  // Repeat clients (more than one visit)
-  const cnt={};list.forEach(a=>{const k=((a.name||'').trim())||'(no name)';cnt[k]=(cnt[k]||0)+1;});
-  const uniq=Object.keys(cnt).length;
-  const repeat=Object.keys(cnt).filter(k=>cnt[k]>1).length;
-  function card(l,v,s){return '<div class="ins-card"><div class="ins-lbl">'+l+'</div><div class="ins-val" title="'+esc(v)+'">'+esc(v)+'</div><div class="ins-sub">'+esc(s)+'</div></div>';}
-  box.innerHTML=
-    card('Top client',topC,fmtR(topCV<0?0:topCV)+' take-home')+
-    card('Most booked',topS,topSV?topSV+'× booked':'—')+
-    card('Biggest ticket',big?fmtR(big.charge):'—',big?(big.name||'—'):'—')+
-    card('Avg ticket',fmtR(avg),list.length+' visit'+(list.length!==1?'s':''))+
-    card('Busiest day',bd>=0?DOW[bd]:'—',bdv?bdv+' visit'+(bdv!==1?'s':''):'—')+
-    card('Repeat clients',String(repeat),'of '+uniq+' client'+(uniq!==1?'s':''));
-}
+function renderInsights(list){var box=$('insights');if(box)box.innerHTML='';}
 function setFilter(f,el){
   activeFilter=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');renderTable();
@@ -2028,19 +2008,24 @@ var erReduce=window.matchMedia('(prefers-reduced-motion: reduce)');
 function erBuild(){
   if(ER.built) return;
   var wrap=document.getElementById('erRays'); if(!wrap) return;
-  var N=22; for(var i=0;i<N;i++){ var r=document.createElement('div'); r.className='er-ray'; r.style.transform='rotate('+(i*(360/N))+'deg)'; wrap.appendChild(r); }
+  var N=26; for(var i=0;i<N;i++){ var r=document.createElement('div'); r.className='er-ray'; r.style.transform='rotate('+(i*(360/N))+'deg)'; wrap.appendChild(r); }
   ER.built=true;
 }
-function erRadiate(big){
+// one playful burst: random spin direction/amount, random scale, random pace — dances
+function erDance(big){
   erBuild();
   var core=document.getElementById('erCore'),wrap=document.getElementById('erRays');
-  if(core) core.animate([{opacity:.95,transform:'scale(.3)'},{opacity:0,transform:'scale('+(big?5:2.6)+')'}],{duration:big?1500:1000,easing:'ease-out'});
+  var dir=Math.random()<.5?1:-1;
+  var spin=dir*(35+Math.random()*150);
+  var sc=(big?1.0:0.7)+Math.random()*0.6;
+  var dur=(big?900:800)+Math.random()*900;
+  if(core) core.animate([{opacity:1,transform:'scale(.28) rotate(0deg)'},{opacity:0,transform:'scale('+(big?6:3)+') rotate('+(spin*0.4)+'deg)'}],{duration:dur,easing:'ease-out'});
   if(wrap){ wrap.style.opacity='1';
     return wrap.animate([
-      {transform:'scale(.05) rotate(0deg)',opacity:0},
-      {opacity:1,offset:.18},
-      {transform:'scale(1) rotate('+(big?20:11)+'deg)',opacity:0}
-    ],{duration:big?2200:1400,easing:'cubic-bezier(.16,.7,.3,1)'}).finished;
+      {transform:'scale(.05) rotate('+(-spin*0.5)+'deg)',opacity:0},
+      {opacity:1,offset:.16},
+      {transform:'scale('+sc+') rotate('+spin+'deg)',opacity:0}
+    ],{duration:dur,easing:'cubic-bezier(.15,.7,.25,1)'}).finished;
   }
   return Promise.resolve();
 }
@@ -2049,29 +2034,28 @@ function eyeBloom(){
   var rest=document.getElementById('eyeRest'),veil=document.getElementById('erVeil'),msg=document.getElementById('erMsg');
   if(!rest||ER.active) return;
   ER.active=true; rest.classList.add('on'); rest.style.pointerEvents='none'; if(msg) msg.style.opacity='0';
-  if(veil) veil.animate([{opacity:0},{opacity:.42,offset:.3},{opacity:0}],{duration:1300,easing:'ease-out'});
-  erRadiate(false).then(function(){ rest.classList.remove('on'); ER.active=false; });
+  if(veil) veil.animate([{opacity:0},{opacity:.5,offset:.3},{opacity:0}],{duration:1400,easing:'ease-out'});
+  erDance(false).then(function(){ rest.classList.remove('on'); ER.active=false; });
 }
-// full eye-rest with 22-second 20-20-20 cue (tap to finish early)
+// full eye-rest: pure black + a lively dancing 670nm starburst + 22s look-away cue (tap to finish)
 function eyeRestFull(){
   var rest=document.getElementById('eyeRest'),veil=document.getElementById('erVeil'),msg=document.getElementById('erMsg'),count=document.getElementById('erCount');
   if(!rest||ER.active) return;
   ER.active=true; rest.classList.add('on'); rest.style.pointerEvents='auto';
-  function endRest(){ if(!ER.active) return; if(ER._iv){clearInterval(ER._iv);ER._iv=null;}
+  function endRest(){ if(!ER.active) return;
+    if(ER._iv){clearInterval(ER._iv);ER._iv=null;} if(ER._dt){clearTimeout(ER._dt);ER._dt=null;}
     if(msg) msg.animate([{opacity:1},{opacity:0}],{duration:600,fill:'forwards'});
     if(veil) veil.animate([{opacity:1},{opacity:0}],{duration:900,fill:'forwards'});
     setTimeout(function(){ rest.classList.remove('on'); rest.onclick=null; ER.active=false; },900);
   }
   rest.onclick=endRest;
-  if(veil) veil.animate([{opacity:0},{opacity:1}],{duration:900,fill:'forwards',easing:'ease-out'});
-  erRadiate(true);
+  if(veil) veil.animate([{opacity:0},{opacity:1}],{duration:800,fill:'forwards',easing:'ease-out'});
   if(msg) msg.animate([{opacity:0},{opacity:1}],{duration:900,delay:500,fill:'forwards'});
+  // dancing burst loop — random intervals so it feels alive
+  function danceLoop(){ if(!ER.active) return; if(!erReduce.matches) erDance(true); ER._dt=setTimeout(danceLoop, 420+Math.random()*620); }
+  danceLoop();
   var n=22; if(count) count.textContent=n;
-  ER._iv=setInterval(function(){
-    n--; if(count) count.textContent=n;
-    if(n<=0){ endRest(); }
-    else if(!erReduce.matches){ erRadiate(true); }
-  },1000);
+  ER._iv=setInterval(function(){ n--; if(count) count.textContent=n; if(n<=0){ endRest(); } },1000);
 }
 
 
