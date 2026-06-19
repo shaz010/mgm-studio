@@ -568,10 +568,54 @@ body.wp-emerald{background:linear-gradient(135deg,#001208,#0a3a1a 40%,#0d5a2a 65
 body.wp-rosegold{background:linear-gradient(135deg,#1a0610,#3a1420 35%,#5a3018 60%,#1a0a10)!important;background-size:400% 400%!important;animation:wpShift 20s ease infinite}
 body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.12) 1px,transparent 1px),radial-gradient(circle at 50% 0%,#0b1326,#050810)!important;background-size:44px 44px,44px 44px,100% 100%!important;animation:wpGridMove 6s linear infinite}
 @media (prefers-reduced-motion: reduce){body[class*="wp-"]{animation:none!important}}
+
+/* ── LUMINA animated wallpaper (cool-running: transform/opacity only) ── */
+#luminaLayer{display:none;position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 18%,#0b1233 0%,#070a1c 48%,#04050d 100%)}
+body.wp-lumina #luminaLayer{display:block}
+#luminaLayer .lm-blobwrap{position:absolute;inset:0;will-change:filter;animation:lmHue 84s ease-in-out infinite}
+@keyframes lmHue{0%,100%{filter:hue-rotate(-34deg)}50%{filter:hue-rotate(34deg)}}
+#luminaLayer .lm-blob{position:absolute;width:85vmax;height:85vmax;border-radius:50%;mix-blend-mode:screen;will-change:transform,opacity}
+#luminaLayer .lm-b1{background:radial-gradient(circle,rgba(38,214,198,.55) 0%,rgba(38,214,198,0) 62%);top:-25vmax;left:-20vmax;animation:lmD1 30s ease-in-out infinite,lmP 13s ease-in-out infinite}
+#luminaLayer .lm-b2{background:radial-gradient(circle,rgba(70,108,255,.55) 0%,rgba(70,108,255,0) 62%);top:-10vmax;right:-25vmax;animation:lmD2 38s ease-in-out infinite,lmP 17s ease-in-out infinite}
+#luminaLayer .lm-b3{background:radial-gradient(circle,rgba(150,72,255,.5) 0%,rgba(150,72,255,0) 62%);bottom:-28vmax;left:-10vmax;animation:lmD3 44s ease-in-out infinite,lmP 19s ease-in-out infinite}
+#luminaLayer .lm-b4{background:radial-gradient(circle,rgba(255,82,164,.42) 0%,rgba(255,82,164,0) 62%);bottom:-22vmax;right:-15vmax;animation:lmD4 34s ease-in-out infinite,lmP 15s ease-in-out infinite}
+@keyframes lmD1{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(22vmax,14vmax) scale(1.12)}66%{transform:translate(8vmax,26vmax) scale(.95)}}
+@keyframes lmD2{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-20vmax,18vmax) scale(1.1)}66%{transform:translate(-6vmax,30vmax) scale(.93)}}
+@keyframes lmD3{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(18vmax,-16vmax) scale(.92)}66%{transform:translate(30vmax,-4vmax) scale(1.14)}}
+@keyframes lmD4{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-16vmax,-20vmax) scale(1.1)}66%{transform:translate(-28vmax,-6vmax) scale(.96)}}
+@keyframes lmP{0%,100%{opacity:.85}50%{opacity:.5}}
+#luminaLayer .lm-stars{position:absolute;inset:0;background:radial-gradient(1px 1px at 18% 28%,rgba(255,255,255,.7),transparent),radial-gradient(1px 1px at 72% 62%,rgba(200,220,255,.6),transparent),radial-gradient(1px 1px at 45% 82%,rgba(255,255,255,.55),transparent),radial-gradient(1.5px 1.5px at 85% 22%,rgba(190,210,255,.6),transparent),radial-gradient(1px 1px at 30% 55%,rgba(255,255,255,.45),transparent);background-size:520px 520px,420px 420px,600px 600px,480px 480px,360px 360px;opacity:.5;animation:lmTwinkle 9s ease-in-out infinite}
+@keyframes lmTwinkle{0%,100%{opacity:.42}50%{opacity:.62}}
+#luminaLayer .lm-comet{position:absolute;left:0;top:0;width:10px;height:10px;margin:-5px 0 0 -5px;will-change:transform,opacity;opacity:0}
+#luminaLayer .lm-comet .lm-core{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,#fff 0%,var(--c) 50%,transparent 76%);box-shadow:0 0 14px 5px var(--glow),0 0 30px 12px rgba(120,160,255,.22)}
+#luminaLayer .lm-comet .lm-tail{position:absolute;right:6px;top:50%;width:150px;height:3px;transform:translateY(-50%);border-radius:3px;background:linear-gradient(90deg,transparent 0%,var(--c) 72%,#ffffff 100%);opacity:.9}
+#luminaLayer #lmA{--c:#ff9ec4;--glow:rgba(255,150,200,.5)}
+#luminaLayer #lmB{--c:#8ec9ff;--glow:rgba(140,200,255,.5)}
+#luminaLayer .lm-fin{position:absolute;inset:0}
+#luminaLayer .lm-heart{position:absolute;left:50%;top:50%;width:60vmin;height:55vmin;margin:-27.5vmin 0 0 -30vmin;will-change:transform,opacity;opacity:0;filter:drop-shadow(0 0 22px rgba(255,90,150,.6)) drop-shadow(0 0 54px rgba(255,150,90,.4))}
+#luminaLayer .lm-heart path{fill:none;stroke:url(#lmHg);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+#luminaLayer .lm-burst{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;will-change:transform,opacity;opacity:0;background:radial-gradient(circle,rgba(255,255,255,.9) 0%,rgba(255,120,170,.6) 22%,rgba(255,160,90,.3) 45%,rgba(150,120,255,0) 70%)}
+#luminaLayer .lm-ring{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;will-change:transform,opacity;opacity:0;border:3px solid rgba(255,170,200,.7);box-shadow:0 0 24px rgba(255,150,190,.5)}
+@media (prefers-reduced-motion: reduce){#luminaLayer .lm-blob,#luminaLayer .lm-stars,#luminaLayer .lm-blobwrap{animation:none!important}#luminaLayer .lm-comet,#luminaLayer .lm-fin{display:none}}
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 37</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 38</div>
+
+<div id="luminaLayer" aria-hidden="true">
+  <div class="lm-blobwrap"><div class="lm-blob lm-b1"></div><div class="lm-blob lm-b2"></div><div class="lm-blob lm-b3"></div><div class="lm-blob lm-b4"></div></div>
+  <div class="lm-stars"></div>
+  <div class="lm-comet" id="lmA"><div class="lm-tail"></div><div class="lm-core"></div></div>
+  <div class="lm-comet" id="lmB"><div class="lm-tail"></div><div class="lm-core"></div></div>
+  <div class="lm-fin" id="lmFin">
+    <svg class="lm-heart" id="lmHeart" viewBox="0 0 100 92" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="lmHg" x1="0" y1="0" x2="1" y2="1"><stop id="lmHs1" offset="0" stop-color="#ff5e9c"/><stop id="lmHs2" offset=".5" stop-color="#ff8fb4"/><stop id="lmHs3" offset="1" stop-color="#ffb86b"/></linearGradient></defs>
+      <path id="lmHpath" d="M50 84 C50 84 12 58 12 33 C12 18 26 13 35 21 C41 26 50 35 50 35 C50 35 59 26 65 21 C74 13 88 18 88 33 C88 58 50 84 50 84 Z"/>
+    </svg>
+    <div class="lm-ring" id="lmRing"></div><div class="lm-burst" id="lmBurst"></div>
+  </div>
+</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -689,6 +733,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
       <div class="wp-swatch" data-wp="emerald" onclick="selWP(this,'emerald')" style="background:linear-gradient(135deg,#001208,#0d5a2a)" title="Emerald"></div>
       <div class="wp-swatch" data-wp="rosegold" onclick="selWP(this,'rosegold')" style="background:linear-gradient(135deg,#1a0610,#5a3018)" title="Rose gold"></div>
       <div class="wp-swatch" data-wp="grid" onclick="selWP(this,'grid')" style="background:#0a0a0a;background-image:linear-gradient(rgba(120,180,255,.25) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.25) 1px,transparent 1px);background-size:8px 8px" title="Grid"></div>
+      <div class="wp-swatch" data-wp="lumina" onclick="selWP(this,'lumina')" style="background:radial-gradient(circle at 28% 30%,#ff9ec4,transparent 42%),radial-gradient(circle at 72% 70%,#8ec9ff,transparent 46%),linear-gradient(135deg,#0b1233,#1a0a3a 60%,#04050d)" title="Lumina ✦"></div>
       </div>
     </div>
 
@@ -1726,7 +1771,7 @@ resetIdle();
 
 
 // ── WALLPAPERS ──
-const WP_LIST = ['none','starfield','nebula','aurora','galaxy','cosmos','meteor','ocean','ember','sunset','neon','plasma','midnight','emerald','rosegold','grid'];
+const WP_LIST = ['none','starfield','nebula','aurora','galaxy','cosmos','meteor','ocean','ember','sunset','neon','plasma','midnight','emerald','rosegold','grid','lumina'];
 
 function syncRootBg(){
   var wp=window.CURRENT_WP||'none';
@@ -1738,6 +1783,7 @@ function applyWallpaper(wp){
   if(wp && wp!=='none') document.body.classList.add('wp-'+wp);
   window.CURRENT_WP = wp||'none';
   syncRootBg();
+  if(typeof luminaSet==='function') luminaSet(wp==='lumina');
 }
 
 function selWP(el, wp){
@@ -1859,6 +1905,96 @@ function saveSettings(){
   updateCommissionRate(prefs.rate);
   closeSettings();
 }
+
+// ── LUMINA engine: two roaming comets that interact + a rare randomised full-screen finale ──
+var LM={on:false,started:false,busy:false,meet:{x:.5,y:.5},timer:null};
+var lmReduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+function lmRnd(a,b){return a+Math.random()*(b-a);}
+function lmPick(a){return a[(Math.random()*a.length)|0];}
+function lmEl(id){return document.getElementById(id);}
+function lmDriftMeet(){LM.meet.x=Math.min(.8,Math.max(.2,LM.meet.x+lmRnd(-.18,.18)));LM.meet.y=Math.min(.8,Math.max(.2,LM.meet.y+lmRnd(-.18,.18)));}
+
+function lmLeg(el){
+  if(!LM.on||LM.busy||!el) return;
+  var W=innerWidth,H=innerHeight;
+  var tx=(LM.meet.x+lmRnd(-.28,.28))*W, ty=(LM.meet.y+lmRnd(-.28,.28))*H;
+  var cur=el._p||{x:lmRnd(0,W),y:lmRnd(0,H)};
+  var ang=Math.atan2(ty-cur.y,tx-cur.x)*180/Math.PI;
+  var dur=lmRnd(11000,17000);
+  var a=el.animate([
+    {transform:'translate('+cur.x+'px,'+cur.y+'px) rotate('+ang+'deg)',opacity:el._seen?1:0},
+    {opacity:1,offset:.12},
+    {transform:'translate('+tx+'px,'+ty+'px) rotate('+ang+'deg)',opacity:1}
+  ],{duration:dur,easing:'ease-in-out',fill:'forwards'});
+  el._seen=1;el._p={x:tx,y:ty};
+  a.onfinish=function(){ if(el===lmEl('lmA')) lmDriftMeet(); if(LM.on&&!LM.busy) lmLeg(el); };
+}
+function lmStartComets(){
+  var A=lmEl('lmA'),B=lmEl('lmB'); if(!A||!B) return;
+  A.style.setProperty('--c','#ff9ec4');A.style.setProperty('--glow','rgba(255,150,200,.5)');
+  B.style.setProperty('--c','#8ec9ff');B.style.setProperty('--glow','rgba(140,200,255,.5)');
+  A._seen=0;B._seen=0; lmLeg(A); setTimeout(function(){ if(LM.on) lmLeg(B); },2600);
+}
+
+var LM_PAL=[['#ff9ec4','#8ec9ff'],['#ffd27a','#c0a3ff'],['#9affc8','#ff8ad0'],['#7ad6ff','#ffb0d0'],['#c9a3ff','#7affd6'],['#ff8f6b','#8effc0']];
+var LM_HEARTS=[['#ff5e9c','#ff8fb4','#ffb86b'],['#7a6bff','#b08fff','#ff8fd0'],['#22d6c6','#7affd0','#bfffe0'],['#ff7a3c','#ffb86b','#ffe08a'],['#ff5e9c','#c06bff','#7ad6ff']];
+
+function lmRunFinale(){
+  if(!LM.on||LM.busy) return Promise.resolve();
+  LM.busy=true;
+  var A=lmEl('lmA'),B=lmEl('lmB');
+  A.getAnimations().forEach(function(a){a.cancel();});B.getAnimations().forEach(function(a){a.cancel();});
+  var pair=lmPick(LM_PAL); A.style.setProperty('--c',pair[0]);B.style.setProperty('--c',pair[1]);
+  A.style.setProperty('--glow','rgba(255,180,210,.5)');B.style.setProperty('--glow','rgba(170,200,255,.5)');
+  var hc=lmPick(LM_HEARTS); lmEl('lmHs1').setAttribute('stop-color',hc[0]);lmEl('lmHs2').setAttribute('stop-color',hc[1]);lmEl('lmHs3').setAttribute('stop-color',hc[2]);
+  var sf=lmRnd(0.75,1.5);                          // randomised pacing: slower .. moderately quicker
+  var cx=innerWidth/2,cy=innerHeight/2,fr=Math.min(innerWidth,innerHeight)*0.34;
+  function fig8(el,phase,a0,a1,loops,N,dur){
+    var f=[];for(var k=0;k<=N;k++){var p=k/N,t=p*loops*2*Math.PI+phase,amp=a0+(a1-a0)*p;
+      var x=cx+amp*Math.sin(t),y=cy+amp*Math.sin(t)*Math.cos(t)*1.5;
+      f.push({transform:'translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px) rotate(0deg)',opacity:1});}
+    return el.animate(f,{duration:dur,easing:'ease-in-out',fill:'forwards'});
+  }
+  return Promise.all([fig8(A,0,fr*.85,fr*.12,2.5,80,13000*sf).finished,fig8(B,Math.PI,fr*.85,fr*.12,2.5,80,13000*sf).finished]).then(function(){
+    if(!LM.on) throw 'off';
+    return Promise.all([fig8(A,0,fr*.12,fr,1.5,70,9000*sf).finished,fig8(B,Math.PI,fr*.12,fr,1.5,70,9000*sf).finished]);
+  }).then(function(){
+    A.animate([{opacity:1},{opacity:0}],{duration:700,fill:'forwards'});
+    B.animate([{opacity:1},{opacity:0}],{duration:700,fill:'forwards'});
+    var hp=lmEl('lmHpath'),len=hp.getTotalLength();
+    hp.style.strokeDasharray=len;hp.style.strokeDashoffset=len;
+    lmEl('lmHeart').animate([{opacity:0,transform:'scale(.7)'},{opacity:1,transform:'scale(1)'}],{duration:1000*sf,fill:'forwards',easing:'ease-out'});
+    return hp.animate([{strokeDashoffset:len},{strokeDashoffset:0}],{duration:2200*sf,fill:'forwards',easing:'ease-in-out'}).finished;
+  }).then(function(){
+    return lmEl('lmHeart').animate([{transform:'scale(1)'},{transform:'scale(1.07)'},{transform:'scale(1)'}],{duration:900*sf,easing:'ease-in-out'}).finished;
+  }).then(function(){
+    var big=Math.max(innerWidth,innerHeight)/20+3;
+    lmEl('lmHeart').animate([{opacity:1,transform:'scale(1)'},{opacity:0,transform:'scale(2.4)'}],{duration:2200*sf,fill:'forwards',easing:'ease-out'});
+    lmEl('lmBurst').animate([{opacity:.95,transform:'scale(.4)'},{opacity:0,transform:'scale('+big+')'}],{duration:2400*sf,easing:'ease-out'});
+    lmEl('lmRing').animate([{opacity:.8,transform:'scale(.4)'},{opacity:0,transform:'scale('+(big*.9)+')'}],{duration:2600*sf,easing:'ease-out'});
+    return new Promise(function(res){setTimeout(res,2500*sf);});
+  }).then(function(){
+    lmEl('lmHeart').style.opacity='0';LM.busy=false; if(LM.on) lmStartComets();
+  }).catch(function(){ var h=lmEl('lmHeart'); if(h)h.style.opacity='0'; LM.busy=false; if(LM.on) lmStartComets(); });
+}
+function lmTick(){ if(LM.on&&!LM.busy&&!lmReduce.matches&&!document.hidden&&Math.random()<0.05) lmRunFinale(); }
+
+function luminaSet(on){
+  LM.on=on;
+  if(on){
+    if(lmReduce.matches) return;
+    if(!LM.started){ LM.started=true; lmStartComets(); if(!LM.timer) LM.timer=setInterval(lmTick,9000); }
+  } else {
+    LM.started=false;
+    if(LM.timer){clearInterval(LM.timer);LM.timer=null;}
+    LM.busy=false;
+    [lmEl('lmA'),lmEl('lmB')].forEach(function(el){ if(el){el.getAnimations().forEach(function(a){a.cancel();});el.style.opacity='0';} });
+    var h=lmEl('lmHeart'); if(h) h.style.opacity='0';
+  }
+}
+document.addEventListener('visibilitychange',function(){
+  if(!document.hidden&&LM.on&&!LM.busy&&!lmReduce.matches){ var A=lmEl('lmA'); if(A&&!A.getAnimations().length) lmStartComets(); }
+});
 
 function initPrefs(){
   loadPrefs();
