@@ -72,6 +72,10 @@ input::placeholder{color:#555;font-weight:400}
 input[type=number]{-moz-appearance:textfield}
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
 input,select,textarea,.setup-input{font-size:16px!important}
+/* Fix iOS Safari autofill turning fields white with invisible text */
+input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus,input:-webkit-autofill:active,textarea:-webkit-autofill,select:-webkit-autofill{-webkit-text-fill-color:#fff;-webkit-box-shadow:0 0 0 1000px #1a1a1a inset;caret-color:#fff;transition:background-color 9999s ease 0s}
+body.theme-light input:-webkit-autofill,body.theme-light textarea:-webkit-autofill,body.theme-light select:-webkit-autofill{-webkit-text-fill-color:#1a1a1a;-webkit-box-shadow:0 0 0 1000px #ffffff inset;caret-color:#1a1a1a}
+.cf-in:-webkit-autofill,.cf-in:-webkit-autofill:hover,.cf-in:-webkit-autofill:focus,.cf-in:-webkit-autofill:active{-webkit-text-fill-color:#fff!important;-webkit-box-shadow:0 0 0 1000px #1a1a1a inset!important;caret-color:#fff}
 
 /* SPLIT GRID */
 .split-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:2px}
@@ -428,6 +432,8 @@ body.theme-light .setup-label{color:#444}
 body.theme-light .topbar-sub{color:#666}
 body.theme-light .qp-hint{background:#e6e6e0;color:#555}
 body.theme-light .app-shell{background:#f5f5f0}
+/* let wallpapers show through in light theme too */
+body[class*="wp-"] .app-shell{background:transparent!important}
 body.theme-light .panel{background:#fff;border-color:#ddd}
 body.theme-light .card{background:#f8f8f4;border-color:#ddd}
 body.theme-light input,body.theme-light select{background:#fff;border-color:#ccc;color:#1a1a1a}
@@ -540,21 +546,21 @@ body.accent-gold{--gold:#FFB800;--gold2:#2a1f00;--gold3:#665522;--gold-light:#FF
 @keyframes wpDriftR{from{background-position:0 0,0 0,0 0,0 0,0 0}to{background-position:700px -480px,520px -340px,880px -620px,600px -400px,0 0}}
 @keyframes wpGridMove{from{background-position:0 0,0 0,0 0}to{background-position:44px 44px,44px 44px,0 0}}
 @keyframes wpMeteor{0%{background-position:0 0,0 0,0 0,130% -30%}100%{background-position:-700px 500px,-500px 350px,-900px 650px,-30% 130%}}
-body.wp-starfield{background:radial-gradient(1.5px 1.5px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 75% 65%,#cfe3ff,transparent),radial-gradient(1.5px 1.5px at 50% 85%,#fff,transparent),radial-gradient(1px 1px at 85% 20%,#bcd,transparent),linear-gradient(160deg,#05060f,#0a0a22 60%,#06040f)!important;background-size:700px 700px,500px 500px,900px 900px,600px 600px,100% 100%!important;background-attachment:fixed!important;animation:wpDrift 90s linear infinite}
-body.wp-nebula{background:radial-gradient(1px 1px at 30% 40%,#fff,transparent),radial-gradient(1px 1px at 80% 70%,#fde,transparent),radial-gradient(1.5px 1.5px at 60% 20%,#fff,transparent),radial-gradient(1px 1px at 15% 80%,#cdf,transparent),linear-gradient(125deg,#1a0a2e,#3a1a5a 35%,#0f3460 70%,#1a0a2e)!important;background-size:800px 800px,600px 600px,700px 700px,500px 500px,400% 400%!important;background-attachment:fixed!important;animation:wpDrift 110s linear infinite,wpShift 24s ease infinite}
-body.wp-aurora{background:linear-gradient(135deg,#001a1a 0%,#003a2a 25%,#0d3a5a 50%,#1a0d4a 75%,#001a1a 100%)!important;background-size:400% 400%!important;background-attachment:fixed!important;animation:wpShift 16s ease infinite}
-body.wp-galaxy{background:radial-gradient(1.5px 1.5px at 25% 35%,#fff,transparent),radial-gradient(1px 1px at 70% 60%,#dce,transparent),radial-gradient(1px 1px at 45% 80%,#fff,transparent),radial-gradient(1.5px 1.5px at 88% 25%,#fbd,transparent),radial-gradient(ellipse 70% 55% at 50% 50%,#3a1a6a 0%,#160a2e 45%,#08040f 100%)!important;background-size:650px 650px,520px 520px,800px 800px,560px 560px,100% 100%!important;background-attachment:fixed!important;animation:wpDriftR 100s linear infinite}
-body.wp-cosmos{background:radial-gradient(1.5px 1.5px at 18% 28%,#fff,transparent),radial-gradient(1px 1px at 68% 62%,#cde,transparent),radial-gradient(1px 1px at 52% 82%,#fff,transparent),radial-gradient(1.5px 1.5px at 82% 18%,#bcf,transparent),linear-gradient(180deg,#02030c,#0a1840 55%,#040a1f)!important;background-size:720px 720px,540px 540px,860px 860px,600px 600px,100% 200%!important;background-attachment:fixed!important;animation:wpDrift 95s linear infinite,wpShiftV 30s ease infinite}
-body.wp-meteor{background:radial-gradient(1.5px 1.5px at 22% 32%,#fff,transparent),radial-gradient(1px 1px at 72% 64%,#cde,transparent),radial-gradient(1px 1px at 48% 84%,#fff,transparent),linear-gradient(120deg,transparent 46%,rgba(150,200,255,.5) 50%,transparent 54%),linear-gradient(125deg,#070710,#13112e 60%,#070512)!important;background-size:680px 680px,520px 520px,820px 820px,300px 300px,100% 100%!important;background-attachment:fixed!important;animation:wpMeteor 7s linear infinite}
-body.wp-ocean{background:linear-gradient(180deg,#001520,#003a4a 40%,#00536a 70%,#001a2a)!important;background-size:200% 400%!important;background-attachment:fixed!important;animation:wpShiftV 14s ease infinite}
-body.wp-ember{background:radial-gradient(ellipse at bottom,#3a1000 0%,#1a0600 40%,#000 100%)!important;background-size:160% 160%!important;background-attachment:fixed!important;animation:wpShiftV 9s ease-in-out infinite}
-body.wp-sunset{background:linear-gradient(160deg,#2a0a2a,#7a2a10 40%,#c25a1a 60%,#2a0a14)!important;background-size:400% 400%!important;background-attachment:fixed!important;animation:wpShift 17s ease infinite}
-body.wp-neon{background:linear-gradient(120deg,#0a0024,#2a0a4a 30%,#0a2a5a 60%,#3a0a3a 100%)!important;background-size:400% 400%!important;background-attachment:fixed!important;animation:wpShift 12s linear infinite}
-body.wp-plasma{background:linear-gradient(120deg,#3a0a4a,#0a2a5a 25%,#0a4a3a 50%,#4a0a2a 75%,#3a0a4a)!important;background-size:500% 500%!important;background-attachment:fixed!important;animation:wpShift 15s ease infinite}
-body.wp-midnight{background:linear-gradient(135deg,#06061a,#14143a 45%,#0a0a28 70%,#06061a)!important;background-size:400% 400%!important;background-attachment:fixed!important;animation:wpShift 22s ease infinite}
-body.wp-emerald{background:linear-gradient(135deg,#001208,#0a3a1a 40%,#0d5a2a 65%,#001a0a)!important;background-size:400% 400%!important;background-attachment:fixed!important;animation:wpShift 18s ease infinite}
-body.wp-rosegold{background:linear-gradient(135deg,#1a0610,#3a1420 35%,#5a3018 60%,#1a0a10)!important;background-size:400% 400%!important;background-attachment:fixed!important;animation:wpShift 20s ease infinite}
-body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.12) 1px,transparent 1px),radial-gradient(circle at 50% 0%,#0b1326,#050810)!important;background-size:44px 44px,44px 44px,100% 100%!important;background-attachment:fixed!important;animation:wpGridMove 6s linear infinite}
+body.wp-starfield{background:radial-gradient(1.5px 1.5px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 75% 65%,#cfe3ff,transparent),radial-gradient(1.5px 1.5px at 50% 85%,#fff,transparent),radial-gradient(1px 1px at 85% 20%,#bcd,transparent),linear-gradient(160deg,#05060f,#0a0a22 60%,#06040f)!important;background-size:700px 700px,500px 500px,900px 900px,600px 600px,100% 100%!important;animation:wpDrift 90s linear infinite}
+body.wp-nebula{background:radial-gradient(1px 1px at 30% 40%,#fff,transparent),radial-gradient(1px 1px at 80% 70%,#fde,transparent),radial-gradient(1.5px 1.5px at 60% 20%,#fff,transparent),radial-gradient(1px 1px at 15% 80%,#cdf,transparent),linear-gradient(125deg,#1a0a2e,#3a1a5a 35%,#0f3460 70%,#1a0a2e)!important;background-size:800px 800px,600px 600px,700px 700px,500px 500px,400% 400%!important;animation:wpDrift 110s linear infinite,wpShift 24s ease infinite}
+body.wp-aurora{background:linear-gradient(135deg,#001a1a 0%,#003a2a 25%,#0d3a5a 50%,#1a0d4a 75%,#001a1a 100%)!important;background-size:400% 400%!important;animation:wpShift 16s ease infinite}
+body.wp-galaxy{background:radial-gradient(1.5px 1.5px at 25% 35%,#fff,transparent),radial-gradient(1px 1px at 70% 60%,#dce,transparent),radial-gradient(1px 1px at 45% 80%,#fff,transparent),radial-gradient(1.5px 1.5px at 88% 25%,#fbd,transparent),radial-gradient(ellipse 70% 55% at 50% 50%,#3a1a6a 0%,#160a2e 45%,#08040f 100%)!important;background-size:650px 650px,520px 520px,800px 800px,560px 560px,100% 100%!important;animation:wpDriftR 100s linear infinite}
+body.wp-cosmos{background:radial-gradient(1.5px 1.5px at 18% 28%,#fff,transparent),radial-gradient(1px 1px at 68% 62%,#cde,transparent),radial-gradient(1px 1px at 52% 82%,#fff,transparent),radial-gradient(1.5px 1.5px at 82% 18%,#bcf,transparent),linear-gradient(180deg,#02030c,#0a1840 55%,#040a1f)!important;background-size:720px 720px,540px 540px,860px 860px,600px 600px,100% 200%!important;animation:wpDrift 95s linear infinite,wpShiftV 30s ease infinite}
+body.wp-meteor{background:radial-gradient(1.5px 1.5px at 22% 32%,#fff,transparent),radial-gradient(1px 1px at 72% 64%,#cde,transparent),radial-gradient(1px 1px at 48% 84%,#fff,transparent),linear-gradient(120deg,transparent 46%,rgba(150,200,255,.5) 50%,transparent 54%),linear-gradient(125deg,#070710,#13112e 60%,#070512)!important;background-size:680px 680px,520px 520px,820px 820px,300px 300px,100% 100%!important;animation:wpMeteor 7s linear infinite}
+body.wp-ocean{background:linear-gradient(180deg,#001520,#003a4a 40%,#00536a 70%,#001a2a)!important;background-size:200% 400%!important;animation:wpShiftV 14s ease infinite}
+body.wp-ember{background:radial-gradient(ellipse at bottom,#3a1000 0%,#1a0600 40%,#000 100%)!important;background-size:160% 160%!important;animation:wpShiftV 9s ease-in-out infinite}
+body.wp-sunset{background:linear-gradient(160deg,#2a0a2a,#7a2a10 40%,#c25a1a 60%,#2a0a14)!important;background-size:400% 400%!important;animation:wpShift 17s ease infinite}
+body.wp-neon{background:linear-gradient(120deg,#0a0024,#2a0a4a 30%,#0a2a5a 60%,#3a0a3a 100%)!important;background-size:400% 400%!important;animation:wpShift 12s linear infinite}
+body.wp-plasma{background:linear-gradient(120deg,#3a0a4a,#0a2a5a 25%,#0a4a3a 50%,#4a0a2a 75%,#3a0a4a)!important;background-size:500% 500%!important;animation:wpShift 15s ease infinite}
+body.wp-midnight{background:linear-gradient(135deg,#06061a,#14143a 45%,#0a0a28 70%,#06061a)!important;background-size:400% 400%!important;animation:wpShift 22s ease infinite}
+body.wp-emerald{background:linear-gradient(135deg,#001208,#0a3a1a 40%,#0d5a2a 65%,#001a0a)!important;background-size:400% 400%!important;animation:wpShift 18s ease infinite}
+body.wp-rosegold{background:linear-gradient(135deg,#1a0610,#3a1420 35%,#5a3018 60%,#1a0a10)!important;background-size:400% 400%!important;animation:wpShift 20s ease infinite}
+body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.12) 1px,transparent 1px),radial-gradient(circle at 50% 0%,#0b1326,#050810)!important;background-size:44px 44px,44px 44px,100% 100%!important;animation:wpGridMove 6s linear infinite}
 @media (prefers-reduced-motion: reduce){body[class*="wp-"]{animation:none!important}}
 </style>
 </head>
