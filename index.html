@@ -492,6 +492,30 @@ body.theme-light .tab{color:#555;font-weight:700}
 body.theme-light .mi-month,body.theme-light td{font-weight:600}
 body.theme-light .mi-appts{color:#666}
 body.theme-light .setup-section-title{color:#1f1f1f}
+/* ── Light mode polish: softer whites (less glare) + stronger font legibility on all pages ── */
+body.theme-light .app-shell{background:#e8e6de}
+body.theme-light .panel{background:#f4f2ec;border-color:#dad8cf}
+body.theme-light .card{background:#fbf9f4;border-color:#dad8cf}
+body.theme-light .topbar{background:#f4f2ec;border-color:#dad8cf}
+body.theme-light .tabs{background:#e2e0d7;border-color:#d2d0c6}
+body.theme-light .tab{color:#4a4a4a;font-weight:700}
+body.theme-light .tab.active{background:#fbf9f4;color:var(--gold)}
+body.theme-light .sum-c{background:#f7f5ef;border-color:#dad8cf}
+body.theme-light .sum-lbl{color:#4a4a4a}
+body.theme-light .fbtn{background:#f7f5ef;border-color:#d6d4ca;color:#444}
+body.theme-light .ins-card{background:#f7f5ef;border-color:#dcdacf}
+body.theme-light .ins-lbl,body.theme-light .ins-sub{color:#4a4a4a}
+body.theme-light .appt-search-wrap .ti-search{color:#666}
+body.theme-light .topbar-sub{color:#555}
+/* Appointments table */
+body.theme-light td{color:#1a1a1a;font-weight:600}
+body.theme-light .td-m{color:#555}
+body.theme-light th{color:#444;font-weight:700}
+body.theme-light .week-header{color:#3a3a3a;font-weight:700}
+/* MGM owes me */
+body.theme-light .month-item{background:#f7f5ef;border-color:#dad8cf}
+body.theme-light .mi-month{color:#1a1a1a;font-weight:700}
+body.theme-light .mi-appts{color:#4a4a4a}
 
 /* ── ACCENT COLORS ── */
 body.accent-rose{--gold:#E8527A;--gold2:#2a0a14;--gold3:#661a2a;--gold-light:#ff7a9a}
@@ -582,7 +606,7 @@ body[class*="wp-"]:not(.theme-light) .tabs{background:rgba(13,14,24,.5)}
 body[class*="wp-"]:not(.theme-light) .sum-c{background:rgba(20,21,32,.66)}
 body[class*="wp-"]:not(.theme-light) .hist-wrap,body[class*="wp-"]:not(.theme-light) .mgm-hero{background:rgba(20,21,32,.5)}
 /* in Light mode, switch every wallpaper OFF: no background, no animation, no Lumina layer */
-body.theme-light[class*="wp-"]{background:#f5f5f0!important;animation:none!important}
+body.theme-light[class*="wp-"]{background:#e8e6de!important;animation:none!important}
 body.theme-light #luminaLayer{display:none!important}
 #luminaLayer .lm-blobwrap{position:absolute;inset:0;will-change:filter;animation:lmHue 84s ease-in-out infinite}
 @keyframes lmHue{0%,100%{filter:hue-rotate(-34deg)}50%{filter:hue-rotate(34deg)}}
@@ -609,10 +633,26 @@ body.theme-light #luminaLayer{display:none!important}
 #luminaLayer .lm-burst{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;will-change:transform,opacity;opacity:0;background:radial-gradient(circle,rgba(255,255,255,.9) 0%,rgba(255,120,170,.6) 22%,rgba(255,160,90,.3) 45%,rgba(150,120,255,0) 70%)}
 #luminaLayer .lm-ring{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;will-change:transform,opacity;opacity:0;border:3px solid rgba(255,170,200,.7);box-shadow:0 0 24px rgba(255,150,190,.5)}
 @media (prefers-reduced-motion: reduce){#luminaLayer .lm-blob,#luminaLayer .lm-stars,#luminaLayer .lm-blobwrap{animation:none!important}#luminaLayer .lm-comet,#luminaLayer .lm-fin{display:none}}
+
+/* ── EYE REST: deep 670nm-red starburst + 20-20-20 cue ── */
+#eyeRest{position:fixed;inset:0;z-index:9000;pointer-events:none;display:none;align-items:center;justify-content:center}
+#eyeRest.on{display:flex}
+#eyeRest .er-veil{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(150,0,6,.5),rgba(24,0,3,.86));opacity:0;will-change:opacity}
+#eyeRest .er-rays{position:absolute;left:50%;top:50%;width:0;height:0;will-change:transform,opacity}
+#eyeRest .er-ray{position:absolute;left:0;top:0;width:52vmax;height:3px;transform-origin:0 50%;border-radius:3px;
+  background:linear-gradient(90deg,rgba(255,56,56,1) 0%,rgba(244,18,24,.92) 40%,rgba(205,0,14,.6) 72%,rgba(150,0,10,0) 100%)}
+#eyeRest .er-core{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;will-change:transform,opacity;opacity:0;
+  background:radial-gradient(circle,#fff 0%,#ff7a7a 30%,#ff2020 58%,rgba(170,0,10,0) 80%)}
+#eyeRest .er-msg{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);text-align:center;opacity:0;will-change:opacity;width:84%;max-width:420px}
+#eyeRest .er-big{font-size:21px;font-weight:700;color:#ffdada;letter-spacing:.3px}
+#eyeRest .er-sub{font-size:14px;color:#ffb4b4;margin-top:6px;line-height:1.5}
+#eyeRest .er-count{font-size:36px;font-weight:800;color:#fff;margin-top:10px;font-variant-numeric:tabular-nums}
+#eyeRest .er-skip{font-size:12px;color:#ff9b9b;margin-top:14px;opacity:.8}
+@media (prefers-reduced-motion: reduce){#eyeRest .er-rays,#eyeRest .er-core{animation:none!important}}
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 41</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 43</div>
 
 <div id="luminaLayer" aria-hidden="true">
   <div class="lm-blobwrap"><div class="lm-blob lm-b1"></div><div class="lm-blob lm-b2"></div><div class="lm-blob lm-b3"></div><div class="lm-blob lm-b4"></div></div>
@@ -625,6 +665,18 @@ body.theme-light #luminaLayer{display:none!important}
       <path id="lmHpath" d="M50 84 C50 84 12 58 12 33 C12 18 26 13 35 21 C41 26 50 35 50 35 C50 35 59 26 65 21 C74 13 88 18 88 33 C88 58 50 84 50 84 Z"/>
     </svg>
     <div class="lm-ring" id="lmRing"></div><div class="lm-burst" id="lmBurst"></div>
+  </div>
+</div>
+
+<div id="eyeRest" aria-hidden="true">
+  <div class="er-veil" id="erVeil"></div>
+  <div class="er-rays" id="erRays"></div>
+  <div class="er-core" id="erCore"></div>
+  <div class="er-msg" id="erMsg">
+    <div class="er-big">Rest your eyes</div>
+    <div class="er-sub">Look at something about 20 feet away<br>until the timer reaches zero.</div>
+    <div class="er-count" id="erCount">22</div>
+    <div class="er-skip">tap anywhere to finish early</div>
   </div>
 </div>
 
@@ -781,6 +833,7 @@ body.theme-light #luminaLayer{display:none!important}
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="gear-btn" onclick="eyeRestFull()" title="Eye rest"><i class="ti ti-eye"></i></button>
       <button class="gear-btn" onclick="openClients()" title="Client cards"><i class="ti ti-address-book"></i></button>
       <button class="gear-btn" onclick="openPrices()" title="Price book"><i class="ti ti-currency-dollar"></i></button>
       <button class="gear-btn" onclick="openSettings()" title="Settings"><i class="ti ti-settings"></i></button>
@@ -1063,6 +1116,7 @@ async function save(){
     const{error}=await sb.from('appointments').upsert(rec);
     if(error)throw error;
     setSyncBadge('ok','Saved ✓');resetForm();await loadAll();showTab('hist');
+    if(typeof eyeBloom==='function') eyeBloom();
   }catch(err){setSyncBadge('err','Save failed');alert('Could not save — check your connection.');console.error(err);}
 }
 async function delAppt(id){
@@ -1265,6 +1319,7 @@ async function markPaid(ym){
     const{error}=await sb.from('paid_months').upsert({month:ym,paid_at});
     if(error)throw error;
     paidMonths[ym]=paid_at;setSyncBadge('ok','Synced');renderMgm();
+    if(typeof eyeBloom==='function') eyeBloom();
   }catch(err){setSyncBadge('err','Error');console.error(err);}
 }
 function markThisMonthPaid(){markPaid(new Date().toISOString().slice(0,7));}
@@ -1787,7 +1842,7 @@ const WP_LIST = ['none','starfield','nebula','aurora','galaxy','cosmos','meteor'
 function syncRootBg(){
   var wp=window.CURRENT_WP||'none';
   var light=document.body.classList.contains('theme-light');
-  document.documentElement.style.background = light ? '#f5f5f0' : ((wp&&wp!=='none') ? '#070710' : '#0a0a0a');
+  document.documentElement.style.background = light ? '#e8e6de' : ((wp&&wp!=='none') ? '#070710' : '#0a0a0a');
 }
 function applyWallpaper(wp){
   WP_LIST.forEach(w => document.body.classList.remove('wp-'+w));
@@ -1918,7 +1973,59 @@ function saveSettings(){
   closeSettings();
 }
 
-// ── LUMINA engine: two roaming comets that interact + a rare randomised full-screen finale ──
+// ── EYE REST engine: deep 670nm-red starburst + 22s rest cue ──
+var ER={built:false,active:false};
+var erReduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+function erBuild(){
+  if(ER.built) return;
+  var wrap=document.getElementById('erRays'); if(!wrap) return;
+  var N=22; for(var i=0;i<N;i++){ var r=document.createElement('div'); r.className='er-ray'; r.style.transform='rotate('+(i*(360/N))+'deg)'; wrap.appendChild(r); }
+  ER.built=true;
+}
+function erRadiate(big){
+  erBuild();
+  var core=document.getElementById('erCore'),wrap=document.getElementById('erRays');
+  if(core) core.animate([{opacity:.95,transform:'scale(.3)'},{opacity:0,transform:'scale('+(big?5:2.6)+')'}],{duration:big?1500:1000,easing:'ease-out'});
+  if(wrap){ wrap.style.opacity='1';
+    return wrap.animate([
+      {transform:'scale(.05) rotate(0deg)',opacity:0},
+      {opacity:1,offset:.18},
+      {transform:'scale(1) rotate('+(big?20:11)+'deg)',opacity:0}
+    ],{duration:big?2200:1400,easing:'cubic-bezier(.16,.7,.3,1)'}).finished;
+  }
+  return Promise.resolve();
+}
+// quick celebratory bloom (save booking / get paid)
+function eyeBloom(){
+  var rest=document.getElementById('eyeRest'),veil=document.getElementById('erVeil'),msg=document.getElementById('erMsg');
+  if(!rest||ER.active) return;
+  ER.active=true; rest.classList.add('on'); rest.style.pointerEvents='none'; if(msg) msg.style.opacity='0';
+  if(veil) veil.animate([{opacity:0},{opacity:.42,offset:.3},{opacity:0}],{duration:1300,easing:'ease-out'});
+  erRadiate(false).then(function(){ rest.classList.remove('on'); ER.active=false; });
+}
+// full eye-rest with 22-second 20-20-20 cue (tap to finish early)
+function eyeRestFull(){
+  var rest=document.getElementById('eyeRest'),veil=document.getElementById('erVeil'),msg=document.getElementById('erMsg'),count=document.getElementById('erCount');
+  if(!rest||ER.active) return;
+  ER.active=true; rest.classList.add('on'); rest.style.pointerEvents='auto';
+  function endRest(){ if(!ER.active) return; if(ER._iv){clearInterval(ER._iv);ER._iv=null;}
+    if(msg) msg.animate([{opacity:1},{opacity:0}],{duration:600,fill:'forwards'});
+    if(veil) veil.animate([{opacity:1},{opacity:0}],{duration:900,fill:'forwards'});
+    setTimeout(function(){ rest.classList.remove('on'); rest.onclick=null; ER.active=false; },900);
+  }
+  rest.onclick=endRest;
+  if(veil) veil.animate([{opacity:0},{opacity:1}],{duration:900,fill:'forwards',easing:'ease-out'});
+  erRadiate(true);
+  if(msg) msg.animate([{opacity:0},{opacity:1}],{duration:900,delay:500,fill:'forwards'});
+  var n=22; if(count) count.textContent=n;
+  ER._iv=setInterval(function(){
+    n--; if(count) count.textContent=n;
+    if(n<=0){ endRest(); }
+    else if(!erReduce.matches){ erRadiate(true); }
+  },1000);
+}
+
+
 var LM={on:false,started:false,busy:false,meet:{x:.5,y:.5},timer:null};
 var lmReduce=window.matchMedia('(prefers-reduced-motion: reduce)');
 function lmRnd(a,b){return a+Math.random()*(b-a);}
