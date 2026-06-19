@@ -139,7 +139,7 @@ body.theme-light .svc-chip.sel{background:#fff8e0;border-color:var(--gold);color
 @keyframes moreShimmer{to{background-position:-200% center}}
 @keyframes moreHue{to{filter:hue-rotate(360deg)}}
 /* Idle pause: stop decorative motion when the user isn't interacting (saves battery/heat) */
-body.anim-idle .m-word,body.anim-idle .svc-more::before,body.anim-idle .svc-more .more-txt,body.anim-idle .svc-mode-btn.on::after,body.anim-idle .svc-chip.sel{animation-play-state:paused!important}
+body.anim-idle .m-word,body.anim-idle .svc-more::before,body.anim-idle .svc-more .more-txt,body.anim-idle .svc-mode-btn.on,body.anim-idle .svc-mode-btn.on::after,body.anim-idle .svc-chip.sel{animation-play-state:paused!important}
 body.theme-light .svc-more{background:#fff}
 body.theme-light .svc-more .more-chev{color:#7a4f00}
 body.theme-light .svc-more .more-txt{background:linear-gradient(90deg,#4a3000 0%,#b87400 50%,#4a3000 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;font-weight:800}
@@ -240,26 +240,34 @@ body.theme-light .svc-more::after{background:#fff}
 }
 #cCat.slot-hit{animation:slotHit 1s ease}
 @keyframes slotHit{0%{box-shadow:0 0 0 0 rgba(255,184,0,0)}28%{box-shadow:0 0 0 3px rgba(255,184,0,.4);border-color:var(--gold)}100%{box-shadow:0 0 0 0 rgba(255,184,0,0)}}
-.svc-mode{display:inline-flex;gap:30px;align-items:flex-end;margin-bottom:8px;padding:6px 4px 6px}
-.svc-mode-btn{position:relative;border:none;background:transparent;cursor:pointer;font-size:18px;font-weight:800;letter-spacing:.5px;padding:4px 6px 12px;line-height:1.2;display:inline-block}
-.svc-mode-btn .m-word{display:inline-block;transform-origin:center;background-image:linear-gradient(90deg,#888,#aaa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.svc-mode-btn[data-mode="hair"] .m-word,.svc-mode-btn[data-pmode="hair"] .m-word{background-image:linear-gradient(90deg,#FFB800,#FF6FA3,#FF8A3D,#FFD24A,#FFB800);background-size:240% auto;animation:fxColorMove var(--fxModeDur,9s) linear infinite,hairWave var(--fxHairWave,6s) ease-in-out infinite}
-.svc-mode-btn[data-mode="nail"] .m-word,.svc-mode-btn[data-pmode="nail"] .m-word{background-image:linear-gradient(90deg,#FF4FB0,#A24BFF,#22C3DD,#FF7AD9,#FF4FB0);background-size:240% auto;animation:fxColorMove var(--fxNailColor,11s) linear infinite,nailWave var(--fxNailWave,8s) ease-in-out infinite}
+.svc-mode{display:flex;gap:10px;align-items:stretch;margin-bottom:10px;padding:2px 0;width:100%}
+.svc-mode-btn{flex:1;position:relative;border:1.5px solid var(--border-bright);background:var(--bg2);border-radius:13px;cursor:pointer;font-size:21px;font-weight:800;letter-spacing:.5px;padding:13px 6px 18px;line-height:1.15;text-align:center;display:flex;align-items:center;justify-content:center;transition:background .25s ease,border-color .25s ease,box-shadow .25s ease}
+.svc-mode-btn .m-word{display:inline-block;color:#cfcfcf;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.svc-mode-btn[data-mode="hair"].on .m-word,.svc-mode-btn[data-pmode="hair"].on .m-word{color:#FFC24A}
+.svc-mode-btn[data-mode="nail"].on .m-word,.svc-mode-btn[data-pmode="nail"].on .m-word{color:#FF8FD6}
 .svc-mode-btn:not(.on){opacity:.5}
-.svc-mode-btn:not(.on) .m-word{filter:saturate(.55) brightness(.92)}
-.svc-mode-btn.on .m-word{filter:none}
-.svc-mode-btn::after{content:'';position:absolute;left:3px;right:3px;bottom:1px;height:4px;border-radius:4px;background:linear-gradient(90deg,var(--gold),#fff,var(--gold));background-size:200% auto;opacity:0;transform:scaleX(.3);transform-origin:center;transition:opacity .25s ease,transform .3s cubic-bezier(.3,1.5,.5,1)}
+.svc-mode-btn[data-mode="hair"].on,.svc-mode-btn[data-pmode="hair"].on{border-color:#FFB800;background:rgba(255,184,0,.13);box-shadow:0 2px 16px rgba(255,170,70,.22);animation:glowHair 3.2s ease-in-out infinite}
+.svc-mode-btn[data-mode="nail"].on,.svc-mode-btn[data-pmode="nail"].on{border-color:#FF6FC0;background:rgba(255,79,176,.13);box-shadow:0 2px 16px rgba(255,90,190,.22);animation:glowNail 3.2s ease-in-out infinite}
+body.theme-light .svc-mode-btn .m-word{color:#555;text-shadow:none}
+body.theme-light .svc-mode-btn[data-mode="hair"].on .m-word,body.theme-light .svc-mode-btn[data-pmode="hair"].on .m-word{color:#B97A00}
+body.theme-light .svc-mode-btn[data-mode="nail"].on .m-word,body.theme-light .svc-mode-btn[data-pmode="nail"].on .m-word{color:#C13C8E}
+.svc-mode-btn .m-ico{font-size:18px;margin-right:8px;opacity:.92;flex:none}
+.svc-mode-btn[data-mode="hair"] .m-ico,.svc-mode-btn[data-pmode="hair"] .m-ico{color:#FF9E5A}
+.svc-mode-btn[data-mode="nail"] .m-ico,.svc-mode-btn[data-pmode="nail"] .m-ico{color:#FF6FC0}
+.svc-mode-btn::after{content:'';position:absolute;left:24%;right:24%;bottom:9px;height:4px;border-radius:4px;background:linear-gradient(90deg,var(--gold),#fff,var(--gold));background-size:200% auto;opacity:0;transform:scaleX(.3);transform-origin:center;transition:opacity .25s ease,transform .3s cubic-bezier(.3,1.5,.5,1)}
 .svc-mode-btn[data-mode="hair"]::after,.svc-mode-btn[data-pmode="hair"]::after{background:linear-gradient(90deg,#FFB800,#FF6FA3,#FFD24A,#FFB800);background-size:200% auto}
 .svc-mode-btn[data-mode="nail"]::after,.svc-mode-btn[data-pmode="nail"]::after{background:linear-gradient(90deg,#FF4FB0,#A24BFF,#22C3DD,#FF4FB0);background-size:200% auto}
 .svc-mode-btn.on::after{opacity:1;transform:scaleX(1);animation:moreShimmer 2.4s linear infinite;box-shadow:0 1px 9px rgba(255,170,70,.65)}
 @keyframes fxColorMove{to{background-position:-240% center}}
 @keyframes hairWave{0%{transform:translateY(0) scale(1) rotate(0)}25%{transform:translateY(-3px) scale(1.18) rotate(-4deg)}50%{transform:translateY(0) scale(1) rotate(0)}75%{transform:translateY(3px) scale(.86) rotate(4deg)}100%{transform:translateY(0) scale(1) rotate(0)}}
 @keyframes nailWave{0%{transform:translateY(0) scale(1.16) rotate(3deg)}25%{transform:translateY(4px) scale(.86) rotate(0)}50%{transform:translateY(-3px) scale(1.18) rotate(-3deg)}75%{transform:translateY(2px) scale(1) rotate(0)}100%{transform:translateY(0) scale(1.16) rotate(3deg)}}
+@keyframes glowHair{0%,100%{box-shadow:0 2px 12px rgba(255,170,70,.16)}50%{box-shadow:0 2px 20px rgba(255,170,70,.34)}}
+@keyframes glowNail{0%,100%{box-shadow:0 2px 12px rgba(255,90,190,.16)}50%{box-shadow:0 2px 20px rgba(255,90,190,.34)}}
 /* FX intensity presets (set via Settings) */
 body.fx-gentle{--fxModeDur:11s;--fxNailColor:13s;--fxHairWave:6.5s;--fxNailWave:8.5s;--fxMoreSpin:3.4s;--fxMoreHue:22s}
 body.fx-lively{--fxModeDur:6s;--fxNailColor:7.5s;--fxHairWave:3.6s;--fxNailWave:4.6s;--fxMoreSpin:1.8s;--fxMoreHue:11s}
 body.fx-party{--fxModeDur:3s;--fxNailColor:3.6s;--fxHairWave:1.8s;--fxNailWave:2.4s;--fxMoreSpin:1s;--fxMoreHue:5s}
-body.fx-off .svc-mode-btn .m-word,body.fx-off .svc-mode-btn::after,body.fx-off .svc-more,body.fx-off .svc-more::before,body.fx-off .svc-more .more-txt{animation:none!important}
+body.fx-off .svc-mode-btn.on,body.fx-off .svc-mode-btn .m-word,body.fx-off .svc-mode-btn::after,body.fx-off .svc-more,body.fx-off .svc-more::before,body.fx-off .svc-more .more-txt{animation:none!important}
 body.fx-off .svc-more::before{background:var(--gold)!important}
 body.fx-off .svc-more .more-txt{-webkit-text-fill-color:var(--gold)!important;color:var(--gold)!important}
 /* Pause background picker motion while a modal (e.g. Price book) is open */
@@ -683,7 +691,7 @@ body.theme-light #luminaLayer{display:none!important}
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 50</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 52</div>
 
 <div id="luminaLayer" aria-hidden="true">
   <div class="lm-blobwrap"><div class="lm-blob lm-b1"></div><div class="lm-blob lm-b2"></div><div class="lm-blob lm-b3"></div><div class="lm-blob lm-b4"></div></div>
@@ -936,8 +944,8 @@ body.theme-light #luminaLayer{display:none!important}
       <div class="modal-body">
         <p class="price-hint">Set what you charge for each service. Leave blank for ones you don't offer. When you combine services in a booking, the Charge auto-fills with the total — you can still adjust it.</p>
         <div class="svc-mode" style="margin-bottom:12px">
-          <button type="button" class="svc-mode-btn on" data-pmode="hair" onclick="setPriceMode('hair')"><span class="m-word">Hair</span></button>
-          <button type="button" class="svc-mode-btn" data-pmode="nail" onclick="setPriceMode('nail')"><span class="m-word">Nail</span></button>
+          <button type="button" class="svc-mode-btn on" data-pmode="hair" onclick="setPriceMode('hair')"><i class="ti ti-scissors m-ico"></i><span class="m-word">Hair</span></button>
+          <button type="button" class="svc-mode-btn" data-pmode="nail" onclick="setPriceMode('nail')"><i class="ti ti-sparkles m-ico"></i><span class="m-word">Nail</span></button>
         </div>
         <div id="priceList"></div>
         <button class="btn-print" onclick="closePrices()"><i class="ti ti-check" style="font-size:16px"></i>Done</button>
@@ -1028,8 +1036,8 @@ body.theme-light #luminaLayer{display:none!important}
         <div class="svc-panel" id="svcPanel">
           <div class="svc-cat">Services</div>
           <div class="svc-mode">
-            <button type="button" class="svc-mode-btn on" data-mode="hair" onclick="setMode('hair')"><span class="m-word">Hair</span></button>
-            <button type="button" class="svc-mode-btn" data-mode="nail" onclick="setMode('nail')"><span class="m-word">Nail</span></button>
+            <button type="button" class="svc-mode-btn on" data-mode="hair" onclick="setMode('hair')"><i class="ti ti-scissors m-ico"></i><span class="m-word">Hair</span></button>
+            <button type="button" class="svc-mode-btn" data-mode="nail" onclick="setMode('nail')"><i class="ti ti-sparkles m-ico"></i><span class="m-word">Nail</span></button>
           </div>
           <div class="svc-cat" style="display:flex;align-items:center;gap:7px">Quick picks <span class="qp-hint"><i class="ti ti-arrows-move" style="font-size:11px;vertical-align:-1px"></i> hold &amp; drag to arrange</span></div>
           <div class="svc-row" id="favRow"></div>
