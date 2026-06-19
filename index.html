@@ -437,6 +437,12 @@ body[class*="wp-"] .app-shell{background:transparent!important}
 body.theme-light .panel{background:#fff;border-color:#ddd}
 body.theme-light .card{background:#f8f8f4;border-color:#ddd}
 body.theme-light input,body.theme-light select{background:#fff;border-color:#ccc;color:#1a1a1a}
+/* client-card modal stays dark in both themes — stop light-mode from washing out its fields */
+body.theme-light .cf-in{background:#1a1a1a;border-color:#444;color:#fff}
+body.theme-light .cf-in:focus{background:#1e1e1e;border-color:var(--gold)}
+body.theme-light .cf-in::placeholder{color:#777}
+body.theme-light .cf-label{color:#aaa}
+body.theme-light .cf-seg-btn{background:#1a1a1a;color:#aaa}
 body.theme-light .sc-s{background:#e8eeff;border-color:#aabbee}
 body.theme-light .sc-s .sc-lbl{color:#3355bb}
 body.theme-light .sc-s .sc-amt{color:#3355bb}
@@ -565,7 +571,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 35</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 37</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
