@@ -137,6 +137,7 @@ body.theme-light .svc-chip.sel{background:#fff8e0;border-color:var(--gold);color
 /* Idle pause: stop decorative motion when the user isn't interacting (saves battery/heat) */
 body.anim-idle .m-word,body.anim-idle .svc-more::before,body.anim-idle .svc-more .more-txt,body.anim-idle .svc-mode-btn.on::after,body.anim-idle .svc-chip.sel{animation-play-state:paused!important}
 body.theme-light .svc-more{background:#fff}
+body.theme-light .svc-more .more-txt{background:linear-gradient(90deg,#8a5a00 0%,#e0a000 50%,#8a5a00 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;font-weight:800}
 body.theme-light .svc-more::after{background:#fff}
 @media (prefers-reduced-motion: reduce){
   .svc-chip.sel,.svc-ghost.go,.svc-more,.svc-more::before,.svc-more .more-txt,.svc-mode-btn .m-word,.svc-mode-btn::after,#cCat.slot-hit{animation:none!important}
@@ -528,7 +529,7 @@ body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1p
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 29</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 30</div>
 
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
@@ -942,7 +943,7 @@ function calc(){
   $('eTip').textContent=fmt(tip);
   $('eTotal').textContent=fmt(me+tip);
   $('calcHint').innerHTML=(charge||tip)?
-    `Charge <strong style="color:#fff">$${charge.toFixed(2)}</strong> &times; 60% = <span style="color:#5ddb7c;font-weight:700">$${me.toFixed(2)}</span><br>+ Tip <span style="color:#5ddb7c;font-weight:700">$${tip.toFixed(2)}</span> <span style="color:#666">(100% yours)</span><br>= Your take-home <span style="color:var(--gold);font-weight:700">$${(me+tip).toFixed(2)}</span>`
+    `Charge <strong style="color:var(--text)">$${charge.toFixed(2)}</strong> &times; 60% = <span style="color:#5ddb7c;font-weight:700">$${me.toFixed(2)}</span><br>+ Tip <span style="color:#5ddb7c;font-weight:700">$${tip.toFixed(2)}</span> <span style="color:#888">(100% yours)</span><br>= Your take-home <span style="color:var(--gold);font-weight:700">$${(me+tip).toFixed(2)}</span>`
     :'Enter a charge and tip above to see the breakdown';
 }
 async function save(){
