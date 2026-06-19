@@ -516,6 +516,26 @@ body.theme-light .week-header{color:#3a3a3a;font-weight:700}
 body.theme-light .month-item{background:#f7f5ef;border-color:#dad8cf}
 body.theme-light .mi-month{color:#1a1a1a;font-weight:700}
 body.theme-light .mi-appts{color:#4a4a4a}
+/* ── Light mode comfort presets (user-adjustable) ── */
+/* Background: Bright */
+body.theme-light.lcbg-bright .app-shell{background:#f4f4ef}
+body.theme-light.lcbg-bright .panel,body.theme-light.lcbg-bright .topbar{background:#ffffff}
+body.theme-light.lcbg-bright .card{background:#fcfcf9}
+body.theme-light.lcbg-bright .sum-c,body.theme-light.lcbg-bright .month-item,body.theme-light.lcbg-bright .fbtn,body.theme-light.lcbg-bright .ins-card,body.theme-light.lcbg-bright .tab.active{background:#ffffff}
+body.theme-light.lcbg-bright .tabs{background:#ededed}
+/* Background: Sepia (warm, low-glare — gentle on eyes) */
+body.theme-light.lcbg-sepia .app-shell{background:#e3d8bf}
+body.theme-light.lcbg-sepia .panel,body.theme-light.lcbg-sepia .topbar{background:#f1e7d2;border-color:#d8c9a8}
+body.theme-light.lcbg-sepia .card{background:#f6eeda;border-color:#d8c9a8}
+body.theme-light.lcbg-sepia .sum-c,body.theme-light.lcbg-sepia .month-item,body.theme-light.lcbg-sepia .fbtn,body.theme-light.lcbg-sepia .ins-card,body.theme-light.lcbg-sepia .tab.active{background:#f1e7d2;border-color:#d8c9a8}
+body.theme-light.lcbg-sepia .tabs{background:#ddd0b4;border-color:#cdbf9e}
+/* Text contrast: High (darker + bolder everywhere) */
+body.theme-light.lctx-high td,body.theme-light.lctx-high .mi-month{color:#0d0d0d;font-weight:700}
+body.theme-light.lctx-high .td-m,body.theme-light.lctx-high th,body.theme-light.lctx-high .week-header,body.theme-light.lctx-high .mi-appts,body.theme-light.lctx-high .sum-lbl,body.theme-light.lctx-high .topbar-sub,body.theme-light.lctx-high .tab,body.theme-light.lctx-high .fbtn,body.theme-light.lctx-high .ins-lbl,body.theme-light.lctx-high .ins-sub,body.theme-light.lctx-high .calc-hint{color:#262626;font-weight:700}
+body.theme-light.lctx-high label,body.theme-light.lctx-high .ctitle,body.theme-light.lctx-high .svc-cat,body.theme-light.lctx-high .setup-label,body.theme-light.lctx-high .topbar-name,body.theme-light.lctx-high .box-lbl{color:#000}
+/* make the topbar Eye-Rest button stand out */
+.gear-btn.er-btn{color:#e2483c}
+.gear-btn.er-btn:hover{color:#ff5b4f}
 
 /* ── ACCENT COLORS ── */
 body.accent-rose{--gold:#E8527A;--gold2:#2a0a14;--gold3:#661a2a;--gold-light:#ff7a9a}
@@ -652,7 +672,7 @@ body.theme-light #luminaLayer{display:none!important}
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 43</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 44</div>
 
 <div id="luminaLayer" aria-hidden="true">
   <div class="lm-blobwrap"><div class="lm-blob lm-b1"></div><div class="lm-blob lm-b2"></div><div class="lm-blob lm-b3"></div><div class="lm-blob lm-b4"></div></div>
@@ -801,6 +821,28 @@ body.theme-light #luminaLayer{display:none!important}
     </div>
 
     <div class="setup-section">
+      <div class="setup-section-title">Light mode comfort ☀️</div>
+      <label class="setup-label" style="margin-top:0">Background tone</label>
+      <div class="theme-grid" style="grid-template-columns:repeat(3,1fr)">
+        <button class="theme-btn lcbg-btn" data-v="bright" onclick="setLcbg('bright',this)">Bright</button>
+        <button class="theme-btn lcbg-btn" data-v="soft" onclick="setLcbg('soft',this)">Soft</button>
+        <button class="theme-btn lcbg-btn" data-v="sepia" onclick="setLcbg('sepia',this)">Sepia</button>
+      </div>
+      <label class="setup-label">Text contrast</label>
+      <div class="theme-grid" style="grid-template-columns:repeat(2,1fr)">
+        <button class="theme-btn lctx-btn" data-v="normal" onclick="setLctx('normal',this)">Normal</button>
+        <button class="theme-btn lctx-btn" data-v="high" onclick="setLctx('high',this)">High contrast</button>
+      </div>
+      <div style="font-size:11.5px;color:#888;margin-top:8px;line-height:1.5">Applies to Light mode. Try <b>Sepia + High contrast</b> for the easiest read.</div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Eye rest 👁️</div>
+      <button class="cf-disc-edit" onclick="closeSettings();eyeRestFull()" style="margin-top:2px;color:#e2483c;border-color:#e2483c55"><i class="ti ti-eye" style="font-size:14px"></i> Rest my eyes (22s)</button>
+      <div style="font-size:11.5px;color:#888;margin-top:8px;line-height:1.5">A calming red starburst plus a 20-second look-into-the-distance break. Also pops when you save a booking or get paid.</div>
+    </div>
+
+    <div class="setup-section">
       <div class="setup-section-title">Fun FX ✨</div>
       <div class="theme-grid" id="fxGrid" style="grid-template-columns:repeat(4,1fr)">
         <button class="theme-btn fx-btn" data-fx="off" onclick="setFx('off',this)">Off</button>
@@ -833,7 +875,7 @@ body.theme-light #luminaLayer{display:none!important}
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <button class="gear-btn" onclick="eyeRestFull()" title="Eye rest"><i class="ti ti-eye"></i></button>
+      <button class="gear-btn er-btn" onclick="eyeRestFull()" title="Eye rest"><i class="ti ti-eye"></i></button>
       <button class="gear-btn" onclick="openClients()" title="Client cards"><i class="ti ti-address-book"></i></button>
       <button class="gear-btn" onclick="openPrices()" title="Price book"><i class="ti ti-currency-dollar"></i></button>
       <button class="gear-btn" onclick="openSettings()" title="Settings"><i class="ti ti-settings"></i></button>
@@ -1626,6 +1668,10 @@ function getFx(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');re
 function saveFx(fx){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.fx=fx;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.fx=fx;}
 function applyFx(fx){document.body.classList.remove('fx-off','fx-gentle','fx-lively','fx-party');document.body.classList.add('fx-'+(fx||'gentle'));}
 function setFx(fx,btn){saveFx(fx);applyFx(fx);if(btn){var g=btn.parentNode;if(g)g.querySelectorAll('.fx-btn').forEach(function(b){b.classList.remove('sel');});btn.classList.add('sel');}}function markFx(){var fx=getFx();document.querySelectorAll('#fxGrid .fx-btn').forEach(function(b){b.classList.toggle('sel',b.dataset.fx===fx);});}
+function applyLightComfort(){var b=document.body;b.classList.remove('lcbg-bright','lcbg-soft','lcbg-sepia','lctx-normal','lctx-high');b.classList.add('lcbg-'+(prefs.lcbg||'soft'));b.classList.add('lctx-'+(prefs.lctx||'normal'));}
+function setLcbg(v,btn){prefs.lcbg=v;applyLightComfort();savePrefsToStorage();if(btn){btn.parentNode.querySelectorAll('.lcbg-btn').forEach(function(x){x.classList.remove('sel');});btn.classList.add('sel');}}
+function setLctx(v,btn){prefs.lctx=v;applyLightComfort();savePrefsToStorage();if(btn){btn.parentNode.querySelectorAll('.lctx-btn').forEach(function(x){x.classList.remove('sel');});btn.classList.add('sel');}}
+function markLightComfort(){var bg=prefs.lcbg||'soft',tx=prefs.lctx||'normal';document.querySelectorAll('.lcbg-btn').forEach(function(x){x.classList.toggle('sel',x.dataset.v===bg);});document.querySelectorAll('.lctx-btn').forEach(function(x){x.classList.toggle('sel',x.dataset.v===tx);});}
 // ── PRICE BOOK ──
 var priceMode='hair';
 function getPrices(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.prices&&typeof p.prices==='object')?p.prices:{};}catch(e){return {};}}
@@ -1949,7 +1995,7 @@ function openSettings(){
   if(si) si.value = prefs.salon||'';
   if(ri) ri.value = prefs.rate||60;
   const panel = document.getElementById('settingsPanel');
-  if(panel){ panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); }
+  if(panel){ panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); }
 }
 
 function closeSettings(){
@@ -2117,6 +2163,7 @@ document.addEventListener('visibilitychange',function(){
 
 function initPrefs(){
   loadPrefs();
+  applyLightComfort();
   if(prefs.setup){
     applyTheme(prefs.theme||'dark', prefs.accent||'gold');
     updateBranding(prefs.name, prefs.salon);
