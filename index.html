@@ -13,8 +13,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html{overflow-x:hidden;width:100%;-webkit-text-size-adjust:100%;background:#0a0a0a}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#f0f0f0;min-height:100vh;overflow-x:hidden;width:100%;max-width:100%;touch-action:pan-y}
+html{overflow-x:hidden;width:100%;max-width:100%;-webkit-text-size-adjust:100%;background:#0a0a0a;overscroll-behavior-x:none}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#f0f0f0;min-height:100vh;overflow-x:hidden;width:100%;max-width:100%;touch-action:pan-y;overscroll-behavior-x:none;position:relative}
 :root{
   --bg:#0a0a0a;
   --bg2:#141414;
@@ -181,7 +181,7 @@ body.theme-light .svc-more::after{background:#fff}
 .legal-body{font-size:11px;color:#888;line-height:1.6;margin-top:10px}
 body.theme-light .legal-foot summary{color:#666}
 body.theme-light .legal-body{color:#777}
-#payGate{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;background:rgba(5,5,8,.92);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);padding:24px}
+#payGate{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;overflow:hidden;background:rgba(5,5,8,.92);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);padding:24px}
 #payGate.on{display:flex}
 .pg-card{width:100%;max-width:380px;background:#141414;border:1px solid #2a2a2a;border-radius:20px;padding:30px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 .pg-logo{font-size:30px;color:var(--gold)}
@@ -710,7 +710,7 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
 @media (prefers-reduced-motion: reduce){#luminaLayer .lm-blob,#luminaLayer .lm-stars,#luminaLayer .lm-blobwrap{animation:none!important}#luminaLayer .lm-comet,#luminaLayer .lm-fin{display:none}}
 
 /* ── EYE REST: deep 670nm-red starburst + 20-20-20 cue ── */
-#eyeRest{position:fixed;inset:0;z-index:9000;pointer-events:none;display:none;align-items:center;justify-content:center;--erC1:#ff9a9a;--erC2:#ff2424;--erC3:rgba(235,0,18,.78);--erG:rgba(255,40,40,.6)}
+#eyeRest{position:fixed;inset:0;z-index:9000;pointer-events:none;display:none;align-items:center;justify-content:center;overflow:hidden;--erC1:#ff9a9a;--erC2:#ff2424;--erC3:rgba(235,0,18,.78);--erG:rgba(255,40,40,.6)}
 #eyeRest.on{display:flex;background:#000}
 #eyeRest .er-ring{position:absolute;left:50%;top:50%;border-radius:50%;will-change:transform,opacity;opacity:0;border:3px solid var(--erC2);box-shadow:0 0 26px var(--erG),inset 0 0 18px var(--erG)}
 #eyeRest .er-veil{position:absolute;inset:0;background:#000;opacity:0;will-change:opacity}
@@ -732,7 +732,7 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 62</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 64</div>
 
 <canvas id="warpLayer" aria-hidden="true"></canvas>
 
