@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MGM Studio — Shahbaz Mirshahi</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,8 +13,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html{overflow-x:hidden;width:100%;max-width:100%;-webkit-text-size-adjust:100%;background:#0a0a0a;overscroll-behavior-x:none}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#f0f0f0;min-height:100vh;overflow-x:hidden;width:100%;max-width:100%;touch-action:pan-y;overscroll-behavior-x:none;position:relative}
+html{overflow-x:hidden;overflow-x:clip;width:100%;max-width:100%;-webkit-text-size-adjust:100%;background:#0a0a0a;overscroll-behavior-x:none}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#f0f0f0;min-height:100vh;overflow-x:hidden;overflow-x:clip;width:100%;max-width:100%;touch-action:pan-y;overscroll-behavior-x:none;position:relative}
 :root{
   --bg:#0a0a0a;
   --bg2:#141414;
@@ -35,7 +35,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   --bgreen:#1a4a2a;
   --purple:#cc99ff;
 }
-.app-shell{max-width:980px;margin:0 auto;padding:16px;width:100%;overflow-x:hidden}
+.app-shell{max-width:980px;margin:0 auto;padding:16px;width:100%;overflow-x:hidden;overflow-x:clip}
 
 /* TOPBAR */
 .topbar{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
@@ -732,7 +732,7 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 64</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 65</div>
 
 <canvas id="warpLayer" aria-hidden="true"></canvas>
 
