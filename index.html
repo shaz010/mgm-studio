@@ -173,6 +173,14 @@ body.theme-light .svc-more::after{background:#fff}
 .reset-qp-btn{width:100%;padding:11px;background:#1a1a1a;border:1.5px solid #444;border-radius:9px;color:#ddd;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .reset-qp-btn:active{border-color:var(--gold);color:var(--gold)}
 .reset-qp-hint{font-size:11.5px;color:#888;line-height:1.5;margin-top:8px}
+.legal-foot{margin:18px 0 4px;border-top:1px solid var(--border);padding-top:14px}
+.legal-foot summary{font-size:12px;color:#999;cursor:pointer;list-style:none;font-weight:600;letter-spacing:.2px;display:flex;align-items:center}
+.legal-foot summary::-webkit-details-marker{display:none}
+.legal-foot summary::after{content:'⌄';margin-left:auto;font-size:14px;opacity:.6}
+.legal-foot[open] summary::after{content:'⌃'}
+.legal-body{font-size:11px;color:#888;line-height:1.6;margin-top:10px}
+body.theme-light .legal-foot summary{color:#666}
+body.theme-light .legal-body{color:#777}
 
 /* ── CLIENT CARDS ── */
 .client-list{margin-top:14px;display:flex;flex-direction:column;gap:10px}
@@ -694,7 +702,7 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 56</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 57</div>
 
 <canvas id="warpLayer" aria-hidden="true"></canvas>
 
@@ -876,6 +884,7 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
       <div style="font-size:11px;color:#888;margin:6px 0 4px;line-height:1.5">Deep red (~660nm) is the closest to the most-studied wavelength.</div>
       <button class="cf-disc-edit" onclick="closeSettings();eyeRestFull()" style="margin-top:2px;color:#e2483c;border-color:#e2483c55"><i class="ti ti-eye" style="font-size:14px"></i> Rest my eyes (22s)</button>
       <div style="font-size:11.5px;color:#888;margin-top:8px;line-height:1.5">A calming red starburst plus a 20-second look-into-the-distance break. Also pops when you save a booking or get paid.</div>
+      <div style="font-size:11px;color:#777;margin-top:8px;line-height:1.55;font-style:italic">Eye Rest is a relaxing visual and a reminder to rest your eyes. It is not a medical device or treatment, is not a substitute for professional eye care, and makes no health or therapeutic claims.</div>
     </div>
 
     <div class="setup-section">
@@ -903,6 +912,11 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
       <button class="reset-qp-btn" onclick="resetQuickPicks()"><i class="ti ti-rotate" style="font-size:15px;vertical-align:-2px;margin-right:6px"></i>Reset Quick Picks to defaults</button>
       <div class="reset-qp-hint">Restores the starting set of favourite services for both Hair and Nail. Your prices and client cards are not affected.</div>
     </div>
+
+    <details class="legal-foot">
+      <summary><i class="ti ti-shield-check" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Legal &amp; disclaimers</summary>
+      <div class="legal-body">CommissionPro is a personal tracking tool. All figures are estimates based on the information you enter and are for your own reference only — not official payroll, tax, or accounting records. Commission splits and pay vary; the app reflects only the values you input and does not guarantee any amount. CommissionPro does not provide financial, legal, or tax advice. Always verify your earnings against your salon's official records.<br><br>Eye Rest is a relaxing visual and a reminder to rest your eyes. It is not a medical device or treatment, is not a substitute for professional eye care, and makes no health or therapeutic claims.</div>
+    </details>
 
     <button class="setup-btn" onclick="saveSettings()">Save settings</button>
   </div>
