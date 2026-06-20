@@ -641,6 +641,9 @@ body[class*="wp-"]:not(.theme-light) .hist-wrap,body[class*="wp-"]:not(.theme-li
 /* in Light mode, switch every wallpaper OFF: no background, no animation, no Lumina layer */
 body.theme-light[class*="wp-"]{background:#e8e6de!important;animation:none!important}
 body.theme-light #luminaLayer{display:none!important}
+#warpLayer{display:none;position:fixed;inset:0;z-index:-1;pointer-events:none;background:#02030a}
+body[class*="wp-warp"]:not(.theme-light) #warpLayer{display:block}
+body.theme-light #warpLayer{display:none!important}
 #luminaLayer .lm-blobwrap{position:absolute;inset:0;will-change:filter;animation:lmHue 84s ease-in-out infinite}
 @keyframes lmHue{0%,100%{filter:hue-rotate(-34deg)}50%{filter:hue-rotate(34deg)}}
 #luminaLayer .lm-blob{position:absolute;width:85vmax;height:85vmax;border-radius:50%;mix-blend-mode:screen;will-change:transform,opacity}
@@ -690,7 +693,9 @@ body.theme-light #luminaLayer{display:none!important}
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 53</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 54</div>
+
+<canvas id="warpLayer" aria-hidden="true"></canvas>
 
 <div id="luminaLayer" aria-hidden="true">
   <div class="lm-blobwrap"><div class="lm-blob lm-b1"></div><div class="lm-blob lm-b2"></div><div class="lm-blob lm-b3"></div><div class="lm-blob lm-b4"></div></div>
@@ -835,6 +840,9 @@ body.theme-light #luminaLayer{display:none!important}
       <div class="wp-swatch" data-wp="rosegold" onclick="selWP(this,'rosegold')" style="background:linear-gradient(135deg,#1a0610,#5a3018)" title="Rose gold"></div>
       <div class="wp-swatch" data-wp="grid" onclick="selWP(this,'grid')" style="background:#0a0a0a;background-image:linear-gradient(rgba(120,180,255,.25) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.25) 1px,transparent 1px);background-size:8px 8px" title="Grid"></div>
       <div class="wp-swatch" data-wp="lumina" onclick="selWP(this,'lumina')" style="background:radial-gradient(circle at 28% 30%,#ff9ec4,transparent 42%),radial-gradient(circle at 72% 70%,#8ec9ff,transparent 46%),linear-gradient(135deg,#0b1233,#1a0a3a 60%,#04050d)" title="Lumina ✦"></div>
+      <div class="wp-swatch" data-wp="warp" onclick="selWP(this,'warp')" style="background:radial-gradient(circle at 50% 50%,rgba(200,225,255,.55),transparent 58%),repeating-linear-gradient(90deg,transparent 0 6px,rgba(190,215,255,.55) 6px 7px),#02030a" title="Warp 🚀"></div>
+      <div class="wp-swatch" data-wp="warpprism" onclick="selWP(this,'warpprism')" style="background:repeating-linear-gradient(90deg,transparent 0 5px,rgba(255,80,90,.6) 5px 6px,transparent 6px 9px,rgba(80,255,140,.6) 9px 10px,transparent 10px 13px,rgba(90,150,255,.6) 13px 14px),#02030a" title="Warp prism 🌈"></div>
+      <div class="wp-swatch" data-wp="warpjump" onclick="selWP(this,'warpjump')" style="background:radial-gradient(circle at 50% 50%,rgba(210,230,255,.85),transparent 52%),repeating-linear-gradient(90deg,transparent 0 5px,rgba(180,210,255,.45) 5px 6px),#02030a" title="Warp jump ✦"></div>
       </div>
     </div>
 
@@ -1916,7 +1924,7 @@ resetIdle();
 
 
 // ── WALLPAPERS ──
-const WP_LIST = ['none','starfield','nebula','aurora','galaxy','cosmos','meteor','ocean','ember','sunset','neon','plasma','midnight','emerald','rosegold','grid','lumina'];
+const WP_LIST = ['none','starfield','nebula','aurora','galaxy','cosmos','meteor','ocean','ember','sunset','neon','plasma','midnight','emerald','rosegold','grid','lumina','warp','warpprism','warpjump'];
 
 function syncRootBg(){
   var wp=window.CURRENT_WP||'none';
@@ -1929,6 +1937,7 @@ function applyWallpaper(wp){
   window.CURRENT_WP = wp||'none';
   syncRootBg();
   if(typeof luminaSet==='function') luminaSet(wp==='lumina' && !document.body.classList.contains('theme-light'));
+  if(typeof warpSet==='function') warpSet(!document.body.classList.contains('theme-light') ? warpStyleFor(wp) : null);
 }
 
 function selWP(el, wp){
@@ -1972,6 +1981,7 @@ function applyTheme(theme, accent){
   body.classList.add('accent-'+(accent||'gold'));
   if(typeof syncRootBg==='function')syncRootBg();
   if(typeof luminaSet==='function') luminaSet(window.CURRENT_WP==='lumina' && !body.classList.contains('theme-light'));
+  if(typeof warpSet==='function') warpSet(!body.classList.contains('theme-light') ? warpStyleFor(window.CURRENT_WP) : null);
 }
 function selThemeS(theme, btn){
   if(btn){ document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
@@ -2223,6 +2233,75 @@ function luminaSet(on){
 document.addEventListener('visibilitychange',function(){
   if(!document.hidden&&LM.on&&!LM.busy&&!lmReduce.matches){ var A=lmEl('lmA'); if(A&&!A.getAnimations().length) lmStartComets(); }
 });
+
+var WARP=(function(){
+  var cv,ctx,dpr=Math.min(window.devicePixelRatio||1,2),W=0,H=0,cx=0,cy=0,focal=0;
+  var stars=[],N=0,style=null,raf=null,running=false,visible=true;
+  var GENTLE=0.05,WARP_S=0.92,speed=GENTLE,target=GENTLE;
+  var surgeUntil=0,nextSurge=0,last=0,idleTimer=null,mode='active';
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+  function el(){return document.getElementById('warpLayer');}
+  function resize(){cv=el();if(!cv||!ctx)return;W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);cx=W/2;cy=H/2;focal=Math.max(W,H)*0.9;}
+  function mk(s){s=s||{};s.x=Math.random()*2-1;s.y=Math.random()*2-1;s.z=Math.random()*0.9+0.1;s.px=null;s.py=null;return s;}
+  function build(){N=Math.min(innerWidth,innerHeight)<420?200:250;stars=[];for(var i=0;i<N;i++)stars.push(mk());}
+  function poke(){mode='active';target=GENTLE;clearTimeout(idleTimer);idleTimer=setTimeout(function(){mode='idle';target=WARP_S;},2500);}
+  var pokeEvents=['pointerdown','pointermove','touchstart','keydown','wheel'];
+  function frame(now){
+    if(!running)return;
+    raf=requestAnimationFrame(frame);
+    if(!visible){last=now;return;}
+    var dt=Math.min((now-last)/1000,0.05);last=now;
+    var tgt=target;
+    if(style==='jump'){
+      if(now>nextSurge){surgeUntil=now+1400;nextSurge=now+(7000+Math.random()*7000);}
+      if(now<surgeUntil){var base=(mode==='idle')?WARP_S:GENTLE*4;tgt=Math.max(tgt,base*1.7);}
+    }
+    speed+=(tgt-speed)*(1-Math.pow(0.001,dt));
+    var fade=0.30-Math.min(speed,1)*0.16;
+    ctx.fillStyle='rgba(2,3,10,'+fade.toFixed(3)+')';ctx.fillRect(0,0,W,H);ctx.lineCap='round';
+    var prism=(style==='prism');
+    for(var i=0;i<N;i++){
+      var s=stars[i];s.z-=speed*dt;
+      if(s.z<=0.02){stars[i]=mk(s);continue;}
+      var sx=cx+(s.x/s.z)*focal,sy=cy+(s.y/s.z)*focal;
+      if(s.px===null){s.px=sx;s.py=sy;}
+      var depth=1-s.z,lw=0.4+depth*depth*2.6,a=0.25+depth*0.75;
+      if(prism){
+        var dx=sx-s.px,dy=sy-s.py,len=Math.hypot(dx,dy)||1,ox=-dy/len,oy=dx/len,sp=Math.min(len*0.14,3.2)*(0.4+depth);
+        ctx.lineWidth=lw;
+        ctx.strokeStyle='rgba(255,60,80,'+(a*0.7)+')';ctx.beginPath();ctx.moveTo(s.px+ox*sp,s.py+oy*sp);ctx.lineTo(sx+ox*sp,sy+oy*sp);ctx.stroke();
+        ctx.strokeStyle='rgba(70,255,120,'+(a*0.7)+')';ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(sx,sy);ctx.stroke();
+        ctx.strokeStyle='rgba(70,120,255,'+(a*0.7)+')';ctx.beginPath();ctx.moveTo(s.px-ox*sp,s.py-oy*sp);ctx.lineTo(sx-ox*sp,sy-oy*sp);ctx.stroke();
+      }else{
+        ctx.lineWidth=lw;ctx.strokeStyle='rgba('+(200+Math.round(depth*55))+','+(220+Math.round(depth*35))+',255,'+a+')';
+        ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(sx,sy);ctx.stroke();
+      }
+      s.px=sx;s.py=sy;
+    }
+    if(speed>0.3){var g=ctx.createRadialGradient(cx,cy,0,cx,cy,90),ga=Math.min((speed-0.3)*0.5,0.32);g.addColorStop(0,'rgba(180,210,255,'+ga+')');g.addColorStop(1,'rgba(180,210,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,90,0,7);ctx.fill();}
+  }
+  function start(st){
+    if(reduce.matches){stop();return;}
+    cv=el();if(!cv)return;ctx=cv.getContext('2d');style=st;
+    resize();build();speed=GENTLE;target=GENTLE;mode='active';last=performance.now();
+    if(!running){running=true;
+      window.addEventListener('resize',resize);
+      pokeEvents.forEach(function(ev){window.addEventListener(ev,poke,{passive:true});});
+      raf=requestAnimationFrame(frame);
+    }
+    poke();
+  }
+  function stop(){
+    running=false;if(raf){cancelAnimationFrame(raf);raf=null;}clearTimeout(idleTimer);
+    window.removeEventListener('resize',resize);
+    pokeEvents.forEach(function(ev){window.removeEventListener(ev,poke);});
+    if(ctx&&cv){ctx.clearRect(0,0,cv.width,cv.height);}
+  }
+  document.addEventListener('visibilitychange',function(){visible=!document.hidden;if(visible&&running)last=performance.now();});
+  return {start:start,stop:stop};
+})();
+function warpStyleFor(wp){return wp==='warp'?'star':wp==='warpprism'?'prism':wp==='warpjump'?'jump':null;}
+function warpSet(st){ if(st){WARP.start(st);} else {WARP.stop();} }
 
 function initPrefs(){
   loadPrefs();
