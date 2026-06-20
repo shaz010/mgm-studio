@@ -709,7 +709,7 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 58</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 59</div>
 
 <canvas id="warpLayer" aria-hidden="true"></canvas>
 
@@ -947,7 +947,7 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
       <button class="gear-btn" onclick="openSettings()" title="Settings"><i class="ti ti-settings"></i></button>
       <div class="sync-badge sync-loading" id="syncBadge"><span class="spinner"></span> Connecting...</div>
       <div class="tabs">
-        <button class="tab active" onclick="showTab('book')"><i class="ti ti-calendar-plus" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>New booking</button>
+        <button class="tab active" onclick="newBooking()"><i class="ti ti-calendar-plus" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>New booking</button>
         <button class="tab" onclick="showTab('hist')"><i class="ti ti-list" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Appointments</button>
         <button class="tab" onclick="showTab('mgm')"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>MGM owes me</button>
       </div>
@@ -1230,6 +1230,7 @@ function delAppt(id){
   try{
     var arr=loadAppts().filter(function(x){return x.id!==id;});
     saveAppts(arr);
+    if(editingId===id)resetForm();
     setSyncBadge('ok','Saved');loadAll();
   }catch(err){setSyncBadge('err','Error');console.error(err);}
 }
@@ -1248,6 +1249,7 @@ function resetForm(){
   $('editBanner').style.display='none';$('btnCancel').style.display='none';
   $('btnLbl').textContent='Save appointment';calc();syncServiceChips();
 }
+function newBooking(){resetForm();showTab('book');}
 let searchQuery='';
 function getFiltered(){
   const now=new Date(),ts=now.toISOString().split('T')[0];
