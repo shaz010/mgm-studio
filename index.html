@@ -644,6 +644,7 @@ body.theme-light #luminaLayer{display:none!important}
 #warpLayer{display:none;position:fixed;inset:0;z-index:-1;pointer-events:none;background:#02030a}
 body[class*="wp-warp"]:not(.theme-light) #warpLayer{display:block}
 body.theme-light #warpLayer{display:none!important}
+body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){background:transparent!important}
 #luminaLayer .lm-blobwrap{position:absolute;inset:0;will-change:filter;animation:lmHue 84s ease-in-out infinite}
 @keyframes lmHue{0%,100%{filter:hue-rotate(-34deg)}50%{filter:hue-rotate(34deg)}}
 #luminaLayer .lm-blob{position:absolute;width:85vmax;height:85vmax;border-radius:50%;mix-blend-mode:screen;will-change:transform,opacity}
@@ -693,7 +694,7 @@ body.theme-light #warpLayer{display:none!important}
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 55</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 56</div>
 
 <canvas id="warpLayer" aria-hidden="true"></canvas>
 
