@@ -245,8 +245,8 @@ body.theme-light .svc-more::after{background:#fff}
 .svc-mode-btn[data-mode="hair"].on .m-word,.svc-mode-btn[data-pmode="hair"].on .m-word{color:#FFC24A}
 .svc-mode-btn[data-mode="nail"].on .m-word,.svc-mode-btn[data-pmode="nail"].on .m-word{color:#FF8FD6}
 .svc-mode-btn:not(.on){opacity:.5}
-.svc-mode-btn[data-mode="hair"].on,.svc-mode-btn[data-pmode="hair"].on{border-color:#FFB800;background:rgba(255,184,0,.13);box-shadow:0 2px 16px rgba(255,170,70,.22);animation:glowHair 3.2s ease-in-out infinite}
-.svc-mode-btn[data-mode="nail"].on,.svc-mode-btn[data-pmode="nail"].on{border-color:#FF6FC0;background:rgba(255,79,176,.13);box-shadow:0 2px 16px rgba(255,90,190,.22);animation:glowNail 3.2s ease-in-out infinite}
+.svc-mode-btn[data-mode="hair"].on,.svc-mode-btn[data-pmode="hair"].on{border-color:#FFB800;background:rgba(255,184,0,.13);box-shadow:0 2px 16px rgba(255,170,70,.22);animation:glowHair var(--fxGlow,3.2s) ease-in-out infinite}
+.svc-mode-btn[data-mode="nail"].on,.svc-mode-btn[data-pmode="nail"].on{border-color:#FF6FC0;background:rgba(255,79,176,.13);box-shadow:0 2px 16px rgba(255,90,190,.22);animation:glowNail var(--fxGlow,3.2s) ease-in-out infinite}
 body.theme-light .svc-mode-btn .m-word{color:#555;text-shadow:none}
 body.theme-light .svc-mode-btn[data-mode="hair"].on .m-word,body.theme-light .svc-mode-btn[data-pmode="hair"].on .m-word{color:#B97A00}
 body.theme-light .svc-mode-btn[data-mode="nail"].on .m-word,body.theme-light .svc-mode-btn[data-pmode="nail"].on .m-word{color:#C13C8E}
@@ -256,16 +256,16 @@ body.theme-light .svc-mode-btn[data-mode="nail"].on .m-word,body.theme-light .sv
 .svc-mode-btn::after{content:'';position:absolute;left:24%;right:24%;bottom:9px;height:4px;border-radius:4px;background:linear-gradient(90deg,var(--gold),#fff,var(--gold));background-size:200% auto;opacity:0;transform:scaleX(.3);transform-origin:center;transition:opacity .25s ease,transform .3s cubic-bezier(.3,1.5,.5,1)}
 .svc-mode-btn[data-mode="hair"]::after,.svc-mode-btn[data-pmode="hair"]::after{background:linear-gradient(90deg,#FFB800,#FF6FA3,#FFD24A,#FFB800);background-size:200% auto}
 .svc-mode-btn[data-mode="nail"]::after,.svc-mode-btn[data-pmode="nail"]::after{background:linear-gradient(90deg,#FF4FB0,#A24BFF,#22C3DD,#FF4FB0);background-size:200% auto}
-.svc-mode-btn.on::after{opacity:1;transform:scaleX(1);animation:moreShimmer 2.4s linear infinite;box-shadow:0 1px 9px rgba(255,170,70,.65)}
+.svc-mode-btn.on::after{opacity:1;transform:scaleX(1);animation:moreShimmer var(--fxUnderline,2.4s) linear infinite;box-shadow:0 1px 9px rgba(255,170,70,.65)}
 @keyframes fxColorMove{to{background-position:-240% center}}
 @keyframes hairWave{0%{transform:translateY(0) scale(1) rotate(0)}25%{transform:translateY(-3px) scale(1.18) rotate(-4deg)}50%{transform:translateY(0) scale(1) rotate(0)}75%{transform:translateY(3px) scale(.86) rotate(4deg)}100%{transform:translateY(0) scale(1) rotate(0)}}
 @keyframes nailWave{0%{transform:translateY(0) scale(1.16) rotate(3deg)}25%{transform:translateY(4px) scale(.86) rotate(0)}50%{transform:translateY(-3px) scale(1.18) rotate(-3deg)}75%{transform:translateY(2px) scale(1) rotate(0)}100%{transform:translateY(0) scale(1.16) rotate(3deg)}}
 @keyframes glowHair{0%,100%{box-shadow:0 2px 12px rgba(255,170,70,.16)}50%{box-shadow:0 2px 20px rgba(255,170,70,.34)}}
 @keyframes glowNail{0%,100%{box-shadow:0 2px 12px rgba(255,90,190,.16)}50%{box-shadow:0 2px 20px rgba(255,90,190,.34)}}
 /* FX intensity presets (set via Settings) */
-body.fx-gentle{--fxModeDur:11s;--fxNailColor:13s;--fxHairWave:6.5s;--fxNailWave:8.5s;--fxMoreSpin:3.4s;--fxMoreHue:22s}
-body.fx-lively{--fxModeDur:6s;--fxNailColor:7.5s;--fxHairWave:3.6s;--fxNailWave:4.6s;--fxMoreSpin:1.8s;--fxMoreHue:11s}
-body.fx-party{--fxModeDur:3s;--fxNailColor:3.6s;--fxHairWave:1.8s;--fxNailWave:2.4s;--fxMoreSpin:1s;--fxMoreHue:5s}
+body.fx-gentle{--fxModeDur:11s;--fxNailColor:13s;--fxHairWave:6.5s;--fxNailWave:8.5s;--fxMoreSpin:3.4s;--fxMoreHue:22s;--fxUnderline:3.6s;--fxGlow:4.2s}
+body.fx-lively{--fxModeDur:6s;--fxNailColor:7.5s;--fxHairWave:3.6s;--fxNailWave:4.6s;--fxMoreSpin:1.8s;--fxMoreHue:11s;--fxUnderline:1.9s;--fxGlow:2.3s}
+body.fx-party{--fxModeDur:3s;--fxNailColor:3.6s;--fxHairWave:1.8s;--fxNailWave:2.4s;--fxMoreSpin:1s;--fxMoreHue:5s;--fxUnderline:1s;--fxGlow:1.2s}
 body.fx-off .svc-mode-btn.on,body.fx-off .svc-mode-btn .m-word,body.fx-off .svc-mode-btn::after,body.fx-off .svc-more,body.fx-off .svc-more::before,body.fx-off .svc-more .more-txt{animation:none!important}
 body.fx-off .svc-more::before{background:var(--gold)!important}
 body.fx-off .svc-more .more-txt{-webkit-text-fill-color:var(--gold)!important;color:var(--gold)!important}
@@ -693,7 +693,7 @@ body.theme-light #warpLayer{display:none!important}
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 54</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 55</div>
 
 <canvas id="warpLayer" aria-hidden="true"></canvas>
 
@@ -2236,21 +2236,27 @@ document.addEventListener('visibilitychange',function(){
 
 var WARP=(function(){
   var cv,ctx,dpr=Math.min(window.devicePixelRatio||1,2),W=0,H=0,cx=0,cy=0,focal=0;
-  var stars=[],N=0,style=null,raf=null,running=false,visible=true;
-  var GENTLE=0.05,WARP_S=0.92,speed=GENTLE,target=GENTLE;
-  var surgeUntil=0,nextSurge=0,last=0,idleTimer=null,mode='active';
+  var stars=[],N=0,style=null,raf=null,running=false,visible=true,suspended=false;
+  var GENTLE=0.05,WARP_S=0.85,speed=GENTLE,target=GENTLE;
+  var surgeUntil=0,nextSurge=0,last=0,idleTimer=null,mode='active',idleSince=0;
   var reduce=window.matchMedia('(prefers-reduced-motion: reduce)');
   function el(){return document.getElementById('warpLayer');}
-  function resize(){cv=el();if(!cv||!ctx)return;W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);cx=W/2;cy=H/2;focal=Math.max(W,H)*0.9;}
+  function resize(){if(!cv||!ctx)return;W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);cx=W/2;cy=H/2;focal=Math.max(W,H)*0.9;}
   function mk(s){s=s||{};s.x=Math.random()*2-1;s.y=Math.random()*2-1;s.z=Math.random()*0.9+0.1;s.px=null;s.py=null;return s;}
-  function build(){N=Math.min(innerWidth,innerHeight)<420?200:250;stars=[];for(var i=0;i<N;i++)stars.push(mk());}
-  function poke(){mode='active';target=GENTLE;clearTimeout(idleTimer);idleTimer=setTimeout(function(){mode='idle';target=WARP_S;},2500);}
+  function build(){N=Math.min(innerWidth,innerHeight)<420?150:190;stars=[];for(var i=0;i<N;i++)stars.push(mk());}
+  function poke(){
+    mode='active';target=GENTLE;
+    if(suspended&&running){suspended=false;last=performance.now();raf=requestAnimationFrame(frame);}
+    clearTimeout(idleTimer);
+    idleTimer=setTimeout(function(){mode='idle';target=WARP_S;idleSince=performance.now();},2500);
+  }
   var pokeEvents=['pointerdown','pointermove','touchstart','keydown','wheel'];
   function frame(now){
-    if(!running)return;
-    raf=requestAnimationFrame(frame);
-    if(!visible){last=now;return;}
-    var dt=Math.min((now-last)/1000,0.05);last=now;
+    if(!running){return;}
+    if(!visible){last=now;raf=requestAnimationFrame(frame);return;}
+    if(now-last<32){raf=requestAnimationFrame(frame);return;}   // ~30fps cap
+    var dt=Math.min((now-last)/1000,0.06);last=now;
+    if(mode==='idle'&&idleSince&&(now-idleSince)>25000){suspended=true;return;}  // stop cooking when left alone
     var tgt=target;
     if(style==='jump'){
       if(now>nextSurge){surgeUntil=now+1400;nextSurge=now+(7000+Math.random()*7000);}
@@ -2279,11 +2285,13 @@ var WARP=(function(){
       s.px=sx;s.py=sy;
     }
     if(speed>0.3){var g=ctx.createRadialGradient(cx,cy,0,cx,cy,90),ga=Math.min((speed-0.3)*0.5,0.32);g.addColorStop(0,'rgba(180,210,255,'+ga+')');g.addColorStop(1,'rgba(180,210,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,90,0,7);ctx.fill();}
+    raf=requestAnimationFrame(frame);
   }
   function start(st){
-    if(reduce.matches){stop();return;}
-    cv=el();if(!cv)return;ctx=cv.getContext('2d');style=st;
-    resize();build();speed=GENTLE;target=GENTLE;mode='active';last=performance.now();
+    cv=el();if(!cv)return;
+    if(reduce.matches){cv.style.display='block';ctx=cv.getContext('2d');resize();ctx.fillStyle='#02030a';ctx.fillRect(0,0,W,H);return;}
+    ctx=cv.getContext('2d');style=st;cv.style.display='block';
+    resize();build();speed=GENTLE;target=GENTLE;mode='active';suspended=false;last=performance.now();
     if(!running){running=true;
       window.addEventListener('resize',resize);
       pokeEvents.forEach(function(ev){window.addEventListener(ev,poke,{passive:true});});
@@ -2292,10 +2300,10 @@ var WARP=(function(){
     poke();
   }
   function stop(){
-    running=false;if(raf){cancelAnimationFrame(raf);raf=null;}clearTimeout(idleTimer);
+    running=false;suspended=false;if(raf){cancelAnimationFrame(raf);raf=null;}clearTimeout(idleTimer);
     window.removeEventListener('resize',resize);
     pokeEvents.forEach(function(ev){window.removeEventListener(ev,poke);});
-    if(ctx&&cv){ctx.clearRect(0,0,cv.width,cv.height);}
+    if(cv){if(ctx)ctx.clearRect(0,0,cv.width,cv.height);cv.style.display='none';}
   }
   document.addEventListener('visibilitychange',function(){visible=!document.hidden;if(visible&&running)last=performance.now();});
   return {start:start,stop:stop};
