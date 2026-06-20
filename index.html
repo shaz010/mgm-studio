@@ -181,6 +181,29 @@ body.theme-light .svc-more::after{background:#fff}
 .legal-body{font-size:11px;color:#888;line-height:1.6;margin-top:10px}
 body.theme-light .legal-foot summary{color:#666}
 body.theme-light .legal-body{color:#777}
+#payGate{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;background:rgba(5,5,8,.92);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);padding:24px}
+#payGate.on{display:flex}
+.pg-card{width:100%;max-width:380px;background:#141414;border:1px solid #2a2a2a;border-radius:20px;padding:30px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.pg-logo{font-size:30px;color:var(--gold)}
+.pg-title{font-size:22px;font-weight:800;color:#fff;margin:10px 0 4px}
+.pg-sub{font-size:13.5px;color:#9a9a9a;line-height:1.6;margin-bottom:8px}
+.pg-price{font-size:14px;color:var(--gold);font-weight:700;margin:14px 0 18px}
+.pg-buy{display:block;width:100%;padding:15px;border-radius:13px;border:none;background:var(--gold);color:#1a1a1a;font-size:16px;font-weight:800;cursor:pointer;text-decoration:none}
+.pg-buy:active{opacity:.9}
+.pg-div{display:flex;align-items:center;gap:10px;margin:18px 0;color:#666;font-size:11px;letter-spacing:1px}
+.pg-div::before,.pg-div::after{content:'';flex:1;height:1px;background:#2a2a2a}
+.pg-code{width:100%;padding:13px;border-radius:11px;border:1.5px solid #333;background:#0e0e0e;color:#fff;font-size:15px;text-align:center;letter-spacing:1px;text-transform:uppercase}
+.pg-code::placeholder{color:#666;letter-spacing:.5px}
+.pg-unlock{width:100%;margin-top:9px;padding:13px;border-radius:11px;border:1.5px solid var(--gold);background:transparent;color:var(--gold);font-size:14px;font-weight:700;cursor:pointer}
+.pg-err{display:none;color:#ff6b6b;font-size:12.5px;margin-top:9px}
+.pg-foot{font-size:11px;color:#777;margin-top:16px;line-height:1.6}
+.pg-foot a{color:#999}
+.pg-close{display:block;margin-top:14px;background:none;border:none;color:#888;font-size:12.5px;cursor:pointer;text-decoration:underline}
+#trialBar{position:fixed;left:10px;bottom:42px;z-index:9500;display:none;align-items:center;gap:9px;background:rgba(20,20,20,.92);border:1px solid var(--gold);border-radius:11px;padding:8px 12px;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+#trialBar.on{display:flex}
+#trialBar .tb-txt{font-size:12px;color:#ddd}
+#trialBar .tb-txt b{color:var(--gold)}
+#trialBar .tb-btn{background:var(--gold);color:#1a1a1a;border:none;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer}
 
 /* ── CLIENT CARDS ── */
 .client-list{margin-top:14px;display:flex;flex-direction:column;gap:10px}
@@ -709,9 +732,25 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 60</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 62</div>
 
 <canvas id="warpLayer" aria-hidden="true"></canvas>
+
+<div id="payGate" role="dialog" aria-modal="true">
+  <div class="pg-card">
+    <div class="pg-logo">✂</div>
+    <div class="pg-title">Unlock CommissionPro</div>
+    <div class="pg-sub">Unlock the full app — yours forever, with a single one-time payment.</div>
+    <div class="pg-price">$49 · one-time · pays for itself with one service</div>
+    <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Buy now — $49</a>
+    <div class="pg-div">ALREADY PAID?</div>
+    <input type="text" id="payCode" class="pg-code" placeholder="Enter your unlock code" autocapitalize="characters" autocomplete="off">
+    <button class="pg-unlock" onclick="payUnlock()">Unlock</button>
+    <div class="pg-err" id="payErr">That code didn't match. Check the email from your purchase, or contact support.</div>
+    <div class="pg-foot">After paying, your unlock code is emailed to you instantly.<br>Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
+    <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
+  </div>
+</div>
 
 <div id="luminaLayer" aria-hidden="true">
   <div class="lm-blobwrap"><div class="lm-blob lm-b1"></div><div class="lm-blob lm-b2"></div><div class="lm-blob lm-b3"></div><div class="lm-blob lm-b4"></div></div>
@@ -1907,6 +1946,27 @@ applyFx(getFx());
 buildServiceChips();
 initFavDrag();
 calc();loadAll();
+
+/* ── Pay to Unlock ── */
+var UNLOCK={codeHash:4159026715,trialDays:3,stripeUrl:'PASTE_YOUR_STRIPE_LINK_HERE'};
+function pgHash(s){var h=5381;for(var i=0;i<s.length;i++){h=((h<<5)+h+s.charCodeAt(i))>>>0;}return h;}
+function pgUnlocked(){try{return localStorage.getItem('cp_unlocked')==='1';}catch(e){return false;}}
+function pgTrialStart(){try{var t=localStorage.getItem('cp_trialStart');if(!t){t=String(Date.now());localStorage.setItem('cp_trialStart',t);}return +t;}catch(e){return Date.now();}}
+function pgDaysLeft(){var ms=UNLOCK.trialDays*86400000-(Date.now()-pgTrialStart());return Math.max(0,Math.ceil(ms/86400000));}
+function pgTrialOver(){return (Date.now()-pgTrialStart())>=UNLOCK.trialDays*86400000;}
+function payShow(mandatory){var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.getElementById('pgClose').style.display=mandatory?'none':'block';document.getElementById('payErr').style.display='none';}
+function payClose(){var g=document.getElementById('payGate');if(g)g.classList.remove('on');}
+function payBuy(){if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){alert('Payment link is not set up yet — coming soon!');return;}window.location.href=UNLOCK.stripeUrl;}
+function payUnlock(){
+  var v=(document.getElementById('payCode').value||'').trim().toUpperCase();
+  if(v&&pgHash(v)===UNLOCK.codeHash){try{localStorage.setItem('cp_unlocked','1');}catch(e){}var tb=document.getElementById('trialBar');if(tb)tb.classList.remove('on');payClose();location.reload();}
+  else{document.getElementById('payErr').style.display='block';}
+}
+function applyAccessGate(){
+  if(pgUnlocked())return;
+  payShow(true);
+}
+applyAccessGate();
 </script>
 <script>
 if("serviceWorker" in navigator){
