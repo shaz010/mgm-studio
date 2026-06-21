@@ -1,5 +1,5 @@
-// CommissionPro service worker — network-first, bypasses Safari's cache so the app always updates.
-const CACHE = 'commissionpro-v36';
+// CommissionPro service worker — network-first so the app always updates.
+const CACHE = 'commissionpro-v67';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png'];
 
 // Install: pre-cache the shell, take over immediately.
@@ -20,21 +20,24 @@ self.addEventListener('activate', (e) => {
 });
 
 // Fetch:
-//  - Page/HTML loads -> NETWORK FIRST with cache:'no-store' so Safari can't serve a stale build.
-//    Always pulls the freshest index.html when online; falls back to cache only when offline.
-//  - Everything else -> cache first (fast), fall back to network.
+//  - Page/HTML loads -> NETWORK FIRST (always newest app); fall back to cache only when offline.
+//  - Everything else  -> cache first (fast), fall back to network.
+// We ONLY ever cache successful (res.ok) responses, so a 404 or error
+// can never get "stuck" in the cache and serve a broken/old app.
 self.addEventListener('fetch', (e) => {
   const req = e.request;
+  if (req.method !== 'GET') return;
   const accept = req.headers.get('accept') || '';
   const isPage = req.mode === 'navigate' || accept.includes('text/html');
 
   if (isPage) {
     e.respondWith(
-      // fetch by URL with no-store == go past Safari's hidden HTTP cache, hit the real network.
-      fetch(req.url, { cache: 'no-store' })
+      fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put('./index.html', copy)).catch(() => {});
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+          }
           return res;
         })
         .catch(() => caches.match(req).then((r) => r || caches.match('./index.html')))
@@ -42,5 +45,13 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  e.respondWith(caches.match(req).then((r) => r || fetch(req)));
+  e.respondWith(
+    caches.match(req).then((r) => r || fetch(req).then((res) => {
+      if (res && res.ok && new URL(req.url).origin === self.location.origin) {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+      }
+      return res;
+    }).catch(() => r))
+  );
 });
