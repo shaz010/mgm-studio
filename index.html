@@ -732,7 +732,7 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 65</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 67</div>
 
 <canvas id="warpLayer" aria-hidden="true"></canvas>
 
@@ -1948,7 +1948,7 @@ initFavDrag();
 calc();loadAll();
 
 /* ── Pay to Unlock ── */
-var UNLOCK={codeHash:4159026715,trialDays:3,stripeUrl:'PASTE_YOUR_STRIPE_LINK_HERE'};
+var UNLOCK={codeHash:4159026715,trialDays:3,stripeUrl:'https://buy.stripe.com/3cIdR97x4gdA4z9dCEfw401'};
 function pgHash(s){var h=5381;for(var i=0;i<s.length;i++){h=((h<<5)+h+s.charCodeAt(i))>>>0;}return h;}
 function pgUnlocked(){try{return localStorage.getItem('cp_unlocked')==='1';}catch(e){return false;}}
 function pgTrialStart(){try{var t=localStorage.getItem('cp_trialStart');if(!t){t=String(Date.now());localStorage.setItem('cp_trialStart',t);}return +t;}catch(e){return Date.now();}}
@@ -2123,12 +2123,13 @@ function openSettings(){
   if(si) si.value = prefs.salon||'';
   if(ri) ri.value = prefs.rate||60;
   const panel = document.getElementById('settingsPanel');
-  if(panel){ panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); }
+  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); }
 }
 
 function closeSettings(){
   const panel = document.getElementById('settingsPanel');
   if(panel){ panel.style.display='none'; }
+  if(typeof WARP!=='undefined'&&WARP.resume)WARP.resume();
 }
 
 function saveSettings(){
@@ -2390,8 +2391,10 @@ var WARP=(function(){
     pokeEvents.forEach(function(ev){window.removeEventListener(ev,poke);});
     if(cv){if(ctx)ctx.clearRect(0,0,cv.width,cv.height);cv.style.display='none';}
   }
+  function pause(){ if(raf){cancelAnimationFrame(raf);raf=null;} }
+  function resume(){ if(running&&!suspended&&!raf){last=performance.now();raf=requestAnimationFrame(frame);} }
   document.addEventListener('visibilitychange',function(){visible=!document.hidden;if(visible&&running)last=performance.now();});
-  return {start:start,stop:stop};
+  return {start:start,stop:stop,pause:pause,resume:resume};
 })();
 function warpStyleFor(wp){return wp==='warp'?'star':wp==='warpprism'?'prism':wp==='warpjump'?'jump':null;}
 function warpSet(st){ if(st){WARP.start(st);} else {WARP.stop();} }
