@@ -175,6 +175,9 @@ body.theme-light .svc-more::after{background:#fff}
 .reset-qp-hint{font-size:11.5px;color:#888;line-height:1.5;margin-top:8px}
 .legal-foot{margin:18px 0 4px;border-top:1px solid var(--border);padding-top:14px}
 .legal-foot summary{font-size:12px;color:#999;cursor:pointer;list-style:none;font-weight:600;letter-spacing:.2px;display:flex;align-items:center}
+.reset-app-btn{width:100%;padding:11px;border-radius:11px;border:1px solid #5a2a2a;background:transparent;color:#c66;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.reset-app-btn:active{background:rgba(200,80,80,.12)}
+body.theme-light .reset-app-btn{border-color:#e0b4b4;color:#b14}
 .legal-foot summary::-webkit-details-marker{display:none}
 .legal-foot summary::after{content:'⌄';margin-left:auto;font-size:14px;opacity:.6}
 .legal-foot[open] summary::after{content:'⌃'}
@@ -732,7 +735,7 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
 </style>
 </head>
 <body>
-<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 68</div>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 70</div>
 
 <canvas id="warpLayer" aria-hidden="true"></canvas>
 
@@ -960,6 +963,11 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
       <div class="reset-qp-hint">Restores the starting set of favourite services for both Hair and Nail. Your prices and client cards are not affected.</div>
     </div>
 
+    <div class="setup-section">
+      <button class="reset-app-btn" onclick="resetApp()"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Start fresh — erase all my data</button>
+      <div class="reset-qp-hint" style="margin-top:7px">Wipes all bookings, client cards, prices and salon details on this device for a clean start. Back up first if unsure — your purchase stays unlocked.</div>
+    </div>
+
     <details class="legal-foot">
       <summary><i class="ti ti-shield-check" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Legal &amp; disclaimers</summary>
       <div class="legal-body">CommissionPro is a personal tracking tool. All figures are estimates based on the information you enter and are for your own reference only — not official payroll, tax, or accounting records. Commission splits and pay vary; the app reflects only the values you input and does not guarantee any amount. CommissionPro does not provide financial, legal, or tax advice. Always verify your earnings against your salon's official records.<br><br>Eye Rest is a relaxing visual and a reminder to rest your eyes. It is not a medical device or treatment, is not a substitute for professional eye care, and makes no health or therapeutic claims.<br><br><a href="privacy.html" target="_blank" style="color:var(--gold);text-decoration:none">Privacy Policy ↗</a> &nbsp;·&nbsp; <a href="terms.html" target="_blank" style="color:var(--gold);text-decoration:none">Terms of Service ↗</a></div>
@@ -975,8 +983,8 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
     <div class="topbar-brand">
       <div class="topbar-icon"><i class="ti ti-scissors"></i></div>
       <div>
-        <div class="topbar-name"><span>MGM</span> Studio</div>
-        <div class="topbar-sub">Shahbaz Mirshahi · Commission tracker</div>
+        <div class="topbar-name"><span>Your Salon</span></div>
+        <div class="topbar-sub">Stylist · Commission tracker</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -1551,6 +1559,17 @@ var CAT_COLORS={'Cuts & Styling':'#FFC04D','Color':'#FF7AB0','Highlights':'#FFE1
 function catColorOf(c){return CAT_COLORS[c]||'#FFC04D';}
 function getFavorites(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return Array.isArray(p.favorites)?p.favorites:DEFAULT_FAVES.slice();}catch(e){return DEFAULT_FAVES.slice();}}
 function saveFavorites(arr){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.favorites=arr;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.favorites=arr;}
+function resetApp(){
+  if(!confirm('Start fresh?\n\nThis erases ALL bookings, client cards, prices and your salon details on THIS device. It cannot be undone.\n\nTip: tap "Save a copy of my data" first if you might want it back.'))return;
+  if(!confirm('Are you sure? Your data on this device will be permanently erased.'))return;
+  try{
+    localStorage.removeItem('cp_appts');
+    localStorage.removeItem('cp_paid');
+    localStorage.removeItem('cp_clients');
+    localStorage.removeItem('cp_prefs');
+  }catch(e){}
+  location.reload();
+}
 function resetQuickPicks(){if(!confirm('Reset Quick Picks to the default set for Hair and Nail?'))return;saveFavorites(DEFAULT_FAVES.slice());buildServiceChips();}
 function exportData(){
   try{
@@ -2402,12 +2421,10 @@ function warpSet(st){ if(st){WARP.start(st);} else {WARP.stop();} }
 function initPrefs(){
   loadPrefs();
   applyLightComfort();
-  if(prefs.setup){
-    applyTheme(prefs.theme||'dark', prefs.accent||'gold');
-    updateBranding(prefs.name, prefs.salon);
-    updateCommissionRate(prefs.rate||60);
-    applyWallpaper(prefs.wallpaper||'none');
-  }
+  applyTheme(prefs.theme||'dark', prefs.accent||'gold');
+  updateBranding(prefs.name, prefs.salon);
+  updateCommissionRate(prefs.rate||60);
+  applyWallpaper(prefs.wallpaper||'none');
 }
 
 initPrefs();
