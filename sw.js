@@ -1,6 +1,6 @@
 // CommissionPro service worker — network-first so the app always updates.
-const CACHE = 'commissionpro-v67';
-const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png'];
+const CACHE = 'commissionpro-v68';
+const ASSETS = ['./', './index.html', './app.html', './manifest.json', './icon-192.png'];
 
 // Install: pre-cache the shell, take over immediately.
 self.addEventListener('install', (e) => {
@@ -40,7 +40,7 @@ self.addEventListener('fetch', (e) => {
           }
           return res;
         })
-        .catch(() => caches.match(req).then((r) => r || caches.match('./index.html')))
+        .catch(() => caches.match(req).then((r) => r || caches.match('./app.html')))
     );
     return;
   }

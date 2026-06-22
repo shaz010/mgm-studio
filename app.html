@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CommissionPro</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CommissionPro">
+<meta name="theme-color" content="#FFB800">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{overflow-x:hidden;overflow-x:clip;width:100%;max-width:100%;-webkit-text-size-adjust:100%;background:#0a0a0a;overscroll-behavior-x:none}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#f0f0f0;min-height:100vh;overflow-x:hidden;overflow-x:clip;width:100%;max-width:100%;touch-action:pan-y;overscroll-behavior-x:none;position:relative}
+:root{
+  --bg:#0a0a0a;
+  --bg2:#141414;
+  --bg3:#1e1e1e;
+  --border:#333;
+  --border-bright:#444;
+  --gold:#FFB800;
+  --gold-dim:#2a1f00;
+  --gold-border:#554000;
+  --text:#f5f5f5;
+  --text2:#cccccc;
+  --muted:#999;
+  --blue:#7eb8ff;
+  --bgblue:#0d1a2e;
+  --bblue:#1a3a6a;
+  --green:#5ddb7c;
+  --bggreen:#0a1f12;
+  --bgreen:#1a4a2a;
+  --purple:#cc99ff;
+}
+.app-shell{max-width:980px;margin:0 auto;padding:16px;width:100%;overflow-x:hidden;overflow-x:clip}
+
+/* TOPBAR */
+.topbar{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.topbar-brand{display:flex;align-items:center;gap:12px}
+.topbar-icon{width:38px;height:38px;background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px}
+.topbar-name{font-size:18px;font-weight:600;color:var(--text)}.topbar-name span{color:var(--gold)}
+.topbar-sub{font-size:12px;color:var(--muted);margin-top:2px;font-weight:400}
+
+/* SYNC BADGE */
+.sync-badge{font-size:12px;padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:6px;font-weight:500}
+.sync-ok{background:#0a2a14;border:1.5px solid #2a7a3a;color:#5ddb7c}
+.sync-err{background:#2a0a0a;border:1.5px solid #7a2a2a;color:#ff7070}
+.sync-loading{background:#0d1a2e;border:1.5px solid #1a3a6a;color:#7eb8ff}
+
+/* TABS */
+.tabs{display:flex;gap:3px;background:#0a0a0a;border-radius:10px;padding:4px;border:1px solid var(--border-bright);flex-wrap:wrap}
+.tab{padding:7px 14px;border-radius:7px;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;white-space:nowrap;font-weight:500}
+.tab.active{background:var(--bg3);color:var(--gold);font-weight:600;border:1px solid var(--gold-border)}
+
+.panel{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;overflow:hidden}
+
+/* FORM */
+.form-wrap{padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.form-wrap{grid-template-columns:1fr}}
+.card{background:#111;border:1px solid var(--border-bright);border-radius:12px;padding:18px}
+.ctitle{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.ctitle i{color:var(--gold);font-size:15px}
+label{display:block;font-size:13px;color:var(--text2);margin-bottom:5px;margin-top:12px;font-weight:500}
+label:first-of-type{margin-top:0}
+input,select{width:100%;padding:9px 12px;background:#1a1a1a;border:1.5px solid #444;border-radius:8px;color:#fff;font-size:16px;font-weight:500;outline:none;transition:border .2s;-webkit-appearance:none}
+input:focus,select:focus{border-color:var(--gold);background:#1e1e1e}
+input::placeholder{color:#555;font-weight:400}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+input,select,textarea,.setup-input{font-size:16px!important}
+/* Fix iOS Safari autofill turning fields white with invisible text */
+input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus,input:-webkit-autofill:active,textarea:-webkit-autofill,select:-webkit-autofill{-webkit-text-fill-color:#fff;-webkit-box-shadow:0 0 0 1000px #1a1a1a inset;caret-color:#fff;transition:background-color 9999s ease 0s}
+body.theme-light input:-webkit-autofill,body.theme-light textarea:-webkit-autofill,body.theme-light select:-webkit-autofill{-webkit-text-fill-color:#1a1a1a;-webkit-box-shadow:0 0 0 1000px #ffffff inset;caret-color:#1a1a1a}
+.cf-in:-webkit-autofill,.cf-in:-webkit-autofill:hover,.cf-in:-webkit-autofill:focus,.cf-in:-webkit-autofill:active{-webkit-text-fill-color:#fff!important;-webkit-box-shadow:0 0 0 1000px #1a1a1a inset!important;caret-color:#fff}
+
+/* SPLIT GRID */
+.split-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:2px}
+.sc{border-radius:10px;padding:14px;text-align:center}
+.sc-s{background:var(--bgblue);border:1.5px solid var(--bblue)}
+.sc-m{background:var(--bggreen);border:1.5px solid var(--bgreen)}
+.sc-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px;font-weight:700}
+.sc-s .sc-lbl{color:#7eb8ff}.sc-m .sc-lbl{color:#5ddb7c}
+.sc-pct{font-size:11px;color:#666;margin-bottom:6px}
+.sc-amt{font-size:26px;font-weight:700}
+.sc-s .sc-amt{color:#7eb8ff}.sc-m .sc-amt{color:#5ddb7c}
+/* Tap-to-enlarge earnings (comfortable reading) */
+#earnCard{cursor:pointer}
+#earnCard .ctitle,#earnCard .sc-lbl,#earnCard .sc-pct,#earnCard .sc-amt,#earnCard .box-lbl,#earnCard .tip-v,#earnCard .total-v{transition:font-size .28s ease}
+#earnCard.big-read .ctitle{font-size:14px}
+#earnCard.big-read .sc-lbl{font-size:13px}
+#earnCard.big-read .sc-pct{font-size:12px}
+#earnCard.big-read .sc-amt{font-size:30px}
+#earnCard.big-read .tip-v{font-size:24px}
+#earnCard.big-read .total-rb{flex-wrap:wrap;row-gap:2px}
+#earnCard.big-read .total-rb .box-lbl{font-size:15px!important;width:100%}
+#earnCard.big-read .total-v{font-size:52px;width:100%;text-align:right;line-height:1.1}
+#earnCard .calc-hint{transition:font-size .28s ease}
+#earnCard.big-read .calc-hint{font-size:17px;line-height:2}
+
+/* ROW BOXES */
+.row-box{margin-top:10px;border-radius:9px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.tip-rb{background:var(--bggreen);border:1.5px solid var(--bgreen)}
+.total-rb{background:var(--gold-dim);border:1.5px solid var(--gold-border)}
+.box-lbl{font-size:13px;color:#ccc;font-weight:500}
+.tip-v{font-size:20px;font-weight:700;color:#5ddb7c}
+.total-v{font-size:22px;font-weight:700;color:var(--gold)}
+
+/* EDIT BANNER */
+.edit-banner{background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:8px;padding:9px 13px;font-size:13px;color:var(--gold);margin-bottom:13px;display:none;align-items:center;gap:7px;font-weight:600}
+
+/* CALC HINT */
+.calc-hint{margin-top:10px;padding:10px 13px;background:#111;border-radius:8px;border:1px solid #333;font-size:12px;color:#aaa;line-height:1.9}
+
+/* SERVICE PICKER CHIPS */
+.svc-panel{margin-top:9px}
+.svc-cat{font-size:13px;font-weight:800;color:#b9b9b9;letter-spacing:.3px;margin:15px 0 7px}
+.svc-cat:first-child{margin-top:6px}
+.svc-row{display:flex;flex-wrap:wrap;gap:6px}
+.svc-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;border:1.5px solid #444;background:#1a1a1a;color:#ccc;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.svc-chip i{font-size:14px;color:var(--gold)}
+.svc-chip:hover{border-color:#666;color:#fff}
+.svc-chip.sel{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.svc-chip.sel i{color:var(--gold)}
+body.theme-light .svc-chip{background:#fff;border-color:#ddd;color:#555}
+body.theme-light .svc-chip.sel{background:#fff8e0;border-color:var(--gold);color:#aa7700}
+.svc-star{margin-left:6px;color:#555;font-size:14px;cursor:pointer}
+.svc-star.on{color:var(--gold)}
+.svc-star:hover{color:var(--gold)}
+.svc-more{position:relative;margin-top:14px;padding:10px 18px;border-radius:10px;border:none;background:#1a1a1a;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;overflow:hidden;z-index:0}
+.svc-more::before{content:'';position:absolute;left:50%;top:50%;width:320%;height:320%;transform:translate(-50%,-50%);background:conic-gradient(transparent 0deg,var(--gold) 55deg,#fff 90deg,var(--gold) 125deg,transparent 210deg,transparent 360deg);animation:moreSpin var(--fxMoreSpin,2.6s) linear infinite;z-index:-2}
+.svc-more::after{content:'';position:absolute;inset:2px;border-radius:8px;background:#1a1a1a;z-index:-1}
+.svc-more .more-chev{color:var(--gold);font-size:15px}
+.svc-more .more-txt{background:linear-gradient(90deg,var(--gold) 0%,#fff 50%,var(--gold) 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:moreShimmer var(--fxMoreSpin,2.6s) linear infinite}
+@keyframes moreSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes moreShimmer{to{background-position:-200% center}}
+@keyframes moreHue{to{filter:hue-rotate(360deg)}}
+/* Idle pause: stop decorative motion when the user isn't interacting (saves battery/heat) */
+body.anim-idle .m-word,body.anim-idle .svc-more::before,body.anim-idle .svc-more .more-txt,body.anim-idle .svc-mode-btn.on,body.anim-idle .svc-mode-btn.on::after,body.anim-idle .svc-chip.sel{animation-play-state:paused!important}
+body.theme-light .svc-more{background:#fff}
+body.theme-light .svc-more .more-chev{color:#7a4f00}
+body.theme-light .svc-more .more-txt{background:linear-gradient(90deg,#4a3000 0%,#b87400 50%,#4a3000 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;font-weight:800}
+body.theme-light .svc-more::after{background:#fff}
+@media (prefers-reduced-motion: reduce){
+  .svc-chip.sel,.svc-ghost.go,.svc-more,.svc-more::before,.svc-more .more-txt,.svc-mode-btn .m-word,.svc-mode-btn::after,#cCat.slot-hit{animation:none!important}
+  .svc-more::before{background:var(--gold)}
+  .svc-more .more-txt{-webkit-text-fill-color:var(--gold);color:var(--gold)}
+}
+.svc-empty{font-size:12px;color:#777;padding:4px 2px}
+.qp-hint{font-size:9.5px;font-weight:600;color:#777;text-transform:none;letter-spacing:0;background:#222;padding:2px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:3px}
+#favRow .svc-chip{touch-action:pan-y}
+#favRow .svc-chip.chip-placeholder{opacity:.32}
+.chip-drag-clone{box-shadow:0 10px 24px rgba(0,0,0,.55)!important;transform:scale(1.06);border-color:var(--gold)!important}
+
+/* ── PRICE BOOK ── */
+.price-hint{font-size:12.5px;color:#999;line-height:1.6;margin-bottom:14px}
+.price-cat{font-size:14.5px;font-weight:800;color:var(--gold);letter-spacing:.2px;margin:20px 0 4px;padding-bottom:6px;border-bottom:1px solid #2c2c2c}
+.price-group{margin-bottom:6px}
+.price-cat-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:14.5px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;padding:13px 2px;border-bottom:1.5px solid #2c2c2c;user-select:none;-webkit-tap-highlight-color:transparent}
+.price-chev{font-size:18px;transition:transform .22s ease;opacity:.85}
+.price-cat-head.open .price-chev{transform:rotate(180deg)}
+.pc-count{display:inline-block;font-size:10px;font-weight:700;background:rgba(255,255,255,.13);color:inherit;border-radius:20px;padding:2px 8px;margin-left:7px;vertical-align:middle}
+.price-cat-body{padding-top:2px}
+.price-cat:first-child{margin-top:0}
+.price-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #222}
+.price-name{font-size:14px;color:#ededed;font-weight:600}
+.price-in-wrap{position:relative;flex-shrink:0}
+.price-in-wrap::before{content:'$';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#888;font-size:14px;pointer-events:none}
+.price-in{width:104px;padding:8px 10px 8px 22px;background:#1a1a1a;border:1.5px solid #444;border-radius:8px;color:#fff;font-size:16px;font-weight:600;outline:none;text-align:right}
+.price-in:focus{border-color:var(--gold);background:#1e1e1e}
+.reset-qp-btn{width:100%;padding:11px;background:#1a1a1a;border:1.5px solid #444;border-radius:9px;color:#ddd;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.reset-qp-btn:active{border-color:var(--gold);color:var(--gold)}
+.reset-qp-hint{font-size:11.5px;color:#888;line-height:1.5;margin-top:8px}
+.legal-foot{margin:18px 0 4px;border-top:1px solid var(--border);padding-top:14px}
+.legal-foot summary{font-size:12px;color:#999;cursor:pointer;list-style:none;font-weight:600;letter-spacing:.2px;display:flex;align-items:center}
+.reset-app-btn{width:100%;padding:11px;border-radius:11px;border:1px solid #5a2a2a;background:transparent;color:#c66;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.reset-app-btn:active{background:rgba(200,80,80,.12)}
+body.theme-light .reset-app-btn{border-color:#e0b4b4;color:#b14}
+.legal-foot summary::-webkit-details-marker{display:none}
+.legal-foot summary::after{content:'⌄';margin-left:auto;font-size:14px;opacity:.6}
+.legal-foot[open] summary::after{content:'⌃'}
+.legal-body{font-size:11px;color:#888;line-height:1.6;margin-top:10px}
+body.theme-light .legal-foot summary{color:#666}
+body.theme-light .legal-body{color:#777}
+#payGate{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;overflow:hidden;background:rgba(5,5,8,.92);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);padding:24px}
+#payGate.on{display:flex}
+.pg-card{width:100%;max-width:380px;background:#141414;border:1px solid #2a2a2a;border-radius:20px;padding:30px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.pg-logo{font-size:30px;color:var(--gold)}
+.pg-title{font-size:22px;font-weight:800;color:#fff;margin:10px 0 4px}
+.pg-sub{font-size:13.5px;color:#9a9a9a;line-height:1.6;margin-bottom:8px}
+.pg-price{font-size:14px;color:var(--gold);font-weight:700;margin:14px 0 18px}
+.pg-buy{display:block;width:100%;padding:15px;border-radius:13px;border:none;background:var(--gold);color:#1a1a1a;font-size:16px;font-weight:800;cursor:pointer;text-decoration:none}
+.pg-buy:active{opacity:.9}
+.pg-div{display:flex;align-items:center;gap:10px;margin:18px 0;color:#666;font-size:11px;letter-spacing:1px}
+.pg-div::before,.pg-div::after{content:'';flex:1;height:1px;background:#2a2a2a}
+.pg-code{width:100%;padding:13px;border-radius:11px;border:1.5px solid #333;background:#0e0e0e;color:#fff;font-size:15px;text-align:center;letter-spacing:1px;text-transform:uppercase}
+.pg-code::placeholder{color:#666;letter-spacing:.5px}
+.pg-unlock{width:100%;margin-top:9px;padding:13px;border-radius:11px;border:1.5px solid var(--gold);background:transparent;color:var(--gold);font-size:14px;font-weight:700;cursor:pointer}
+.pg-err{display:none;color:#ff6b6b;font-size:12.5px;margin-top:9px}
+.pg-foot{font-size:11px;color:#777;margin-top:16px;line-height:1.6}
+.pg-foot a{color:#999}
+.pg-close{display:block;margin-top:14px;background:none;border:none;color:#888;font-size:12.5px;cursor:pointer;text-decoration:underline}
+#trialBar{position:fixed;left:10px;bottom:42px;z-index:9500;display:none;align-items:center;gap:9px;background:rgba(20,20,20,.92);border:1px solid var(--gold);border-radius:11px;padding:8px 12px;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+#trialBar.on{display:flex}
+#trialBar .tb-txt{font-size:12px;color:#ddd}
+#trialBar .tb-txt b{color:var(--gold)}
+#trialBar .tb-btn{background:var(--gold);color:#1a1a1a;border:none;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer}
+
+/* ── CLIENT CARDS ── */
+.client-list{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.client-card{background:#161616;border:1.5px solid #333;border-radius:11px;padding:13px 14px;cursor:pointer;transition:border-color .15s}
+.client-card:active{border-color:var(--gold)}
+.client-card .cc-name{font-size:15px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.client-card .cc-sub{font-size:12px;color:#999;margin-top:3px}
+.client-card .cc-flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.cc-flag{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.3px}
+.cc-flag.warn{background:rgba(255,90,90,.16);color:#ff8585;border:1px solid rgba(255,90,90,.4)}
+.cc-flag.ok{background:rgba(95,219,124,.14);color:#5ddb7c;border:1px solid rgba(95,219,124,.35)}
+.cc-flag.muted{background:#222;color:#999;border:1px solid #3a3a3a}
+.client-empty{text-align:center;color:#777;font-size:13px;padding:24px 10px;line-height:1.6}
+.cf-label{display:block;font-size:12px;color:#aaa;font-weight:600;margin:12px 0 5px}
+.cf-in{width:100%;padding:11px 12px;background:#1a1a1a;border:1.5px solid #444;border-radius:9px;color:#fff;font-size:16px;outline:none;font-family:inherit}
+.cf-in:focus{border-color:var(--gold);background:#1e1e1e}
+.cf-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cf-section{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:20px 0 4px;padding-bottom:6px;border-bottom:1.5px solid #2c2c2c}
+.cf-chk{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#ddd;cursor:pointer;margin-top:10px}
+.cf-chk input{width:19px;height:19px;accent-color:var(--gold);flex-shrink:0}
+/* Big custom checkbox (reliable tap target on iOS) */
+.ck{display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:11px 2px;-webkit-tap-highlight-color:transparent;user-select:none}
+.ck input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.ck-box{flex:0 0 auto;width:27px;height:27px;border:2px solid #6a6a6a;border-radius:8px;background:#1a1a1a;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s}
+.ck-box::after{content:'';width:13px;height:7px;border-left:3px solid #000;border-bottom:3px solid #000;transform:rotate(-45deg) scale(0);transform-origin:center;transition:transform .15s ease;margin-top:-3px}
+.ck input:checked + .ck-box{background:var(--gold);border-color:var(--gold)}
+.ck input:checked + .ck-box::after{transform:rotate(-45deg) scale(1)}
+.ck-cond input:checked + .ck-box{background:#ff8585;border-color:#ff8585}
+.ck-txt{font-size:14px;color:#ddd;line-height:1.45;padding-top:3px}
+.ck-row{border-bottom:1px solid #222;padding:9px 2px}
+.ck-agree{margin-top:10px}
+.ck-agree .ck-txt{color:#fff;font-weight:600}
+.cf-seg{display:inline-flex;border:1.5px solid #444;border-radius:9px;overflow:hidden}
+.cf-seg-btn{padding:9px 12px;background:#1a1a1a;color:#aaa;border:none;font-size:12.5px;font-weight:700;cursor:pointer}
+.cf-seg-btn.on[data-res="none"]{background:rgba(95,219,124,.18);color:#5ddb7c}
+.cf-seg-btn.on[data-res="reaction"]{background:rgba(255,90,90,.18);color:#ff8585}
+.cf-checks{display:flex;flex-direction:column;gap:2px}
+.cf-cond{display:flex;align-items:center;gap:9px;font-size:13px;color:#ddd;cursor:pointer;padding:7px 0;border-bottom:1px solid #222}
+.cf-cond input{width:18px;height:18px;accent-color:#ff8585;flex-shrink:0}
+.cf-disc{background:#141414;border:1px solid #333;border-radius:9px;padding:12px;font-size:12px;color:#bbb;line-height:1.65;max-height:150px;overflow-y:auto;white-space:pre-wrap}
+.cf-disc-edit{margin-top:8px;background:none;border:none;color:var(--gold);font-size:12px;cursor:pointer;padding:4px 0;display:inline-flex;align-items:center;gap:5px}
+.data-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:9px;padding:13px 12px;border-radius:12px;border:1.5px solid var(--gold);background:transparent;color:var(--gold);font-size:14px;font-weight:700;cursor:pointer;transition:background .15s}
+.data-btn .ti{font-size:18px}
+.data-btn:active{background:rgba(255,184,0,.12)}
+.data-btn-primary{background:rgba(255,184,0,.12)}
+.data-howto{font-size:11.5px;color:#8a8a8a;line-height:1.6;margin-top:11px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--border)}
+.data-howto b{color:var(--gold);font-weight:700}
+body.theme-light .data-howto{background:rgba(0,0,0,.03);color:#777}
+.cf-agree{margin-top:12px;font-weight:600;color:#fff}
+.sig-wrap{position:relative;margin-top:6px}
+.sig-pad{width:100%;height:150px;background:#fff;border:2px dashed #888;border-radius:10px;touch-action:none;display:block}
+.sig-clear{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);border:none;color:#fff;font-size:11px;font-weight:700;padding:5px 9px;border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.sig-line{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#bbb;font-size:11px;pointer-events:none;letter-spacing:.5px}
+.cf-save{width:100%;margin-top:20px}
+.cf-del{width:100%;margin-top:9px;display:none;color:#ff8585;border-color:rgba(255,90,90,.4)}
+.cc-sig-thumb{height:30px;background:#fff;border-radius:5px;padding:2px 6px;vertical-align:middle}
+
+/* ── PICKER ANIMATIONS ── */
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+.svc-chip.sel{animation:chipGlow 1.8s ease-in-out infinite}
+@keyframes chipGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,184,0,0)}50%{box-shadow:0 0 9px 0 rgba(255,184,0,.5)}}
+.svc-ghost{position:fixed;z-index:9000;pointer-events:none;display:inline-flex;align-items:center;justify-content:center;padding:7px 12px;border-radius:20px;background:var(--gold-dim);border:1.5px solid var(--gold);color:var(--gold);font-size:12.5px;font-weight:700;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.45);left:0;top:0}
+.svc-ghost.go{animation:ghostDance 1.35s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes ghostDance{
+  0%{transform:translate(0,0) rotate(0) scale(1);opacity:1}
+  12%{transform:translate(0,0) rotate(-7deg) scale(1.09)}
+  24%{transform:translate(0,0) rotate(7deg) scale(1.09)}
+  36%{transform:translate(0,0) rotate(-4deg) scale(1.05)}
+  48%{transform:translate(0,0) rotate(0) scale(1);opacity:1}
+  100%{transform:translate(var(--dx),var(--dy)) rotate(0) scale(.5);opacity:0}
+}
+#cCat.slot-hit{animation:slotHit 1s ease}
+@keyframes slotHit{0%{box-shadow:0 0 0 0 rgba(255,184,0,0)}28%{box-shadow:0 0 0 3px rgba(255,184,0,.4);border-color:var(--gold)}100%{box-shadow:0 0 0 0 rgba(255,184,0,0)}}
+.svc-mode{display:flex;gap:10px;align-items:stretch;margin-bottom:10px;padding:2px 0;width:100%}
+.svc-mode-btn{flex:1;position:relative;border:1.5px solid var(--border-bright);background:var(--bg2);border-radius:13px;cursor:pointer;font-size:21px;font-weight:800;letter-spacing:.5px;padding:13px 6px 18px;line-height:1.15;text-align:center;display:flex;align-items:center;justify-content:center;transition:background .25s ease,border-color .25s ease,box-shadow .25s ease}
+.svc-mode-btn .m-word{display:inline-block;color:#cfcfcf;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.svc-mode-btn[data-mode="hair"].on .m-word,.svc-mode-btn[data-pmode="hair"].on .m-word{color:#FFC24A}
+.svc-mode-btn[data-mode="nail"].on .m-word,.svc-mode-btn[data-pmode="nail"].on .m-word{color:#FF8FD6}
+.svc-mode-btn:not(.on){opacity:.5}
+.svc-mode-btn[data-mode="hair"].on,.svc-mode-btn[data-pmode="hair"].on{border-color:#FFB800;background:rgba(255,184,0,.13);box-shadow:0 2px 16px rgba(255,170,70,.22);animation:glowHair var(--fxGlow,3.2s) ease-in-out infinite}
+.svc-mode-btn[data-mode="nail"].on,.svc-mode-btn[data-pmode="nail"].on{border-color:#FF6FC0;background:rgba(255,79,176,.13);box-shadow:0 2px 16px rgba(255,90,190,.22);animation:glowNail var(--fxGlow,3.2s) ease-in-out infinite}
+body.theme-light .svc-mode-btn .m-word{color:#555;text-shadow:none}
+body.theme-light .svc-mode-btn[data-mode="hair"].on .m-word,body.theme-light .svc-mode-btn[data-pmode="hair"].on .m-word{color:#B97A00}
+body.theme-light .svc-mode-btn[data-mode="nail"].on .m-word,body.theme-light .svc-mode-btn[data-pmode="nail"].on .m-word{color:#C13C8E}
+.svc-mode-btn .m-ico{font-size:18px;margin-right:8px;opacity:.92;flex:none}
+.svc-mode-btn[data-mode="hair"] .m-ico,.svc-mode-btn[data-pmode="hair"] .m-ico{color:#FF9E5A}
+.svc-mode-btn[data-mode="nail"] .m-ico,.svc-mode-btn[data-pmode="nail"] .m-ico{color:#FF6FC0}
+.svc-mode-btn::after{content:'';position:absolute;left:24%;right:24%;bottom:9px;height:4px;border-radius:4px;background:linear-gradient(90deg,var(--gold),#fff,var(--gold));background-size:200% auto;opacity:0;transform:scaleX(.3);transform-origin:center;transition:opacity .25s ease,transform .3s cubic-bezier(.3,1.5,.5,1)}
+.svc-mode-btn[data-mode="hair"]::after,.svc-mode-btn[data-pmode="hair"]::after{background:linear-gradient(90deg,#FFB800,#FF6FA3,#FFD24A,#FFB800);background-size:200% auto}
+.svc-mode-btn[data-mode="nail"]::after,.svc-mode-btn[data-pmode="nail"]::after{background:linear-gradient(90deg,#FF4FB0,#A24BFF,#22C3DD,#FF4FB0);background-size:200% auto}
+.svc-mode-btn.on::after{opacity:1;transform:scaleX(1);animation:moreShimmer var(--fxUnderline,2.4s) linear infinite;box-shadow:0 1px 9px rgba(255,170,70,.65)}
+@keyframes fxColorMove{to{background-position:-240% center}}
+@keyframes hairWave{0%{transform:translateY(0) scale(1) rotate(0)}25%{transform:translateY(-3px) scale(1.18) rotate(-4deg)}50%{transform:translateY(0) scale(1) rotate(0)}75%{transform:translateY(3px) scale(.86) rotate(4deg)}100%{transform:translateY(0) scale(1) rotate(0)}}
+@keyframes nailWave{0%{transform:translateY(0) scale(1.16) rotate(3deg)}25%{transform:translateY(4px) scale(.86) rotate(0)}50%{transform:translateY(-3px) scale(1.18) rotate(-3deg)}75%{transform:translateY(2px) scale(1) rotate(0)}100%{transform:translateY(0) scale(1.16) rotate(3deg)}}
+@keyframes glowHair{0%,100%{box-shadow:0 2px 12px rgba(255,170,70,.16)}50%{box-shadow:0 2px 20px rgba(255,170,70,.34)}}
+@keyframes glowNail{0%,100%{box-shadow:0 2px 12px rgba(255,90,190,.16)}50%{box-shadow:0 2px 20px rgba(255,90,190,.34)}}
+/* FX intensity presets (set via Settings) */
+body.fx-gentle{--fxModeDur:11s;--fxNailColor:13s;--fxHairWave:6.5s;--fxNailWave:8.5s;--fxMoreSpin:3.4s;--fxMoreHue:22s;--fxUnderline:3.6s;--fxGlow:4.2s}
+body.fx-lively{--fxModeDur:6s;--fxNailColor:7.5s;--fxHairWave:3.6s;--fxNailWave:4.6s;--fxMoreSpin:1.8s;--fxMoreHue:11s;--fxUnderline:1.9s;--fxGlow:2.3s}
+body.fx-party{--fxModeDur:3s;--fxNailColor:3.6s;--fxHairWave:1.8s;--fxNailWave:2.4s;--fxMoreSpin:1s;--fxMoreHue:5s;--fxUnderline:1s;--fxGlow:1.2s}
+body.fx-off .svc-mode-btn.on,body.fx-off .svc-mode-btn .m-word,body.fx-off .svc-mode-btn::after,body.fx-off .svc-more,body.fx-off .svc-more::before,body.fx-off .svc-more .more-txt{animation:none!important}
+body.fx-off .svc-more::before{background:var(--gold)!important}
+body.fx-off .svc-more .more-txt{-webkit-text-fill-color:var(--gold)!important;color:var(--gold)!important}
+/* Pause background picker motion while a modal (e.g. Price book) is open */
+body.modal-open #svcPanel .svc-mode-btn .m-word,body.modal-open #svcPanel .svc-mode-btn::after,body.modal-open #svcMoreBtn::before,body.modal-open #svcMoreBtn .more-txt,body.modal-open #svcPanel .svc-chip.sel{animation-play-state:paused!important}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:9px;margin-top:14px}
+.btn-save{flex:1;padding:12px;background:var(--gold);border:none;border-radius:9px;color:#000;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;letter-spacing:0.3px}
+.btn-save:hover{opacity:.88}
+.btn-cancel{padding:12px 16px;background:#1a1a1a;border:1.5px solid #444;border-radius:9px;color:#ccc;font-size:13px;cursor:pointer;font-weight:500}
+
+/* HISTORY */
+.hist-wrap{padding:18px}
+.filter-row{display:flex;gap:7px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.fbtn{padding:7px 14px;border-radius:7px;font-size:12px;cursor:pointer;border:1.5px solid #444;background:#1a1a1a;color:#bbb;transition:all .2s;font-weight:500}
+.appt-search-wrap{position:relative;margin:14px 0 12px}
+.appt-search-wrap .ti-search{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#888;font-size:17px;pointer-events:none}
+#apptSearch{width:100%;padding:11px 40px 11px 40px;background:#1a1a1a;border:1.5px solid #444;border-radius:9px;color:#fff;font-size:16px;font-weight:500;outline:none}
+#apptSearch:focus{border-color:var(--gold)}
+.appt-search-clear{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:#3a3a3a;color:#fff;border:none;width:27px;height:27px;border-radius:50%;font-size:17px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
+.insights-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 14px}
+.insights-row:empty{display:none}
+.ins-card{background:var(--bg2);border:1px solid var(--border-bright);border-radius:11px;padding:11px 8px;text-align:center;min-width:0}
+.ins-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#888;font-weight:700;margin-bottom:5px}
+.ins-val{font-size:14px;font-weight:800;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ins-sub{font-size:10px;color:#999;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.theme-light #apptSearch{background:#fff;border-color:#ccc;color:#1a1a1a;font-weight:600}
+body.theme-light .appt-search-wrap .ti-search{color:#999}
+body.theme-light .ins-card{background:#fff;border-color:#e0e0d8}
+body.theme-light .ins-lbl{color:#666}
+body.theme-light .ins-sub{color:#666}
+.fbtn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold);font-weight:700}
+.fbtn:hover{border-color:#666;color:#eee}
+
+/* SUMMARY ROW */
+.sum-row{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:18px}
+@media(max-width:520px){.sum-row{grid-template-columns:repeat(2,1fr)}}
+.sum-c{background:#111;border:1px solid #333;border-radius:9px;padding:12px;text-align:center}
+.sum-lbl{font-size:10px;color:#777;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;font-weight:600}
+.sum-val{font-size:19px;font-weight:700}
+.sv-g{color:var(--gold)}.sv-b{color:var(--blue)}.sv-gr{color:var(--green)}
+
+/* WEEKLY */
+.week-section{margin-bottom:20px}
+.week-header{font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.6px;padding:9px 0 7px;border-bottom:1px solid #2a2a2a;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+.week-totals span{color:var(--green);font-weight:600}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pan-y;max-width:100%}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:660px}
+thead tr{border-bottom:1.5px solid #333}
+th{padding:10px 10px;color:#aaa;font-weight:700;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+th.r,td.r{text-align:right}
+tbody tr{border-bottom:1px solid #1e1e1e;transition:background .15s}
+tbody tr:hover{background:#161616}
+td{padding:12px 10px;vertical-align:middle}
+.td-c{font-weight:600;color:#fff;font-size:13px}
+.td-m{color:#888;font-size:12px}
+.td-g{color:var(--gold);font-weight:700}
+.td-b{color:var(--blue);font-weight:600}
+.td-gr{color:var(--green);font-weight:600}
+.td-cat{color:var(--purple);font-size:12px;font-weight:500}
+.act-btn{background:none;border:none;cursor:pointer;padding:5px 6px;border-radius:6px;font-size:15px;color:#555;transition:color .2s}
+.act-btn.ed:hover{color:var(--gold)}.act-btn.dl:hover{color:#ff5555}
+.empty{text-align:center;padding:50px 20px;color:#444}
+.empty i{font-size:36px;display:block;margin-bottom:10px;color:#2a2a2a}
+.th-b{color:var(--blue)!important}.th-gr{color:var(--green)!important}.th-g{color:var(--gold)!important}
+
+/* MOBILE: stacked cards so the wide table never overflows the screen */
+@media(max-width:640px){
+  .tbl-wrap{overflow-x:hidden;-webkit-overflow-scrolling:auto}
+  .tbl-wrap table{min-width:0;width:100%}
+  .tbl-wrap thead{display:none}
+  .tbl-wrap tbody,.tbl-wrap tbody tr,.tbl-wrap td{display:block;width:100%}
+  .tbl-wrap tbody tr{border:1px solid var(--border-bright);border-radius:11px;padding:10px 14px;margin-bottom:11px;background:#111}
+  .tbl-wrap tbody tr:hover{background:#111}
+  .tbl-wrap td{display:flex;justify-content:space-between;align-items:center;text-align:right;padding:6px 0;border:none;white-space:normal}
+  .tbl-wrap td::before{content:attr(data-label);color:#888;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;text-align:left;margin-right:12px;flex-shrink:0}
+  .tbl-wrap td:first-child{font-size:15px;border-bottom:1px solid #242424;padding-bottom:9px;margin-bottom:5px}
+  .tbl-wrap td.actions-cell{justify-content:flex-end;padding-top:9px;margin-top:5px;border-top:1px solid #242424}
+  .tbl-wrap td.actions-cell::before{content:''}
+  body.theme-light .tbl-wrap tbody tr{background:#fff}
+  body.theme-light .tbl-wrap tbody tr:hover{background:#fff}
+  body.theme-light .tbl-wrap td:first-child{border-color:#eee}
+  body.theme-light .tbl-wrap td.actions-cell{border-color:#eee}
+}
+
+/* MGM */
+.mgm-wrap{padding:18px}
+.mgm-hero{background:var(--bgblue);border:1.5px solid var(--bblue);border-radius:14px;padding:22px;margin-bottom:18px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
+@media(max-width:520px){.mgm-hero{grid-template-columns:1fr}}
+.mgm-owed-lbl{font-size:11px;color:#7eb8ff;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:700}
+.mgm-owed-val{font-size:46px;font-weight:700;color:#7eb8ff;line-height:1}
+.mgm-sub{font-size:12px;color:#888;margin-top:7px}
+.mgm-right{text-align:right}
+.mgm-month-lbl{font-size:11px;color:#777;margin-bottom:4px;font-weight:500}
+.mgm-month-val{font-size:16px;font-weight:600;color:var(--text)}
+.btn-paid-main{padding:10px 18px;background:var(--bggreen);border:1.5px solid var(--bgreen);border-radius:9px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;display:inline-block}
+
+/* MONTH ROWS */
+.month-rows{display:flex;flex-direction:column;gap:9px}
+.month-item{background:#111;border:1px solid #2a2a2a;border-radius:11px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.month-item.unpaid{border-color:var(--bblue)}
+.month-item.paid{opacity:.5}
+.mi-month{font-size:15px;font-weight:700;color:#fff}
+.mi-appts{font-size:12px;color:#888;margin-top:3px;font-weight:400}
+.mi-amt{font-size:20px;font-weight:700}
+.mi-amt.ua{color:var(--blue)}.mi-amt.pa{color:var(--green)}
+.mi-status{font-size:11px;margin-top:3px;font-weight:600}
+.su{color:var(--blue)}.sp{color:var(--green)}
+.mi-date-lbl{font-size:11px;margin-top:2px;font-weight:500}
+.mi-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.btn-invoice{padding:7px 13px;background:#0d1a2a;border:1.5px solid #1a4a6a;border-radius:7px;color:#7eb8ff;font-size:12px;cursor:pointer;font-weight:600}
+.btn-mark-paid{padding:7px 13px;background:var(--bggreen);border:1.5px solid var(--bgreen);border-radius:7px;color:var(--green);font-size:12px;cursor:pointer;font-weight:600}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:#141414;border:1px solid #333;border-radius:16px;width:100%;max-width:660px;margin:auto}
+.modal-bar{background:#0a0a0a;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2a2a2a;border-radius:16px 16px 0 0}
+.modal-title{font-size:14px;font-weight:700;color:var(--gold)}
+.modal-close{background:none;border:none;color:#666;font-size:20px;cursor:pointer;line-height:1}
+.modal-close:hover{color:#ccc}
+.modal-body{padding:20px}
+.export-sel-row{display:flex;gap:9px;margin-bottom:18px;align-items:center}
+.export-sel-row label{margin:0;font-size:13px;color:#bbb;white-space:nowrap;font-weight:600}
+.export-sel-row select{flex:1;max-width:240px}
+
+/* INVOICE */
+.invoice-preview{background:#fff;border-radius:10px;padding:22px;color:#1a1a1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;padding-bottom:16px;border-bottom:2.5px solid #111}
+.inv-from-name{font-size:19px;font-weight:700;color:#111;margin-bottom:4px}
+.inv-from-detail{font-size:11px;color:#555;line-height:1.8}
+.inv-to{text-align:right;font-size:12px;color:#444}
+.inv-to-label{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.inv-to-salon{font-size:15px;font-weight:700;color:#111}
+.inv-meta{display:flex;justify-content:space-between;margin-bottom:18px;padding:11px 16px;background:#f5f5f5;border-radius:8px;flex-wrap:wrap;gap:10px}
+.inv-meta-item{text-align:center}
+.inv-meta-lbl{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.inv-meta-val{font-size:13px;font-weight:700;color:#222}
+.inv-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px}
+.inv-tbl th{padding:8px 10px;background:#111;color:#fff;font-weight:600;text-align:left;font-size:11px}
+.inv-tbl th.r,.inv-tbl td.r{text-align:right}
+.inv-tbl td{padding:8px 10px;border-bottom:0.5px solid #ececec}
+.inv-totals{border-top:2px solid #111;padding-top:13px}
+.inv-total-row{display:flex;justify-content:space-between;font-size:12px;color:#666;margin-bottom:6px}
+.inv-total-row.final{font-size:17px;font-weight:700;color:#111;margin-top:8px;padding-top:8px;border-top:0.5px solid #ddd}
+.inv-note{margin-top:14px;padding:10px 13px;background:#fffbeb;border-radius:6px;font-size:11px;color:#854d0e;border:0.5px solid #fde68a}
+.inv-footer{margin-top:14px;text-align:center;font-size:10px;color:#bbb;padding-top:10px;border-top:0.5px solid #eee}
+.btn-print{width:100%;padding:13px;background:var(--gold);border:none;border-radius:9px;color:#000;font-size:14px;font-weight:700;cursor:pointer;margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-print:hover{opacity:.88}
+
+/* SPINNER */
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid #333;border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── THEMES ── */
+body.theme-light{
+  --bg:#f5f5f0;--bg2:#ffffff;--bg3:#eeede8;--border:#ddddd8;
+  --text:#1a1a1a;--muted:#4a4a4a;--text2:#333333;--bg-input:#fff;--border-input:#ccc;
+}
+body.theme-light .ctitle{color:#3a3a3a}
+body.theme-light .svc-cat{color:#3a3a3a}
+body.theme-light .box-lbl{color:#333}
+body.theme-light input::placeholder,body.theme-light textarea::placeholder{color:#8a8a8a}
+body.theme-light .calc-hint{color:#444}
+body.theme-light .sc-pct{color:#555}
+body.theme-light .sum-lbl{color:#555}
+body.theme-light .setup-label{color:#444}
+body.theme-light .topbar-sub{color:#666}
+body.theme-light .qp-hint{background:#e6e6e0;color:#555}
+body.theme-light .app-shell{background:#f5f5f0}
+/* let wallpapers show through in light theme too */
+body[class*="wp-"]:not(.theme-light) .app-shell{background:transparent!important}
+body.theme-light .panel{background:#fff;border-color:#ddd}
+body.theme-light .card{background:#f8f8f4;border-color:#ddd}
+body.theme-light input,body.theme-light select{background:#fff;border-color:#ccc;color:#1a1a1a}
+/* client-card modal stays dark in both themes — stop light-mode from washing out its fields */
+body.theme-light .cf-in{background:#1a1a1a;border-color:#444;color:#fff}
+body.theme-light .cf-in:focus{background:#1e1e1e;border-color:var(--gold)}
+body.theme-light .cf-in::placeholder{color:#777}
+body.theme-light .cf-label{color:#aaa}
+body.theme-light .cf-seg-btn{background:#1a1a1a;color:#aaa}
+body.theme-light .sc-s{background:#e8eeff;border-color:#aabbee}
+body.theme-light .sc-s .sc-lbl{color:#3355bb}
+body.theme-light .sc-s .sc-amt{color:#3355bb}
+body.theme-light .sc-m{background:#e8fff0;border-color:#aaeebb}
+body.theme-light .sc-m .sc-lbl{color:#227744}
+body.theme-light .sc-m .sc-amt{color:#227744}
+body.theme-light .tip-rb{background:#e8fff0;border-color:#aaeebb}
+body.theme-light .tip-v{color:#227744}
+body.theme-light .total-rb{background:#fff8e0;border-color:#ddcc66}
+body.theme-light .total-v{color:#aa7700}
+body.theme-light .topbar{background:#fff;border-color:#ddd}
+body.theme-light .topbar-name{color:#1a1a1a}
+body.theme-light .topbar-sub{color:#888}
+body.theme-light .tabs{background:#eee;border-color:#ddd}
+body.theme-light .tab{color:#888}
+body.theme-light .tab.active{background:#fff;color:var(--gold)}
+body.theme-light .sum-c{background:#fff;border-color:#ddd}
+body.theme-light .sum-lbl{color:#888}
+body.theme-light .fbtn{background:#fff;border-color:#ddd;color:#666}
+body.theme-light .fbtn.active{background:#fff8e0;border-color:var(--gold);color:var(--gold)}
+body.theme-light td{color:#1a1a1a}
+body.theme-light .td-m{color:#888}
+body.theme-light tbody tr{border-color:#eee}
+body.theme-light tbody tr:hover{background:#f8f8f4}
+body.theme-light .mgm-hero{background:#e8eeff;border-color:#aabbee}
+body.theme-light .mgm-owed-lbl{color:#3355bb}
+body.theme-light .mgm-owed-val{color:#3355bb}
+body.theme-light .month-item{background:#fff;border-color:#ddd}
+body.theme-light .month-item.unpaid{border-color:#aabbee}
+body.theme-light .mi-month{color:#1a1a1a}
+body.theme-light .mi-appts{color:#888}
+body.theme-light .calc-hint{background:#f0f0ec;border-color:#ddd;color:#666}
+body.theme-light .edit-banner{background:#fff8e0;border-color:#ddcc66;color:#aa7700}
+body.theme-light .week-header{border-color:#ddd;color:#555}
+body.theme-light thead tr{border-color:#ddd}
+body.theme-light th{color:#666}
+/* Light-mode legibility boost: darker + bolder for easier reading */
+body.theme-light label{color:#2a2a2a;font-weight:600}
+body.theme-light input,body.theme-light select,body.theme-light textarea{font-weight:600}
+body.theme-light .svc-chip{color:#2b2b2b;font-weight:700}
+body.theme-light .ctitle{color:#1f1f1f;font-weight:800}
+body.theme-light .svc-cat{color:#1f1f1f;font-weight:800}
+body.theme-light .sc-pct{color:#3a3a3a;font-weight:600}
+body.theme-light .calc-hint{color:#333}
+body.theme-light .topbar-name{font-weight:800}
+body.theme-light .tab{color:#555;font-weight:700}
+body.theme-light .mi-month,body.theme-light td{font-weight:600}
+body.theme-light .mi-appts{color:#666}
+body.theme-light .setup-section-title{color:#1f1f1f}
+/* ── Light mode polish: softer whites (less glare) + stronger font legibility on all pages ── */
+body.theme-light .app-shell{background:#e8e6de}
+body.theme-light .panel{background:#f4f2ec;border-color:#dad8cf}
+body.theme-light .card{background:#fbf9f4;border-color:#dad8cf}
+body.theme-light .topbar{background:#f4f2ec;border-color:#dad8cf}
+body.theme-light .tabs{background:#e2e0d7;border-color:#d2d0c6}
+body.theme-light .tab{color:#4a4a4a;font-weight:700}
+body.theme-light .tab.active{background:#fbf9f4;color:var(--gold)}
+body.theme-light .sum-c{background:#f7f5ef;border-color:#dad8cf}
+body.theme-light .sum-lbl{color:#4a4a4a}
+body.theme-light .fbtn{background:#f7f5ef;border-color:#d6d4ca;color:#444}
+body.theme-light .ins-card{background:#f7f5ef;border-color:#dcdacf}
+body.theme-light .ins-lbl,body.theme-light .ins-sub{color:#4a4a4a}
+body.theme-light .appt-search-wrap .ti-search{color:#666}
+body.theme-light .topbar-sub{color:#555}
+/* Appointments table */
+body.theme-light td{color:#1a1a1a;font-weight:600}
+body.theme-light .td-m{color:#555}
+body.theme-light th{color:#444;font-weight:700}
+body.theme-light .week-header{color:#3a3a3a;font-weight:700}
+/* MGM owes me */
+body.theme-light .month-item{background:#f7f5ef;border-color:#dad8cf}
+body.theme-light .mi-month{color:#1a1a1a;font-weight:700}
+body.theme-light .mi-appts{color:#4a4a4a}
+/* ── Light mode comfort presets (user-adjustable) ── */
+/* Background: Bright */
+body.theme-light.lcbg-bright .app-shell{background:#f4f4ef}
+body.theme-light.lcbg-bright .panel,body.theme-light.lcbg-bright .topbar{background:#ffffff}
+body.theme-light.lcbg-bright .card{background:#fcfcf9}
+body.theme-light.lcbg-bright .sum-c,body.theme-light.lcbg-bright .month-item,body.theme-light.lcbg-bright .fbtn,body.theme-light.lcbg-bright .ins-card,body.theme-light.lcbg-bright .tab.active{background:#ffffff}
+body.theme-light.lcbg-bright .tabs{background:#ededed}
+/* Background: Sepia (warm, low-glare — gentle on eyes) */
+body.theme-light.lcbg-sepia .app-shell{background:#e3d8bf}
+body.theme-light.lcbg-sepia .panel,body.theme-light.lcbg-sepia .topbar{background:#f1e7d2;border-color:#d8c9a8}
+body.theme-light.lcbg-sepia .card{background:#f6eeda;border-color:#d8c9a8}
+body.theme-light.lcbg-sepia .sum-c,body.theme-light.lcbg-sepia .month-item,body.theme-light.lcbg-sepia .fbtn,body.theme-light.lcbg-sepia .ins-card,body.theme-light.lcbg-sepia .tab.active{background:#f1e7d2;border-color:#d8c9a8}
+body.theme-light.lcbg-sepia .tabs{background:#ddd0b4;border-color:#cdbf9e}
+/* Text contrast: High (darker + bolder everywhere) */
+body.theme-light.lctx-high td,body.theme-light.lctx-high .mi-month{color:#0d0d0d;font-weight:700}
+body.theme-light.lctx-high .td-m,body.theme-light.lctx-high th,body.theme-light.lctx-high .week-header,body.theme-light.lctx-high .mi-appts,body.theme-light.lctx-high .sum-lbl,body.theme-light.lctx-high .topbar-sub,body.theme-light.lctx-high .tab,body.theme-light.lctx-high .fbtn,body.theme-light.lctx-high .ins-lbl,body.theme-light.lctx-high .ins-sub,body.theme-light.lctx-high .calc-hint{color:#262626;font-weight:700}
+body.theme-light.lctx-high label,body.theme-light.lctx-high .ctitle,body.theme-light.lctx-high .svc-cat,body.theme-light.lctx-high .setup-label,body.theme-light.lctx-high .topbar-name,body.theme-light.lctx-high .box-lbl{color:#000}
+/* make the topbar Eye-Rest button stand out */
+.gear-btn.er-btn{color:#e2483c}
+.gear-btn.er-btn:hover{color:#ff5b4f}
+/* contrast slider — explicit thumb so iOS Safari never drops it */
+.lc-slider{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:6px;background:linear-gradient(90deg,#888,#e0e0e0);outline:none;cursor:pointer;margin:8px 0}
+.lc-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;background:var(--gold);border:3px solid #fff;box-shadow:0 2px 7px rgba(0,0,0,.55);cursor:pointer;margin-top:-9px}
+.lc-slider::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--gold);border:3px solid #fff;box-shadow:0 2px 7px rgba(0,0,0,.55);cursor:pointer}
+.lc-slider::-webkit-slider-runnable-track{height:8px;border-radius:6px;background:transparent}
+.lc-slider::-moz-range-track{height:8px;border-radius:6px;background:transparent}
+
+/* ── ACCENT COLORS ── */
+body.accent-rose{--gold:#E8527A;--gold2:#2a0a14;--gold3:#661a2a;--gold-light:#ff7a9a}
+body.accent-ocean{--gold:#2299DD;--gold2:#0a1a2a;--gold3:#1a4a7a;--gold-light:#44bbff}
+body.accent-forest{--gold:#22AA66;--gold2:#0a1a12;--gold3:#1a5a36;--gold-light:#44cc88}
+body.accent-purple{--gold:#9966DD;--gold2:#1a0a2a;--gold3:#4a1a7a;--gold-light:#bb88ff}
+body.accent-gold{--gold:#FFB800;--gold2:#2a1f00;--gold3:#665522;--gold-light:#FFB800}
+
+/* ── SETUP SCREEN ── */
+.setup-screen{position:fixed;inset:0;background:#0a0a0a;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.setup-card{background:#141414;border:1px solid #2a2a2a;border-radius:20px;padding:36px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.setup-logo{font-size:32px;text-align:center;margin-bottom:6px}
+.setup-title{font-family:-apple-system,sans-serif;font-size:24px;font-weight:700;color:#FFB800;text-align:center;margin-bottom:6px}
+.setup-sub{font-size:13px;color:#666;text-align:center;margin-bottom:28px}
+.setup-section{margin-bottom:20px}
+.setup-section-title{font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+.setup-input{width:100%;padding:10px 14px;background:#1e1e1e;border:1.5px solid #333;border-radius:9px;color:#f0f0f0;font-size:16px;outline:none;transition:border .2s;font-family:-apple-system,sans-serif}
+.setup-input:focus{border-color:#FFB800}
+.setup-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.setup-label{font-size:12px;color:#888;margin-bottom:5px;margin-top:10px;display:block}
+.setup-label:first-child{margin-top:0}
+
+/* Theme buttons */
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.theme-btn{padding:10px 8px;border-radius:9px;border:1.5px solid #333;background:#1e1e1e;color:#888;font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s}
+.theme-btn.sel{border-color:#FFB800;background:#2a1f00;color:#FFB800}
+.theme-btn .theme-icon{font-size:18px;display:block;margin-bottom:4px}
+
+/* Accent color swatches */
+.accent-grid{display:flex;gap:10px;flex-wrap:wrap}
+.accent-swatch{width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .2s;position:relative}
+.accent-swatch.sel{border-color:#fff;transform:scale(1.15)}
+.accent-swatch::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;opacity:0}
+.accent-swatch.sel::after{opacity:1}
+
+/* Setup button */
+.setup-btn{width:100%;padding:14px;background:#FFB800;border:none;border-radius:10px;color:#000;font-size:15px;font-weight:700;cursor:pointer;margin-top:24px;transition:opacity .2s;font-family:-apple-system,sans-serif}
+.setup-btn:hover{opacity:.88}
+
+/* Settings panel */
+.settings-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;align-items:flex-end;justify-content:center;padding:0}
+.settings-panel.open{display:flex}
+.settings-sheet{background:#141414;border:1px solid #2a2a2a;border-radius:20px 20px 0 0;padding:28px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto}
+.settings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.settings-title{font-size:17px;font-weight:700;color:#f0f0f0}
+.settings-close{background:none;border:none;color:#666;font-size:22px;cursor:pointer;padding:4px}
+.settings-close:hover{color:#aaa}
+.gear-btn{background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;color:#666;font-size:20px;transition:color .2s}
+.gear-btn:hover{color:var(--gold)}
+
+/* ── WALLPAPERS (animated) ── */
+.wp-swatch{height:36px;border-radius:8px;cursor:pointer;border:2.5px solid transparent;transition:all .2s;position:relative;background-size:cover!important}
+.wp-swatch.sel{border-color:#fff;transform:scale(1.1)}
+.wp-swatch.sel::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+@keyframes wpShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes wpShiftV{0%{background-position:50% 0%}50%{background-position:50% 100%}100%{background-position:50% 0%}}
+@keyframes wpDrift{from{background-position:0 0,0 0,0 0,0 0,0 0}to{background-position:-700px 500px,-500px 350px,-900px 650px,-600px 420px,0 0}}
+@keyframes wpDriftR{from{background-position:0 0,0 0,0 0,0 0,0 0}to{background-position:700px -480px,520px -340px,880px -620px,600px -400px,0 0}}
+@keyframes wpGridMove{from{background-position:0 0,0 0,0 0}to{background-position:44px 44px,44px 44px,0 0}}
+@keyframes wpMeteor{0%{background-position:0 0,0 0,0 0,130% -30%}100%{background-position:-700px 500px,-500px 350px,-900px 650px,-30% 130%}}
+body.wp-starfield{background:radial-gradient(1.5px 1.5px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 75% 65%,#cfe3ff,transparent),radial-gradient(1.5px 1.5px at 50% 85%,#fff,transparent),radial-gradient(1px 1px at 85% 20%,#bcd,transparent),linear-gradient(160deg,#05060f,#0a0a22 60%,#06040f)!important;background-size:700px 700px,500px 500px,900px 900px,600px 600px,100% 100%!important;animation:wpDrift 90s linear infinite}
+body.wp-nebula{background:radial-gradient(1px 1px at 30% 40%,#fff,transparent),radial-gradient(1px 1px at 80% 70%,#fde,transparent),radial-gradient(1.5px 1.5px at 60% 20%,#fff,transparent),radial-gradient(1px 1px at 15% 80%,#cdf,transparent),linear-gradient(125deg,#1a0a2e,#3a1a5a 35%,#0f3460 70%,#1a0a2e)!important;background-size:800px 800px,600px 600px,700px 700px,500px 500px,400% 400%!important;animation:wpDrift 110s linear infinite,wpShift 24s ease infinite}
+body.wp-aurora{background:linear-gradient(135deg,#001a1a 0%,#003a2a 25%,#0d3a5a 50%,#1a0d4a 75%,#001a1a 100%)!important;background-size:400% 400%!important;animation:wpShift 16s ease infinite}
+body.wp-galaxy{background:radial-gradient(1.5px 1.5px at 25% 35%,#fff,transparent),radial-gradient(1px 1px at 70% 60%,#dce,transparent),radial-gradient(1px 1px at 45% 80%,#fff,transparent),radial-gradient(1.5px 1.5px at 88% 25%,#fbd,transparent),radial-gradient(ellipse 70% 55% at 50% 50%,#3a1a6a 0%,#160a2e 45%,#08040f 100%)!important;background-size:650px 650px,520px 520px,800px 800px,560px 560px,100% 100%!important;animation:wpDriftR 100s linear infinite}
+body.wp-cosmos{background:radial-gradient(1.5px 1.5px at 18% 28%,#fff,transparent),radial-gradient(1px 1px at 68% 62%,#cde,transparent),radial-gradient(1px 1px at 52% 82%,#fff,transparent),radial-gradient(1.5px 1.5px at 82% 18%,#bcf,transparent),linear-gradient(180deg,#02030c,#0a1840 55%,#040a1f)!important;background-size:720px 720px,540px 540px,860px 860px,600px 600px,100% 200%!important;animation:wpDrift 95s linear infinite,wpShiftV 30s ease infinite}
+body.wp-meteor{background:radial-gradient(1.5px 1.5px at 22% 32%,#fff,transparent),radial-gradient(1px 1px at 72% 64%,#cde,transparent),radial-gradient(1px 1px at 48% 84%,#fff,transparent),linear-gradient(120deg,transparent 46%,rgba(150,200,255,.5) 50%,transparent 54%),linear-gradient(125deg,#070710,#13112e 60%,#070512)!important;background-size:680px 680px,520px 520px,820px 820px,300px 300px,100% 100%!important;animation:wpMeteor 7s linear infinite}
+body.wp-ocean{background:linear-gradient(180deg,#001520,#003a4a 40%,#00536a 70%,#001a2a)!important;background-size:200% 400%!important;animation:wpShiftV 14s ease infinite}
+body.wp-ember{background:radial-gradient(ellipse at bottom,#3a1000 0%,#1a0600 40%,#000 100%)!important;background-size:160% 160%!important;animation:wpShiftV 9s ease-in-out infinite}
+body.wp-sunset{background:linear-gradient(160deg,#2a0a2a,#7a2a10 40%,#c25a1a 60%,#2a0a14)!important;background-size:400% 400%!important;animation:wpShift 17s ease infinite}
+body.wp-neon{background:linear-gradient(120deg,#0a0024,#2a0a4a 30%,#0a2a5a 60%,#3a0a3a 100%)!important;background-size:400% 400%!important;animation:wpShift 12s linear infinite}
+body.wp-plasma{background:linear-gradient(120deg,#3a0a4a,#0a2a5a 25%,#0a4a3a 50%,#4a0a2a 75%,#3a0a4a)!important;background-size:500% 500%!important;animation:wpShift 15s ease infinite}
+body.wp-midnight{background:linear-gradient(135deg,#06061a,#14143a 45%,#0a0a28 70%,#06061a)!important;background-size:400% 400%!important;animation:wpShift 22s ease infinite}
+body.wp-emerald{background:linear-gradient(135deg,#001208,#0a3a1a 40%,#0d5a2a 65%,#001a0a)!important;background-size:400% 400%!important;animation:wpShift 18s ease infinite}
+body.wp-rosegold{background:linear-gradient(135deg,#1a0610,#3a1420 35%,#5a3018 60%,#1a0a10)!important;background-size:400% 400%!important;animation:wpShift 20s ease infinite}
+body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.12) 1px,transparent 1px),radial-gradient(circle at 50% 0%,#0b1326,#050810)!important;background-size:44px 44px,44px 44px,100% 100%!important;animation:wpGridMove 6s linear infinite}
+@media (prefers-reduced-motion: reduce){body[class*="wp-"]{animation:none!important}}
+
+/* ── LUMINA animated wallpaper (cool-running: transform/opacity only) ── */
+#luminaLayer{display:none;position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 18%,#0b1233 0%,#070a1c 48%,#04050d 100%)}
+body.wp-lumina:not(.theme-light) #luminaLayer{display:block}
+/* Wallpapers show as a living watermark in DARK mode only (Light mode = clean & readable) */
+body.wp-lumina:not(.theme-light){background:transparent!important}
+body[class*="wp-"]:not(.theme-light) .panel{background:rgba(15,16,26,.56)}
+body[class*="wp-"]:not(.theme-light) .card{background:rgba(20,21,32,.72)}
+body[class*="wp-"]:not(.theme-light) .topbar{background:rgba(15,16,26,.62)}
+body[class*="wp-"]:not(.theme-light) .tabs{background:rgba(13,14,24,.5)}
+body[class*="wp-"]:not(.theme-light) .sum-c{background:rgba(20,21,32,.66)}
+body[class*="wp-"]:not(.theme-light) .hist-wrap,body[class*="wp-"]:not(.theme-light) .mgm-hero{background:rgba(20,21,32,.5)}
+/* in Light mode, switch every wallpaper OFF: no background, no animation, no Lumina layer */
+body.theme-light[class*="wp-"]{background:#e8e6de!important;animation:none!important}
+body.theme-light #luminaLayer{display:none!important}
+#warpLayer{display:none;position:fixed;inset:0;z-index:-1;pointer-events:none;background:#02030a}
+body[class*="wp-warp"]:not(.theme-light) #warpLayer{display:block}
+body.theme-light #warpLayer{display:none!important}
+body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){background:transparent!important}
+#luminaLayer .lm-blobwrap{position:absolute;inset:0;will-change:filter;animation:lmHue 84s ease-in-out infinite}
+@keyframes lmHue{0%,100%{filter:hue-rotate(-34deg)}50%{filter:hue-rotate(34deg)}}
+#luminaLayer .lm-blob{position:absolute;width:85vmax;height:85vmax;border-radius:50%;mix-blend-mode:screen;will-change:transform,opacity}
+#luminaLayer .lm-b1{background:radial-gradient(circle,rgba(38,214,198,.55) 0%,rgba(38,214,198,0) 62%);top:-25vmax;left:-20vmax;animation:lmD1 30s ease-in-out infinite,lmP 13s ease-in-out infinite}
+#luminaLayer .lm-b2{background:radial-gradient(circle,rgba(70,108,255,.55) 0%,rgba(70,108,255,0) 62%);top:-10vmax;right:-25vmax;animation:lmD2 38s ease-in-out infinite,lmP 17s ease-in-out infinite}
+#luminaLayer .lm-b3{background:radial-gradient(circle,rgba(150,72,255,.5) 0%,rgba(150,72,255,0) 62%);bottom:-28vmax;left:-10vmax;animation:lmD3 44s ease-in-out infinite,lmP 19s ease-in-out infinite}
+#luminaLayer .lm-b4{background:radial-gradient(circle,rgba(255,82,164,.42) 0%,rgba(255,82,164,0) 62%);bottom:-22vmax;right:-15vmax;animation:lmD4 34s ease-in-out infinite,lmP 15s ease-in-out infinite}
+@keyframes lmD1{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(22vmax,14vmax) scale(1.12)}66%{transform:translate(8vmax,26vmax) scale(.95)}}
+@keyframes lmD2{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-20vmax,18vmax) scale(1.1)}66%{transform:translate(-6vmax,30vmax) scale(.93)}}
+@keyframes lmD3{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(18vmax,-16vmax) scale(.92)}66%{transform:translate(30vmax,-4vmax) scale(1.14)}}
+@keyframes lmD4{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-16vmax,-20vmax) scale(1.1)}66%{transform:translate(-28vmax,-6vmax) scale(.96)}}
+@keyframes lmP{0%,100%{opacity:.85}50%{opacity:.5}}
+#luminaLayer .lm-stars{position:absolute;inset:0;background:radial-gradient(1px 1px at 18% 28%,rgba(255,255,255,.7),transparent),radial-gradient(1px 1px at 72% 62%,rgba(200,220,255,.6),transparent),radial-gradient(1px 1px at 45% 82%,rgba(255,255,255,.55),transparent),radial-gradient(1.5px 1.5px at 85% 22%,rgba(190,210,255,.6),transparent),radial-gradient(1px 1px at 30% 55%,rgba(255,255,255,.45),transparent);background-size:520px 520px,420px 420px,600px 600px,480px 480px,360px 360px;opacity:.5;animation:lmTwinkle 9s ease-in-out infinite}
+@keyframes lmTwinkle{0%,100%{opacity:.42}50%{opacity:.62}}
+#luminaLayer .lm-comet{position:absolute;left:0;top:0;width:10px;height:10px;margin:-5px 0 0 -5px;will-change:transform,opacity;opacity:0}
+#luminaLayer .lm-comet .lm-core{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,#fff 0%,var(--c) 50%,transparent 76%);box-shadow:0 0 14px 5px var(--glow),0 0 30px 12px rgba(120,160,255,.22)}
+#luminaLayer .lm-comet .lm-tail{position:absolute;right:6px;top:50%;width:150px;height:3px;transform:translateY(-50%);border-radius:3px;background:linear-gradient(90deg,transparent 0%,var(--c) 72%,#ffffff 100%);opacity:.9}
+#luminaLayer #lmA{--c:#ff9ec4;--glow:rgba(255,150,200,.5)}
+#luminaLayer #lmB{--c:#8ec9ff;--glow:rgba(140,200,255,.5)}
+#luminaLayer .lm-fin{position:absolute;inset:0}
+#luminaLayer .lm-heart{position:absolute;left:50%;top:50%;width:60vmin;height:55vmin;margin:-27.5vmin 0 0 -30vmin;will-change:transform,opacity;opacity:0;filter:drop-shadow(0 0 22px rgba(255,90,150,.6)) drop-shadow(0 0 54px rgba(255,150,90,.4))}
+#luminaLayer .lm-heart path{fill:none;stroke:url(#lmHg);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+#luminaLayer .lm-burst{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;will-change:transform,opacity;opacity:0;background:radial-gradient(circle,rgba(255,255,255,.9) 0%,rgba(255,120,170,.6) 22%,rgba(255,160,90,.3) 45%,rgba(150,120,255,0) 70%)}
+#luminaLayer .lm-ring{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;will-change:transform,opacity;opacity:0;border:3px solid rgba(255,170,200,.7);box-shadow:0 0 24px rgba(255,150,190,.5)}
+@media (prefers-reduced-motion: reduce){#luminaLayer .lm-blob,#luminaLayer .lm-stars,#luminaLayer .lm-blobwrap{animation:none!important}#luminaLayer .lm-comet,#luminaLayer .lm-fin{display:none}}
+
+/* ── EYE REST: deep 670nm-red starburst + 20-20-20 cue ── */
+#eyeRest{position:fixed;inset:0;z-index:9000;pointer-events:none;display:none;align-items:center;justify-content:center;overflow:hidden;--erC1:#ff9a9a;--erC2:#ff2424;--erC3:rgba(235,0,18,.78);--erG:rgba(255,40,40,.6)}
+#eyeRest.on{display:flex;background:#000}
+#eyeRest .er-ring{position:absolute;left:50%;top:50%;border-radius:50%;will-change:transform,opacity;opacity:0;border:3px solid var(--erC2);box-shadow:0 0 26px var(--erG),inset 0 0 18px var(--erG)}
+#eyeRest .er-veil{position:absolute;inset:0;background:#000;opacity:0;will-change:opacity}
+#eyeRest .er-rays{position:absolute;left:50%;top:50%;width:0;height:0;will-change:transform,opacity;filter:saturate(1.25) brightness(1.15)}
+#eyeRest .er-ray{position:absolute;left:0;top:0;width:80vmax;height:5px;transform-origin:0 50%;border-radius:5px;
+  background:linear-gradient(90deg,var(--erC1) 0%,var(--erC2) 36%,var(--erC3) 68%,transparent 100%);box-shadow:0 0 8px var(--erG)}
+#eyeRest .er-core{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;will-change:transform,opacity;opacity:0;
+  background:radial-gradient(circle,#fff 0%,var(--erC1) 26%,var(--erC2) 54%,transparent 80%);box-shadow:0 0 40px var(--erG)}
+#eyeRest .er-msg{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);text-align:center;opacity:0;will-change:opacity;width:84%;max-width:420px}
+#eyeRest .er-big{font-size:21px;font-weight:700;color:#ffdada;letter-spacing:.3px}
+#eyeRest .er-sub{font-size:14px;color:#ffb4b4;margin-top:6px;line-height:1.5}
+#eyeRest .er-count{font-size:36px;font-weight:800;color:#fff;margin-top:10px;font-variant-numeric:tabular-nums}
+#eyeRest .er-skip{font-size:12px;color:#ff9b9b;margin-top:14px;opacity:.8}
+@media (prefers-reduced-motion: reduce){#eyeRest .er-rays,#eyeRest .er-core{animation:none!important}}
+/* custom comfort slider with an always-visible thumb (iOS-safe) */
+.lc-slider{-webkit-appearance:none;appearance:none;width:100%;height:10px;border-radius:6px;background:linear-gradient(90deg,#cfcfcf,#3a3a3a);outline:none;margin:8px 0 2px}
+.lc-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:28px;height:28px;border-radius:50%;background:var(--gold);border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);cursor:pointer}
+.lc-slider::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:var(--gold);border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);cursor:pointer}
+</style>
+</head>
+<body>
+<div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px">build 70</div>
+
+<canvas id="warpLayer" aria-hidden="true"></canvas>
+
+<div id="payGate" role="dialog" aria-modal="true">
+  <div class="pg-card">
+    <div class="pg-logo">✂</div>
+    <div class="pg-title">Unlock CommissionPro</div>
+    <div class="pg-sub">Unlock the full app — yours forever, with a single one-time payment.</div>
+    <div class="pg-price">$49 · one-time · pays for itself with one service</div>
+    <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Buy now — $49</a>
+    <div class="pg-div">ALREADY PAID?</div>
+    <input type="text" id="payCode" class="pg-code" placeholder="Enter your unlock code" autocapitalize="characters" autocomplete="off">
+    <button class="pg-unlock" onclick="payUnlock()">Unlock</button>
+    <div class="pg-err" id="payErr">That code didn't match. Check the email from your purchase, or contact support.</div>
+    <div class="pg-foot">After paying, your unlock code is emailed to you instantly.<br>Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
+    <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
+  </div>
+</div>
+
+<div id="luminaLayer" aria-hidden="true">
+  <div class="lm-blobwrap"><div class="lm-blob lm-b1"></div><div class="lm-blob lm-b2"></div><div class="lm-blob lm-b3"></div><div class="lm-blob lm-b4"></div></div>
+  <div class="lm-stars"></div>
+  <div class="lm-comet" id="lmA"><div class="lm-tail"></div><div class="lm-core"></div></div>
+  <div class="lm-comet" id="lmB"><div class="lm-tail"></div><div class="lm-core"></div></div>
+  <div class="lm-fin" id="lmFin">
+    <svg class="lm-heart" id="lmHeart" viewBox="0 0 100 92" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="lmHg" x1="0" y1="0" x2="1" y2="1"><stop id="lmHs1" offset="0" stop-color="#ff5e9c"/><stop id="lmHs2" offset=".5" stop-color="#ff8fb4"/><stop id="lmHs3" offset="1" stop-color="#ffb86b"/></linearGradient></defs>
+      <path id="lmHpath" d="M50 84 C50 84 12 58 12 33 C12 18 26 13 35 21 C41 26 50 35 50 35 C50 35 59 26 65 21 C74 13 88 18 88 33 C88 58 50 84 50 84 Z"/>
+    </svg>
+    <div class="lm-ring" id="lmRing"></div><div class="lm-burst" id="lmBurst"></div>
+  </div>
+</div>
+
+<div id="eyeRest" aria-hidden="true">
+  <div class="er-veil" id="erVeil"></div>
+  <div class="er-rays" id="erRays"></div>
+  <div class="er-core" id="erCore"></div>
+  <div class="er-msg" id="erMsg">
+    <div class="er-big">Rest your eyes</div>
+    <div class="er-sub">Look at something about 20 feet away<br>until the timer reaches zero.</div>
+    <div class="er-count" id="erCount">22</div>
+    <div class="er-skip">tap anywhere to finish early</div>
+  </div>
+</div>
+
+<!-- SETUP SCREEN -->
+<div class="setup-screen" id="setupScreen" style="display:none">
+  <div class="setup-card">
+    <div class="setup-logo">✂</div>
+    <div class="setup-title">Welcome to CommissionPro</div>
+    <div class="setup-sub">Set up your personal workspace in 30 seconds</div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Your details</div>
+      <label class="setup-label">Your name</label>
+      <input class="setup-input" type="text" id="setupName" placeholder="e.g. Shahbaz Mirshahi">
+      <div class="setup-row" style="margin-top:10px">
+        <div>
+          <label class="setup-label">Salon name</label>
+          <input class="setup-input" type="text" id="setupSalon" placeholder="e.g. MGM Salon">
+        </div>
+        <div>
+          <label class="setup-label">Your commission %</label>
+          <input class="setup-input" type="number" id="setupRate" placeholder="60" value="60" min="1" max="99">
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Theme</div>
+      <div class="theme-grid">
+        <button class="theme-btn sel" onclick="selTheme('dark',this)" id="themeDark">
+          <span class="theme-icon">🌙</span>Dark
+        </button>
+        <button class="theme-btn" onclick="selTheme('light',this)" id="themeLight">
+          <span class="theme-icon">☀️</span>Light
+        </button>
+        <button class="theme-btn" onclick="selTheme('auto',this)" id="themeAuto">
+          <span class="theme-icon">⚡</span>Auto
+        </button>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Accent colour</div>
+      <div class="accent-grid">
+        <div class="accent-swatch sel" style="background:#FFB800" onclick="selAccent('gold',this)" title="Gold"></div>
+        <div class="accent-swatch" style="background:#E8527A" onclick="selAccent('rose',this)" title="Rose"></div>
+        <div class="accent-swatch" style="background:#2299DD" onclick="selAccent('ocean',this)" title="Ocean"></div>
+        <div class="accent-swatch" style="background:#22AA66" onclick="selAccent('forest',this)" title="Forest"></div>
+        <div class="accent-swatch" style="background:#9966DD" onclick="selAccent('purple',this)" title="Purple"></div>
+      </div>
+    </div>
+
+    <button class="setup-btn" onclick="saveSetup()">✂ &nbsp;Open CommissionPro</button>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-sheet">
+    <div class="settings-header">
+      <span class="settings-title">⚙️ Settings</span>
+      <button class="settings-close" onclick="closeSettings()">×</button>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Your details</div>
+      <label class="setup-label">Your name</label>
+      <input class="setup-input" type="text" id="settingName" placeholder="Your name">
+      <div class="setup-row" style="margin-top:10px">
+        <div>
+          <label class="setup-label">Salon name</label>
+          <input class="setup-input" type="text" id="settingSalon" placeholder="Salon name">
+        </div>
+        <div>
+          <label class="setup-label">Commission %</label>
+          <input class="setup-input" type="number" id="settingRate" placeholder="60" min="1" max="99">
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Theme</div>
+      <div class="theme-grid">
+        <button class="theme-btn" onclick="selThemeS('dark',this)"><span class="theme-icon">🌙</span>Dark</button>
+        <button class="theme-btn" onclick="selThemeS('light',this)"><span class="theme-icon">☀️</span>Light</button>
+        <button class="theme-btn" onclick="selThemeS('auto',this)"><span class="theme-icon">⚡</span>Auto</button>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Accent colour</div>
+      <div class="accent-grid">
+        <div class="accent-swatch" style="background:#FFB800" onclick="selAccentS('gold',this)" title="Gold"></div>
+        <div class="accent-swatch" style="background:#E8527A" onclick="selAccentS('rose',this)" title="Rose"></div>
+        <div class="accent-swatch" style="background:#2299DD" onclick="selAccentS('ocean',this)" title="Ocean"></div>
+        <div class="accent-swatch" style="background:#22AA66" onclick="selAccentS('forest',this)" title="Forest"></div>
+        <div class="accent-swatch" style="background:#9966DD" onclick="selAccentS('purple',this)" title="Purple"></div>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Wallpaper</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px" id="wpGrid">
+      <div class="wp-swatch sel" data-wp="none" onclick="selWP(this,'none')" style="background:#1a1a1a" title="None"></div>
+      <div class="wp-swatch" data-wp="starfield" onclick="selWP(this,'starfield')" style="background:radial-gradient(1px 1px at 30% 35%,#fff,transparent),radial-gradient(1px 1px at 70% 65%,#fff,transparent),linear-gradient(160deg,#05060f,#0a0a22)" title="Starfield"></div>
+      <div class="wp-swatch" data-wp="nebula" onclick="selWP(this,'nebula')" style="background:linear-gradient(125deg,#1a0a2e,#3a1a5a,#0f3460)" title="Nebula"></div>
+      <div class="wp-swatch" data-wp="aurora" onclick="selWP(this,'aurora')" style="background:linear-gradient(135deg,#001a1a,#0d3a2a,#1a0d4a)" title="Aurora"></div>
+      <div class="wp-swatch" data-wp="galaxy" onclick="selWP(this,'galaxy')" style="background:radial-gradient(ellipse at 50% 50%,#3a1a6a,#160a2e,#08040f)" title="Galaxy"></div>
+      <div class="wp-swatch" data-wp="cosmos" onclick="selWP(this,'cosmos')" style="background:linear-gradient(180deg,#02030c,#0a1840,#040a1f)" title="Cosmos"></div>
+      <div class="wp-swatch" data-wp="meteor" onclick="selWP(this,'meteor')" style="background:linear-gradient(120deg,#070710,#13112e),linear-gradient(120deg,transparent 46%,rgba(150,200,255,.6) 50%,transparent 54%)" title="Meteor"></div>
+      <div class="wp-swatch" data-wp="ocean" onclick="selWP(this,'ocean')" style="background:linear-gradient(180deg,#001520,#00536a)" title="Ocean"></div>
+      <div class="wp-swatch" data-wp="ember" onclick="selWP(this,'ember')" style="background:radial-gradient(ellipse at bottom,#3a1000,#000)" title="Ember"></div>
+      <div class="wp-swatch" data-wp="sunset" onclick="selWP(this,'sunset')" style="background:linear-gradient(160deg,#2a0a2a,#c25a1a)" title="Sunset"></div>
+      <div class="wp-swatch" data-wp="neon" onclick="selWP(this,'neon')" style="background:linear-gradient(120deg,#0a0024,#0a2a5a,#3a0a3a)" title="Neon"></div>
+      <div class="wp-swatch" data-wp="plasma" onclick="selWP(this,'plasma')" style="background:linear-gradient(120deg,#3a0a4a,#0a4a3a,#4a0a2a)" title="Plasma"></div>
+      <div class="wp-swatch" data-wp="midnight" onclick="selWP(this,'midnight')" style="background:linear-gradient(135deg,#06061a,#14143a)" title="Midnight"></div>
+      <div class="wp-swatch" data-wp="emerald" onclick="selWP(this,'emerald')" style="background:linear-gradient(135deg,#001208,#0d5a2a)" title="Emerald"></div>
+      <div class="wp-swatch" data-wp="rosegold" onclick="selWP(this,'rosegold')" style="background:linear-gradient(135deg,#1a0610,#5a3018)" title="Rose gold"></div>
+      <div class="wp-swatch" data-wp="grid" onclick="selWP(this,'grid')" style="background:#0a0a0a;background-image:linear-gradient(rgba(120,180,255,.25) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.25) 1px,transparent 1px);background-size:8px 8px" title="Grid"></div>
+      <div class="wp-swatch" data-wp="lumina" onclick="selWP(this,'lumina')" style="background:radial-gradient(circle at 28% 30%,#ff9ec4,transparent 42%),radial-gradient(circle at 72% 70%,#8ec9ff,transparent 46%),linear-gradient(135deg,#0b1233,#1a0a3a 60%,#04050d)" title="Lumina ✦"></div>
+      <div class="wp-swatch" data-wp="warp" onclick="selWP(this,'warp')" style="background:radial-gradient(circle at 50% 50%,rgba(200,225,255,.55),transparent 58%),repeating-linear-gradient(90deg,transparent 0 6px,rgba(190,215,255,.55) 6px 7px),#02030a" title="Warp 🚀"></div>
+      <div class="wp-swatch" data-wp="warpprism" onclick="selWP(this,'warpprism')" style="background:repeating-linear-gradient(90deg,transparent 0 5px,rgba(255,80,90,.6) 5px 6px,transparent 6px 9px,rgba(80,255,140,.6) 9px 10px,transparent 10px 13px,rgba(90,150,255,.6) 13px 14px),#02030a" title="Warp prism 🌈"></div>
+      <div class="wp-swatch" data-wp="warpjump" onclick="selWP(this,'warpjump')" style="background:radial-gradient(circle at 50% 50%,rgba(210,230,255,.85),transparent 52%),repeating-linear-gradient(90deg,transparent 0 5px,rgba(180,210,255,.45) 5px 6px),#02030a" title="Warp jump ✦"></div>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Light mode comfort ☀️</div>
+      <label class="setup-label" style="margin-top:0">Background tone</label>
+      <div class="theme-grid" style="grid-template-columns:repeat(3,1fr)">
+        <button class="theme-btn lcbg-btn" data-v="bright" onclick="setLcbg('bright',this)">Bright</button>
+        <button class="theme-btn lcbg-btn" data-v="soft" onclick="setLcbg('soft',this)">Soft</button>
+        <button class="theme-btn lcbg-btn" data-v="sepia" onclick="setLcbg('sepia',this)">Sepia</button>
+      </div>
+      <label class="setup-label">Text contrast</label>
+      <div class="theme-grid" style="grid-template-columns:repeat(2,1fr)">
+        <button class="theme-btn lctx-btn" data-v="normal" onclick="setLctx('normal',this)">Normal</button>
+        <button class="theme-btn lctx-btn" data-v="high" onclick="setLctx('high',this)">High contrast</button>
+      </div>
+      <div style="font-size:11.5px;color:#888;margin-top:8px;line-height:1.5">Applies to Light mode. Try <b>Sepia + High contrast</b> for the easiest read.</div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Eye rest 👁️</div>
+      <label class="setup-label" style="margin-top:0">Light colour</label>
+      <div class="theme-grid" id="erColorGrid" style="grid-template-columns:repeat(5,1fr);gap:6px">
+        <button class="theme-btn erc-btn" data-v="red" onclick="setErColor('red',this)" style="font-size:11px;padding:9px 4px">Red</button>
+        <button class="theme-btn erc-btn" data-v="amber" onclick="setErColor('amber',this)" style="font-size:11px;padding:9px 4px">Amber</button>
+        <button class="theme-btn erc-btn" data-v="yellow" onclick="setErColor('yellow',this)" style="font-size:11px;padding:9px 4px">Yellow</button>
+        <button class="theme-btn erc-btn" data-v="green" onclick="setErColor('green',this)" style="font-size:11px;padding:9px 4px">Green</button>
+        <button class="theme-btn erc-btn" data-v="cycle" onclick="setErColor('cycle',this)" style="font-size:11px;padding:9px 4px">Cycle</button>
+      </div>
+      <div style="font-size:11px;color:#888;margin:6px 0 4px;line-height:1.5">Deep red (~660nm) is the closest to the most-studied wavelength.</div>
+      <button class="cf-disc-edit" onclick="closeSettings();eyeRestFull()" style="margin-top:2px;color:#e2483c;border-color:#e2483c55"><i class="ti ti-eye" style="font-size:14px"></i> Rest my eyes (22s)</button>
+      <div style="font-size:11.5px;color:#888;margin-top:8px;line-height:1.5">A calming red starburst plus a 20-second look-into-the-distance break. Also pops when you save a booking or get paid.</div>
+      <div style="font-size:11px;color:#777;margin-top:8px;line-height:1.55;font-style:italic">Eye Rest is a relaxing visual and a reminder to rest your eyes. It is not a medical device or treatment, is not a substitute for professional eye care, and makes no health or therapeutic claims.</div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Fun FX ✨</div>
+      <div class="theme-grid" id="fxGrid" style="grid-template-columns:repeat(4,1fr)">
+        <button class="theme-btn fx-btn" data-fx="off" onclick="setFx('off',this)">Off</button>
+        <button class="theme-btn fx-btn" data-fx="gentle" onclick="setFx('gentle',this)">Gentle</button>
+        <button class="theme-btn fx-btn" data-fx="lively" onclick="setFx('lively',this)">Lively</button>
+        <button class="theme-btn fx-btn" data-fx="party" onclick="setFx('party',this)">Party</button>
+      </div>
+      <button class="cf-disc-edit" onclick="resetQuickPicks()" style="margin-top:14px"><i class="ti ti-rotate" style="font-size:13px"></i> Reset Quick Picks to defaults</button>
+      <button class="cf-disc-edit" onclick="forceUpdate()" style="margin-top:6px;display:block"><i class="ti ti-refresh" style="font-size:13px"></i> Force update to latest version</button>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Your data 💾</div>
+      <div class="reset-qp-hint" style="margin-bottom:12px">Your bookings live privately on this device. Use these to keep a safe copy — or to copy everything to another device (like your iPad).</div>
+      <button class="data-btn data-btn-primary" onclick="exportData()"><i class="ti ti-download"></i> Save a copy of my data</button>
+      <button class="data-btn" onclick="document.getElementById('importFile').click()"><i class="ti ti-upload"></i> Load data from a saved copy</button>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(this)">
+      <div class="data-howto"><b>Moving to another device?</b> Tap <b>Save a copy</b> here → send the file to your other device (AirDrop or email) → open the app there and tap <b>Load data</b>.</div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Quick Picks</div>
+      <button class="reset-qp-btn" onclick="resetQuickPicks()"><i class="ti ti-rotate" style="font-size:15px;vertical-align:-2px;margin-right:6px"></i>Reset Quick Picks to defaults</button>
+      <div class="reset-qp-hint">Restores the starting set of favourite services for both Hair and Nail. Your prices and client cards are not affected.</div>
+    </div>
+
+    <div class="setup-section">
+      <button class="reset-app-btn" onclick="resetApp()"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Start fresh — erase all my data</button>
+      <div class="reset-qp-hint" style="margin-top:7px">Wipes all bookings, client cards, prices and salon details on this device for a clean start. Back up first if unsure — your purchase stays unlocked.</div>
+    </div>
+
+    <details class="legal-foot">
+      <summary><i class="ti ti-shield-check" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Legal &amp; disclaimers</summary>
+      <div class="legal-body">CommissionPro is a personal tracking tool. All figures are estimates based on the information you enter and are for your own reference only — not official payroll, tax, or accounting records. Commission splits and pay vary; the app reflects only the values you input and does not guarantee any amount. CommissionPro does not provide financial, legal, or tax advice. Always verify your earnings against your salon's official records.<br><br>Eye Rest is a relaxing visual and a reminder to rest your eyes. It is not a medical device or treatment, is not a substitute for professional eye care, and makes no health or therapeutic claims.<br><br><a href="privacy.html" target="_blank" style="color:var(--gold);text-decoration:none">Privacy Policy ↗</a> &nbsp;·&nbsp; <a href="terms.html" target="_blank" style="color:var(--gold);text-decoration:none">Terms of Service ↗</a></div>
+    </details>
+
+    <button class="setup-btn" onclick="saveSettings()">Save settings</button>
+  </div>
+</div>
+
+<div class="app-shell">
+
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-icon"><i class="ti ti-scissors"></i></div>
+      <div>
+        <div class="topbar-name"><span>Your Salon</span></div>
+        <div class="topbar-sub">Stylist · Commission tracker</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="gear-btn er-btn" onclick="eyeRestFull()" title="Eye rest"><i class="ti ti-eye"></i></button>
+      <button class="gear-btn" onclick="openClients()" title="Client cards"><i class="ti ti-address-book"></i></button>
+      <button class="gear-btn" onclick="openPrices()" title="Price book"><i class="ti ti-currency-dollar"></i></button>
+      <button class="gear-btn" onclick="openSettings()" title="Settings"><i class="ti ti-settings"></i></button>
+      <div class="sync-badge sync-loading" id="syncBadge"><span class="spinner"></span> Connecting...</div>
+      <div class="tabs">
+        <button class="tab active" onclick="newBooking()"><i class="ti ti-calendar-plus" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>New booking</button>
+        <button class="tab" onclick="showTab('hist')"><i class="ti ti-list" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Appointments</button>
+        <button class="tab" onclick="showTab('mgm')"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>MGM owes me</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="exportModal">
+    <div class="modal">
+      <div class="modal-bar">
+        <span class="modal-title"><i class="ti ti-file-invoice" style="font-size:14px;vertical-align:-2px;margin-right:7px"></i>Payment request — MGM Salon</span>
+        <button class="modal-close" onclick="closeExport()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="export-sel-row">
+          <label>Month:</label>
+          <select id="exportMonth" onchange="renderInvoice()"></select>
+        </div>
+        <div class="invoice-preview" id="invoicePreview"></div>
+        <button class="btn-print" onclick="printInvoice()"><i class="ti ti-printer" style="font-size:16px"></i>Print / Save as PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICE BOOK MODAL -->
+  <div class="modal-overlay" id="priceModal">
+    <div class="modal">
+      <div class="modal-bar">
+        <span class="modal-title"><i class="ti ti-tag" style="font-size:14px;vertical-align:-2px;margin-right:7px"></i>Your price book</span>
+        <button class="modal-close" onclick="closePrices()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="price-hint">Set what you charge for each service. Leave blank for ones you don't offer. When you combine services in a booking, the Charge auto-fills with the total — you can still adjust it.</p>
+        <div class="svc-mode" style="margin-bottom:12px">
+          <button type="button" class="svc-mode-btn on" data-pmode="hair" onclick="setPriceMode('hair')"><i class="ti ti-scissors m-ico"></i><span class="m-word">Hair</span></button>
+          <button type="button" class="svc-mode-btn" data-pmode="nail" onclick="setPriceMode('nail')"><i class="ti ti-sparkles m-ico"></i><span class="m-word">Nail</span></button>
+        </div>
+        <div id="priceList"></div>
+        <button class="btn-print" onclick="closePrices()"><i class="ti ti-check" style="font-size:16px"></i>Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLIENT CARDS: LIST -->
+  <div class="modal-overlay" id="clientsModal">
+    <div class="modal">
+      <div class="modal-bar">
+        <span class="modal-title"><i class="ti ti-address-book" style="font-size:14px;vertical-align:-2px;margin-right:7px"></i>Client cards</span>
+        <button class="modal-close" onclick="closeClients()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input class="cf-in" id="clientSearch" type="text" placeholder="Search clients…" oninput="renderClientList()" style="margin-bottom:12px">
+        <button class="btn-print" onclick="newClient()"><i class="ti ti-user-plus" style="font-size:16px"></i>New client card</button>
+        <div id="clientList" class="client-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLIENT CARDS: FORM -->
+  <div class="modal-overlay" id="clientFormModal">
+    <div class="modal">
+      <div class="modal-bar">
+        <span class="modal-title"><i class="ti ti-user" style="font-size:14px;vertical-align:-2px;margin-right:7px"></i><span id="clientFormTitle">New client</span></span>
+        <button class="modal-close" onclick="closeClientForm()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="clId">
+        <label class="cf-label">Full name *</label>
+        <input class="cf-in" id="clName" type="text" placeholder="Client name">
+        <div class="cf-2col">
+          <div><label class="cf-label">Phone</label><input class="cf-in" id="clPhone" type="tel" placeholder="(555) 555-5555"></div>
+          <div><label class="cf-label">Date of birth</label><input class="cf-in" id="clDob" type="date"></div>
+        </div>
+        <label class="cf-label">Email</label>
+        <input class="cf-in" id="clEmail" type="email" placeholder="name@email.com">
+
+        <div class="cf-section" style="color:#5fd6c6;border-color:#5fd6c655">Sensitivity / patch test</div>
+        <label class="ck"><input type="checkbox" id="clPatchDone"><span class="ck-box"></span><span class="ck-txt">Patch test performed</span></label>
+        <div class="cf-2col" style="margin-top:8px">
+          <div><label class="cf-label">Test date</label><input class="cf-in" id="clPatchDate" type="date"></div>
+          <div><label class="cf-label">Result</label>
+            <div class="cf-seg" id="clPatchResult">
+              <button type="button" class="cf-seg-btn on" data-res="none" onclick="setPatchRes('none')">No reaction</button>
+              <button type="button" class="cf-seg-btn" data-res="reaction" onclick="setPatchRes('reaction')">Reaction</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cf-section" style="color:#ff93a6;border-color:#ff93a655">Medical / conditions to know</div>
+        <div class="cf-checks" id="clConditions"></div>
+        <label class="cf-label">Allergies / medications</label>
+        <textarea class="cf-in" id="clMeds" rows="2" placeholder="e.g. PPD allergy, latex, Accutane…"></textarea>
+        <label class="cf-label">Other notes</label>
+        <textarea class="cf-in" id="clNotes" rows="2" placeholder="Anything else the stylist should know"></textarea>
+
+        <div class="cf-section" style="color:#ffc04d;border-color:#ffc04d55">Consent &amp; liability</div>
+        <div class="cf-disc" id="clDisc"></div>
+        <button type="button" class="cf-disc-edit" id="discEditBtn" onclick="editDisclaimer()"><i class="ti ti-pencil" style="font-size:13px"></i> Edit disclaimer text</button>
+        <label class="ck ck-agree"><input type="checkbox" id="clAgree"><span class="ck-box"></span><span class="ck-txt">The client has read and agrees to the above.</span></label>
+
+        <div class="cf-section" style="color:#b79cff;border-color:#b79cff55">Client signature</div>
+        <div class="sig-wrap">
+          <canvas id="sigPad" class="sig-pad"></canvas>
+          <button type="button" class="sig-clear" onclick="clearSig()"><i class="ti ti-eraser" style="font-size:13px"></i> Clear</button>
+          <div class="sig-line">Sign above</div>
+        </div>
+
+        <button class="btn-save cf-save" onclick="saveClient()"><i class="ti ti-device-floppy" style="font-size:16px;vertical-align:-3px;margin-right:5px"></i>Save client card</button>
+        <button class="btn-cancel cf-del" id="clDelBtn" onclick="deleteClientConfirm()"><i class="ti ti-trash" style="font-size:15px;vertical-align:-2px;margin-right:5px"></i>Delete card</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+
+    <!-- BOOK -->
+    <div id="pBook">
+    <div class="form-wrap">
+      <div class="card">
+        <div class="edit-banner" id="editBanner"><i class="ti ti-pencil"></i>Editing existing appointment</div>
+        <div class="ctitle"><i class="ti ti-user"></i>Client details</div>
+        <label>Client name</label><input type="text" id="cName" placeholder="e.g. Sarah Mitchell">
+        <label>Service</label><input type="text" id="cCat" placeholder="Tap services below to combine, or type your own…" oninput="syncServiceChips()">
+        <div class="svc-panel" id="svcPanel">
+          <div class="svc-cat">Services</div>
+          <div class="svc-mode">
+            <button type="button" class="svc-mode-btn on" data-mode="hair" onclick="setMode('hair')"><i class="ti ti-scissors m-ico"></i><span class="m-word">Hair</span></button>
+            <button type="button" class="svc-mode-btn" data-mode="nail" onclick="setMode('nail')"><i class="ti ti-sparkles m-ico"></i><span class="m-word">Nail</span></button>
+          </div>
+          <div class="svc-cat" style="display:flex;align-items:center;gap:7px">Quick picks <span class="qp-hint"><i class="ti ti-arrows-move" style="font-size:11px;vertical-align:-1px"></i> hold &amp; drag to arrange</span></div>
+          <div class="svc-row" id="favRow"></div>
+          <button type="button" class="svc-more" id="svcMoreBtn" onclick="toggleMore()"><i class="ti ti-chevron-down more-chev"></i> <span class="more-txt">More services</span></button>
+          <div id="svcMore" style="display:none"></div>
+        </div>
+        <label>Date</label><input type="date" id="cDate">
+        <label>Time</label><input type="time" id="cTime" value="09:00">
+        <label>Charge amount ($)</label><input type="number" id="cCharge" placeholder="0.00" oninput="calc()">
+        <label>Tip received ($)</label><input type="number" id="cTip" placeholder="0.00" oninput="calc()">
+      </div>
+      <div class="card" id="earnCard" onclick="zoomEarnings()" title="Tap to enlarge">
+        <div class="ctitle"><i class="ti ti-calculator"></i>Earnings breakdown</div>
+        <div class="split-grid">
+          <div class="sc sc-s"><div class="sc-lbl">MGM Salon</div><div class="sc-pct">40% of charge</div><div class="sc-amt" id="eSalon">$0</div></div>
+          <div class="sc sc-m"><div class="sc-lbl">Shahbaz</div><div class="sc-pct">60% of charge</div><div class="sc-amt" id="eMe">$0</div></div>
+        </div>
+        <div class="row-box tip-rb"><span class="box-lbl"><i class="ti ti-heart" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Tip — 100% mine</span><span class="tip-v" id="eTip">$0.00</span></div>
+        <div class="row-box total-rb" style="margin-top:7px"><span class="box-lbl" style="font-size:14px;color:var(--gold);font-weight:600">My total take-home</span><span class="total-v" id="eTotal">$0.00</span></div>
+        <div class="calc-hint" id="calcHint">Enter a charge and tip above to see the breakdown</div>
+        <div class="btn-row">
+          <button class="btn-cancel" id="btnCancel" onclick="cancelEdit()" style="display:none">Cancel</button>
+          <button class="btn-save" onclick="save()"><i class="ti ti-calendar-plus" style="font-size:14px;vertical-align:-2px;margin-right:6px"></i><span id="btnLbl">Save appointment</span></button>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="pHist" style="display:none">
+    <div class="hist-wrap">
+      <div class="filter-row">
+        <span style="font-size:12px;color:#777;font-weight:600"><i class="ti ti-filter" style="font-size:13px;vertical-align:-1px"></i> View:</span>
+        <button class="fbtn active" onclick="setFilter('all',this)">All time</button>
+        <button class="fbtn" onclick="setFilter('month',this)">This month</button>
+        <button class="fbtn" onclick="setFilter('week',this)">This week</button>
+        <button class="fbtn" onclick="setFilter('today',this)">Today</button>
+        <button class="fbtn" onclick="setFilter('weekly',this)">Weekly summary</button>
+      </div>
+      <div class="appt-search-wrap">
+        <i class="ti ti-search"></i>
+        <input id="apptSearch" type="text" placeholder="Search by client or service…" oninput="onApptSearch(this.value)" autocomplete="off">
+        <button class="appt-search-clear" id="apptSearchClear" onclick="clearApptSearch()" style="display:none">&times;</button>
+      </div>
+      <div class="insights-row" id="insights"></div>
+      <div class="sum-row">
+        <div class="sum-c"><div class="sum-lbl">Total charged</div><div class="sum-val sv-g" id="sCharge">$0</div></div>
+        <div class="sum-c"><div class="sum-lbl">MGM 40%</div><div class="sum-val sv-b" id="sSalon">$0</div></div>
+        <div class="sum-c"><div class="sum-lbl">My 60%</div><div class="sum-val sv-gr" id="sMe">$0</div></div>
+        <div class="sum-c"><div class="sum-lbl">Tips + my total</div><div class="sum-val sv-g" id="sTotal">$0</div></div>
+      </div>
+      <div id="tableView">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>Client</th><th>Date</th><th>Wk</th><th>Category</th>
+              <th class="r">Charge</th><th class="r th-b">MGM 40%</th>
+              <th class="r th-gr">Me 60%</th><th class="r th-gr">Tip</th>
+              <th class="r th-g">My total</th><th></th>
+            </tr></thead>
+            <tbody id="tBody"></tbody>
+          </table>
+          <div class="empty" id="emptyMsg" style="display:none"><i class="ti ti-calendar-off"></i>No appointments found.</div>
+        </div>
+      </div>
+      <div id="weeklyView" style="display:none"></div>
+    </div>
+    </div>
+
+    <!-- MGM OWES ME -->
+    <div id="pMgm" style="display:none">
+    <div class="mgm-wrap">
+      <div class="mgm-hero">
+        <div>
+          <div class="mgm-owed-lbl"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>MGM owes Shahbaz</div>
+          <div class="mgm-owed-val" id="mgmOwed">$0</div>
+          <div class="mgm-sub" id="mgmSubtext">Unpaid 60% commission accumulating</div>
+        </div>
+        <div class="mgm-right">
+          <div class="mgm-month-lbl">Next payment due</div>
+          <div class="mgm-month-val" id="mgmNextDue">—</div>
+          <div style="font-size:11px;color:#666;margin-top:3px">End of current month</div>
+          <button class="btn-paid-main" onclick="markThisMonthPaid()"><i class="ti ti-check" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Mark this month paid</button>
+        </div>
+      </div>
+      <div class="month-rows" id="monthRows"></div>
+    </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const STYLIST='Shahbaz Mirshahi';
+let data=[],paidMonths={},activeFilter='all',editingId=null;
+var APPTS_KEY='cp_appts',PAID_KEY='cp_paid';
+function loadAppts(){try{var a=JSON.parse(localStorage.getItem(APPTS_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return[];}}
+function saveAppts(arr){try{localStorage.setItem(APPTS_KEY,JSON.stringify(arr));}catch(e){alert('Could not save — storage may be full.');}}
+function loadPaid(){try{var o=JSON.parse(localStorage.getItem(PAID_KEY)||'{}');return (o&&typeof o==='object')?o:{};}catch(e){return{};}}
+function savePaid(o){try{localStorage.setItem(PAID_KEY,JSON.stringify(o));}catch(e){}}
+const todayDate=new Date();
+document.getElementById('cDate').value=todayDate.toISOString().split('T')[0];
+function $(i){return document.getElementById(i)}
+function fmt(n){return '$'+(+n||0).toFixed(2)}
+function fmtR(n){return '$'+Math.round(+n||0)}
+function fmtMonth(ym){const[y,m]=ym.split('-');return new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'})}
+function toYM(d){return d.slice(0,7)}
+function weekNum(ds){const d=new Date(ds+'T12:00:00'),j=new Date(d.getFullYear(),0,1);return Math.ceil(((d-j)/86400000+j.getDay()+1)/7)}
+function setSyncBadge(state,msg){
+  const b=$('syncBadge');
+  b.className='sync-badge sync-'+state;
+  b.innerHTML=state==='loading'?`<span class="spinner"></span> ${msg}`:`<i class="ti ti-${state==='ok'?'check':'alert-triangle'}" style="font-size:13px"></i> ${msg}`;
+}
+function loadAll(){
+  try{
+    var appts=loadAppts();
+    appts.sort(function(x,y){var dx=String(x.date||''),dy=String(y.date||'');if(dx!==dy)return dx<dy?-1:1;return String(x.time||'').localeCompare(String(y.time||''));});
+    data=appts.map(function(a){return Object.assign({},a,{myTotal:+(((+a.me)||0)+((+a.tip)||0)).toFixed(2)});});
+    paidMonths=loadPaid();
+    setSyncBadge('ok','Saved');renderTable();
+  }catch(err){setSyncBadge('err','Error');console.error(err);}
+}
+function calc(){
+  const charge=parseFloat($('cCharge').value)||0,tip=parseFloat($('cTip').value)||0;
+  const me=charge*0.6;
+  $('eSalon').textContent=fmtR(charge*0.4);
+  $('eMe').textContent=fmtR(me);
+  $('eTip').textContent=fmt(tip);
+  $('eTotal').textContent=fmt(me+tip);
+  $('calcHint').innerHTML=(charge||tip)?
+    `Charge <strong style="color:var(--text)">$${charge.toFixed(2)}</strong> &times; 60% = <span style="color:#5ddb7c;font-weight:700">$${me.toFixed(2)}</span><br>+ Tip <span style="color:#5ddb7c;font-weight:700">$${tip.toFixed(2)}</span> <span style="color:#888">(100% yours)</span><br>= Your take-home <span style="color:var(--gold);font-weight:700">$${(me+tip).toFixed(2)}</span>`
+    :'Enter a charge and tip above to see the breakdown';
+}
+async function save(){
+  const name=$('cName').value.trim(),date=$('cDate').value,time=$('cTime').value;
+  const charge=parseFloat($('cCharge').value)||0,tip=parseFloat($('cTip').value)||0;
+  const cat=$('cCat').value.trim();
+  if(!name||!date||!charge){alert('Please fill in client name, date and charge.');return;}
+  const salon=+(charge*0.4).toFixed(2),me=+(charge*0.6).toFixed(2);
+  const id=editingId||Date.now();
+  const rec={id,name,date,time,charge,tip,salon,me,mytotal:+(me+tip).toFixed(2),cat};
+  try{
+    var arr=loadAppts();var i=arr.findIndex(function(x){return x.id===id;});
+    if(i>=0)arr[i]=rec;else arr.push(rec);
+    saveAppts(arr);
+    setSyncBadge('ok','Saved ✓');resetForm();loadAll();showTab('hist');
+    if(typeof eyeBloom==='function') eyeBloom();
+  }catch(err){setSyncBadge('err','Save failed');alert('Could not save — storage may be full.');console.error(err);}
+}
+function delAppt(id){
+  if(!confirm('Delete this appointment?'))return;
+  try{
+    var arr=loadAppts().filter(function(x){return x.id!==id;});
+    saveAppts(arr);
+    if(editingId===id)resetForm();
+    setSyncBadge('ok','Saved');loadAll();
+  }catch(err){setSyncBadge('err','Error');console.error(err);}
+}
+function editAppt(id){
+  const a=data.find(x=>x.id===id);if(!a)return;
+  editingId=id;
+  $('cName').value=a.name;$('cDate').value=a.date;$('cTime').value=a.time;
+  $('cCharge').value=a.charge;$('cTip').value=a.tip;$('cCat').value=a.cat||'';
+  $('editBanner').style.display='flex';$('btnCancel').style.display='block';
+  $('btnLbl').textContent='Update appointment';calc();syncServiceChips();showTab('book');
+}
+function cancelEdit(){resetForm();}
+function resetForm(){
+  editingId=null;['cName','cCharge','cTip','cCat'].forEach(i=>$(i).value='');
+  $('cDate').value=todayDate.toISOString().split('T')[0];$('cTime').value='09:00';
+  $('editBanner').style.display='none';$('btnCancel').style.display='none';
+  $('btnLbl').textContent='Save appointment';calc();syncServiceChips();
+}
+function newBooking(){resetForm();showTab('book');}
+let searchQuery='';
+function getFiltered(){
+  const now=new Date(),ts=now.toISOString().split('T')[0];
+  const sow=new Date(now);sow.setDate(now.getDate()-now.getDay());
+  const som=new Date(now.getFullYear(),now.getMonth(),1);
+  return data.filter(a=>{
+    if(activeFilter!=='all'&&activeFilter!=='weekly'){
+      const d=new Date(a.date+'T12:00:00');
+      if(activeFilter==='today'&&a.date!==ts)return false;
+      if(activeFilter==='week'&&!(d>=sow))return false;
+      if(activeFilter==='month'&&!(d>=som))return false;
+    }
+    if(searchQuery){
+      const hay=((a.name||'')+' '+(a.cat||'')).toLowerCase();
+      if(hay.indexOf(searchQuery)===-1)return false;
+    }
+    return true;
+  });
+}
+function onApptSearch(v){
+  searchQuery=(v||'').toLowerCase().trim();
+  var c=$('apptSearchClear');if(c)c.style.display=searchQuery?'flex':'none';
+  renderTable();
+}
+function clearApptSearch(){
+  searchQuery='';var i=$('apptSearch');if(i)i.value='';
+  var c=$('apptSearchClear');if(c)c.style.display='none';
+  renderTable();
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(ch){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch];});}
+function renderInsights(list){var box=$('insights');if(box)box.innerHTML='';}
+function setFilter(f,el){
+  activeFilter=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');renderTable();
+}
+function updateSummary(filtered){
+  $('sCharge').textContent=fmtR(filtered.reduce((s,a)=>s+a.charge,0));
+  $('sSalon').textContent=fmtR(filtered.reduce((s,a)=>s+a.salon,0));
+  $('sMe').textContent=fmtR(filtered.reduce((s,a)=>s+a.me,0));
+  $('sTotal').textContent=fmtR(filtered.reduce((s,a)=>s+a.me+a.tip,0));
+}
+function renderTable(){
+  const filtered=getFiltered().sort((a,b)=>a.date===b.date?a.time.localeCompare(b.time):a.date.localeCompare(b.date));
+  updateSummary(filtered);
+  renderInsights(filtered);
+  $('tableView').style.display=activeFilter==='weekly'?'none':'block';
+  $('weeklyView').style.display=activeFilter==='weekly'?'block':'none';
+  if(activeFilter==='weekly'){renderWeekly();return;}
+  const tbody=$('tBody'),empty=$('emptyMsg');
+  if(!filtered.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  tbody.innerHTML=filtered.map(a=>{
+    const d=new Date(a.date+'T12:00:00');
+    const ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const[h,m]=a.time.split(':');const hr=+h;
+    const ts=(hr%12||12)+':'+m+(hr>=12?'pm':'am');
+    return`<tr>
+      <td class="td-c" data-label="Client">${a.name}</td><td class="td-m" data-label="Date">${ds}</td>
+      <td class="td-m" style="color:#555" data-label="Week">Wk${weekNum(a.date)}</td>
+      <td class="td-cat" data-label="Category">${a.cat||'—'}</td>
+      <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td>
+      <td class="td-b r" data-label="MGM 40%">${fmt(a.salon)}</td>
+      <td class="td-gr r" data-label="Me 60%">${fmt(a.me)}</td>
+      <td class="td-gr r" data-label="Tip">${fmt(a.tip)}</td>
+      <td class="td-g r" data-label="My total">${fmt(a.me+a.tip)}</td>
+      <td class="actions-cell" style="white-space:nowrap">
+        <button class="act-btn ed" onclick="editAppt(${a.id})" title="Edit"><i class="ti ti-pencil"></i></button>
+        <button class="act-btn dl" onclick="delAppt(${a.id})" title="Delete"><i class="ti ti-trash"></i></button>
+      </td></tr>`;
+  }).join('');
+}
+function renderWeekly(){
+  const all=[...data].sort((a,b)=>a.date.localeCompare(b.date));
+  if(!all.length){$('weeklyView').innerHTML='<div class="empty"><i class="ti ti-calendar-off"></i>No appointments yet.</div>';return;}
+  const byWeek={};
+  all.forEach(a=>{
+    const wk=weekNum(a.date),yr=a.date.slice(0,4);
+    const key=`${yr}-W${String(wk).padStart(2,'0')}`;
+    if(!byWeek[key])byWeek[key]={wk,yr,appts:[],totC:0,totS:0,totM:0,totT:0};
+    byWeek[key].appts.push(a);byWeek[key].totC+=a.charge;byWeek[key].totS+=a.salon;byWeek[key].totM+=a.me;byWeek[key].totT+=a.tip;
+  });
+  $('weeklyView').innerHTML=Object.entries(byWeek).sort((a,b)=>b[0].localeCompare(a[0])).map(([key,wk])=>{
+    const myT=wk.totM+wk.totT;
+    const rows=wk.appts.map(a=>{
+      const ds=new Date(a.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      return`<tr><td class="td-c" data-label="Client">${a.name}</td><td class="td-m" data-label="Date">${ds}</td>
+        <td class="td-cat" data-label="Category">${a.cat||'—'}</td>
+        <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td><td class="td-b r" data-label="MGM 40%">${fmt(a.salon)}</td>
+        <td class="td-gr r" data-label="Me 60%">${fmt(a.me)}</td><td class="td-gr r" data-label="Tip">${fmt(a.tip)}</td>
+        <td class="td-g r" data-label="My total">${fmt(a.me+a.tip)}</td></tr>`;
+    }).join('');
+    return`<div class="week-section">
+      <div class="week-header">
+        <span style="color:#eee;font-size:13px;font-weight:700">Week ${wk.wk} <span style="color:#444;font-size:11px;font-weight:400">${wk.yr}</span></span>
+        <span class="week-totals" style="font-size:12px">${wk.appts.length} client${wk.appts.length!==1?'s':''} &nbsp;·&nbsp; ${fmtR(wk.totC)} charged &nbsp;·&nbsp; Me <span>${fmtR(wk.totM)}</span> &nbsp;·&nbsp; Tips <span>${fmtR(wk.totT)}</span> &nbsp;·&nbsp; Total <span style="color:var(--gold)">${fmtR(myT)}</span></span>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Client</th><th>Date</th><th>Category</th>
+          <th class="r">Charge</th><th class="r th-b">MGM 40%</th>
+          <th class="r th-gr">Me 60%</th><th class="r th-gr">Tip</th><th class="r th-g">My total</th>
+        </tr></thead><tbody>${rows}</tbody>
+      </table></div></div>`;
+  }).join('');
+}
+function renderMgm(){
+  const byMonth={};
+  data.forEach(a=>{
+    const ym=toYM(a.date);
+    if(!byMonth[ym])byMonth[ym]={ym,appts:0,totMe:0,totTip:0,totCharge:0};
+    byMonth[ym].appts++;byMonth[ym].totMe+=a.me;byMonth[ym].totTip+=a.tip;byMonth[ym].totCharge+=a.charge;
+  });
+  let totalOwed=0;
+  Object.entries(byMonth).forEach(([ym,mo])=>{if(!paidMonths[ym])totalOwed+=mo.totMe;});
+  $('mgmOwed').textContent=fmtR(totalOwed);
+  const now=new Date();
+  $('mgmNextDue').textContent=new Date(now.getFullYear(),now.getMonth()+1,0).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  $('mgmSubtext').textContent=totalOwed>0?'Unpaid 60% commission accumulating':'All commissions paid — you\'re square!';
+  const sorted=Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0]));
+  if(!sorted.length){$('monthRows').innerHTML='<div class="empty"><i class="ti ti-building-store"></i>Start booking clients to track what MGM owes you.</div>';return;}
+  $('monthRows').innerHTML=sorted.map(([ym,mo])=>{
+    const paid=!!paidMonths[ym];
+    const paidDate=paid?new Date(paidMonths[ym]).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):null;
+    return`<div class="month-item ${paid?'paid':'unpaid'}">
+      <div>
+        <div class="mi-month">${fmtMonth(ym)}</div>
+        <div class="mi-appts">${mo.appts} appointment${mo.appts!==1?'s':''} &nbsp;·&nbsp; Commission $${mo.totMe.toFixed(2)} &nbsp;·&nbsp; Tips $${mo.totTip.toFixed(2)} (direct)</div>
+        <div class="mi-date-lbl ${paid?'sp':'su'}">${paid?'Paid on '+paidDate:'Awaiting payment from MGM'}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="mi-amt ${paid?'pa':'ua'}">$${mo.totMe.toFixed(2)}</div>
+        <div class="mi-status ${paid?'sp':'su'}" style="margin-bottom:8px">${paid?'✓ Paid':'Unpaid'}</div>
+        <div class="mi-actions" style="justify-content:flex-end">
+          ${!paid?`<button class="btn-invoice" onclick="openExport('${ym}')"><i class="ti ti-file-invoice" style="font-size:12px;vertical-align:-1px;margin-right:4px"></i>Invoice</button>`:''}
+          ${!paid?`<button class="btn-mark-paid" onclick="markPaid('${ym}')"><i class="ti ti-check" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>Mark paid</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function markPaid(ym){
+  const paid_at=Date.now();
+  try{
+    var p=loadPaid();p[ym]=paid_at;savePaid(p);
+    paidMonths[ym]=paid_at;setSyncBadge('ok','Saved');renderMgm();
+    if(typeof eyeBloom==='function') eyeBloom();
+  }catch(err){setSyncBadge('err','Error');console.error(err);}
+}
+function markThisMonthPaid(){markPaid(new Date().toISOString().slice(0,7));}
+function openExport(ym){
+  const sel=$('exportMonth');sel.innerHTML='';
+  const byMonth={};
+  data.forEach(a=>{const k=toYM(a.date);if(!byMonth[k])byMonth[k]=true;});
+  const months=Object.keys(byMonth).sort((a,b)=>b.localeCompare(a));
+  if(!months.length){alert('No appointments to export yet.');return;}
+  months.forEach(m=>{
+    const opt=document.createElement('option');
+    opt.value=m;opt.textContent=fmtMonth(m);
+    if(m===ym)opt.selected=true;
+    sel.appendChild(opt);
+  });
+  renderInvoice();$('exportModal').classList.add('open');
+}
+function closeExport(){$('exportModal').classList.remove('open');}
+function renderInvoice(){
+  const ym=$('exportMonth').value;if(!ym)return;
+  const appts=data.filter(a=>toYM(a.date)===ym).sort((a,b)=>a.date.localeCompare(b.date));
+  if(!appts.length){$('invoicePreview').innerHTML='<p style="color:#888;text-align:center;padding:20px">No appointments this month.</p>';return;}
+  const totCharge=appts.reduce((s,a)=>s+a.charge,0);
+  const totSalon=appts.reduce((s,a)=>s+a.salon,0);
+  const totMe=appts.reduce((s,a)=>s+a.me,0);
+  const totTip=appts.reduce((s,a)=>s+a.tip,0);
+  const issued=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const[y,m]=ym.split('-');
+  const dueDate=new Date(+y,+m,0).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const invNum='INV-'+ym.replace('-','')+'-'+String(appts.length).padStart(2,'0');
+  const rows=appts.map((a,i)=>{
+    const ds=new Date(a.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return`<tr><td style="color:#999">${i+1}</td><td style="font-weight:600">${a.name}</td>
+      <td style="color:#777">${ds}</td><td style="color:#777">${a.cat||'—'}</td>
+      <td class="r" style="color:#333;font-weight:600">$${a.charge.toFixed(2)}</td>
+      <td class="r" style="color:#1e40af;font-weight:600">$${a.salon.toFixed(2)}</td>
+      <td class="r" style="color:#166534;font-weight:700">$${a.me.toFixed(2)}</td></tr>`;
+  }).join('');
+  $('invoicePreview').innerHTML=`
+    <div class="inv-header">
+      <div><div class="inv-from-name">${STYLIST}</div>
+        <div class="inv-from-detail">Hair Stylist &nbsp;·&nbsp; MGM Salon<br>${fmtMonth(ym)} &nbsp;·&nbsp; Commission rate: 60%<br>Invoice #: ${invNum}</div></div>
+      <div class="inv-to"><div class="inv-to-label">Payment request to</div>
+        <div class="inv-to-salon">MGM Salon</div>
+        <div style="font-size:11px;color:#888;margin-top:4px;line-height:1.6">Issued: ${issued}<br>Due by: ${dueDate}</div></div>
+    </div>
+    <div class="inv-meta">
+      <div class="inv-meta-item"><div class="inv-meta-lbl">Appointments</div><div class="inv-meta-val">${appts.length}</div></div>
+      <div class="inv-meta-item"><div class="inv-meta-lbl">Revenue generated</div><div class="inv-meta-val">$${totCharge.toFixed(2)}</div></div>
+      <div class="inv-meta-item"><div class="inv-meta-lbl">MGM share (40%)</div><div class="inv-meta-val" style="color:#1e40af">$${totSalon.toFixed(2)}</div></div>
+      <div class="inv-meta-item"><div class="inv-meta-lbl">Amount owed (60%)</div><div class="inv-meta-val" style="color:#166534">$${totMe.toFixed(2)}</div></div>
+    </div>
+    <table class="inv-tbl">
+      <thead><tr><th>#</th><th>Client</th><th>Date</th><th>Service</th><th class="r">Charged</th><th class="r">MGM 40%</th><th class="r">My 60%</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="inv-totals">
+      <div class="inv-total-row"><span>Total revenue generated</span><span>$${totCharge.toFixed(2)}</span></div>
+      <div class="inv-total-row"><span>MGM salon share (40%)</span><span style="color:#1e40af">– $${totSalon.toFixed(2)}</span></div>
+      <div class="inv-total-row final"><span>Amount owed to ${STYLIST}</span><span style="color:#166534">$${totMe.toFixed(2)}</span></div>
+    </div>
+    <div class="inv-note"><strong>Note:</strong> Tips totalling $${totTip.toFixed(2)} were paid directly by clients and are not included in this commission statement.</div>
+    <div class="inv-footer">MGM Studio · Generated ${issued} · ${invNum}</div>`;
+}
+function printInvoice(){
+  const content=$('invoicePreview').innerHTML;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Commission Statement — ${STYLIST}</title>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:32px;color:#1a1a1a;max-width:720px;margin:0 auto}
+  .inv-header{display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:2.5px solid #111}
+  .inv-from-name{font-size:22px;font-weight:700;margin-bottom:5px}.inv-from-detail{font-size:12px;color:#555;line-height:1.8}
+  .inv-to{text-align:right}.inv-to-label{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+  .inv-to-salon{font-size:17px;font-weight:700}
+  .inv-meta{display:flex;justify-content:space-between;margin-bottom:20px;padding:13px 18px;background:#f5f5f5;border-radius:8px;flex-wrap:wrap;gap:10px}
+  .inv-meta-item{text-align:center}.inv-meta-lbl{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+  .inv-meta-val{font-size:14px;font-weight:700;color:#222}
+  .inv-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:18px}
+  .inv-tbl th{padding:9px 11px;background:#111;color:#fff;font-weight:600;text-align:left;font-size:11px}
+  .inv-tbl th.r,.inv-tbl td.r{text-align:right}.inv-tbl td{padding:9px 11px;border-bottom:0.5px solid #ececec}
+  .inv-totals{border-top:2px solid #111;padding-top:14px}
+  .inv-total-row{display:flex;justify-content:space-between;font-size:13px;color:#666;margin-bottom:7px}
+  .inv-total-row.final{font-size:19px;font-weight:700;color:#111;margin-top:10px;padding-top:10px;border-top:0.5px solid #ddd}
+  .inv-note{margin-top:18px;padding:11px 15px;background:#fffbeb;border-radius:6px;font-size:11px;color:#854d0e;border:0.5px solid #fde68a}
+  .inv-footer{margin-top:16px;text-align:center;font-size:10px;color:#bbb;padding-top:12px;border-top:0.5px solid #eee}
+  @media print{body{padding:18px}}</style>
+  </head><body>${content}</body></html>`);
+  w.document.close();setTimeout(()=>w.print(),500);
+}
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  ['pBook','pHist','pMgm'].forEach(p=>$(p).style.display='none');
+  if(t==='book'){$('pBook').style.display='block';document.querySelectorAll('.tab')[0].classList.add('active');}
+  if(t==='hist'){$('pHist').style.display='block';document.querySelectorAll('.tab')[1].classList.add('active');renderTable();}
+  if(t==='mgm'){$('pMgm').style.display='block';document.querySelectorAll('.tab')[2].classList.add('active');renderMgm();}
+}
+// ── SERVICE PICKER ──
+const SERVICE_GROUPS=[
+  {c:'Color',d:'hair',s:[['Color','palette'],['Root Touch-up','brush'],['Root Smudge','brush'],['All-Over Color','palette'],['Gray Coverage','palette'],["Men's Color",'palette'],['Vivid Color','diamond'],['Color Correction','palette'],['Toner / Gloss','droplet']]},
+  {c:'Highlights',d:'hair',s:[['Highlights','sparkles'],['Partial Highlight','sparkles'],['Full Highlight','sparkles'],['Lowlights','sparkles'],['Balayage','sparkles'],['Foilage','sparkles'],['Ombré','color-swatch'],['Babylights','sparkles']]},
+  {c:'Cuts & Styling',d:'hair',s:[["Women's Haircut",'scissors'],["Men's Haircut",'user'],['Kids Haircut','mood-kid'],['Cut & Style','scissors'],['Bang Trim','cut'],['Blow Dry','wind'],['Silk Press','flame'],['Curls','wave-sine'],['Updo','crown'],['Special Occasion','sparkles'],['Bridal','heart'],['Braids','line'],['Roller Set','circle']]},
+  {c:'Treatments',d:'hair',s:[['Treatment','flask'],['Deep Conditioning','droplet'],['Olaplex','flask'],['Scalp Treatment','massage'],['Keratin','flame'],['Brazilian Blowout','flame'],['Clarifying','droplet'],['Gloss / Shine','droplet']]},
+  {c:'Texture',d:'hair',s:[['Perm','wave-sine'],['Relaxer','wave-sine'],['Permanent Straightening','wave-sine']]},
+  {c:'Length & Volume',d:'hair',s:[['Extensions','plus'],['Tape-In','plus'],['Sew-In / Weave','plus'],['Fusion','plus']]},
+  {c:'Brows & Lashes',d:'hair',s:[['Brow Shaping','eye'],['Brow Wax','eye'],['Brow Tint','palette'],['Lash Lift','eye'],['Lash Extensions','sparkles'],['Lash Fill','sparkles']]},
+  {c:'Skin & Extras',d:'hair',s:[['Facial','mood-happy'],['Makeup','brush'],['Spray Tan','spray'],['Massage','massage']]},
+  {c:'Waxing',d:'hair',s:[['Face Wax','droplet'],['Lip / Chin Wax','droplet'],['Body Wax','droplet'],['Threading','needle']]},
+  {c:"Men's Grooming",d:'hair',s:[['Beard Trim','mustache'],['Hot Towel Shave','cut'],['Line-up','cut'],['Fade','cut'],['Buzz Cut','cut'],['Head Shave','user'],['Mustache Trim','mustache']]},
+  {c:'Nails — Hands',d:'nail',s:[['Manicure','hand-stop'],['Gel Manicure','hand-stop'],['Spa Manicure','hand-stop'],['Dip Powder','diamond'],['Polish Change','droplet']]},
+  {c:'Nails — Feet',d:'nail',s:[['Pedicure','shoe'],['Gel Pedicure','shoe'],['Spa Pedicure','shoe']]},
+  {c:'Nails — Enhancements',d:'nail',s:[['Acrylic Full Set','diamond'],['Acrylic Fill','diamond'],['Gel-X Extensions','diamond'],['Builder Gel','diamond'],['Polygel','diamond'],['Overlay','diamond'],['Nail Art','star'],['French / Ombré','color-swatch'],['Nail Repair','tool'],['Removal / Soak-Off','eraser']]}
+];
+const DEFAULT_FAVES=["Women's Haircut","Color","Highlights","Men's Haircut",'Cut & Style','Blow Dry','Balayage','Root Touch-up','Toner / Gloss','Treatment','Keratin','Updo','Beard Trim','Kids Haircut','Manicure','Gel Manicure','Spa Manicure','Pedicure','Gel Pedicure','Spa Pedicure','Acrylic Full Set','Acrylic Fill','Gel-X Extensions','Dip Powder','Polish Change','Nail Art','Removal / Soak-Off'];
+const ICON_OF=(function(){var m={};SERVICE_GROUPS.forEach(function(g){g.s.forEach(function(it){m[it[0]]=it[1];});});return m;})();
+var CAT_COLORS={'Cuts & Styling':'#FFC04D','Color':'#FF7AB0','Highlights':'#FFE15A','Treatments':'#5FD6C6','Texture':'#B79CFF','Length & Volume':'#7FB4FF',"Men's Grooming":'#8FD17A','Nails — Hands':'#FF93A6','Nails — Feet':'#5FC8EC','Nails — Enhancements':'#CBA6FF','Brows & Lashes':'#E6B07E','Waxing':'#F4A6C8','Skin & Extras':'#9AD9A6'};
+function catColorOf(c){return CAT_COLORS[c]||'#FFC04D';}
+function getFavorites(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return Array.isArray(p.favorites)?p.favorites:DEFAULT_FAVES.slice();}catch(e){return DEFAULT_FAVES.slice();}}
+function saveFavorites(arr){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.favorites=arr;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.favorites=arr;}
+function resetApp(){
+  if(!confirm('Start fresh?\n\nThis erases ALL bookings, client cards, prices and your salon details on THIS device. It cannot be undone.\n\nTip: tap "Save a copy of my data" first if you might want it back.'))return;
+  if(!confirm('Are you sure? Your data on this device will be permanently erased.'))return;
+  try{
+    localStorage.removeItem('cp_appts');
+    localStorage.removeItem('cp_paid');
+    localStorage.removeItem('cp_clients');
+    localStorage.removeItem('cp_prefs');
+  }catch(e){}
+  location.reload();
+}
+function resetQuickPicks(){if(!confirm('Reset Quick Picks to the default set for Hair and Nail?'))return;saveFavorites(DEFAULT_FAVES.slice());buildServiceChips();}
+function exportData(){
+  try{
+    var payload={app:'CommissionPro',version:1,exportedAt:new Date().toISOString(),
+      appts:loadAppts(),paid:loadPaid(),
+      prefs:JSON.parse(localStorage.getItem('cp_prefs')||'{}'),
+      clients:JSON.parse(localStorage.getItem('cp_clients')||'[]')};
+    var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;a.download='commissionpro-backup-'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+  }catch(e){alert('Could not create the backup file.');console.error(e);}
+}
+function importData(input){
+  var file=input.files&&input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(){
+    try{
+      var d=JSON.parse(reader.result);
+      if(!d||d.app!=='CommissionPro')throw new Error('not a CommissionPro backup');
+      if(!confirm('Restore this backup? It will replace the bookings, prices and client cards currently on this device.'))return;
+      if(Array.isArray(d.appts))localStorage.setItem(APPTS_KEY,JSON.stringify(d.appts));
+      if(d.paid&&typeof d.paid==='object')localStorage.setItem(PAID_KEY,JSON.stringify(d.paid));
+      if(d.prefs&&typeof d.prefs==='object')localStorage.setItem('cp_prefs',JSON.stringify(d.prefs));
+      if(Array.isArray(d.clients))localStorage.setItem('cp_clients',JSON.stringify(d.clients));
+      alert('Backup restored. The app will now reload.');
+      location.reload();
+    }catch(e){alert('That file does not look like a CommissionPro backup.');console.error(e);}
+    finally{input.value='';}
+  };
+  reader.readAsText(file);
+}
+function getMode(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return p.svcMode||'hair';}catch(e){return 'hair';}}
+function saveMode(m){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.svcMode=m;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.svcMode=m;}
+function groupsForMode(m){return SERVICE_GROUPS.filter(function(g){return g.d===m||g.d==='both';});}
+function jsq(n){return n.replace(/'/g,"\\'");}
+function chipHTML(name,icon,isFav){
+  var safe=name.replace(/"/g,'&quot;');
+  if(isFav){
+    // Quick pick: tap fills the booking slot; ★ removes it back to More
+    return '<button type="button" class="svc-chip" data-name="'+safe+'" onclick="pickService(\''+jsq(name)+'\',this)"><i class="ti ti-'+(icon||'point')+'"></i>'+name+'<i class="ti ti-star-filled svc-star on" onclick="event.stopPropagation();demoteFav(\''+jsq(name)+'\')"></i></button>';
+  }
+  // More: tap promotes it up into Quick picks for future use
+  return '<button type="button" class="svc-chip svc-add" data-name="'+safe+'" onclick="promoteFav(\''+jsq(name)+'\',this)"><i class="ti ti-'+(icon||'point')+'"></i>'+name+'<i class="ti ti-star svc-star"></i></button>';
+}
+function buildServiceChips(){
+  var favs=getFavorites();
+  var mode=getMode();
+  var groups=groupsForMode(mode);
+  var modeNames={};groups.forEach(function(g){g.s.forEach(function(it){modeNames[it[0]]=1;});});
+  // Quick picks: favorites for this mode, in the user's saved order (drag to rearrange)
+  var favHere=favs.filter(function(n){return modeNames[n];});
+  var favRow=$('favRow');
+  if(favRow){
+    favRow.innerHTML=favHere.length?favHere.map(function(n){return chipHTML(n,ICON_OF[n],true);}).join(''):'<div class="svc-empty">Tap any service under “More” to add it up here.</div>';
+  }
+  // More: this mode's services that are NOT already favorites (no repeats); alphabetical; skip empty groups
+  var more=$('svcMore');
+  if(more){
+    more.innerHTML=groups.map(function(g){
+      var rest=g.s.filter(function(it){return favs.indexOf(it[0])===-1;}).slice().sort(function(a,b){return a[0].localeCompare(b[0]);});
+      if(!rest.length)return '';
+      var chips=rest.map(function(it){return chipHTML(it[0],it[1],false);}).join('');
+      return '<div class="svc-cat" style="color:'+catColorOf(g.c)+'">'+g.c+'</div><div class="svc-row">'+chips+'</div>';
+    }).join('');
+  }
+  // reflect active mode button
+  document.querySelectorAll('.svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.mode===mode);});
+  syncServiceChips();
+}
+function setMode(m){saveMode(m);buildServiceChips();}
+// ── Quick Picks drag-to-reorder ──
+var dragState=null;
+function commitFavOrder(){
+  var order=[].slice.call(document.querySelectorAll('#favRow .svc-chip')).map(function(c){return c.dataset.name;});
+  var favs=getFavorites();
+  var mode=getMode();var modeNames={};groupsForMode(mode).forEach(function(g){g.s.forEach(function(it){modeNames[it[0]]=1;});});
+  var q=order.slice();
+  var newFavs=favs.map(function(n){return modeNames[n]?q.shift():n;});
+  saveFavorites(newFavs);
+}
+function initFavDrag(){
+  var row=$('favRow');if(!row||row._dragInit)return;row._dragInit=true;
+  var ARM_MS=300, MOVE_CANCEL=10;
+  row.addEventListener('pointerdown',function(e){
+    var chip=e.target.closest&&e.target.closest('.svc-chip');
+    if(!chip||chip.parentNode!==row)return;
+    if(e.target.closest('.svc-star'))return;
+    dragState={chip:chip,sx:e.clientX,sy:e.clientY,armed:false,clone:null,pid:e.pointerId,timer:null};
+    // Arm a drag only after a brief hold — a quick swipe scrolls the page instead
+    dragState.timer=setTimeout(armDrag,ARM_MS);
+  });
+  function armDrag(){
+    if(!dragState||dragState.armed)return;
+    dragState.armed=true;
+    try{row.setPointerCapture(dragState.pid);}catch(_){}
+    var ch=dragState.chip,r=ch.getBoundingClientRect();
+    var clone=ch.cloneNode(true);
+    clone.classList.add('chip-drag-clone');
+    clone.style.cssText='position:fixed;left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;z-index:9999;pointer-events:none;margin:0';
+    document.body.appendChild(clone);
+    dragState.clone=clone;dragState.offX=dragState.sx-r.left;dragState.offY=dragState.sy-r.top;
+    ch.classList.add('chip-placeholder');
+    if(navigator.vibrate){try{navigator.vibrate(12);}catch(_){}}
+  }
+  function onMove(e){
+    if(!dragState)return;
+    var dx=e.clientX-dragState.sx,dy=e.clientY-dragState.sy;
+    if(!dragState.armed){
+      // moved before the hold completed -> user is scrolling; let the page scroll
+      if(Math.abs(dx)+Math.abs(dy)>MOVE_CANCEL){clearTimeout(dragState.timer);dragState=null;}
+      return;
+    }
+    var clone=dragState.clone;
+    clone.style.left=(e.clientX-dragState.offX)+'px';
+    clone.style.top=(e.clientY-dragState.offY)+'px';
+    clone.style.display='none';
+    var under=document.elementFromPoint(e.clientX,e.clientY);
+    clone.style.display='';
+    var tgt=under&&under.closest?under.closest('.svc-chip'):null;
+    if(tgt&&tgt!==dragState.chip&&tgt.parentNode===row){
+      var tr=tgt.getBoundingClientRect();
+      if(e.clientX<tr.left+tr.width/2)row.insertBefore(dragState.chip,tgt);
+      else row.insertBefore(dragState.chip,tgt.nextSibling);
+    }
+  }
+  function endDrag(){
+    if(!dragState)return;
+    if(dragState.timer)clearTimeout(dragState.timer);
+    var wasArmed=dragState.armed;
+    cleanupDragClones();
+    if(dragState.chip)dragState.chip.classList.remove('chip-placeholder');
+    if(wasArmed){commitFavOrder();_suppressClick=true;setTimeout(function(){_suppressClick=false;},60);}
+    dragState=null;
+  }
+  // Block page scroll ONLY while a drag is armed; otherwise swipes scroll normally
+  window.addEventListener('touchmove',function(e){if(dragState&&dragState.armed&&e.cancelable)e.preventDefault();},{passive:false});
+  window.addEventListener('pointermove',onMove,{passive:true});
+  window.addEventListener('pointerup',endDrag);
+  window.addEventListener('pointercancel',endDrag);
+  window.addEventListener('blur',endDrag);
+}
+function cleanupDragClones(){
+  var c=document.querySelectorAll('.chip-drag-clone');for(var i=0;i<c.length;i++){if(c[i].parentNode)c[i].parentNode.removeChild(c[i]);}
+  var ph=document.querySelectorAll('.chip-placeholder');for(var j=0;j<ph.length;j++)ph[j].classList.remove('chip-placeholder');
+}
+function resetQuickPicks(){
+  if(!confirm('Reset your Quick Picks to the default set and order?'))return;
+  saveFavorites(DEFAULT_FAVES.slice());buildServiceChips();
+}
+function flyGhost(srcRect,tgtRect,name){
+  try{
+    if(!srcRect||!tgtRect)return;
+    var ghost=document.createElement('div');
+    ghost.className='svc-ghost';ghost.textContent=name;
+    document.body.appendChild(ghost);
+    ghost.style.left=srcRect.left+'px';ghost.style.top=srcRect.top+'px';
+    ghost.style.minWidth=srcRect.width+'px';ghost.style.height=srcRect.height+'px';
+    ghost.getBoundingClientRect();
+    var dx=(tgtRect.left+16)-srcRect.left;
+    var dy=(tgtRect.top+tgtRect.height/2)-(srcRect.top+srcRect.height/2);
+    ghost.style.setProperty('--dx',dx+'px');
+    ghost.style.setProperty('--dy',dy+'px');
+    ghost.classList.add('go');
+    setTimeout(function(){if(ghost&&ghost.parentNode)ghost.parentNode.removeChild(ghost);},1450);
+  }catch(e){}
+}
+// Tap a Quick pick -> ADD it to the booking (services accumulate); tap again to remove
+function servicesInField(){return ($('cCat').value||'').split('+').map(function(s){return s.trim();}).filter(Boolean);}
+var _suppressClick=false;
+function pickService(name,el){
+  if(_suppressClick)return;
+  var input=$('cCat');if(!input)return;
+  var list=servicesInField();
+  var low=list.map(function(s){return s.toLowerCase();});
+  var idx=low.indexOf(name.toLowerCase());
+  var adding=idx===-1;
+  if(adding){ list.push(name); if(el)flyGhost(el.getBoundingClientRect(),input.getBoundingClientRect(),name); }
+  else { list.splice(idx,1); }
+  input.value=list.join(' + ');
+  syncServiceChips();
+  applyAutoPrice();
+  if(adding){ input.classList.remove('slot-hit');void input.offsetWidth;input.classList.add('slot-hit'); }
+}
+// Tap a More service -> add it to the booking AND promote it to Quick picks for next time
+function promoteFav(name,el){
+  var favs=getFavorites();
+  if(favs.indexOf(name)===-1){favs.push(name);saveFavorites(favs);}
+  var input=$('cCat');
+  if(input){
+    var list=servicesInField();
+    if(list.map(function(s){return s.toLowerCase();}).indexOf(name.toLowerCase())===-1){list.push(name);input.value=list.join(' + ');}
+  }
+  var src=el?el.getBoundingClientRect():null;
+  var favRow=$('favRow');var tgt=favRow?favRow.getBoundingClientRect():null;
+  buildServiceChips();syncServiceChips();applyAutoPrice();
+  if(src&&tgt)flyGhost(src,tgt,name);
+}
+// Tap the ★ on a Quick pick -> send it back down to More
+function demoteFav(name){
+  var favs=getFavorites();var i=favs.indexOf(name);
+  if(i>-1){favs.splice(i,1);saveFavorites(favs);}
+  buildServiceChips();
+}
+function syncServiceChips(){
+  var list=servicesInField().map(function(s){return s.toLowerCase();});
+  document.querySelectorAll('.svc-chip').forEach(function(c){
+    c.classList.toggle('sel',list.indexOf((c.dataset.name||'').toLowerCase())>-1);
+  });
+}
+function toggleMore(){
+  var m=$('svcMore'),b=$('svcMoreBtn');if(!m||!b)return;
+  var open=m.style.display!=='none';
+  m.style.display=open?'none':'block';
+  b.innerHTML=open?'<i class="ti ti-chevron-down more-chev"></i> <span class="more-txt">More services</span>':'<i class="ti ti-chevron-up more-chev"></i> <span class="more-txt">Hide services</span>';
+}
+function getFx(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return p.fx||'gentle';}catch(e){return 'gentle';}}
+function saveFx(fx){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.fx=fx;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.fx=fx;}
+function applyFx(fx){document.body.classList.remove('fx-off','fx-gentle','fx-lively','fx-party');document.body.classList.add('fx-'+(fx||'gentle'));}
+function setFx(fx,btn){saveFx(fx);applyFx(fx);if(btn){var g=btn.parentNode;if(g)g.querySelectorAll('.fx-btn').forEach(function(b){b.classList.remove('sel');});btn.classList.add('sel');}}function markFx(){var fx=getFx();document.querySelectorAll('#fxGrid .fx-btn').forEach(function(b){b.classList.toggle('sel',b.dataset.fx===fx);});}
+function applyLightComfort(){var b=document.body;b.classList.remove('lcbg-bright','lcbg-soft','lcbg-sepia','lctx-normal','lctx-high');b.classList.add('lcbg-'+(prefs.lcbg||'soft'));b.classList.add('lctx-'+(prefs.lctx||'normal'));}
+function setLcbg(v,btn){prefs.lcbg=v;applyLightComfort();savePrefsToStorage();if(btn){btn.parentNode.querySelectorAll('.lcbg-btn').forEach(function(x){x.classList.remove('sel');});btn.classList.add('sel');}}
+function setLctx(v,btn){prefs.lctx=v;applyLightComfort();savePrefsToStorage();if(btn){btn.parentNode.querySelectorAll('.lctx-btn').forEach(function(x){x.classList.remove('sel');});btn.classList.add('sel');}}
+function markLightComfort(){var bg=prefs.lcbg||'soft',tx=prefs.lctx||'normal';document.querySelectorAll('.lcbg-btn').forEach(function(x){x.classList.toggle('sel',x.dataset.v===bg);});document.querySelectorAll('.lctx-btn').forEach(function(x){x.classList.toggle('sel',x.dataset.v===tx);});}
+// ── PRICE BOOK ──
+var priceMode='hair';
+function getPrices(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.prices&&typeof p.prices==='object')?p.prices:{};}catch(e){return {};}}
+function savePrices(obj){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.prices=obj;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.prices=obj;}
+function setPrice(name,val){
+  var prices=getPrices();
+  var v=parseFloat(val);
+  if(isNaN(v)||val===''){ delete prices[name]; } else { prices[name]=v; }
+  savePrices(prices);
+}
+function applyAutoPrice(){
+  var prices=getPrices();
+  var list=servicesInField();
+  var sum=0,any=false;
+  list.forEach(function(n){var p=parseFloat(prices[n]);if(!isNaN(p)){sum+=p;any=true;}});
+  if(any){ var cc=$('cCharge'); if(cc){ cc.value=(Math.round(sum*100)/100); calc(); } }
+}
+function setPriceMode(m){priceMode=m;document.querySelectorAll('#priceModal .svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.pmode===m);});buildPriceList();}
+function buildPriceList(){
+  var prices=getPrices();
+  var groups=SERVICE_GROUPS.filter(function(g){return g.d===priceMode||g.d==='both';});
+  var html=groups.map(function(g){
+    var items=g.s.slice().sort(function(a,b){return a[0].localeCompare(b[0]);});
+    var priced=items.filter(function(it){return prices[it[0]]!==undefined&&prices[it[0]]!==null&&prices[it[0]]!=='';}).length;
+    var rows=items.map(function(it){
+      var n=it[0];
+      var val=(prices[n]!==undefined&&prices[n]!==null)?prices[n]:'';
+      return '<div class="price-row"><span class="price-name">'+n+'</span><span class="price-in-wrap"><input class="price-in" type="number" inputmode="decimal" placeholder="0" value="'+val+'" oninput="setPrice(\''+n.replace(/'/g,"\\'")+'\',this.value)"></span></div>';
+    }).join('');
+    var col=catColorOf(g.c);
+    var badge=priced?'<span class="pc-count">'+priced+'</span>':'';
+    return '<div class="price-group"><div class="price-cat-head" onclick="togglePriceCat(this)" style="color:'+col+';border-color:'+col+'66"><span>'+g.c+badge+'</span><i class="ti ti-chevron-down price-chev"></i></div><div class="price-cat-body" style="display:none">'+rows+'</div></div>';
+  }).join('');
+  var el=$('priceList');if(el)el.innerHTML=html;
+}
+function togglePriceCat(head){
+  var body=head.nextElementSibling;if(!body)return;
+  var open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  head.classList.toggle('open',!open);
+}
+function openPrices(){priceMode=getMode();document.querySelectorAll('#priceModal .svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.pmode===priceMode);});buildPriceList();$('priceModal').classList.add('open');document.body.classList.add('modal-open');}
+function closePrices(){$('priceModal').classList.remove('open');document.body.classList.remove('modal-open');applyAutoPrice();}
+var _earnZoomT=null;
+function zoomEarnings(){
+  var c=$('earnCard');if(!c)return;
+  c.classList.add('big-read');
+  if(_earnZoomT)clearTimeout(_earnZoomT);
+  _earnZoomT=setTimeout(function(){c.classList.remove('big-read');},3000);
+}
+
+// ── CLIENT CARDS ──
+var CLIENT_CONDITIONS=['Hair dye / PPD allergy','Latex allergy','Sensitive skin or scalp','Eczema / Psoriasis / Dermatitis','Open cuts or scalp irritation','Recent chemical service','Pregnant / breastfeeding','Rosacea / skin condition','Skin medication (e.g. Accutane)','Medical hair loss / chemotherapy','Prior reaction to salon products'];
+var DEFAULT_DISCLAIMER="I confirm the information I have provided is accurate and complete to the best of my knowledge.\n\nI understand that hair and beauty services are performed using professional skill and best effort, and that results can vary due to factors outside the stylist's control — including my hair's history, products previously used, and individual sensitivities.\n\nI agree to release the salon and stylist from liability for reactions, damage, or dissatisfaction arising from services rendered, except in cases of proven negligence. I understand that services performed are non-refundable.\n\nI consent to the service(s) being performed today.";
+var clPatchRes='none';var _editingSig='';
+var sigCtx=null,sigDrawing=false,sigHasInk=false;
+function escHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escAttr(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');}
+function getClients(){try{var a=JSON.parse(localStorage.getItem('cp_clients')||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
+function saveClients(a){try{localStorage.setItem('cp_clients',JSON.stringify(a));}catch(e){alert('Could not save — storage may be full.');}}
+function getDisclaimer(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return p.disclaimer||DEFAULT_DISCLAIMER;}catch(e){return DEFAULT_DISCLAIMER;}}
+function saveDisclaimer(t){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.disclaimer=t;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}}
+function openClients(){renderClientList();$('clientsModal').classList.add('open');document.body.classList.add('modal-open');}
+function closeClients(){$('clientsModal').classList.remove('open');document.body.classList.remove('modal-open');}
+function renderClientList(){
+  var q=(($('clientSearch')&&$('clientSearch').value)||'').toLowerCase();
+  var clients=getClients().slice().sort(function(a,b){return a.name.localeCompare(b.name);});
+  if(q)clients=clients.filter(function(c){return (c.name+' '+(c.phone||'')+' '+(c.email||'')).toLowerCase().indexOf(q)>-1;});
+  var el=$('clientList');if(!el)return;
+  if(!clients.length){el.innerHTML='<div class="client-empty">No client cards yet.<br>Tap “New client card” to create one.</div>';return;}
+  el.innerHTML=clients.map(function(c){
+    var flags='';
+    var hasMed=(c.conditions&&c.conditions.length)||c.meds;
+    var reaction=c.patchDone&&c.patchRes==='reaction';
+    if(reaction)flags+='<span class="cc-flag warn">⚠ Patch reaction</span>';
+    if(hasMed)flags+='<span class="cc-flag warn">Medical notes</span>';
+    flags+=c.signature?'<span class="cc-flag ok">Signed'+(c.signedDate?' '+c.signedDate:'')+'</span>':'<span class="cc-flag muted">Unsigned</span>';
+    var sub=[c.phone,c.email].filter(Boolean).join(' · ');
+    return '<div class="client-card" onclick="editClient(\''+c.id+'\')"><div class="cc-name">'+escHtml(c.name)+'</div>'+(sub?'<div class="cc-sub">'+escHtml(sub)+'</div>':'')+'<div class="cc-flags">'+flags+'</div></div>';
+  }).join('');
+}
+function buildConditionChecks(sel){
+  sel=sel||[];
+  $('clConditions').innerHTML=CLIENT_CONDITIONS.map(function(c){
+    var ck=sel.indexOf(c)>-1?'checked':'';
+    return '<label class="ck ck-cond ck-row"><input type="checkbox" data-cond="'+escAttr(c)+'" '+ck+'><span class="ck-box"></span><span class="ck-txt">'+c+'</span></label>';
+  }).join('');
+}
+function gatherConditions(){return [].slice.call(document.querySelectorAll('#clConditions input:checked')).map(function(i){return i.getAttribute('data-cond');});}
+function setPatchRes(r){clPatchRes=r;document.querySelectorAll('#clPatchResult .cf-seg-btn').forEach(function(b){b.classList.toggle('on',b.dataset.res===r);});}
+function renderDisclaimer(){var d=$('clDisc');if(d)d.textContent=getDisclaimer();}
+var discEditing=false;
+function editDisclaimer(){
+  var d=$('clDisc');var btn=$('discEditBtn');
+  if(!discEditing){
+    discEditing=true;
+    d.innerHTML='<textarea id="discEdit" class="cf-in" rows="10" style="font-size:13px">'+escHtml(getDisclaimer())+'</textarea>';
+    btn.innerHTML='<i class="ti ti-check" style="font-size:13px"></i> Save disclaimer text';
+  } else {
+    var t=$('discEdit');saveDisclaimer(t?t.value:getDisclaimer());
+    discEditing=false;renderDisclaimer();
+    btn.innerHTML='<i class="ti ti-pencil" style="font-size:13px"></i> Edit disclaimer text';
+  }
+}
+function initSigPad(){
+  var c=$('sigPad');if(!c)return;
+  var r=c.getBoundingClientRect();var dpr=window.devicePixelRatio||1;
+  c.width=Math.max(1,r.width*dpr);c.height=Math.max(1,r.height*dpr);
+  sigCtx=c.getContext('2d');sigCtx.scale(dpr,dpr);
+  sigCtx.lineWidth=2.4;sigCtx.lineCap='round';sigCtx.lineJoin='round';sigCtx.strokeStyle='#111';
+  sigHasInk=false;
+  function pos(e){var rr=c.getBoundingClientRect();var t=(e.touches&&e.touches[0])||e;return {x:t.clientX-rr.left,y:t.clientY-rr.top};}
+  function start(e){e.preventDefault();sigDrawing=true;var p=pos(e);sigCtx.beginPath();sigCtx.moveTo(p.x,p.y);}
+  function move(e){if(!sigDrawing)return;e.preventDefault();var p=pos(e);sigCtx.lineTo(p.x,p.y);sigCtx.stroke();sigHasInk=true;}
+  function end(){sigDrawing=false;}
+  c.onpointerdown=start;c.onpointermove=move;c.onpointerup=end;c.onpointerleave=end;
+  c.ontouchstart=start;c.ontouchmove=move;c.ontouchend=end;
+}
+function clearSig(){if(!sigCtx){return;}var c=$('sigPad');sigCtx.clearRect(0,0,c.width,c.height);sigHasInk=false;}
+function drawSavedSig(dataURL){if(!dataURL||!sigCtx)return;var img=new Image();img.onload=function(){var c=$('sigPad');var r=c.getBoundingClientRect();sigCtx.drawImage(img,0,0,r.width,r.height);sigHasInk=true;};img.src=dataURL;}
+function fillClientForm(c){
+  $('clId').value=c.id||'';
+  $('clName').value=c.name||'';$('clPhone').value=c.phone||'';$('clEmail').value=c.email||'';$('clDob').value=c.dob||'';
+  $('clPatchDone').checked=!!c.patchDone;$('clPatchDate').value=c.patchDate||'';setPatchRes(c.patchRes||'none');
+  buildConditionChecks(c.conditions||[]);
+  $('clMeds').value=c.meds||'';$('clNotes').value=c.notes||'';$('clAgree').checked=!!c.agreed;
+  _editingSig=c.signature||'';
+}
+function showClientForm(){$('clientFormModal').classList.add('open');document.body.classList.add('modal-open');discEditing=false;renderDisclaimer();$('discEditBtn').innerHTML='<i class="ti ti-pencil" style="font-size:13px"></i> Edit disclaimer text';setTimeout(function(){initSigPad();if(_editingSig)drawSavedSig(_editingSig);},90);}
+function newClient(){
+  fillClientForm({});$('clientFormTitle').textContent='New client';$('clDelBtn').style.display='none';
+  showClientForm();
+}
+function editClient(id){
+  var c=getClients().filter(function(x){return x.id===id;})[0];if(!c)return;
+  fillClientForm(c);$('clientFormTitle').textContent=c.name||'Client';$('clDelBtn').style.display='block';
+  showClientForm();
+}
+function closeClientForm(){$('clientFormModal').classList.remove('open');}
+function saveClient(){
+  var name=$('clName').value.trim();
+  if(!name){alert("Please enter the client's name.");return;}
+  var clients=getClients();
+  var id=$('clId').value||('c'+Date.now()+Math.floor(Math.random()*1000));
+  var i=clients.map(function(c){return c.id;}).indexOf(id);
+  var prev=i>-1?clients[i]:null;
+  var sig=sigHasInk?$('sigPad').toDataURL('image/png'):(_editingSig||'');
+  var today=new Date().toISOString().slice(0,10);
+  var obj={id:id,name:name,phone:$('clPhone').value.trim(),email:$('clEmail').value.trim(),dob:$('clDob').value,
+    patchDone:$('clPatchDone').checked,patchDate:$('clPatchDate').value,patchRes:clPatchRes,
+    conditions:gatherConditions(),meds:$('clMeds').value.trim(),notes:$('clNotes').value.trim(),
+    agreed:$('clAgree').checked,signature:sig,
+    signedDate:sig?((prev&&prev.signedDate)?prev.signedDate:today):'',
+    created:prev?(prev.created||Date.now()):Date.now(),updated:Date.now()};
+  if(i>-1)clients[i]=obj;else clients.push(obj);
+  saveClients(clients);
+  closeClientForm();renderClientList();
+}
+function deleteClientConfirm(){
+  var id=$('clId').value;if(!id)return;
+  if(!confirm('Delete this client card permanently?'))return;
+  var clients=getClients().filter(function(c){return c.id!==id;});
+  saveClients(clients);closeClientForm();renderClientList();
+}
+
+applyFx(getFx());
+buildServiceChips();
+initFavDrag();
+calc();loadAll();
+
+/* ── Pay to Unlock ── */
+var UNLOCK={codeHash:4159026715,trialDays:3,stripeUrl:'https://buy.stripe.com/3cIdR97x4gdA4z9dCEfw401'};
+function pgHash(s){var h=5381;for(var i=0;i<s.length;i++){h=((h<<5)+h+s.charCodeAt(i))>>>0;}return h;}
+function pgUnlocked(){try{return localStorage.getItem('cp_unlocked')==='1';}catch(e){return false;}}
+function pgTrialStart(){try{var t=localStorage.getItem('cp_trialStart');if(!t){t=String(Date.now());localStorage.setItem('cp_trialStart',t);}return +t;}catch(e){return Date.now();}}
+function pgDaysLeft(){var ms=UNLOCK.trialDays*86400000-(Date.now()-pgTrialStart());return Math.max(0,Math.ceil(ms/86400000));}
+function pgTrialOver(){return (Date.now()-pgTrialStart())>=UNLOCK.trialDays*86400000;}
+function payShow(mandatory){var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.getElementById('pgClose').style.display=mandatory?'none':'block';document.getElementById('payErr').style.display='none';}
+function payClose(){var g=document.getElementById('payGate');if(g)g.classList.remove('on');}
+function payBuy(){if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){alert('Payment link is not set up yet — coming soon!');return;}window.location.href=UNLOCK.stripeUrl;}
+function payUnlock(){
+  var v=(document.getElementById('payCode').value||'').trim().toUpperCase();
+  if(v&&pgHash(v)===UNLOCK.codeHash){try{localStorage.setItem('cp_unlocked','1');}catch(e){}payClose();}
+  else{document.getElementById('payErr').style.display='block';}
+}
+function applyAccessGate(){
+  if(pgUnlocked())return;
+  payShow(true);
+}
+applyAccessGate();
+</script>
+<script>
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js").then(function(reg){
+    reg.update();
+    // No auto-reload (it can loop & overheat). If a new version takes over, show a gentle banner.
+    var shown=false;
+    navigator.serviceWorker.addEventListener("controllerchange",function(){
+      if(shown)return;shown=true;showUpdateBanner();
+    });
+  }).catch(function(e){console.log("SW error",e);});
+}
+function showUpdateBanner(){
+  if(document.getElementById('updBanner'))return;
+  var d=document.createElement('div');
+  d.id='updBanner';
+  d.style.cssText='position:fixed;left:12px;right:12px;bottom:16px;z-index:99999;background:var(--gold,#e3a008);color:#000;padding:13px 16px;border-radius:12px;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.5)';
+  d.innerHTML='<span>New version ready</span><button style="background:#000;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer">Refresh</button>';
+  d.querySelector('button').onclick=function(){location.reload();};
+  document.body.appendChild(d);
+}
+// Force a clean update: drop service worker + caches, then reload
+function forceUpdate(){
+  if(!confirm('Refresh the app to the latest version? This clears the local app cache (your saved data stays).'))return;
+  var done=function(){location.reload();};
+  try{
+    var jobs=[];
+    if('caches' in window){jobs.push(caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k);}));}));}
+    if(navigator.serviceWorker){jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister();}));}));}
+    Promise.all(jobs).then(done).catch(done);
+    setTimeout(done,1500);
+  }catch(e){done();}
+}
+// Idle pause for decorative animations (cuts CPU/heat when not interacting)
+var _idleT=null;
+function resetIdle(){document.body.classList.remove('anim-idle');if(_idleT)clearTimeout(_idleT);_idleT=setTimeout(function(){document.body.classList.add('anim-idle');},5000);}
+['pointerdown','touchstart','keydown','scroll','pointermove'].forEach(function(ev){window.addEventListener(ev,resetIdle,{passive:true});});
+document.addEventListener('visibilitychange',function(){if(document.hidden){document.body.classList.add('anim-idle');}else{resetIdle();}});
+resetIdle();
+
+
+// ── WALLPAPERS ──
+const WP_LIST = ['none','starfield','nebula','aurora','galaxy','cosmos','meteor','ocean','ember','sunset','neon','plasma','midnight','emerald','rosegold','grid','lumina','warp','warpprism','warpjump'];
+
+function syncRootBg(){
+  var wp=window.CURRENT_WP||'none';
+  var light=document.body.classList.contains('theme-light');
+  document.documentElement.style.background = light ? '#e8e6de' : ((wp&&wp!=='none') ? '#070710' : '#0a0a0a');
+}
+function applyWallpaper(wp){
+  WP_LIST.forEach(w => document.body.classList.remove('wp-'+w));
+  if(wp && wp!=='none') document.body.classList.add('wp-'+wp);
+  window.CURRENT_WP = wp||'none';
+  syncRootBg();
+  if(typeof luminaSet==='function') luminaSet(wp==='lumina' && !document.body.classList.contains('theme-light'));
+  if(typeof warpSet==='function') warpSet(!document.body.classList.contains('theme-light') ? warpStyleFor(wp) : null);
+}
+
+function selWP(el, wp){
+  document.querySelectorAll('#wpGrid .wp-swatch').forEach(s=>s.classList.remove('sel'));
+  el.classList.add('sel');
+  applyWallpaper(wp);
+  prefs.wallpaper = wp;
+  savePrefsToStorage();
+}
+
+function markCurrentWP(){
+  const wp = prefs.wallpaper||'none';
+  document.querySelectorAll('#wpGrid .wp-swatch').forEach(s=>{
+    s.classList.toggle('sel', s.dataset.wp===wp);
+  });
+}
+
+// ── SETTINGS & CUSTOMISATION ──
+const PREFS_KEY = 'cp_prefs';
+let prefs = {};
+
+function loadPrefs(){
+  try{ prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||'{}'); }catch(e){ prefs={}; }
+  return prefs;
+}
+
+function savePrefsToStorage(){
+  try{ localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); }catch(e){}
+}
+
+function applyTheme(theme, accent){
+  const body = document.body;
+  body.classList.remove('theme-dark','theme-light','theme-auto');
+  body.classList.remove('accent-gold','accent-rose','accent-ocean','accent-forest','accent-purple');
+  if(theme==='auto'){
+    const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    body.classList.add(dark?'theme-dark':'theme-light');
+  } else {
+    body.classList.add('theme-'+(theme||'dark'));
+  }
+  body.classList.add('accent-'+(accent||'gold'));
+  if(typeof syncRootBg==='function')syncRootBg();
+  if(typeof luminaSet==='function') luminaSet(window.CURRENT_WP==='lumina' && !body.classList.contains('theme-light'));
+  if(typeof warpSet==='function') warpSet(!body.classList.contains('theme-light') ? warpStyleFor(window.CURRENT_WP) : null);
+}
+function selThemeS(theme, btn){
+  if(btn){ document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
+  prefs.theme = theme;
+  applyTheme(prefs.theme, prefs.accent||'gold');
+  savePrefsToStorage();
+}
+function selAccentS(accent, el){
+  if(el){ document.querySelectorAll('.accent-swatch').forEach(s=>s.classList.remove('sel')); el.classList.add('sel'); }
+  prefs.accent = accent;
+  applyTheme(prefs.theme||'dark', prefs.accent);
+  savePrefsToStorage();
+}
+function markCurrentThemeAccent(){
+  const th = prefs.theme||'dark';
+  document.querySelectorAll('.theme-btn').forEach(b=>{
+    const m = (b.getAttribute('onclick')||'').match(/selThemeS\('(\w+)'/);
+    b.classList.toggle('sel', !!m && m[1]===th);
+  });
+  const ac = prefs.accent||'gold';
+  document.querySelectorAll('.accent-swatch').forEach(s=>{
+    const m = (s.getAttribute('onclick')||'').match(/selAccentS\('(\w+)'/);
+    s.classList.toggle('sel', !!m && m[1]===ac);
+  });
+}
+
+function updateBranding(name, salon){
+  const n = name||'Stylist';
+  const s = salon||'Your Salon';
+  const tn = document.querySelector('.topbar-name');
+  if(tn) tn.innerHTML = '<span>'+s+'</span>';
+  const ts = document.querySelector('.topbar-sub');
+  if(ts) ts.textContent = n+' · Commission tracker';
+  const ml = document.getElementById('mgmOwedLbl');
+  if(ml) ml.textContent = s+' owes '+n.split(' ')[0];
+}
+
+function updateCommissionRate(rate){
+  const r = parseInt(rate)||60;
+  const sr = 100-r;
+  window.MY_RATE = r/100;
+  window.SALON_RATE = sr/100;
+  const pcts = document.querySelectorAll('.sc-pct');
+  if(pcts[0]) pcts[0].textContent = sr+'% of charge';
+  if(pcts[1]) pcts[1].textContent = r+'% of charge';
+}
+
+function openSettings(){
+  loadPrefs();
+  const ni = document.getElementById('settingName');
+  const si = document.getElementById('settingSalon');
+  const ri = document.getElementById('settingRate');
+  if(ni) ni.value = prefs.name||'';
+  if(si) si.value = prefs.salon||'';
+  if(ri) ri.value = prefs.rate||60;
+  const panel = document.getElementById('settingsPanel');
+  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); }
+}
+
+function closeSettings(){
+  const panel = document.getElementById('settingsPanel');
+  if(panel){ panel.style.display='none'; }
+  if(typeof WARP!=='undefined'&&WARP.resume)WARP.resume();
+}
+
+function saveSettings(){
+  loadPrefs();
+  const n = document.getElementById('settingName').value.trim();
+  const s = document.getElementById('settingSalon').value.trim();
+  const r = document.getElementById('settingRate').value;
+  if(n) prefs.name = n;
+  if(s) prefs.salon = s;
+  if(r) prefs.rate = parseInt(r)||60;
+  prefs.setup = true;
+  savePrefsToStorage();
+  applyWallpaper(prefs.wallpaper||'none');
+  updateBranding(prefs.name, prefs.salon);
+  updateCommissionRate(prefs.rate);
+  closeSettings();
+}
+
+// ── EYE REST engine: deep 670nm-red starburst + 22s rest cue ──
+var ER={built:false,active:false};
+var ER_COLORS={
+  red:   {c1:'#ff9a9a',c2:'#ff2424',c3:'rgba(235,0,18,.78)',g:'rgba(255,40,40,.6)'},
+  amber: {c1:'#ffd29a',c2:'#ff9e2c',c3:'rgba(220,120,0,.72)',g:'rgba(255,150,30,.55)'},
+  yellow:{c1:'#fff0b0',c2:'#ffd23c',c3:'rgba(220,170,0,.7)',g:'rgba(255,200,40,.5)'},
+  green: {c1:'#b6f5cf',c2:'#36d07a',c3:'rgba(0,150,80,.7)',g:'rgba(40,210,120,.5)'}
+};
+var ER_ORDER=['red','amber','yellow','green'];
+function erSetColor(key){var c=ER_COLORS[key]||ER_COLORS.red;var el=document.getElementById('eyeRest');if(!el)return;el.style.setProperty('--erC1',c.c1);el.style.setProperty('--erC2',c.c2);el.style.setProperty('--erC3',c.c3);el.style.setProperty('--erG',c.g);}
+function setErColor(key,btn){prefs.erColor=key;savePrefsToStorage();if(key!=='cycle')erSetColor(key);if(btn){btn.parentNode.querySelectorAll('.erc-btn').forEach(function(x){x.classList.remove('sel');});btn.classList.add('sel');}}
+function markErColor(){var v=prefs.erColor||'red';document.querySelectorAll('.erc-btn').forEach(function(x){x.classList.toggle('sel',x.dataset.v===v);});}
+var erReduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+function erBuild(){
+  if(ER.built) return;
+  var rest=document.getElementById('eyeRest'),wrap=document.getElementById('erRays'); if(!wrap||!rest) return;
+  var N=24; for(var i=0;i<N;i++){ var r=document.createElement('div'); r.className='er-ray'; r.style.transform='rotate('+(i*(360/N))+'deg)'; wrap.appendChild(r); }
+  ER.rings=[]; for(var j=0;j<3;j++){ var rg=document.createElement('div'); rg.className='er-ring'; rg.style.width=rg.style.height='60px'; rg.style.margin='-30px 0 0 -30px'; rest.appendChild(rg); ER.rings.push(rg); }
+  ER.built=true;
+}
+// one calm breath: gentle fade-in -> bloom rays+rings+core outward -> collapse back in -> fade. no spin.
+function erBreath(){
+  erBuild();
+  if(ER.cycling){ erSetColor(ER_ORDER[ER.cycIdx%ER_ORDER.length]); ER.cycIdx++; }
+  var core=document.getElementById('erCore'),wrap=document.getElementById('erRays');
+  var big=Math.max(innerWidth,innerHeight), ringMax=big/60*1.1;
+  var cycle=4200+Math.random()*1400;                 // calmest: ~4.2-5.6s per breath
+  var erupt=Math.random()<0.28;                       // occasional larger multi-erupt
+  var rayScale=erupt?1.18:0.96, rk=erupt?ringMax*1.15:ringMax;
+  if(core) core.animate([
+    {opacity:0,transform:'scale(.5)'},
+    {opacity:1,transform:'scale(1)',offset:.18},
+    {opacity:1,transform:'scale('+(erupt?3.2:2.4)+')',offset:.5},
+    {opacity:1,transform:'scale(1)',offset:.82},
+    {opacity:0,transform:'scale(.5)'}
+  ],{duration:cycle,easing:'cubic-bezier(.37,0,.34,1)'});
+  if(wrap){ wrap.style.opacity='1';
+    wrap.animate([
+      {opacity:0,transform:'scale(.06)'},
+      {opacity:.9,transform:'scale('+(rayScale*0.45)+')',offset:.22},
+      {opacity:1,transform:'scale('+rayScale+')',offset:.5},
+      {opacity:.85,transform:'scale('+(rayScale*0.5)+')',offset:.8},
+      {opacity:0,transform:'scale(.08)'}
+    ],{duration:cycle,easing:'cubic-bezier(.37,0,.34,1)'});
+  }
+  (ER.rings||[]).forEach(function(rg,idx){
+    rg.animate([
+      {opacity:0,transform:'scale(.3)'},
+      {opacity:.8,transform:'scale('+(rk*0.5)+')',offset:.4},
+      {opacity:0,transform:'scale('+rk+')'}
+    ],{duration:cycle*0.82,delay:idx*(cycle*0.12),easing:'cubic-bezier(.2,.6,.3,1)'});
+  });
+  return cycle;
+}
+// quick celebratory bloom (save booking / get paid) — one gentle breath
+function eyeBloom(){
+  var rest=document.getElementById('eyeRest'),msg=document.getElementById('erMsg');
+  if(!rest||ER.active) return;
+  ER.active=true; rest.classList.add('on'); rest.style.pointerEvents='none'; if(msg) msg.style.opacity='0';
+  ER.cycling=false; erSetColor(prefs.erColor&&prefs.erColor!=='cycle'?prefs.erColor:'red');
+  var cyc=erReduce.matches?1400:erBreath();
+  setTimeout(function(){ rest.classList.remove('on'); ER.active=false; if(msg) msg.style.opacity=''; }, cyc*0.72);
+}
+// full eye-rest: TOTAL blackout + calm breathing 670nm burst + 22s look-away cue (tap to finish)
+function eyeRestFull(){
+  var rest=document.getElementById('eyeRest'),msg=document.getElementById('erMsg'),count=document.getElementById('erCount');
+  if(!rest||ER.active) return;
+  ER.active=true; rest.classList.add('on'); rest.style.pointerEvents='auto'; if(msg) msg.style.opacity='';
+  ER.cycling=(prefs.erColor==='cycle'); ER.cycIdx=0; if(!ER.cycling) erSetColor(prefs.erColor||'red');
+  function endRest(){ if(!ER.active) return;
+    if(ER._iv){clearInterval(ER._iv);ER._iv=null;} if(ER._bt){clearTimeout(ER._bt);ER._bt=null;}
+    if(msg) msg.animate([{opacity:1},{opacity:0}],{duration:600,fill:'forwards'});
+    setTimeout(function(){ rest.classList.remove('on'); rest.onclick=null; ER.active=false; if(msg) msg.style.opacity=''; },650);
+  }
+  rest.onclick=endRest;
+  if(msg) msg.animate([{opacity:0},{opacity:1}],{duration:900,delay:400,fill:'forwards'});
+  function loop(){ if(!ER.active) return; var cyc=erReduce.matches?4000:erBreath(); ER._bt=setTimeout(loop, cyc-350); }
+  loop();
+  var n=22; if(count) count.textContent=n;
+  ER._iv=setInterval(function(){ n--; if(count) count.textContent=n; if(n<=0){ endRest(); } },1000);
+}
+
+
+var LM={on:false,started:false,busy:false,meet:{x:.5,y:.5},timer:null};
+var lmReduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+function lmRnd(a,b){return a+Math.random()*(b-a);}
+function lmPick(a){return a[(Math.random()*a.length)|0];}
+function lmEl(id){return document.getElementById(id);}
+function lmDriftMeet(){LM.meet.x=Math.min(.8,Math.max(.2,LM.meet.x+lmRnd(-.18,.18)));LM.meet.y=Math.min(.8,Math.max(.2,LM.meet.y+lmRnd(-.18,.18)));}
+
+function lmLeg(el){
+  if(!LM.on||LM.busy||!el) return;
+  var W=innerWidth,H=innerHeight;
+  var tx=(LM.meet.x+lmRnd(-.28,.28))*W, ty=(LM.meet.y+lmRnd(-.28,.28))*H;
+  var cur=el._p||{x:lmRnd(0,W),y:lmRnd(0,H)};
+  var ang=Math.atan2(ty-cur.y,tx-cur.x)*180/Math.PI;
+  var dur=lmRnd(11000,17000);
+  var a=el.animate([
+    {transform:'translate('+cur.x+'px,'+cur.y+'px) rotate('+ang+'deg)',opacity:el._seen?1:0},
+    {opacity:1,offset:.12},
+    {transform:'translate('+tx+'px,'+ty+'px) rotate('+ang+'deg)',opacity:1}
+  ],{duration:dur,easing:'ease-in-out',fill:'forwards'});
+  el._seen=1;el._p={x:tx,y:ty};
+  a.onfinish=function(){ if(el===lmEl('lmA')) lmDriftMeet(); if(LM.on&&!LM.busy) lmLeg(el); };
+}
+function lmStartComets(){
+  var A=lmEl('lmA'),B=lmEl('lmB'); if(!A||!B) return;
+  A.style.setProperty('--c','#ff9ec4');A.style.setProperty('--glow','rgba(255,150,200,.5)');
+  B.style.setProperty('--c','#8ec9ff');B.style.setProperty('--glow','rgba(140,200,255,.5)');
+  A._seen=0;B._seen=0; lmLeg(A); setTimeout(function(){ if(LM.on) lmLeg(B); },2600);
+}
+
+var LM_PAL=[['#ff9ec4','#8ec9ff'],['#ffd27a','#c0a3ff'],['#9affc8','#ff8ad0'],['#7ad6ff','#ffb0d0'],['#c9a3ff','#7affd6'],['#ff8f6b','#8effc0']];
+var LM_HEARTS=[['#ff5e9c','#ff8fb4','#ffb86b'],['#7a6bff','#b08fff','#ff8fd0'],['#22d6c6','#7affd0','#bfffe0'],['#ff7a3c','#ffb86b','#ffe08a'],['#ff5e9c','#c06bff','#7ad6ff']];
+
+function lmRunFinale(){
+  if(!LM.on||LM.busy) return Promise.resolve();
+  LM.busy=true;
+  var A=lmEl('lmA'),B=lmEl('lmB');
+  A.getAnimations().forEach(function(a){a.cancel();});B.getAnimations().forEach(function(a){a.cancel();});
+  var pair=lmPick(LM_PAL); A.style.setProperty('--c',pair[0]);B.style.setProperty('--c',pair[1]);
+  A.style.setProperty('--glow','rgba(255,180,210,.5)');B.style.setProperty('--glow','rgba(170,200,255,.5)');
+  var hc=lmPick(LM_HEARTS); lmEl('lmHs1').setAttribute('stop-color',hc[0]);lmEl('lmHs2').setAttribute('stop-color',hc[1]);lmEl('lmHs3').setAttribute('stop-color',hc[2]);
+  var sf=lmRnd(0.75,1.5);                          // randomised pacing: slower .. moderately quicker
+  var cx=innerWidth/2,cy=innerHeight/2,fr=Math.min(innerWidth,innerHeight)*0.34;
+  function fig8(el,phase,a0,a1,loops,N,dur){
+    var f=[];for(var k=0;k<=N;k++){var p=k/N,t=p*loops*2*Math.PI+phase,amp=a0+(a1-a0)*p;
+      var x=cx+amp*Math.sin(t),y=cy+amp*Math.sin(t)*Math.cos(t)*1.5;
+      f.push({transform:'translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px) rotate(0deg)',opacity:1});}
+    return el.animate(f,{duration:dur,easing:'ease-in-out',fill:'forwards'});
+  }
+  return Promise.all([fig8(A,0,fr*.85,fr*.12,2.5,80,13000*sf).finished,fig8(B,Math.PI,fr*.85,fr*.12,2.5,80,13000*sf).finished]).then(function(){
+    if(!LM.on) throw 'off';
+    return Promise.all([fig8(A,0,fr*.12,fr,1.5,70,9000*sf).finished,fig8(B,Math.PI,fr*.12,fr,1.5,70,9000*sf).finished]);
+  }).then(function(){
+    A.animate([{opacity:1},{opacity:0}],{duration:700,fill:'forwards'});
+    B.animate([{opacity:1},{opacity:0}],{duration:700,fill:'forwards'});
+    var hp=lmEl('lmHpath'),len=hp.getTotalLength();
+    hp.style.strokeDasharray=len;hp.style.strokeDashoffset=len;
+    lmEl('lmHeart').animate([{opacity:0,transform:'scale(.7)'},{opacity:1,transform:'scale(1)'}],{duration:1000*sf,fill:'forwards',easing:'ease-out'});
+    return hp.animate([{strokeDashoffset:len},{strokeDashoffset:0}],{duration:2200*sf,fill:'forwards',easing:'ease-in-out'}).finished;
+  }).then(function(){
+    return lmEl('lmHeart').animate([{transform:'scale(1)'},{transform:'scale(1.07)'},{transform:'scale(1)'}],{duration:900*sf,easing:'ease-in-out'}).finished;
+  }).then(function(){
+    var big=Math.max(innerWidth,innerHeight)/20+3;
+    lmEl('lmHeart').animate([{opacity:1,transform:'scale(1)'},{opacity:0,transform:'scale(2.4)'}],{duration:2200*sf,fill:'forwards',easing:'ease-out'});
+    lmEl('lmBurst').animate([{opacity:.95,transform:'scale(.4)'},{opacity:0,transform:'scale('+big+')'}],{duration:2400*sf,easing:'ease-out'});
+    lmEl('lmRing').animate([{opacity:.8,transform:'scale(.4)'},{opacity:0,transform:'scale('+(big*.9)+')'}],{duration:2600*sf,easing:'ease-out'});
+    return new Promise(function(res){setTimeout(res,2500*sf);});
+  }).then(function(){
+    lmEl('lmHeart').style.opacity='0';LM.busy=false; if(LM.on) lmStartComets();
+  }).catch(function(){ var h=lmEl('lmHeart'); if(h)h.style.opacity='0'; LM.busy=false; if(LM.on) lmStartComets(); });
+}
+function lmTick(){ if(LM.on&&!LM.busy&&!lmReduce.matches&&!document.hidden&&Math.random()<0.05) lmRunFinale(); }
+
+function luminaSet(on){
+  LM.on=on;
+  if(on){
+    if(lmReduce.matches) return;
+    if(!LM.started){ LM.started=true; lmStartComets(); if(!LM.timer) LM.timer=setInterval(lmTick,9000); }
+  } else {
+    LM.started=false;
+    if(LM.timer){clearInterval(LM.timer);LM.timer=null;}
+    LM.busy=false;
+    [lmEl('lmA'),lmEl('lmB')].forEach(function(el){ if(el){el.getAnimations().forEach(function(a){a.cancel();});el.style.opacity='0';} });
+    var h=lmEl('lmHeart'); if(h) h.style.opacity='0';
+  }
+}
+document.addEventListener('visibilitychange',function(){
+  if(!document.hidden&&LM.on&&!LM.busy&&!lmReduce.matches){ var A=lmEl('lmA'); if(A&&!A.getAnimations().length) lmStartComets(); }
+});
+
+var WARP=(function(){
+  var cv,ctx,dpr=Math.min(window.devicePixelRatio||1,2),W=0,H=0,cx=0,cy=0,focal=0;
+  var stars=[],N=0,style=null,raf=null,running=false,visible=true,suspended=false;
+  var GENTLE=0.05,WARP_S=0.85,speed=GENTLE,target=GENTLE;
+  var surgeUntil=0,nextSurge=0,last=0,idleTimer=null,mode='active',idleSince=0;
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+  function el(){return document.getElementById('warpLayer');}
+  function resize(){if(!cv||!ctx)return;W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);cx=W/2;cy=H/2;focal=Math.max(W,H)*0.9;}
+  function mk(s){s=s||{};s.x=Math.random()*2-1;s.y=Math.random()*2-1;s.z=Math.random()*0.9+0.1;s.px=null;s.py=null;return s;}
+  function build(){N=Math.min(innerWidth,innerHeight)<420?150:190;stars=[];for(var i=0;i<N;i++)stars.push(mk());}
+  function poke(){
+    mode='active';target=GENTLE;
+    if(suspended&&running){suspended=false;last=performance.now();raf=requestAnimationFrame(frame);}
+    clearTimeout(idleTimer);
+    idleTimer=setTimeout(function(){mode='idle';target=WARP_S;idleSince=performance.now();},2500);
+  }
+  var pokeEvents=['pointerdown','pointermove','touchstart','keydown','wheel'];
+  function frame(now){
+    if(!running){return;}
+    if(!visible){last=now;raf=requestAnimationFrame(frame);return;}
+    if(now-last<32){raf=requestAnimationFrame(frame);return;}   // ~30fps cap
+    var dt=Math.min((now-last)/1000,0.06);last=now;
+    if(mode==='idle'&&idleSince&&(now-idleSince)>25000){suspended=true;return;}  // stop cooking when left alone
+    var tgt=target;
+    if(style==='jump'){
+      if(now>nextSurge){surgeUntil=now+1400;nextSurge=now+(7000+Math.random()*7000);}
+      if(now<surgeUntil){var base=(mode==='idle')?WARP_S:GENTLE*4;tgt=Math.max(tgt,base*1.7);}
+    }
+    speed+=(tgt-speed)*(1-Math.pow(0.001,dt));
+    var fade=0.30-Math.min(speed,1)*0.16;
+    ctx.fillStyle='rgba(2,3,10,'+fade.toFixed(3)+')';ctx.fillRect(0,0,W,H);ctx.lineCap='round';
+    var prism=(style==='prism');
+    for(var i=0;i<N;i++){
+      var s=stars[i];s.z-=speed*dt;
+      if(s.z<=0.02){stars[i]=mk(s);continue;}
+      var sx=cx+(s.x/s.z)*focal,sy=cy+(s.y/s.z)*focal;
+      if(s.px===null){s.px=sx;s.py=sy;}
+      var depth=1-s.z,lw=0.4+depth*depth*2.6,a=0.25+depth*0.75;
+      if(prism){
+        var dx=sx-s.px,dy=sy-s.py,len=Math.hypot(dx,dy)||1,ox=-dy/len,oy=dx/len,sp=Math.min(len*0.14,3.2)*(0.4+depth);
+        ctx.lineWidth=lw;
+        ctx.strokeStyle='rgba(255,60,80,'+(a*0.7)+')';ctx.beginPath();ctx.moveTo(s.px+ox*sp,s.py+oy*sp);ctx.lineTo(sx+ox*sp,sy+oy*sp);ctx.stroke();
+        ctx.strokeStyle='rgba(70,255,120,'+(a*0.7)+')';ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(sx,sy);ctx.stroke();
+        ctx.strokeStyle='rgba(70,120,255,'+(a*0.7)+')';ctx.beginPath();ctx.moveTo(s.px-ox*sp,s.py-oy*sp);ctx.lineTo(sx-ox*sp,sy-oy*sp);ctx.stroke();
+      }else{
+        ctx.lineWidth=lw;ctx.strokeStyle='rgba('+(200+Math.round(depth*55))+','+(220+Math.round(depth*35))+',255,'+a+')';
+        ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(sx,sy);ctx.stroke();
+      }
+      s.px=sx;s.py=sy;
+    }
+    if(speed>0.3){var g=ctx.createRadialGradient(cx,cy,0,cx,cy,90),ga=Math.min((speed-0.3)*0.5,0.32);g.addColorStop(0,'rgba(180,210,255,'+ga+')');g.addColorStop(1,'rgba(180,210,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,90,0,7);ctx.fill();}
+    raf=requestAnimationFrame(frame);
+  }
+  function start(st){
+    cv=el();if(!cv)return;
+    if(reduce.matches){cv.style.display='block';ctx=cv.getContext('2d');resize();ctx.fillStyle='#02030a';ctx.fillRect(0,0,W,H);return;}
+    ctx=cv.getContext('2d');style=st;cv.style.display='block';
+    resize();build();speed=GENTLE;target=GENTLE;mode='active';suspended=false;last=performance.now();
+    if(!running){running=true;
+      window.addEventListener('resize',resize);
+      pokeEvents.forEach(function(ev){window.addEventListener(ev,poke,{passive:true});});
+      raf=requestAnimationFrame(frame);
+    }
+    poke();
+  }
+  function stop(){
+    running=false;suspended=false;if(raf){cancelAnimationFrame(raf);raf=null;}clearTimeout(idleTimer);
+    window.removeEventListener('resize',resize);
+    pokeEvents.forEach(function(ev){window.removeEventListener(ev,poke);});
+    if(cv){if(ctx)ctx.clearRect(0,0,cv.width,cv.height);cv.style.display='none';}
+  }
+  function pause(){ if(raf){cancelAnimationFrame(raf);raf=null;} }
+  function resume(){ if(running&&!suspended&&!raf){last=performance.now();raf=requestAnimationFrame(frame);} }
+  document.addEventListener('visibilitychange',function(){visible=!document.hidden;if(visible&&running)last=performance.now();});
+  return {start:start,stop:stop,pause:pause,resume:resume};
+})();
+function warpStyleFor(wp){return wp==='warp'?'star':wp==='warpprism'?'prism':wp==='warpjump'?'jump':null;}
+function warpSet(st){ if(st){WARP.start(st);} else {WARP.stop();} }
+
+function initPrefs(){
+  loadPrefs();
+  applyLightComfort();
+  applyTheme(prefs.theme||'dark', prefs.accent||'gold');
+  updateBranding(prefs.name, prefs.salon);
+  updateCommissionRate(prefs.rate||60);
+  applyWallpaper(prefs.wallpaper||'none');
+}
+
+initPrefs();
+</script>
+</body>
+</html>

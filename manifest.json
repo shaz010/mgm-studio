@@ -2,7 +2,7 @@
   "name": "CommissionPro",
   "short_name": "CommissionPro",
   "description": "Track your salon commission, tips and earnings — synced across all your devices.",
-  "start_url": "/mgm-studio/MGMStudio.html",
+  "start_url": "app.html",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#FFB800",
