@@ -1,16 +1,12 @@
 // CommissionPro service worker — network-first so the app always updates.
-const CACHE = 'commissionpro-v68';
+const CACHE = 'commissionpro-v71';
 const ASSETS = ['./', './index.html', './app.html', './manifest.json', './icon-192.png'];
 
-// Install: pre-cache the shell, take over immediately.
 self.addEventListener('install', (e) => {
   self.skipWaiting();
-  e.waitUntil(
-    caches.open(CACHE).then((c) => c.addAll(ASSETS).catch(() => {}))
-  );
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS).catch(() => {})));
 });
 
-// Activate: delete every old cache, then control all open pages.
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys()
@@ -19,11 +15,8 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// Fetch:
-//  - Page/HTML loads -> NETWORK FIRST (always newest app); fall back to cache only when offline.
-//  - Everything else  -> cache first (fast), fall back to network.
-// We ONLY ever cache successful (res.ok) responses, so a 404 or error
-// can never get "stuck" in the cache and serve a broken/old app.
+// Pages -> network first (always newest). Other assets -> cache first.
+// Only cache successful responses, so a 404/error can never get stuck.
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
@@ -34,13 +27,10 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
       fetch(req)
         .then((res) => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
-          }
+          if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {}); }
           return res;
         })
-        .catch(() => caches.match(req).then((r) => r || caches.match('./app.html')))
+        .catch(() => caches.match(req).then((r) => r || caches.match('./app.html').then((a) => a || caches.match('./index.html'))))
     );
     return;
   }
@@ -48,8 +38,7 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(req).then((r) => r || fetch(req).then((res) => {
       if (res && res.ok && new URL(req.url).origin === self.location.origin) {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+        const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
       }
       return res;
     }).catch(() => r))

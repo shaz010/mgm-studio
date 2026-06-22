@@ -1,26 +1,15 @@
 {
   "name": "CommissionPro",
   "short_name": "CommissionPro",
-  "description": "Track your salon commission, tips and earnings — synced across all your devices.",
+  "description": "Know your real take-home — commission, tips and what the salon owes you, instantly.",
   "start_url": "app.html",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0a0a0a",
   "theme_color": "#FFB800",
-  "orientation": "portrait-primary",
   "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "categories": ["finance", "business", "productivity"],
-  "screenshots": []
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
 }
