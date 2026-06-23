@@ -25,14 +25,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 }
 .app-shell{max-width:980px;margin:0 auto;padding:16px;width:100%;overflow-x:hidden;overflow-x:clip}
 
-.topbar{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
-.topbar-brand{display:flex;align-items:center;gap:12px}
-.topbar-icon{width:38px;height:38px;background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px}
-.topbar-name{font-size:18px;font-weight:600;color:var(--text)}.topbar-name span{color:var(--gold)}
-.topbar-sub{font-size:12px;color:var(--muted);margin-top:2px;font-weight:400}
+.topbar{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:10px;margin-bottom:14px}
+.topbar-brand{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
+.topbar-brand>div{min-width:0}
+.topbar-icon{width:38px;height:38px;background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px;flex-shrink:0}
+.topbar-name{font-size:18px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.topbar-name span{color:var(--gold)}
+.topbar-sub{font-size:12px;color:var(--muted);margin-top:2px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sync-badge{font-size:12px;padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:6px;font-weight:500;background:#0a2a14;border:1.5px solid #2a7a3a;color:#5ddb7c}
-.gear-btn{width:36px;height:36px;border-radius:9px;border:1.5px solid var(--border-bright);background:#1a1a1a;color:var(--text2);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.gear-btn{width:36px;height:36px;border-radius:9px;border:1.5px solid var(--border-bright);background:#1a1a1a;color:var(--text2);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform .12s,border-color .15s,color .15s}
+.gear-btn:active{transform:scale(.9);border-color:var(--gold);color:var(--gold)}
 .gear-btn:active{border-color:var(--gold);color:var(--gold)}
+.topbar-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+@media(max-width:400px){.topbar{padding:12px 12px}.topbar-actions{gap:5px}.gear-btn{width:34px;height:34px;font-size:17px}.topbar-icon{width:36px;height:36px;font-size:19px}.topbar-name{font-size:17px}}
+.gear-btn.er-btn{color:#e2483c}
+.gear-btn.er-btn:active{border-color:#ff5b4f;color:#ff5b4f}
+/* EYE REST */
+#eyeRest{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;background:#000;overflow:hidden;cursor:pointer}
+#eyeRest.on{display:flex}
+.er-glow{position:absolute;width:62vmin;height:62vmin;border-radius:50%;background:radial-gradient(circle,rgba(255,60,60,.6),rgba(235,0,18,.28) 45%,transparent 70%);filter:blur(8px);animation:erBreath 8s ease-in-out infinite}
+@keyframes erBreath{0%,100%{transform:scale(.68);opacity:.4}50%{transform:scale(1.06);opacity:.85}}
+.er-msg{position:absolute;bottom:14%;left:50%;transform:translateX(-50%);text-align:center;width:84%;max-width:420px}
+.er-big{font-size:21px;font-weight:700;color:#ffdada;letter-spacing:.3px}
+.er-sub{font-size:14px;color:#ffb4b4;margin-top:6px;line-height:1.5}
+.er-count{font-size:36px;font-weight:800;color:#fff;margin-top:10px;font-variant-numeric:tabular-nums}
+.er-skip{font-size:12px;color:#ff9b9b;margin-top:14px;opacity:.8}
+@media (prefers-reduced-motion: reduce){.er-glow{animation:none}}
 .set-sec{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin:22px 0 10px;padding-top:16px;border-top:1px solid var(--border)}
 .set-version{text-align:center;font-size:11px;color:#666;margin-top:20px;letter-spacing:.3px}
 /* STOCK */
@@ -216,9 +233,11 @@ datalist{display:none}
         <div class="topbar-sub" id="brandSub">MGM Studio</div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <div class="sync-badge"><i class="ti ti-device-floppy" style="font-size:13px"></i> Saved on device</div>
-      <button class="gear-btn" onclick="openSettings()" aria-label="Settings"><i class="ti ti-settings"></i></button>
+    <div class="topbar-actions">
+      <button class="gear-btn er-btn" onclick="eyeRest()" aria-label="Eye rest" title="Eye rest"><i class="ti ti-eye"></i></button>
+      <button class="gear-btn" onclick="openInsights()" aria-label="Insights" title="Insights"><i class="ti ti-currency-dollar"></i></button>
+      <button class="gear-btn" onclick="showView('clients')" aria-label="Clients" title="Clients"><i class="ti ti-users"></i></button>
+      <button class="gear-btn" onclick="openSettings()" aria-label="Settings" title="Settings"><i class="ti ti-settings"></i></button>
     </div>
   </div>
 
@@ -407,9 +426,6 @@ datalist{display:none}
       <button class="btn btn-sm" style="flex:1" onclick="saveHours()"><i class="ti ti-check"></i> Save hours</button>
     </div>
 
-    <div class="set-sec">Insights</div>
-    <div id="insightsBox" style="font-size:13px;color:var(--text2);line-height:1.6"></div>
-
     <div class="set-sec">Backup</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Export saves everything (appointments, clients, services, hours) to a file. Import restores it — handy when switching devices.</div>
     <div class="btn-row" style="margin-top:0">
@@ -444,6 +460,30 @@ datalist{display:none}
     <div class="btn-row">
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('confirmModal')">Cancel</button>
       <button class="btn btn-sm" id="cfYes" style="flex:1">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- EYE REST OVERLAY -->
+<div id="eyeRest" onclick="endEyeRest()">
+  <div class="er-glow"></div>
+  <div class="er-msg">
+    <div class="er-big">Rest your eyes</div>
+    <div class="er-sub">Look at something about 20 feet away until the timer reaches zero.</div>
+    <div class="er-count" id="erCount">22</div>
+    <div class="er-skip">tap anywhere to finish early</div>
+  </div>
+</div>
+
+<!-- INSIGHTS SHEET -->
+<div class="modal" id="insightsModal" onclick="if(event.target===this)closeSheet('insightsModal')">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title">Insights</div>
+    <div class="sheet-sub">Builds up as you book and complete appointments.</div>
+    <div id="insightsBox"></div>
+    <div class="btn-row" style="margin-top:18px">
+      <button class="btn btn-sm" style="flex:1" onclick="closeSheet('insightsModal')">Done</button>
     </div>
   </div>
 </div>
@@ -999,7 +1039,6 @@ function openSettings(){
   $('setBizName').value=p.bizName||'';
   $('setStylist').value=p.stylist||'';
   $('setVersion').textContent='AppointmentPro · '+VERSION;
-  renderInsights();
   renderHours(true);
   $('settingsModal').classList.add('show');
 }
@@ -1011,6 +1050,7 @@ function saveBusiness(){
 }
 
 /* ----- insights ----- */
+function openInsights(){renderInsights();$('insightsModal').classList.add('show');}
 function renderInsights(){
   reload();
   var active=appts.filter(function(a){return a.status!=='cancelled'});
@@ -1141,6 +1181,21 @@ function startFresh(){
       toast('Fresh start — all clear');
     },{title:'Last chance',yesLabel:'Erase everything',danger:true});
   },{title:'Start fresh?',yesLabel:'Continue',danger:true});
+}
+
+/* ===== eye rest (look-away timer with breathing 670nm glow) ===== */
+var erActive=false, erIv=null;
+function eyeRest(){
+  if(erActive)return;
+  erActive=true;
+  $('eyeRest').classList.add('on');
+  var n=22;$('erCount').textContent=n;
+  erIv=setInterval(function(){n--;if($('erCount'))$('erCount').textContent=n;if(n<=0)endEyeRest();},1000);
+}
+function endEyeRest(){
+  if(!erActive)return;erActive=false;
+  if(erIv){clearInterval(erIv);erIv=null;}
+  $('eyeRest').classList.remove('on');
 }
 
 /* ===== toast ===== */
