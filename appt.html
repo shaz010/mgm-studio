@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AppointmentPro — MGM Studio</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="AppointmentPro">
+<meta name="theme-color" content="#FFB800">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{overflow-x:hidden;overflow-x:clip;width:100%;max-width:100%;-webkit-text-size-adjust:100%;background:#0a0a0a;overscroll-behavior-x:none}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#f0f0f0;min-height:100vh;overflow-x:hidden;overflow-x:clip;width:100%;max-width:100%;touch-action:pan-y;overscroll-behavior-x:none;position:relative}
+:root{
+  --bg:#0a0a0a;--bg2:#141414;--bg3:#1e1e1e;
+  --border:#333;--border-bright:#444;
+  --gold:#FFB800;--gold-dim:#2a1f00;--gold-border:#554000;
+  --text:#f5f5f5;--text2:#cccccc;--muted:#999;
+  --blue:#7eb8ff;--bgblue:#0d1a2e;--bblue:#1a3a6a;
+  --green:#5ddb7c;--bggreen:#0a1f12;--bgreen:#1a4a2a;
+  --red:#ff7070;--bgred:#2a0a0a;--bred:#7a2a2a;
+  --pink:#FF6FC0;--purple:#cc99ff;
+}
+.app-shell{max-width:980px;margin:0 auto;padding:16px;width:100%;overflow-x:hidden;overflow-x:clip}
+
+.topbar{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.topbar-brand{display:flex;align-items:center;gap:12px}
+.topbar-icon{width:38px;height:38px;background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px}
+.topbar-name{font-size:18px;font-weight:600;color:var(--text)}.topbar-name span{color:var(--gold)}
+.topbar-sub{font-size:12px;color:var(--muted);margin-top:2px;font-weight:400}
+.sync-badge{font-size:12px;padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:6px;font-weight:500;background:#0a2a14;border:1.5px solid #2a7a3a;color:#5ddb7c}
+.gear-btn{width:36px;height:36px;border-radius:9px;border:1.5px solid var(--border-bright);background:#1a1a1a;color:var(--text2);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.gear-btn:active{border-color:var(--gold);color:var(--gold)}
+
+.tabs{display:flex;gap:3px;background:#0a0a0a;border-radius:10px;padding:4px;border:1px solid var(--border-bright);flex-wrap:wrap;margin-bottom:14px}
+.tab{padding:8px 14px;border-radius:7px;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;white-space:nowrap;font-weight:500;flex:1;text-align:center}
+.tab.active{background:var(--bg3);color:var(--gold);font-weight:600;border:1px solid var(--gold-border)}
+.tab i{font-size:14px;vertical-align:-2px;margin-right:5px}
+@media(max-width:480px){.tab span{display:none}.tab i{margin-right:0}}
+
+.view{display:none}.view.active{display:block}
+
+.card{background:#111;border:1px solid var(--border-bright);border-radius:12px;padding:18px;margin-bottom:14px}
+.ctitle{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.ctitle i{color:var(--gold);font-size:15px}
+label{display:block;font-size:13px;color:var(--text2);margin-bottom:5px;margin-top:14px;font-weight:500}
+label:first-of-type{margin-top:0}
+input,select,textarea{width:100%;padding:10px 12px;background:#1a1a1a;border:1.5px solid #444;border-radius:8px;color:#fff;font-size:16px;font-weight:500;outline:none;transition:border .2s;-webkit-appearance:none;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);background:#1e1e1e}
+input::placeholder,textarea::placeholder{color:#555;font-weight:400}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus{-webkit-text-fill-color:#fff;-webkit-box-shadow:0 0 0 1000px #1a1a1a inset;caret-color:#fff;transition:background-color 9999s ease 0s}
+textarea{min-height:64px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row2 label{margin-top:0}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:12px 18px;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;border:1.5px solid var(--gold);background:var(--gold);color:#1a1a1a;transition:all .15s;width:100%}
+.btn:active{transform:scale(.985)}
+.btn-ghost{background:transparent;color:var(--gold)}
+.btn-sm{padding:7px 12px;font-size:13px;width:auto}
+.btn-danger{border-color:var(--bred);background:transparent;color:var(--red)}
+.btn-row{display:flex;gap:10px;margin-top:6px}
+
+/* SERVICE PICKER — Quick picks + More, matches CommissionPro */
+.svc-mode{display:flex;gap:8px;margin:10px 0 4px}
+.svc-mode-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;border-radius:9px;border:1.5px solid var(--border-bright);background:#1a1a1a;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer;transition:all .15s}
+.svc-mode-btn .m-ico{font-size:16px}
+.svc-mode-btn[data-mode="hair"].on{border-color:#FFB800;background:rgba(255,184,0,.13);color:var(--gold)}
+.svc-mode-btn[data-mode="nail"].on{border-color:#FF6FC0;background:rgba(255,79,176,.13);color:var(--pink)}
+.svc-panel{margin-top:9px}
+.svc-cat{font-size:12px;font-weight:800;color:#b9b9b9;letter-spacing:.3px;margin:14px 0 7px;display:flex;align-items:center;gap:7px}
+.svc-cat:first-child{margin-top:6px}
+.qp-hint{font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:0}
+.svc-row{display:flex;flex-wrap:wrap;gap:7px}
+.svc-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:20px;border:1.5px solid #444;background:#1a1a1a;color:#ccc;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.svc-chip>i:first-child{font-size:14px;color:var(--gold)}
+.svc-chip:active{border-color:#666}
+.svc-chip.sel{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.svc-star{font-size:13px!important;margin-left:2px;color:#6a6a6a!important}
+.svc-star.on{color:var(--gold)!important}
+.svc-empty{font-size:12.5px;color:var(--muted);padding:5px 2px}
+.svc-more-btn{width:100%;margin-top:14px;padding:11px;border-radius:9px;border:1.5px solid var(--border-bright);background:#1a1a1a;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.svc-more-btn:active{border-color:var(--gold)}
+.svc-add-row{display:flex;gap:8px;margin-top:14px}
+.svc-add-row input{flex:1}
+.svc-add-btn{flex-shrink:0;width:auto;padding:10px 14px}
+
+.daybar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.daybar-nav{width:40px;height:40px;border-radius:10px;border:1.5px solid var(--border-bright);background:#111;color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.daybar-nav:active{border-color:var(--gold)}
+.daybar-date{text-align:center;flex:1}
+.daybar-day{font-size:17px;font-weight:700;color:var(--text)}
+.daybar-full{font-size:12px;color:var(--muted);margin-top:1px}
+.daybar-today{font-size:11px;color:var(--gold);cursor:pointer;text-decoration:underline;margin-top:3px;display:inline-block}
+
+.day-stats{display:flex;gap:10px;margin-bottom:14px}
+.dstat{flex:1;background:#111;border:1px solid var(--border-bright);border-radius:10px;padding:11px;text-align:center}
+.dstat-v{font-size:20px;font-weight:700;color:var(--gold)}
+.dstat-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+
+.appt{display:flex;gap:12px;background:#111;border:1px solid var(--border-bright);border-radius:11px;padding:13px 14px;margin-bottom:10px;cursor:pointer;transition:border .15s;align-items:flex-start}
+.appt:active{border-color:var(--gold)}
+.appt-time{text-align:center;min-width:62px;padding-top:1px}
+.appt-t1{font-size:16px;font-weight:700;color:var(--text)}
+.appt-t2{font-size:11px;color:var(--muted);margin-top:1px}
+.appt-body{flex:1;min-width:0}
+.appt-name{font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.appt-svc{font-size:13px;color:var(--text2);margin-top:2px;line-height:1.35}
+.appt-meta{font-size:12px;color:var(--muted);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.appt-price{font-size:15px;font-weight:700;color:var(--green);white-space:nowrap;padding-top:1px}
+.appt.cancelled{opacity:.5}.appt.cancelled .appt-name{text-decoration:line-through}
+.appt.noshow{opacity:.6}
+.appt-bar{width:4px;align-self:stretch;border-radius:3px;background:var(--blue)}
+.appt.done .appt-bar{background:var(--green)}
+.appt.cancelled .appt-bar,.appt.noshow .appt-bar{background:var(--red)}
+
+.pill{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:20px;display:inline-block}
+.pill.confirmed{background:var(--bgblue);border:1px solid var(--bblue);color:var(--blue)}
+.pill.done{background:var(--bggreen);border:1px solid var(--bgreen);color:var(--green)}
+.pill.cancelled{background:var(--bgred);border:1px solid var(--bred);color:var(--red)}
+.pill.noshow{background:var(--bgred);border:1px solid var(--bred);color:var(--red)}
+
+.lrow{display:flex;align-items:center;gap:12px;background:#111;border:1px solid var(--border-bright);border-radius:11px;padding:13px 14px;margin-bottom:9px;cursor:pointer;transition:border .15s}
+.lrow:active{border-color:var(--gold)}
+.lrow-av{width:40px;height:40px;border-radius:50%;background:var(--gold-dim);border:1.5px solid var(--gold);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0}
+.lrow-body{flex:1;min-width:0}
+.lrow-name{font-size:15px;font-weight:600;color:var(--text)}
+.lrow-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.lrow-right{text-align:right;flex-shrink:0}
+.lrow-rv{font-size:14px;font-weight:700;color:var(--green)}
+.lrow-rl{font-size:11px;color:var(--muted)}
+
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty i{font-size:42px;color:#444;margin-bottom:12px;display:block}
+.empty-t{font-size:16px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.empty-s{font-size:13px;line-height:1.6;max-width:280px;margin:0 auto 16px}
+
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-title{font-size:15px;font-weight:700;color:var(--text)}
+
+.warn{background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:9px;padding:10px 13px;font-size:13px;color:var(--gold);margin-top:12px;display:none;align-items:flex-start;gap:8px;line-height:1.5}
+.warn.show{display:flex}
+.warn i{margin-top:1px}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
+.modal.show{display:flex}
+.sheet{background:var(--bg2);border:1px solid var(--border-bright);border-bottom:none;border-radius:18px 18px 0 0;padding:20px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;animation:slideup .22s ease}
+@keyframes slideup{from{transform:translateY(40px);opacity:.6}to{transform:translateY(0);opacity:1}}
+.sheet-grip{width:38px;height:4px;background:#444;border-radius:3px;margin:0 auto 16px}
+.sheet-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px}
+.sheet-sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.status-opt{padding:11px;border-radius:9px;border:1.5px solid var(--border-bright);background:#111;text-align:center;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2)}
+.status-opt.sel{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:1.5px solid var(--gold);color:var(--text);padding:12px 20px;border-radius:30px;font-size:14px;font-weight:600;z-index:2000;opacity:0;transition:all .28s;display:flex;align-items:center;gap:8px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast i{color:var(--gold)}
+datalist{display:none}
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-icon"><i class="ti ti-calendar-week"></i></div>
+      <div>
+        <div class="topbar-name"><span>Appointment</span>Pro</div>
+        <div class="topbar-sub">MGM Studio</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="sync-badge"><i class="ti ti-device-floppy" style="font-size:13px"></i> Saved on device</div>
+      <button class="gear-btn" onclick="openSettings()" aria-label="Settings"><i class="ti ti-settings"></i></button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-view="day" onclick="showView('day')"><i class="ti ti-calendar"></i><span>Day</span></button>
+    <button class="tab" data-view="add" onclick="openAdd()"><i class="ti ti-calendar-plus"></i><span>Add</span></button>
+    <button class="tab" data-view="clients" onclick="showView('clients')"><i class="ti ti-users"></i><span>Clients</span></button>
+  </div>
+
+  <!-- DAY VIEW -->
+  <div class="view active" id="view-day">
+    <div class="daybar">
+      <div class="daybar-nav" onclick="moveDay(-1)"><i class="ti ti-chevron-left"></i></div>
+      <div class="daybar-date">
+        <div class="daybar-day" id="dayLabel">Today</div>
+        <div class="daybar-full" id="dayFull"></div>
+        <span class="daybar-today" id="jumpToday" onclick="goToday()" style="display:none">Jump to today</span>
+      </div>
+      <div class="daybar-nav" onclick="moveDay(1)"><i class="ti ti-chevron-right"></i></div>
+    </div>
+    <div class="day-stats">
+      <div class="dstat"><div class="dstat-v" id="statCount">0</div><div class="dstat-l">Booked</div></div>
+      <div class="dstat"><div class="dstat-v" id="statHours">0h</div><div class="dstat-l">Chair time</div></div>
+      <div class="dstat"><div class="dstat-v" id="statRev">$0</div><div class="dstat-l">Expected</div></div>
+    </div>
+    <div id="dayList"></div>
+  </div>
+
+  <!-- ADD/EDIT VIEW -->
+  <div class="view" id="view-add">
+    <div class="card">
+      <div class="ctitle"><i class="ti ti-calendar-plus"></i><span id="addTitle">New appointment</span></div>
+
+      <label>Client name</label>
+      <input id="fName" list="clientList" placeholder="Start typing a name…" autocomplete="off" oninput="onNamePick()">
+      <datalist id="clientList"></datalist>
+
+      <label>Phone <span style="color:#666;font-weight:400">(optional)</span></label>
+      <input id="fPhone" type="tel" placeholder="(555) 123-4567" autocomplete="off">
+
+      <label>Service</label>
+      <input id="fService" placeholder="Tap services below to combine, or type your own…" oninput="syncChips()">
+      <div class="svc-mode">
+        <button type="button" class="svc-mode-btn on" data-mode="hair" onclick="setMode('hair')"><i class="ti ti-scissors m-ico"></i>Hair</button>
+        <button type="button" class="svc-mode-btn" data-mode="nail" onclick="setMode('nail')"><i class="ti ti-sparkles m-ico"></i>Nail</button>
+      </div>
+      <div class="svc-panel">
+        <div class="svc-cat" style="color:var(--gold)">Quick picks <span class="qp-hint">— tap to add · ★ removes</span></div>
+        <div class="svc-row" id="favRow"></div>
+        <button type="button" class="svc-more-btn" id="svcMoreBtn" onclick="toggleMore()"><i class="ti ti-chevron-down"></i> More services</button>
+        <div id="svcMore" style="display:none;margin-top:10px"></div>
+      </div>
+      <div class="svc-add-row">
+        <input id="fCustom" placeholder="Add your own service…" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustom()}">
+        <button class="btn btn-ghost svc-add-btn" onclick="addCustom()"><i class="ti ti-plus"></i> Add</button>
+      </div>
+
+      <div class="row2" style="margin-top:16px">
+        <div><label>Date</label><input id="fDate" type="date" oninput="checkConflict()"></div>
+        <div><label>Time</label><input id="fTime" type="time" oninput="checkConflict()"></div>
+      </div>
+      <div class="row2">
+        <div><label>Duration (min)</label><input id="fDur" type="number" inputmode="numeric" placeholder="60" oninput="checkConflict()"></div>
+        <div><label>Price ($)</label><input id="fPrice" type="number" inputmode="decimal" placeholder="0"></div>
+      </div>
+
+      <label>Notes <span style="color:#666;font-weight:400">(optional)</span></label>
+      <textarea id="fNotes" placeholder="Color formula, preferences, anything to remember…"></textarea>
+
+      <div class="warn" id="conflictWarn"><i class="ti ti-alert-triangle"></i><span id="conflictMsg"></span></div>
+
+      <div class="btn-row" style="margin-top:16px">
+        <button class="btn" onclick="saveAppt()"><i class="ti ti-check"></i> Save appointment</button>
+      </div>
+      <div class="btn-row" id="editExtra" style="display:none">
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="cancelEdit()">Cancel</button>
+        <button class="btn btn-danger btn-sm" style="flex:1" onclick="deleteAppt()"><i class="ti ti-trash"></i> Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLIENTS VIEW -->
+  <div class="view" id="view-clients">
+    <div class="section-head">
+      <div class="section-title">Clients</div>
+      <button class="btn btn-ghost btn-sm" onclick="openClientSheet()"><i class="ti ti-user-plus"></i> Add</button>
+    </div>
+    <div id="clientsList"></div>
+  </div>
+
+</div>
+
+<!-- APPOINTMENT DETAIL SHEET -->
+<div class="modal" id="apptModal" onclick="if(event.target===this)closeSheet('apptModal')">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title" id="dName">Client</div>
+    <div class="sheet-sub" id="dSub"></div>
+    <div id="dNotes" style="font-size:13px;color:var(--text2);background:#111;border:1px solid var(--border-bright);border-radius:9px;padding:11px;margin-bottom:14px;display:none;line-height:1.5"></div>
+    <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px">Status</div>
+    <div class="status-grid" id="statusGrid">
+      <div class="status-opt" data-s="confirmed" onclick="setStatus('confirmed')">Confirmed</div>
+      <div class="status-opt" data-s="done" onclick="setStatus('done')">Done</div>
+      <div class="status-opt" data-s="noshow" onclick="setStatus('noshow')">No-show</div>
+      <div class="status-opt" data-s="cancelled" onclick="setStatus('cancelled')">Cancelled</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="editFromSheet()"><i class="ti ti-pencil"></i> Edit</button>
+      <button class="btn btn-sm" style="flex:1" onclick="closeSheet('apptModal')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENT SHEET -->
+<div class="modal" id="clientModal" onclick="if(event.target===this)closeSheet('clientModal')">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title" id="csTitle">Add client</div>
+    <label>Name</label><input id="csName" placeholder="Client name">
+    <label>Phone</label><input id="csPhone" type="tel" placeholder="(555) 123-4567">
+    <label>Email <span style="color:#666;font-weight:400">(optional)</span></label><input id="csEmail" type="email" placeholder="name@email.com">
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn" onclick="saveClient()"><i class="ti ti-check"></i> Save client</button>
+    </div>
+    <div class="btn-row" id="csDel" style="display:none">
+      <button class="btn btn-danger btn-sm" style="flex:1" onclick="deleteClient()"><i class="ti ti-trash"></i> Delete client</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS SHEET -->
+<div class="modal" id="settingsModal" onclick="if(event.target===this)closeSheet('settingsModal')">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title">Settings</div>
+    <div class="sheet-sub" id="setSummary"></div>
+
+    <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Clear</div>
+    <div class="btn-row" style="margin-top:0">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="clearDay()"><i class="ti ti-eraser"></i> Clear this day</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-danger btn-sm" style="flex:1" onclick="startFresh()"><i class="ti ti-trash"></i> Start fresh — erase everything</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">“Start fresh” wipes all appointments, clients and your custom services on this device. Quick Picks reset to default. This can’t be undone.</div>
+
+    <div class="btn-row" style="margin-top:18px">
+      <button class="btn btn-sm" style="flex:1" onclick="closeSheet('settingsModal')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG (in-app, works everywhere) -->
+<div class="modal" id="confirmModal" onclick="if(event.target===this)closeSheet('confirmModal')">
+  <div class="sheet" style="max-width:420px">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title" id="cfTitle">Are you sure?</div>
+    <div class="sheet-sub" id="cfMsg" style="margin-bottom:18px"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('confirmModal')">Cancel</button>
+      <button class="btn btn-sm" id="cfYes" style="flex:1">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-check"></i><span id="toastMsg">Saved</span></div>
+
+<script>
+/* ===== service catalog — identical to CommissionPro ===== */
+const SERVICE_GROUPS=[
+  {c:'Color',d:'hair',s:[['Color','palette'],['Root Touch-up','brush'],['Root Smudge','brush'],['All-Over Color','palette'],['Gray Coverage','palette'],["Men's Color",'palette'],['Vivid Color','diamond'],['Color Correction','palette'],['Toner / Gloss','droplet']]},
+  {c:'Highlights',d:'hair',s:[['Highlights','sparkles'],['Partial Highlight','sparkles'],['Full Highlight','sparkles'],['Lowlights','sparkles'],['Balayage','sparkles'],['Foilage','sparkles'],['Ombré','color-swatch'],['Babylights','sparkles']]},
+  {c:'Cuts & Styling',d:'hair',s:[["Women's Haircut",'scissors'],["Men's Haircut",'user'],['Kids Haircut','mood-kid'],['Cut & Style','scissors'],['Bang Trim','cut'],['Blow Dry','wind'],['Silk Press','flame'],['Curls','wave-sine'],['Updo','crown'],['Special Occasion','sparkles'],['Bridal','heart'],['Braids','line'],['Roller Set','circle']]},
+  {c:'Treatments',d:'hair',s:[['Treatment','flask'],['Deep Conditioning','droplet'],['Olaplex','flask'],['Scalp Treatment','massage'],['Keratin','flame'],['Brazilian Blowout','flame'],['Clarifying','droplet'],['Gloss / Shine','droplet']]},
+  {c:'Texture',d:'hair',s:[['Perm','wave-sine'],['Relaxer','wave-sine'],['Permanent Straightening','wave-sine']]},
+  {c:'Length & Volume',d:'hair',s:[['Extensions','plus'],['Tape-In','plus'],['Sew-In / Weave','plus'],['Fusion','plus']]},
+  {c:'Brows & Lashes',d:'hair',s:[['Brow Shaping','eye'],['Brow Wax','eye'],['Brow Tint','palette'],['Lash Lift','eye'],['Lash Extensions','sparkles'],['Lash Fill','sparkles']]},
+  {c:'Skin & Extras',d:'hair',s:[['Facial','mood-happy'],['Makeup','brush'],['Spray Tan','spray'],['Massage','massage']]},
+  {c:'Waxing',d:'hair',s:[['Face Wax','droplet'],['Lip / Chin Wax','droplet'],['Body Wax','droplet'],['Threading','needle']]},
+  {c:"Men's Grooming",d:'hair',s:[['Beard Trim','mustache'],['Hot Towel Shave','cut'],['Line-up','cut'],['Fade','cut'],['Buzz Cut','cut'],['Head Shave','user'],['Mustache Trim','mustache']]},
+  {c:'Nails — Hands',d:'nail',s:[['Manicure','hand-stop'],['Gel Manicure','hand-stop'],['Spa Manicure','hand-stop'],['Dip Powder','diamond'],['Polish Change','droplet']]},
+  {c:'Nails — Feet',d:'nail',s:[['Pedicure','shoe'],['Gel Pedicure','shoe'],['Spa Pedicure','shoe']]},
+  {c:'Nails — Enhancements',d:'nail',s:[['Acrylic Full Set','diamond'],['Acrylic Fill','diamond'],['Gel-X Extensions','diamond'],['Builder Gel','diamond'],['Polygel','diamond'],['Overlay','diamond'],['Nail Art','star'],['French / Ombré','color-swatch'],['Nail Repair','tool'],['Removal / Soak-Off','eraser']]}
+];
+const DEFAULT_FAVES=["Women's Haircut","Color","Highlights","Men's Haircut",'Cut & Style','Blow Dry','Balayage','Root Touch-up','Toner / Gloss','Treatment','Keratin','Updo','Beard Trim','Kids Haircut','Manicure','Gel Manicure','Spa Manicure','Pedicure','Gel Pedicure','Spa Pedicure','Acrylic Full Set','Acrylic Fill','Gel-X Extensions','Dip Powder','Polish Change','Nail Art','Removal / Soak-Off'];
+const ICON_OF=(function(){var m={};SERVICE_GROUPS.forEach(function(g){g.s.forEach(function(it){m[it[0]]=it[1];});});return m;})();
+var CAT_COLORS={'Cuts & Styling':'#FFC04D','Color':'#FF7AB0','Highlights':'#FFE15A','Treatments':'#5FD6C6','Texture':'#B79CFF','Length & Volume':'#7FB4FF',"Men's Grooming":'#8FD17A','Nails — Hands':'#FF93A6','Nails — Feet':'#5FC8EC','Nails — Enhancements':'#CBA6FF','Brows & Lashes':'#E6B07E','Waxing':'#F4A6C8','Skin & Extras':'#9AD9A6'};
+function catColorOf(c){return CAT_COLORS[c]||'#FFC04D';}
+
+/* ===== storage (ap_ namespace; client shape matches CommissionPro cp_clients) ===== */
+var APPTS='ap_appts', CLIENTS='ap_clients', CUSTOM='ap_custom', PREFS='ap_prefs';
+function load(k,fb){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?fb:v;}catch(e){return fb;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){alert('Could not save — storage may be full.');}}
+function $(i){return document.getElementById(i)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function jsq(n){return String(n).replace(/'/g,"\\'");}
+
+var appts=load(APPTS,[]);
+var clients=load(CLIENTS,[]);
+var customSvc=load(CUSTOM,[]);   /* [{name,mode}] your own services, kept forever */
+
+/* ===== prefs: favourites + last mode ===== */
+function getPrefs(){return load(PREFS,{});}
+function setPrefs(p){save(PREFS,p);}
+function getFavorites(){var p=getPrefs();return Array.isArray(p.favorites)?p.favorites:DEFAULT_FAVES.slice();}
+function saveFavorites(arr){var p=getPrefs();p.favorites=arr;setPrefs(p);}
+function getMode(){var p=getPrefs();return p.svcMode||'hair';}
+function saveMode(m){var p=getPrefs();p.svcMode=m;setPrefs(p);}
+
+/* ===== date helpers ===== */
+var viewDate=new Date();viewDate.setHours(12,0,0,0);
+function ymd(d){return d.toISOString().split('T')[0]}
+function todayStr(){var d=new Date();d.setHours(12,0,0,0);return ymd(d)}
+function parseDate(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2],12,0,0)}
+function fmt$(n){return '$'+Math.round(+n||0)}
+function to12(t){if(!t)return '';var p=t.split(':'),h=+p[0],m=p[1],ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+m+' '+ap}
+function addMin(t,min){if(!t)return '';var p=t.split(':'),d=new Date(2000,0,1,+p[0],+p[1]);d.setMinutes(d.getMinutes()+(+min||0));return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+
+/* ===== view switching ===== */
+function showView(v){
+  document.querySelectorAll('.view').forEach(function(el){el.classList.remove('active')});
+  $('view-'+v).classList.add('active');
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.view===v)});
+  if(v==='day')renderDay();
+  if(v==='clients')renderClients();
+  window.scrollTo(0,0);
+}
+
+/* ===== SERVICE PICKER (Quick picks + More, matches CommissionPro) ===== */
+function groupsForMode(mode){
+  var customs=customSvc.filter(function(x){return x.mode===mode}).map(function(x){return [x.name,'star']});
+  var base=SERVICE_GROUPS.filter(function(g){return g.d===mode});
+  return customs.length?[{c:'Your services',d:mode,s:customs}].concat(base):base;
+}
+function iconFor(name){return ICON_OF[name]||'point';}
+function chipHTML(name,icon,isFav){
+  if(isFav){
+    return '<button type="button" class="svc-chip" data-name="'+esc(name)+'" onclick="pickService(\''+jsq(name)+'\')"><i class="ti ti-'+(icon||'point')+'"></i>'+esc(name)+'<i class="ti ti-star-filled svc-star on" onclick="event.stopPropagation();demoteFav(\''+jsq(name)+'\')"></i></button>';
+  }
+  return '<button type="button" class="svc-chip" data-name="'+esc(name)+'" onclick="promoteFav(\''+jsq(name)+'\')"><i class="ti ti-'+(icon||'point')+'"></i>'+esc(name)+'<i class="ti ti-star svc-star"></i></button>';
+}
+function buildChips(){
+  var favs=getFavorites(), mode=svcMode, groups=groupsForMode(mode);
+  var modeNames={};groups.forEach(function(g){g.s.forEach(function(it){modeNames[it[0]]=1})});
+  var favHere=favs.filter(function(n){return modeNames[n]});
+  var favRow=$('favRow');
+  favRow.innerHTML=favHere.length?favHere.map(function(n){return chipHTML(n,iconFor(n),true)}).join(''):'<div class="svc-empty">Tap a service under “More” to add it up here.</div>';
+  var more=$('svcMore');
+  more.innerHTML=groups.map(function(g){
+    var rest=g.s.filter(function(it){return favs.indexOf(it[0])===-1}).slice().sort(function(a,b){return a[0].localeCompare(b[0])});
+    if(!rest.length)return '';
+    var chips=rest.map(function(it){return chipHTML(it[0],it[1],false)}).join('');
+    var col=(g.c==='Your services')?'var(--gold)':catColorOf(g.c);
+    return '<div class="svc-cat" style="color:'+col+'">'+esc(g.c)+'</div><div class="svc-row">'+chips+'</div>';
+  }).join('');
+  document.querySelectorAll('.svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.mode===mode)});
+  syncChips();
+}
+var svcMode=getMode();
+function setMode(m){svcMode=m;saveMode(m);buildChips();}
+function servicesInField(){return ($('fService').value||'').split('+').map(function(s){return s.trim()}).filter(Boolean)}
+function setField(arr){$('fService').value=arr.join(' + ')}
+function pickService(name){
+  var list=servicesInField();
+  var i=list.map(function(s){return s.toLowerCase()}).indexOf(name.toLowerCase());
+  if(i>=0)list.splice(i,1);else list.push(name);
+  setField(list);syncChips();
+}
+function promoteFav(name){
+  var favs=getFavorites();
+  if(favs.indexOf(name)===-1){favs.push(name);saveFavorites(favs);}
+  var list=servicesInField();
+  if(list.map(function(s){return s.toLowerCase()}).indexOf(name.toLowerCase())===-1)list.push(name);
+  setField(list);
+  buildChips();
+}
+function demoteFav(name){
+  var favs=getFavorites(),i=favs.indexOf(name);
+  if(i>-1){favs.splice(i,1);saveFavorites(favs);}
+  buildChips();
+}
+function syncChips(){
+  var have=servicesInField().map(function(s){return s.toLowerCase()});
+  document.querySelectorAll('.svc-chip').forEach(function(c){
+    c.classList.toggle('sel',have.indexOf((c.dataset.name||'').toLowerCase())>=0);
+  });
+}
+function toggleMore(){
+  var m=$('svcMore'),b=$('svcMoreBtn');
+  var open=m.style.display!=='none';
+  m.style.display=open?'none':'block';
+  b.innerHTML=open?'<i class="ti ti-chevron-down"></i> More services':'<i class="ti ti-chevron-up"></i> Hide services';
+}
+function addCustom(){
+  var name=$('fCustom').value.trim();if(!name)return;
+  if(!customSvc.find(function(x){return x.name.toLowerCase()===name.toLowerCase()})){
+    customSvc.push({name:name,mode:svcMode});save(CUSTOM,customSvc);
+  }
+  var favs=getFavorites();
+  if(favs.indexOf(name)===-1){favs.push(name);saveFavorites(favs);}
+  var list=servicesInField();
+  if(list.map(function(s){return s.toLowerCase()}).indexOf(name.toLowerCase())===-1)list.push(name);
+  setField(list);
+  $('fCustom').value='';
+  buildChips();
+  toast('Added “'+name+'”');
+}
+
+/* ===== DAY VIEW ===== */
+function moveDay(n){viewDate.setDate(viewDate.getDate()+n);renderDay()}
+function goToday(){viewDate=new Date();viewDate.setHours(12,0,0,0);renderDay()}
+function renderDay(){
+  var ds=ymd(viewDate), isToday=ds===todayStr();
+  var wd=viewDate.toLocaleDateString('en-US',{weekday:'long'});
+  var full=viewDate.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  $('dayLabel').textContent=isToday?'Today':wd;
+  $('dayFull').textContent=full;
+  $('jumpToday').style.display=isToday?'none':'inline-block';
+
+  var list=appts.filter(function(a){return a.date===ds}).sort(function(a,b){return (a.time||'').localeCompare(b.time||'')});
+  var active=list.filter(function(a){return a.status!=='cancelled'&&a.status!=='noshow'});
+  var mins=active.reduce(function(s,a){return s+(+a.dur||0)},0);
+  var rev=active.reduce(function(s,a){return s+(+a.price||0)},0);
+  $('statCount').textContent=active.length;
+  $('statHours').textContent=(mins/60).toFixed(mins%60?1:0)+'h';
+  $('statRev').textContent=fmt$(rev);
+
+  if(!list.length){
+    $('dayList').innerHTML='<div class="empty"><i class="ti ti-calendar-off"></i><div class="empty-t">No appointments '+(isToday?'today':'this day')+'</div><div class="empty-s">A clear chair. Tap Add to book someone in.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openAdd()"><i class="ti ti-plus"></i> Add appointment</button></div>';
+    return;
+  }
+  $('dayList').innerHTML=list.map(function(a){
+    var st=a.status||'confirmed';
+    return '<div class="appt '+st+'" onclick="openSheet(\''+a.id+'\')">'+
+      '<div class="appt-bar"></div>'+
+      '<div class="appt-time"><div class="appt-t1">'+to12(a.time).replace(' ','<span style="font-size:11px"> ')+'</span></div><div class="appt-t2">'+(a.dur?a.dur+' min':'')+'</div></div>'+
+      '<div class="appt-body"><div class="appt-name">'+esc(a.name)+'</div>'+
+      '<div class="appt-svc">'+esc(a.service||'—')+'</div>'+
+      '<div class="appt-meta"><span class="pill '+st+'">'+stLabel(st)+'</span>'+(a.phone?'<span><i class="ti ti-phone" style="font-size:11px"></i> '+esc(a.phone)+'</span>':'')+'</div></div>'+
+      '<div class="appt-price">'+fmt$(a.price)+'</div></div>';
+  }).join('');
+}
+function stLabel(s){return {confirmed:'Confirmed',done:'Done',noshow:'No-show',cancelled:'Cancelled'}[s]||s}
+
+/* ===== ADD / EDIT ===== */
+var editingId=null;
+function openAdd(){
+  editingId=null;
+  $('addTitle').textContent='New appointment';
+  $('editExtra').style.display='none';
+  $('fName').value='';$('fPhone').value='';$('fService').value='';$('fCustom').value='';
+  $('fDate').value=ymd(viewDate);$('fTime').value='';$('fDur').value='';$('fPrice').value='';$('fNotes').value='';
+  $('conflictWarn').classList.remove('show');
+  $('svcMore').style.display='none';$('svcMoreBtn').innerHTML='<i class="ti ti-chevron-down"></i> More services';
+  fillClientList();svcMode=getMode();buildChips();
+  showView('add');
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.view==='add')});
+}
+function fillClientList(){
+  $('clientList').innerHTML=clients.map(function(c){return '<option value="'+esc(c.name)+'">'}).join('');
+}
+function onNamePick(){
+  var n=$('fName').value.trim().toLowerCase();
+  var c=clients.find(function(x){return x.name.toLowerCase()===n});
+  if(c&&!$('fPhone').value)$('fPhone').value=c.phone||'';
+}
+function checkConflict(){
+  var date=$('fDate').value,time=$('fTime').value,dur=+$('fDur').value||0;
+  $('conflictWarn').classList.remove('show');
+  if(!date||!time)return;
+  var end=addMin(time,dur||1);
+  var clash=appts.find(function(a){
+    if(a.id===editingId)return false;
+    if(a.date!==date)return false;
+    if(a.status==='cancelled'||a.status==='noshow')return false;
+    if(!a.time)return false;
+    var aEnd=addMin(a.time,+a.dur||1);
+    return time<aEnd && a.time<end;
+  });
+  if(clash){
+    $('conflictMsg').innerHTML='Overlaps with <strong>'+esc(clash.name)+'</strong> at '+to12(clash.time)+'. You can still save if that\'s intentional.';
+    $('conflictWarn').classList.add('show');
+  }
+}
+function saveAppt(){
+  var name=$('fName').value.trim(),date=$('fDate').value,time=$('fTime').value;
+  var service=$('fService').value.trim();
+  if(!name){toast('Add a client name',1);return;}
+  if(!service){toast('Pick or type a service',1);return;}
+  if(!date){toast('Pick a date',1);return;}
+  if(!time){toast('Pick a time',1);return;}
+  var prevStatus=editingId?((appts.find(function(a){return a.id===editingId})||{}).status||'confirmed'):'confirmed';
+  var rec={
+    id:editingId||uid(),
+    name:name,phone:$('fPhone').value.trim(),
+    service:service,
+    date:date,time:time,dur:+$('fDur').value||0,price:+$('fPrice').value||0,
+    notes:$('fNotes').value.trim(),status:prevStatus
+  };
+  var wasEdit=!!editingId;
+  if(editingId){appts=appts.map(function(a){return a.id===editingId?rec:a})}
+  else{appts.push(rec)}
+  save(APPTS,appts);
+  if(name && !clients.find(function(c){return c.name.toLowerCase()===name.toLowerCase()})){
+    clients.push({id:uid(),name:name,phone:rec.phone,email:''});save(CLIENTS,clients);
+  }
+  viewDate=parseDate(date);
+  editingId=null;
+  toast(wasEdit?'Updated':'Booked in');
+  showView('day');
+}
+function cancelEdit(){editingId=null;showView('day')}
+function deleteAppt(){
+  if(!editingId)return;
+  askConfirm('Delete this appointment?',function(){
+    appts=appts.filter(function(a){return a.id!==editingId});save(APPTS,appts);
+    editingId=null;toast('Deleted');showView('day');
+  },{title:'Delete appointment',yesLabel:'Delete',danger:true});
+}
+
+/* ===== APPOINTMENT SHEET ===== */
+var sheetId=null;
+function openSheet(id){
+  var a=appts.find(function(x){return x.id===id});if(!a)return;
+  sheetId=id;
+  $('dName').textContent=a.name;
+  $('dSub').textContent=to12(a.time)+' · '+(a.service||'')+' · '+fmt$(a.price)+(a.phone?' · '+a.phone:'');
+  if(a.notes){$('dNotes').textContent=a.notes;$('dNotes').style.display='block'}else{$('dNotes').style.display='none'}
+  document.querySelectorAll('#statusGrid .status-opt').forEach(function(o){o.classList.toggle('sel',o.dataset.s===(a.status||'confirmed'))});
+  $('apptModal').classList.add('show');
+}
+function setStatus(s){
+  if(!sheetId)return;
+  appts=appts.map(function(a){return a.id===sheetId?Object.assign({},a,{status:s}):a});
+  save(APPTS,appts);
+  document.querySelectorAll('#statusGrid .status-opt').forEach(function(o){o.classList.toggle('sel',o.dataset.s===s)});
+  renderDay();toast(stLabel(s));
+}
+function editFromSheet(){
+  var a=appts.find(function(x){return x.id===sheetId});if(!a)return;
+  closeSheet('apptModal');
+  editingId=a.id;
+  $('addTitle').textContent='Edit appointment';
+  $('editExtra').style.display='flex';
+  fillClientList();
+  $('fName').value=a.name;$('fPhone').value=a.phone||'';
+  $('fService').value=a.service||'';
+  $('fDate').value=a.date;$('fTime').value=a.time;$('fDur').value=a.dur||'';$('fPrice').value=a.price||'';
+  $('fNotes').value=a.notes||'';$('fCustom').value='';
+  $('conflictWarn').classList.remove('show');
+  $('svcMore').style.display='none';$('svcMoreBtn').innerHTML='<i class="ti ti-chevron-down"></i> More services';
+  svcMode=getMode();buildChips();
+  showView('add');
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+}
+function closeSheet(id){$(id).classList.remove('show')}
+
+/* ===== CLIENTS ===== */
+function renderClients(){
+  if(!clients.length){
+    $('clientsList').innerHTML='<div class="empty"><i class="ti ti-user-question"></i><div class="empty-t">No clients yet</div><div class="empty-s">Clients are added automatically when you book them — or add one now.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openClientSheet()"><i class="ti ti-user-plus"></i> Add client</button></div>';
+    return;
+  }
+  var sorted=clients.slice().sort(function(a,b){return a.name.localeCompare(b.name)});
+  $('clientsList').innerHTML=sorted.map(function(c){
+    var count=appts.filter(function(a){return a.name.toLowerCase()===c.name.toLowerCase()&&a.status!=='cancelled'}).length;
+    return '<div class="lrow" onclick="openClientSheet(\''+c.id+'\')">'+
+      '<div class="lrow-av">'+esc((c.name[0]||'?').toUpperCase())+'</div>'+
+      '<div class="lrow-body"><div class="lrow-name">'+esc(c.name)+'</div><div class="lrow-sub">'+(c.phone?esc(c.phone):'No phone')+'</div></div>'+
+      '<div class="lrow-right"><div class="lrow-rv">'+count+'</div><div class="lrow-rl">visit'+(count===1?'':'s')+'</div></div></div>';
+  }).join('');
+}
+var clientId=null;
+function openClientSheet(id){
+  clientId=id||null;
+  if(id){
+    var c=clients.find(function(x){return x.id===id});
+    $('csTitle').textContent='Edit client';
+    $('csName').value=c.name;$('csPhone').value=c.phone||'';$('csEmail').value=c.email||'';
+    $('csDel').style.display='flex';
+  }else{
+    $('csTitle').textContent='Add client';
+    $('csName').value='';$('csPhone').value='';$('csEmail').value='';
+    $('csDel').style.display='none';
+  }
+  $('clientModal').classList.add('show');
+}
+function saveClient(){
+  var name=$('csName').value.trim();if(!name){toast('Add a name',1);return;}
+  var rec={id:clientId||uid(),name:name,phone:$('csPhone').value.trim(),email:$('csEmail').value.trim()};
+  if(clientId){clients=clients.map(function(c){return c.id===clientId?rec:c})}else{clients.push(rec)}
+  save(CLIENTS,clients);closeSheet('clientModal');renderClients();toast('Client saved');
+}
+function deleteClient(){
+  if(!clientId)return;
+  askConfirm('Delete this client? Their past appointments stay.',function(){
+    clients=clients.filter(function(c){return c.id!==clientId});save(CLIENTS,clients);
+    closeSheet('clientModal');renderClients();toast('Deleted');
+  },{title:'Delete client',yesLabel:'Delete client',danger:true});
+}
+
+/* ===== in-app confirm dialog (native confirm() is blocked in some webviews) ===== */
+var _cfYes=null;
+function askConfirm(msg,onYes,opts){
+  opts=opts||{};
+  $('cfTitle').textContent=opts.title||'Are you sure?';
+  $('cfMsg').textContent=msg;
+  var yes=$('cfYes');
+  yes.textContent=opts.yesLabel||'Confirm';
+  yes.className='btn btn-sm'+(opts.danger?' btn-danger':'');
+  _cfYes=onYes;
+  $('confirmModal').classList.add('show');
+}
+
+/* ===== SETTINGS / CLEAR ===== */
+function openSettings(){
+  var total=appts.length, cl=clients.length;
+  $('setSummary').textContent=total+' appointment'+(total===1?'':'s')+' · '+cl+' client'+(cl===1?'':'s')+' saved on this device.';
+  $('settingsModal').classList.add('show');
+}
+function clearDay(){
+  var ds=ymd(viewDate);
+  var todays=appts.filter(function(a){return a.date===ds});
+  if(!todays.length){toast('Nothing booked this day',1);return;}
+  var lbl=viewDate.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+  askConfirm('Clear all '+todays.length+' appointment'+(todays.length===1?'':'s')+' on '+lbl+'? This can\'t be undone.',function(){
+    appts=appts.filter(function(a){return a.date!==ds});save(APPTS,appts);
+    closeSheet('settingsModal');renderDay();toast('Day cleared');
+  },{title:'Clear this day',yesLabel:'Clear day',danger:true});
+}
+function startFresh(){
+  askConfirm('This erases ALL appointments, clients and your custom services on this device. It cannot be undone.',function(){
+    askConfirm('Really erase everything? This is permanent.',function(){
+      try{
+        localStorage.removeItem(APPTS);
+        localStorage.removeItem(CLIENTS);
+        localStorage.removeItem(CUSTOM);
+        localStorage.removeItem(PREFS);
+      }catch(e){}
+      location.reload();
+    },{title:'Last chance',yesLabel:'Erase everything',danger:true});
+  },{title:'Start fresh?',yesLabel:'Continue',danger:true});
+}
+
+/* ===== toast ===== */
+var toastT;
+function toast(msg,warn){
+  $('toastMsg').textContent=msg;
+  var t=$('toast');t.classList.add('show');
+  t.style.borderColor=warn?'var(--red)':'var(--gold)';
+  var ic=t.querySelector('i');
+  ic.style.color=warn?'var(--red)':'var(--gold)';
+  ic.className=warn?'ti ti-alert-circle':'ti ti-check';
+  clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},1900);
+}
+
+/* ===== init ===== */
+$('cfYes').onclick=function(){
+  $('confirmModal').classList.remove('show');
+  var fn=_cfYes;_cfYes=null;if(fn)fn();
+};
+renderDay();
+</script>
+</body>
+</html>
