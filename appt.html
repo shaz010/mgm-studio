@@ -33,6 +33,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sync-badge{font-size:12px;padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:6px;font-weight:500;background:#0a2a14;border:1.5px solid #2a7a3a;color:#5ddb7c}
 .gear-btn{width:36px;height:36px;border-radius:9px;border:1.5px solid var(--border-bright);background:#1a1a1a;color:var(--text2);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .gear-btn:active{border-color:var(--gold);color:var(--gold)}
+.set-sec{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin:22px 0 10px;padding-top:16px;border-top:1px solid var(--border)}
+.set-version{text-align:center;font-size:11px;color:#666;margin-top:20px;letter-spacing:.3px}
+.hrow{display:flex;align-items:center;gap:10px;background:#111;border:1px solid var(--border-bright);border-radius:10px;padding:9px 11px;margin-bottom:7px}
+.hrow-day{font-size:13px;font-weight:600;color:var(--text);width:42px;flex-shrink:0}
+.hrow-toggle{width:42px;height:24px;border-radius:14px;background:#333;border:none;position:relative;cursor:pointer;flex-shrink:0;transition:background .15s}
+.hrow-toggle.on{background:var(--gold)}
+.hrow-knob{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
+.hrow-toggle.on .hrow-knob{left:20px}
+.hrow-times{display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end}
+.hrow-times input{width:auto;flex:1;min-width:0;padding:7px 8px;font-size:14px;text-align:center}
+.hrow-times.off{opacity:.35;pointer-events:none}
+.hrow-dash{color:var(--muted);font-size:13px}
+.hrow-closed{font-size:12px;color:var(--muted);flex:1;text-align:right;padding-right:4px}
 
 .tabs{display:flex;gap:3px;background:#0a0a0a;border-radius:10px;padding:4px;border:1px solid var(--border-bright);flex-wrap:wrap;margin-bottom:14px}
 .tab{padding:8px 14px;border-radius:7px;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;white-space:nowrap;font-weight:500;flex:1;text-align:center}
@@ -170,7 +183,7 @@ datalist{display:none}
       <div class="topbar-icon"><i class="ti ti-calendar-week"></i></div>
       <div>
         <div class="topbar-name"><span>Appointment</span>Pro</div>
-        <div class="topbar-sub">MGM Studio</div>
+        <div class="topbar-sub" id="brandSub">MGM Studio</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
@@ -313,7 +326,31 @@ datalist{display:none}
     <div class="sheet-title">Settings</div>
     <div class="sheet-sub" id="setSummary"></div>
 
-    <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Clear</div>
+    <div class="set-sec">Business</div>
+    <label>Business name</label>
+    <input id="setBizName" placeholder="MGM Studio" oninput="">
+    <label>Your name <span style="color:#666;font-weight:400">(optional)</span></label>
+    <input id="setStylist" placeholder="Shown on bookings">
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-sm" style="flex:1" onclick="saveBusiness()"><i class="ti ti-check"></i> Save business</button>
+    </div>
+
+    <div class="set-sec">Working hours</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Sets your open hours. The client booking page (coming soon) will only offer slots inside these.</div>
+    <div id="hoursList"></div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-sm" style="flex:1" onclick="saveHours()"><i class="ti ti-check"></i> Save hours</button>
+    </div>
+
+    <div class="set-sec">Backup</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Export saves everything (appointments, clients, services, hours) to a file. Import restores it — handy when switching phones.</div>
+    <div class="btn-row" style="margin-top:0">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="exportData()"><i class="ti ti-download"></i> Export backup</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('importFile').click()"><i class="ti ti-upload"></i> Import</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(event)">
+
+    <div class="set-sec">Clear</div>
     <div class="btn-row" style="margin-top:0">
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="clearDay()"><i class="ti ti-eraser"></i> Clear this day</button>
     </div>
@@ -322,7 +359,9 @@ datalist{display:none}
     </div>
     <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">“Start fresh” wipes all appointments, clients and your custom services on this device. Quick Picks reset to default. This can’t be undone.</div>
 
-    <div class="btn-row" style="margin-top:18px">
+    <div class="set-version" id="setVersion">AppointmentPro · v1.0</div>
+
+    <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-sm" style="flex:1" onclick="closeSheet('settingsModal')">Done</button>
     </div>
   </div>
@@ -712,10 +751,91 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
+var VERSION='v1.0';
+var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+function defaultHours(){return [
+  {open:true,start:'09:00',end:'18:00'},
+  {open:true,start:'09:00',end:'18:00'},
+  {open:true,start:'09:00',end:'18:00'},
+  {open:true,start:'09:00',end:'18:00'},
+  {open:true,start:'09:00',end:'18:00'},
+  {open:true,start:'09:00',end:'16:00'},
+  {open:false,start:'10:00',end:'15:00'}
+];}
+function getHours(){var p=getPrefs();return (Array.isArray(p.hours)&&p.hours.length===7)?p.hours:defaultHours();}
+function getBizName(){var p=getPrefs();return (p.bizName&&p.bizName.trim())||'MGM Studio';}
+function applyBranding(){var el=$('brandSub');if(el)el.textContent=getBizName();}
+
 function openSettings(){
   var total=appts.length, cl=clients.length;
   $('setSummary').textContent=total+' appointment'+(total===1?'':'s')+' · '+cl+' client'+(cl===1?'':'s')+' saved on this device.';
+  var p=getPrefs();
+  $('setBizName').value=p.bizName||'';
+  $('setStylist').value=p.stylist||'';
+  $('setVersion').textContent='AppointmentPro · '+VERSION;
+  renderHours(true);
   $('settingsModal').classList.add('show');
+}
+function saveBusiness(){
+  var p=getPrefs();
+  p.bizName=$('setBizName').value.trim();
+  p.stylist=$('setStylist').value.trim();
+  setPrefs(p);applyBranding();toast('Business saved');
+}
+
+/* ----- working hours ----- */
+var hoursDraft=null;
+function renderHours(reset){
+  if(reset||!hoursDraft)hoursDraft=getHours().map(function(d){return {open:!!d.open,start:d.start||'09:00',end:d.end||'18:00'}});
+  $('hoursList').innerHTML=hoursDraft.map(function(d,i){
+    var times=d.open
+      ? '<div class="hrow-times"><input type="time" value="'+d.start+'" onchange="setHour('+i+',\'start\',this.value)"><span class="hrow-dash">–</span><input type="time" value="'+d.end+'" onchange="setHour('+i+',\'end\',this.value)"></div>'
+      : '<div class="hrow-closed">Closed</div>';
+    return '<div class="hrow"><div class="hrow-day">'+DAYS[i]+'</div>'+
+      '<button type="button" class="hrow-toggle'+(d.open?' on':'')+'" onclick="toggleHour('+i+')"><span class="hrow-knob"></span></button>'+
+      times+'</div>';
+  }).join('');
+}
+function toggleHour(i){hoursDraft[i].open=!hoursDraft[i].open;renderHours(false);}
+function setHour(i,k,v){hoursDraft[i][k]=v;}
+function saveHours(){
+  var p=getPrefs();
+  p.hours=hoursDraft.map(function(d){return {open:d.open,start:d.start,end:d.end}});
+  setPrefs(p);toast('Hours saved');
+}
+
+/* ----- backup: export / import ----- */
+function exportData(){
+  var data={app:'AppointmentPro',version:VERSION,exported:new Date().toISOString(),
+    appts:load(APPTS,[]),clients:load(CLIENTS,[]),custom:load(CUSTOM,[]),prefs:getPrefs()};
+  try{
+    var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;a.download='appointmentpro-backup-'+ymd(new Date())+'.json';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url)},1500);
+    toast('Backup exported');
+  }catch(e){toast('Export failed',1);}
+}
+function importData(ev){
+  var file=ev.target.files&&ev.target.files[0];if(!file){return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var d;
+    try{d=JSON.parse(e.target.result);}catch(err){toast('Could not read that file',1);ev.target.value='';return;}
+    if(!d||d.app!=='AppointmentPro'){toast('Not an AppointmentPro backup',1);ev.target.value='';return;}
+    askConfirm('Import this backup? It replaces everything currently on this device.',function(){
+      if(Array.isArray(d.appts))save(APPTS,d.appts);
+      if(Array.isArray(d.clients))save(CLIENTS,d.clients);
+      if(Array.isArray(d.custom))save(CUSTOM,d.custom);
+      if(d.prefs&&typeof d.prefs==='object')setPrefs(d.prefs);
+      reload();applyBranding();svcMode=getMode();
+      closeSheet('settingsModal');showView('day');toast('Backup restored');
+    },{title:'Import backup',yesLabel:'Import & replace',danger:true});
+    ev.target.value='';
+  };
+  reader.readAsText(file);
 }
 function clearDay(){
   var ds=ymd(viewDate);
@@ -761,6 +881,7 @@ function toast(msg,warn){
 }
 
 /* ===== init ===== */
+applyBranding();
 $('cfYes').onclick=function(){
   $('confirmModal').classList.remove('show');
   var fn=_cfYes;_cfYes=null;if(fn)fn();
