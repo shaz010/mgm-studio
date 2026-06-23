@@ -219,6 +219,32 @@ textarea{min-height:64px;resize:vertical}
 .wg-bn{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wg-bt{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wg-empty-note{text-align:center;padding:30px 16px;color:var(--muted);font-size:13px}
+/* MONTH VIEW */
+.monthbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.monthbar-label{font-size:17px;font-weight:700;color:var(--text);text-align:center;flex:1}
+.month-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:6px}
+.month-dow span{text-align:center;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.mcell{aspect-ratio:1/1;border-radius:9px;border:1.5px solid var(--border-bright);background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:transform .12s,border-color .15s;min-height:0}
+.mcell:active{transform:scale(.93)}
+.mcell.blank{background:transparent;border:none;cursor:default}
+.mcell.past{opacity:.45}
+.mcell.today{border-color:var(--gold)}
+.mcell.sel{outline:2px solid var(--gold);outline-offset:-2px}
+.mcell-n{font-size:15px;font-weight:700;color:var(--text);line-height:1}
+.mcell.today .mcell-n{color:var(--gold)}
+.mcell-c{font-size:9.5px;font-weight:700;margin-top:3px;line-height:1}
+/* density fills */
+.mcell.d1{background:#15240f;border-color:#2a4a1a}
+.mcell.d2{background:#1e3a12;border-color:#3b6d18}
+.mcell.d3{background:#2c5016;border-color:#639922}
+.mcell.d1 .mcell-c{color:#9fdc6a}.mcell.d2 .mcell-c{color:#b6e887}.mcell.d3 .mcell-c{color:#d4f4a0}
+.month-legend{display:flex;justify-content:center;gap:16px;margin-top:14px;font-size:11.5px;color:var(--muted);font-weight:600}
+.month-legend span{display:inline-flex;align-items:center;gap:6px}
+.md-dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+.md-dot.light{background:#15240f;border:1.5px solid #2a4a1a}
+.md-dot.medium{background:#1e3a12;border:1.5px solid #3b6d18}
+.md-dot.full{background:#2c5016;border:1.5px solid #639922}
 /* Week grid */
 .grid-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -2px}
 .wg{display:grid;position:relative}
@@ -253,8 +279,9 @@ textarea{min-height:64px;resize:vertical}
 .daybar-nav:active{border-color:var(--gold)}
 .daybar-date{text-align:center;flex:1}
 .daybar-day{font-size:17px;font-weight:700;color:var(--text)}
-.daybar-full{font-size:12px;color:var(--muted);margin-top:1px}
-.daybar-today{font-size:11px;color:var(--gold);cursor:pointer;text-decoration:underline;margin-top:3px;display:inline-block}
+.daybar-full{font-size:13.5px;color:var(--text2);margin-top:2px;font-weight:600}
+.daybar-today{font-size:12.5px;color:var(--gold);cursor:pointer;font-weight:700;margin-top:5px;display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1.5px solid var(--gold-border);border-radius:20px;background:var(--gold-dim)}
+.daybar-today:active{background:#3a2c00}
 
 .day-stats{display:flex;gap:10px;margin-bottom:14px}
 .dstat{flex:1;background:#111;border:1px solid var(--border-bright);border-radius:10px;padding:11px;text-align:center}
@@ -352,8 +379,8 @@ datalist{display:none}
   <div class="view active" id="view-day">
     <div class="seg" id="daySeg">
       <button class="seg-btn on" data-m="day" onclick="setDayMode('day')"><i class="ti ti-calendar"></i> Day</button>
-      <button class="seg-btn" data-m="week" onclick="setDayMode('week')"><i class="ti ti-list"></i> Week</button>
-      <button class="seg-btn" data-m="grid" onclick="setDayMode('grid')"><i class="ti ti-layout-grid"></i> Grid</button>
+      <button class="seg-btn" data-m="week" onclick="setDayMode('week')"><i class="ti ti-calendar-week"></i> Week</button>
+      <button class="seg-btn" data-m="month" onclick="setDayMode('month')"><i class="ti ti-calendar-month"></i> Month</button>
     </div>
     <div class="weekstrip" id="weekStrip"></div>
     <div id="dayPane">
@@ -362,7 +389,7 @@ datalist{display:none}
         <div class="daybar-date">
           <div class="daybar-day" id="dayLabel">Today</div>
           <div class="daybar-full" id="dayFull"></div>
-          <span class="daybar-today" id="jumpToday" onclick="goToday()" style="display:none">Jump to today</span>
+          <span class="daybar-today" id="jumpToday" onclick="goToday()" style="display:none"><i class="ti ti-arrow-back-up" style="font-size:13px"></i> Jump to today</span>
         </div>
         <div class="daybar-nav" onclick="moveDay(1)"><i class="ti ti-chevron-right"></i></div>
       </div>
@@ -382,9 +409,19 @@ datalist{display:none}
       <div id="weekList"></div>
       <div id="weekGrid" style="display:none"></div>
     </div>
-    <div id="gridPane" style="display:none">
-      <div class="weekrange" id="gridRange"></div>
-      <div class="grid-scroll"><div id="weekGrid"></div></div>
+    <div id="monthPane" style="display:none">
+      <div class="monthbar">
+        <div class="daybar-nav" onclick="moveMonth(-1)"><i class="ti ti-chevron-left"></i></div>
+        <div class="monthbar-label" id="monthLabel">Month</div>
+        <div class="daybar-nav" onclick="moveMonth(1)"><i class="ti ti-chevron-right"></i></div>
+      </div>
+      <div class="month-dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+      <div class="month-grid" id="monthGrid"></div>
+      <div class="month-legend">
+        <span><i class="md-dot light"></i> Light</span>
+        <span><i class="md-dot medium"></i> Medium</span>
+        <span><i class="md-dot full"></i> Full</span>
+      </div>
     </div>
   </div>
 
@@ -837,10 +874,45 @@ function renderWeekStrip(){
   if(el)el.innerHTML='<div class="wnav" onclick="moveWeek(-1)"><i class="ti ti-chevron-left"></i></div><div class="wcells">'+cells+'</div><div class="wnav" onclick="moveWeek(1)"><i class="ti ti-chevron-right"></i></div>';
 }
 var dayMode='day';
+var monthDate=null;
 function setDayMode(m){
   dayMode=m;
+  if(m==='month'){monthDate=new Date(viewDate);monthDate.setHours(12,0,0,0);}
   document.querySelectorAll('#daySeg .seg-btn').forEach(function(b){b.classList.toggle('on',b.dataset.m===m)});
   renderDay();
+}
+function moveMonth(n){
+  if(!monthDate)monthDate=new Date(viewDate);
+  monthDate.setMonth(monthDate.getMonth()+n,1);monthDate.setHours(12,0,0,0);
+  renderMonth();
+}
+function densityClass(c){return c<=0?'':(c<=2?'d1':(c<=4?'d2':'d3'));}
+function renderMonth(){
+  if(!monthDate){monthDate=new Date(viewDate);monthDate.setHours(12,0,0,0);}
+  var y=monthDate.getFullYear(), mo=monthDate.getMonth();
+  $('monthLabel').textContent=monthDate.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  var first=new Date(y,mo,1,12,0,0);
+  var lead=(first.getDay()+6)%7;            // Mon-first blanks
+  var dim=new Date(y,mo+1,0).getDate();     // days in month
+  var today=todayStr(), sel=ymd(viewDate);
+  var html='';
+  for(var b=0;b<lead;b++)html+='<div class="mcell blank"></div>';
+  for(var day=1;day<=dim;day++){
+    var d=new Date(y,mo,day,12,0,0);
+    var ds=ymd(d);
+    var cnt=appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'}).length;
+    var dcls=densityClass(cnt);
+    var cls='mcell'+(dcls?' '+dcls:'')+(ds===today?' today':'')+(ds===sel?' sel':'')+(ds<today?' past':'');
+    html+='<div class="'+cls+'" onclick="pickMonthDay(\''+ds+'\')">'+
+      '<div class="mcell-n">'+day+'</div>'+
+      (cnt?'<div class="mcell-c">'+cnt+'</div>':'<div class="mcell-c" style="visibility:hidden">0</div>')+
+    '</div>';
+  }
+  $('monthGrid').innerHTML=html;
+}
+function pickMonthDay(ds){
+  viewDate=parseDate(ds);
+  setDayMode('day');
 }
 function renderWeekList(){
   var sow=startOfWeek(viewDate), today=todayStr();
@@ -933,6 +1005,17 @@ function renderWeekGrid(){
 function renderDay(){
   reload();
   renderWeekStrip();
+  if(dayMode==='month'){
+    $('dayPane').style.display='none';
+    $('weekPane').style.display='none';
+    $('monthPane').style.display='block';
+    $('weekStrip').style.display='none';
+    renderMonth();
+    window.scrollTo(0,0);
+    return;
+  }
+  $('weekStrip').style.display='flex';
+  $('monthPane').style.display='none';
   if(dayMode==='week'){
     $('dayPane').style.display='none';
     $('weekPane').style.display='block';
