@@ -197,6 +197,45 @@ textarea{min-height:64px;resize:vertical}
 .wl-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wl-svc{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
 .wl-price{font-size:13px;font-weight:700;color:var(--green);white-space:nowrap}
+/* Week grid */
+.seg-sub{margin-bottom:12px}
+.wg-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border-bright);border-radius:11px;background:#0d0d0d}
+.wg{display:grid;min-width:540px}
+.wg-corner{position:sticky;left:0;z-index:3;background:#141414;border-bottom:1px solid #2c2c2c;border-right:1px solid #2c2c2c}
+.wg-dh{background:#141414;border-bottom:1px solid #2c2c2c;text-align:center;padding:7px 2px;border-right:1px solid #1f1f1f}
+.wg-dh.today{background:var(--gold-dim)}
+.wg-dh-d{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--muted)}
+.wg-dh.today .wg-dh-d{color:var(--gold)}
+.wg-dh-n{font-size:14px;font-weight:700;color:var(--text);line-height:1.2}
+.wg-dh.today .wg-dh-n{color:var(--gold)}
+.wg-time{position:sticky;left:0;z-index:2;background:#141414;border-right:1px solid #2c2c2c;border-bottom:1px solid #1a1a1a;font-size:10.5px;font-weight:600;color:var(--muted);text-align:right;padding:2px 6px 0 4px;min-height:46px}
+.wg-cell{border-right:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;min-height:46px;position:relative;cursor:pointer;padding:2px}
+.wg-cell:active{background:#161616}
+.wg-cell.today{background:rgba(255,184,0,.04)}
+.wg-block{background:var(--bgblue);border:1px solid var(--bblue);border-left:3px solid var(--blue);border-radius:5px;padding:3px 4px;font-size:10px;line-height:1.25;overflow:hidden;height:100%;min-height:40px}
+.wg-block.done{background:var(--bggreen);border-color:var(--bgreen);border-left-color:var(--green)}
+.wg-block.cancelled,.wg-block.noshow{background:var(--bgred);border-color:var(--bred);border-left-color:var(--red);opacity:.7}
+.wg-block.cancelled .wg-bn{text-decoration:line-through}
+.wg-bn{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wg-bt{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wg-empty-note{text-align:center;padding:30px 16px;color:var(--muted);font-size:13px}
+/* Week grid */
+.grid-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -2px}
+.wg{display:grid;position:relative}
+.wg-corner{position:sticky;left:0;z-index:3;background:var(--bg2)}
+.wg-colhead{text-align:center;padding:6px 0 7px;font-size:11px;font-weight:700;color:var(--muted);border-bottom:1.5px solid #2c2c2c;text-transform:uppercase;letter-spacing:.3px}
+.wg-colhead.is-today{color:var(--gold)}
+.wg-colhead b{display:block;font-size:14px;color:var(--text);margin-top:1px}
+.wg-colhead.is-today b{color:var(--gold)}
+.wg-timecol{position:sticky;left:0;z-index:2;background:var(--bg);font-size:10px;color:var(--muted);text-align:right;padding:2px 6px 0 0;border-right:1px solid #222;white-space:nowrap}
+.wg-cell{border-bottom:1px solid #1c1c1c;border-right:1px solid #1c1c1c;position:relative;cursor:pointer}
+.wg-cell:active{background:#161616}
+.wg-blk{position:absolute;left:1px;right:1px;border-radius:5px;background:#0d1a2e;border:1px solid #1a3a6a;border-left:3px solid var(--blue);padding:2px 3px;overflow:hidden;cursor:pointer;z-index:1}
+.wg-blk.done{background:#0a1f12;border-color:#1a4a2a;border-left-color:var(--green)}
+.wg-blk.cancelled,.wg-blk.noshow{background:#1a0a0a;border-color:#5a2222;border-left-color:var(--red);opacity:.6}
+.wg-blk-t{font-size:9px;font-weight:700;color:var(--text);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wg-blk-s{font-size:8.5px;color:var(--muted);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.wg-empty-note{text-align:center;color:var(--muted);font-size:13px;padding:30px 16px;font-style:italic}
 .wnav{width:26px;height:50px;flex-shrink:0;border-radius:8px;border:1.5px solid var(--border-bright);background:#111;color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer}
 .wnav:active{border-color:var(--gold);color:var(--gold)}
 .wcells{display:flex;gap:4px;flex:1;min-width:0}
@@ -313,7 +352,8 @@ datalist{display:none}
   <div class="view active" id="view-day">
     <div class="seg" id="daySeg">
       <button class="seg-btn on" data-m="day" onclick="setDayMode('day')"><i class="ti ti-calendar"></i> Day</button>
-      <button class="seg-btn" data-m="week" onclick="setDayMode('week')"><i class="ti ti-calendar-week"></i> Week</button>
+      <button class="seg-btn" data-m="week" onclick="setDayMode('week')"><i class="ti ti-list"></i> Week</button>
+      <button class="seg-btn" data-m="grid" onclick="setDayMode('grid')"><i class="ti ti-layout-grid"></i> Grid</button>
     </div>
     <div class="weekstrip" id="weekStrip"></div>
     <div id="dayPane">
@@ -335,7 +375,16 @@ datalist{display:none}
     </div>
     <div id="weekPane" style="display:none">
       <div class="weekrange" id="weekRange"></div>
+      <div class="seg seg-sub" id="weekSeg">
+        <button class="seg-btn on" data-w="list" onclick="setWeekMode('list')"><i class="ti ti-list"></i> List</button>
+        <button class="seg-btn" data-w="grid" onclick="setWeekMode('grid')"><i class="ti ti-layout-grid"></i> Grid</button>
+      </div>
       <div id="weekList"></div>
+      <div id="weekGrid" style="display:none"></div>
+    </div>
+    <div id="gridPane" style="display:none">
+      <div class="weekrange" id="gridRange"></div>
+      <div class="grid-scroll"><div id="weekGrid"></div></div>
     </div>
   </div>
 
@@ -820,13 +869,81 @@ function renderWeekList(){
   }
   $('weekList').innerHTML=html;
 }
+var weekMode='list';
+function setWeekMode(m){
+  weekMode=m;
+  document.querySelectorAll('#weekSeg .seg-btn').forEach(function(b){b.classList.toggle('on',b.dataset.w===m)});
+  renderDay();
+}
+function openAddAt(ds,time){
+  viewDate=parseDate(ds);
+  openAdd();
+  $('fDate').value=ds;
+  if(time)$('fTime').value=time;
+  checkConflict();
+}
+function renderWeekGrid(){
+  var sow=startOfWeek(viewDate), today=todayStr();
+  var end=new Date(sow);end.setDate(sow.getDate()+6);
+  $('weekRange').textContent=sow.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  var L=['M','T','W','T','F','S','S'];
+  // gather this week's appts + smart time span
+  var byDay=[]; var minH=24,maxH=0,any=false;
+  for(var i=0;i<7;i++){
+    var d=new Date(sow);d.setDate(sow.getDate()+i);
+    var ds=ymd(d);
+    var list=appts.filter(function(a){return a.date===ds&&a.time}).sort(function(a,b){return a.time.localeCompare(b.time)});
+    byDay.push({date:ds,dt:d,list:list});
+    list.forEach(function(a){
+      var sh=parseInt(a.time.split(':')[0],10);
+      var endMin=sh*60+parseInt(a.time.split(':')[1],10)+(+a.dur||0);
+      var eh=Math.ceil(endMin/60);
+      if(sh<minH)minH=sh; if(eh>maxH)maxH=eh; any=true;
+    });
+  }
+  if(!any){
+    $('weekGrid').innerHTML='<div class="wg-empty-note"><i class="ti ti-calendar-off" style="font-size:30px;display:block;margin-bottom:8px;color:#444"></i>No bookings this week.<br>Tap an empty slot in any day to book, or use the strip above.</div>';
+    return;
+  }
+  if(maxH>24)maxH=24; if(minH<0)minH=0; if(maxH<=minH)maxH=minH+1;
+  // header row
+  var head='<div class="wg-corner"></div>';
+  byDay.forEach(function(c){
+    var isT=c.date===today;
+    head+='<div class="wg-dh'+(isT?' today':'')+'"><div class="wg-dh-d">'+L[c.dt.getDay()===0?6:c.dt.getDay()-1]+'</div><div class="wg-dh-n">'+c.dt.getDate()+'</div></div>';
+  });
+  // body rows
+  var rows='';
+  for(var h=minH;h<maxH;h++){
+    var label=to12((h<10?'0':'')+h+':00');
+    rows+='<div class="wg-time">'+label+'</div>';
+    byDay.forEach(function(c){
+      var isT=c.date===today;
+      var here=c.list.filter(function(a){return parseInt(a.time.split(':')[0],10)===h;});
+      var blocks=here.map(function(a){
+        var st=a.status||'confirmed';
+        return '<div class="wg-block '+st+'" onclick="event.stopPropagation();openSheet(\''+a.id+'\')"><div class="wg-bn">'+esc(a.name)+'</div><div class="wg-bt">'+to12(a.time)+'</div></div>';
+      }).join('');
+      var hh=(h<10?'0':'')+h+':00';
+      rows+='<div class="wg-cell'+(isT?' today':'')+'" onclick="openAddAt(\''+c.date+'\',\''+hh+'\')">'+blocks+'</div>';
+    });
+  }
+  $('weekGrid').innerHTML='<div class="wg-wrap"><div class="wg-grid" style="display:grid;grid-template-columns:46px repeat(7,minmax(42px,1fr));min-width:352px">'+head+rows+'</div></div>';
+}
 function renderDay(){
   reload();
   renderWeekStrip();
   if(dayMode==='week'){
     $('dayPane').style.display='none';
     $('weekPane').style.display='block';
-    renderWeekList();
+    var wr=$('weekRange'); // range label set by whichever renderer runs
+    if(weekMode==='grid'){
+      $('weekList').style.display='none';$('weekGrid').style.display='block';
+      renderWeekGrid();
+    }else{
+      $('weekList').style.display='block';$('weekGrid').style.display='none';
+      renderWeekList();
+    }
     window.scrollTo(0,0);
     return;
   }
