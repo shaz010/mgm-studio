@@ -51,6 +51,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .reorder-head{font-size:13px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:7px;margin-bottom:7px}
 .reorder-item{font-size:13px;color:var(--text2);padding:3px 0;display:flex;justify-content:space-between;gap:10px}
 .reorder-item b{color:var(--text)}
+.ins-row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.ins-row:last-child{border-bottom:none}
+.ins-lbl{color:var(--muted);font-size:12.5px}
+.ins-val{color:var(--text);font-weight:600;text-align:right}
+.ins-val b{color:var(--gold)}
+.ins-empty{color:var(--muted);font-size:12.5px;padding:6px 0}
+.ins-group{margin-bottom:14px}
+.ins-h{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin:0 0 4px}
 .hrow{display:flex;align-items:center;gap:10px;background:#111;border:1px solid var(--border-bright);border-radius:10px;padding:9px 11px;margin-bottom:7px}
 .hrow-day{font-size:13px;font-weight:600;color:var(--text);width:42px;flex-shrink:0}
 .hrow-toggle{width:42px;height:24px;border-radius:14px;background:#333;border:none;position:relative;cursor:pointer;flex-shrink:0;transition:background .15s}
@@ -359,6 +367,8 @@ datalist{display:none}
     </div>
     <label>Unit <span style="color:#666;font-weight:400">(optional)</span></label>
     <input id="skUnit" placeholder="tubes, bottles, packs…">
+    <label style="margin-top:16px">Used by these services <span style="color:#666;font-weight:400">(auto-deducts 1 when marked Done)</span></label>
+    <div id="skLinks" class="svc-row" style="margin-top:2px"></div>
     <div class="btn-row" style="margin-top:16px">
       <button class="btn" onclick="saveStock()"><i class="ti ti-check"></i> Save item</button>
     </div>
@@ -390,6 +400,9 @@ datalist{display:none}
     <div class="btn-row" style="margin-top:12px">
       <button class="btn btn-sm" style="flex:1" onclick="saveHours()"><i class="ti ti-check"></i> Save hours</button>
     </div>
+
+    <div class="set-sec">Insights</div>
+    <div id="insightsBox" style="font-size:13px;color:var(--text2);line-height:1.6"></div>
 
     <div class="set-sec">Backup</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Export saves everything (appointments, clients, services, hours) to a file. Import restores it — handy when switching devices.</div>
@@ -719,10 +732,41 @@ function openSheet(id){
 }
 function setStatus(s){
   if(!sheetId)return;
+  var prev=appts.find(function(a){return a.id===sheetId});
+  var was=prev?prev.status:null;
   appts=appts.map(function(a){return a.id===sheetId?Object.assign({},a,{status:s}):a});
+  if(s==='done'){applyStockForAppt(sheetId);}
+  else if(was==='done'){revertStockForAppt(sheetId);}
   save(APPTS,appts);
   document.querySelectorAll('#statusGrid .status-opt').forEach(function(o){o.classList.toggle('sel',o.dataset.s===s)});
-  renderDay();toast(stLabel(s));
+  renderDay();
+  toast(s==='done'?'Done · stock updated':stLabel(s));
+}
+function splitSvc(str){return (str||'').split('+').map(function(x){return x.trim()}).filter(Boolean);}
+function applyStockForAppt(id){
+  var a=appts.find(function(x){return x.id===id});if(!a||a.stockCounted)return;
+  var svcs=splitSvc(a.service).map(function(x){return x.toLowerCase()});
+  var changed=false;
+  stock=stock.map(function(it){
+    var links=(it.links||[]).map(function(l){return l.toLowerCase()});
+    var hit=links.some(function(l){return svcs.indexOf(l)>=0});
+    if(hit){changed=true;return Object.assign({},it,{qty:Math.max((+it.qty||0)-1,0),used:(+it.used||0)+1});}
+    return it;
+  });
+  if(changed)save(STOCK,stock);
+  appts=appts.map(function(x){return x.id===id?Object.assign({},x,{stockCounted:true}):x});
+}
+function revertStockForAppt(id){
+  var a=appts.find(function(x){return x.id===id});if(!a||!a.stockCounted)return;
+  var svcs=splitSvc(a.service).map(function(x){return x.toLowerCase()});
+  stock=stock.map(function(it){
+    var links=(it.links||[]).map(function(l){return l.toLowerCase()});
+    var hit=links.some(function(l){return svcs.indexOf(l)>=0});
+    if(hit)return Object.assign({},it,{qty:(+it.qty||0)+1,used:Math.max((+it.used||0)-1,0)});
+    return it;
+  });
+  save(STOCK,stock);
+  appts=appts.map(function(x){return x.id===id?Object.assign({},x,{stockCounted:false}):x});
 }
 function editFromSheet(){
   var a=appts.find(function(x){return x.id===sheetId});if(!a)return;
@@ -837,26 +881,48 @@ function addStockQty(id){        /* restocked one */
   save(STOCK,stock);renderStock();
 }
 var stockId=null;
+var stockLinksDraft=[];
+function allServiceNames(){
+  var names=[];
+  SERVICE_GROUPS.forEach(function(g){g.s.forEach(function(it){if(names.indexOf(it[0])<0)names.push(it[0])})});
+  customSvc.forEach(function(x){if(names.indexOf(x.name)<0)names.push(x.name)});
+  return names;
+}
+function renderStockLinks(){
+  var names=allServiceNames();
+  $('skLinks').innerHTML=names.map(function(n){
+    var on=stockLinksDraft.map(function(x){return x.toLowerCase()}).indexOf(n.toLowerCase())>=0;
+    return '<button type="button" class="svc-chip'+(on?' sel':'')+'" onclick="toggleStockLink(this,\''+jsq(n)+'\')"><i class="ti ti-'+iconFor(n)+'"></i>'+esc(n)+'</button>';
+  }).join('');
+}
+function toggleStockLink(el,name){
+  var i=stockLinksDraft.map(function(x){return x.toLowerCase()}).indexOf(name.toLowerCase());
+  if(i>=0)stockLinksDraft.splice(i,1);else stockLinksDraft.push(name);
+  el.classList.toggle('sel');
+}
 function openStockSheet(id){
   stockId=id||null;
   if(id){
     var s=stock.find(function(x){return x.id===id});
     $('skTitle').textContent='Edit item';
     $('skName').value=s.name;$('skQty').value=s.qty;$('skMin').value=s.min;$('skUnit').value=s.unit||'';
+    stockLinksDraft=(s.links||[]).slice();
     $('skDel').style.display='flex';
   }else{
     $('skTitle').textContent='Add stock item';
     $('skName').value='';$('skQty').value='';$('skMin').value='';$('skUnit').value='';
+    stockLinksDraft=[];
     $('skDel').style.display='none';
   }
+  renderStockLinks();
   $('stockModal').classList.add('show');
 }
 function saveStock(){
   var name=$('skName').value.trim();if(!name){toast('Add an item name',1);return;}
   if(stockId){
-    stock=stock.map(function(s){return s.id===stockId?Object.assign({},s,{name:name,qty:+$('skQty').value||0,min:+$('skMin').value||0,unit:$('skUnit').value.trim()}):s});
+    stock=stock.map(function(s){return s.id===stockId?Object.assign({},s,{name:name,qty:+$('skQty').value||0,min:+$('skMin').value||0,unit:$('skUnit').value.trim(),links:stockLinksDraft.slice()}):s});
   }else{
-    stock.push({id:uid(),name:name,qty:+$('skQty').value||0,min:+$('skMin').value||0,unit:$('skUnit').value.trim(),used:0});
+    stock.push({id:uid(),name:name,qty:+$('skQty').value||0,min:+$('skMin').value||0,unit:$('skUnit').value.trim(),used:0,links:stockLinksDraft.slice()});
   }
   save(STOCK,stock);closeSheet('stockModal');renderStock();toast('Item saved');
 }
@@ -904,6 +970,7 @@ function openSettings(){
   $('setBizName').value=p.bizName||'';
   $('setStylist').value=p.stylist||'';
   $('setVersion').textContent='AppointmentPro · '+VERSION;
+  renderInsights();
   renderHours(true);
   $('settingsModal').classList.add('show');
 }
@@ -912,6 +979,52 @@ function saveBusiness(){
   p.bizName=$('setBizName').value.trim();
   p.stylist=$('setStylist').value.trim();
   setPrefs(p);applyBranding();toast('Business saved');
+}
+
+/* ----- insights ----- */
+function renderInsights(){
+  reload();
+  var active=appts.filter(function(a){return a.status!=='cancelled'});
+  if(!active.length && !stock.some(function(s){return (+s.used||0)>0})){
+    $('insightsBox').innerHTML='<div class="ins-empty">Book and complete a few appointments — your busiest days, most-booked services and most-used stock will show up here, building over time.</div>';
+    return;
+  }
+  // most-booked services
+  var svcCount={};
+  active.forEach(function(a){splitSvc(a.service).forEach(function(s){svcCount[s]=(svcCount[s]||0)+1;});});
+  var topSvc=Object.keys(svcCount).sort(function(a,b){return svcCount[b]-svcCount[a]}).slice(0,3);
+  // busiest weekday (Mon=0)
+  var dow=[0,0,0,0,0,0,0];
+  active.forEach(function(a){if(a.date){var d=parseDate(a.date);dow[(d.getDay()+6)%7]++;}});
+  var maxDow=Math.max.apply(null,dow);
+  var busyDay=maxDow>0?DAYS[dow.indexOf(maxDow)]:'—';
+  // busiest hour
+  var hrs={};
+  active.forEach(function(a){if(a.time){var hr=+a.time.split(':')[0];hrs[hr]=(hrs[hr]||0)+1;}});
+  var topHourKey=Object.keys(hrs).sort(function(a,b){return hrs[b]-hrs[a]})[0];
+  var busyTime=topHourKey!=null?to12(String(topHourKey).padStart(2,'0')+':00'):'—';
+  // money
+  var booked=active.reduce(function(s,a){return s+(+a.price||0)},0);
+  var doneVal=active.filter(function(a){return a.status==='done'}).reduce(function(s,a){return s+(+a.price||0)},0);
+  var doneCount=active.filter(function(a){return a.status==='done'}).length;
+  // stock most-used
+  var usedSort=stock.slice().filter(function(s){return (+s.used||0)>0}).sort(function(a,b){return (+b.used||0)-(+a.used||0)});
+  var topItem=usedSort[0];
+
+  function row(l,v){return '<div class="ins-row"><span class="ins-lbl">'+l+'</span><span class="ins-val">'+v+'</span></div>';}
+  var svcHtml=topSvc.length?topSvc.map(function(n,i){return row((i+1)+'. '+esc(n),'<b>'+svcCount[n]+'</b>×');}).join(''):'<div class="ins-empty">No services booked yet.</div>';
+
+  $('insightsBox').innerHTML=
+    '<div class="ins-group"><div class="ins-h">Most booked</div>'+svcHtml+'</div>'+
+    '<div class="ins-group"><div class="ins-h">Patterns</div>'+
+      row('Busiest day','<b>'+busyDay+'</b>')+
+      row('Busiest time','<b>'+busyTime+'</b>')+
+      row('Appointments','<b>'+active.length+'</b> active')+'</div>'+
+    '<div class="ins-group"><div class="ins-h">Money</div>'+
+      row('Booked value','<b>'+fmt$(booked)+'</b>')+
+      row('Completed ('+doneCount+')','<b>'+fmt$(doneVal)+'</b>')+'</div>'+
+    '<div class="ins-group"><div class="ins-h">Stock</div>'+
+      (topItem?row('Most used','<b>'+esc(topItem.name)+'</b> ('+(+topItem.used||0)+')'):'<div class="ins-empty">Mark appointments Done to track stock use.</div>')+'</div>';
 }
 
 /* ----- working hours ----- */
