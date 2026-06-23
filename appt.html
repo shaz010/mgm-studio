@@ -38,7 +38,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .tab{padding:8px 14px;border-radius:7px;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;white-space:nowrap;font-weight:500;flex:1;text-align:center}
 .tab.active{background:var(--bg3);color:var(--gold);font-weight:600;border:1px solid var(--gold-border)}
 .tab i{font-size:14px;vertical-align:-2px;margin-right:5px}
-@media(max-width:480px){.tab span{display:none}.tab i{margin-right:0}}
+@media(max-width:430px){.tab{padding:8px 6px;font-size:12px}.tab i{margin-right:4px;font-size:13px}}
 
 .view{display:none}.view.active{display:block}
 
@@ -75,11 +75,11 @@ textarea{min-height:64px;resize:vertical}
 .svc-cat:first-child{margin-top:6px}
 .qp-hint{font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:0}
 .svc-row{display:flex;flex-wrap:wrap;gap:7px}
-.svc-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:20px;border:1.5px solid #444;background:#1a1a1a;color:#ccc;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
-.svc-chip>i:first-child{font-size:14px;color:var(--gold)}
+.svc-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;min-height:33px;border-radius:20px;border:1.5px solid #444;background:#1a1a1a;color:#ccc;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.svc-chip>i:first-child{font-size:14px;color:var(--gold);width:15px;text-align:center;flex-shrink:0}
 .svc-chip:active{border-color:#666}
 .svc-chip.sel{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
-.svc-star{font-size:13px!important;margin-left:2px;color:#6a6a6a!important}
+.svc-star{font-size:14px!important;margin-left:2px;margin-right:-3px;padding:3px;color:#7a7a7a!important;flex-shrink:0}
 .svc-star.on{color:var(--gold)!important}
 .svc-empty{font-size:12.5px;color:var(--muted);padding:5px 2px}
 .svc-more-btn{width:100%;margin-top:14px;padding:11px;border-radius:9px;border:1.5px solid var(--border-bright);background:#1a1a1a;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
@@ -377,6 +377,7 @@ function jsq(n){return String(n).replace(/'/g,"\\'");}
 var appts=load(APPTS,[]);
 var clients=load(CLIENTS,[]);
 var customSvc=load(CUSTOM,[]);   /* [{name,mode}] your own services, kept forever */
+function reload(){appts=load(APPTS,[]);clients=load(CLIENTS,[]);customSvc=load(CUSTOM,[]);}
 
 /* ===== prefs: favourites + last mode ===== */
 function getPrefs(){return load(PREFS,{});}
@@ -452,11 +453,18 @@ function promoteFav(name){
   if(list.map(function(s){return s.toLowerCase()}).indexOf(name.toLowerCase())===-1)list.push(name);
   setField(list);
   buildChips();
+  toast('Pinned to Quick picks ★');
 }
 function demoteFav(name){
   var favs=getFavorites(),i=favs.indexOf(name);
   if(i>-1){favs.splice(i,1);saveFavorites(favs);}
   buildChips();
+  // reveal More so the user sees where the chip went
+  if($('svcMore').style.display==='none'){
+    $('svcMore').style.display='block';
+    $('svcMoreBtn').innerHTML='<i class="ti ti-chevron-up"></i> Hide services';
+  }
+  toast('Moved to More services');
 }
 function syncChips(){
   var have=servicesInField().map(function(s){return s.toLowerCase()});
@@ -489,6 +497,7 @@ function addCustom(){
 function moveDay(n){viewDate.setDate(viewDate.getDate()+n);renderDay()}
 function goToday(){viewDate=new Date();viewDate.setHours(12,0,0,0);renderDay()}
 function renderDay(){
+  reload();
   var ds=ymd(viewDate), isToday=ds===todayStr();
   var wd=viewDate.toLocaleDateString('en-US',{weekday:'long'});
   var full=viewDate.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
@@ -568,6 +577,16 @@ function saveAppt(){
   if(!service){toast('Pick or type a service',1);return;}
   if(!date){toast('Pick a date',1);return;}
   if(!time){toast('Pick a time',1);return;}
+  var price=+$('fPrice').value||0;
+  if(price<=0){
+    askConfirm('No price entered — this books at $0. Add a price, or book it anyway?',function(){commitSave();},{title:'No price set',yesLabel:'Book at $0'});
+    return;
+  }
+  commitSave();
+}
+function commitSave(){
+  var name=$('fName').value.trim(),date=$('fDate').value,time=$('fTime').value;
+  var service=$('fService').value.trim();
   var prevStatus=editingId?((appts.find(function(a){return a.id===editingId})||{}).status||'confirmed'):'confirmed';
   var rec={
     id:editingId||uid(),
@@ -636,6 +655,7 @@ function closeSheet(id){$(id).classList.remove('show')}
 
 /* ===== CLIENTS ===== */
 function renderClients(){
+  reload();
   if(!clients.length){
     $('clientsList').innerHTML='<div class="empty"><i class="ti ti-user-question"></i><div class="empty-t">No clients yet</div><div class="empty-s">Clients are added automatically when you book them — or add one now.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openClientSheet()"><i class="ti ti-user-plus"></i> Add client</button></div>';
     return;
