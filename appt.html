@@ -736,7 +736,14 @@ function startFresh(){
         localStorage.removeItem(CUSTOM);
         localStorage.removeItem(PREFS);
       }catch(e){}
-      location.reload();
+      /* reset in-memory state instantly — no slow full-page reload */
+      appts=[];clients=[];customSvc=[];
+      svcMode='hair';
+      editingId=null;clientId=null;
+      viewDate=new Date();viewDate.setHours(12,0,0,0);
+      closeSheet('settingsModal');
+      showView('day');
+      toast('Fresh start — all clear');
     },{title:'Last chance',yesLabel:'Erase everything',danger:true});
   },{title:'Start fresh?',yesLabel:'Continue',danger:true});
 }
