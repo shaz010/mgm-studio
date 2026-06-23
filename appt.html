@@ -39,17 +39,36 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 @media(max-width:400px){.topbar{padding:12px 12px}.topbar-actions{gap:5px}.gear-btn{width:34px;height:34px;font-size:17px}.topbar-icon{width:36px;height:36px;font-size:19px}.topbar-name{font-size:17px}}
 .gear-btn.er-btn{color:#e2483c}
 .gear-btn.er-btn:active{border-color:#ff5b4f;color:#ff5b4f}
-/* EYE REST */
-#eyeRest{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;background:#000;overflow:hidden;cursor:pointer}
-#eyeRest.on{display:flex}
-.er-glow{position:absolute;width:62vmin;height:62vmin;border-radius:50%;background:radial-gradient(circle,rgba(255,60,60,.6),rgba(235,0,18,.28) 45%,transparent 70%);filter:blur(8px);animation:erBreath 8s ease-in-out infinite}
-@keyframes erBreath{0%,100%{transform:scale(.68);opacity:.4}50%{transform:scale(1.06);opacity:.85}}
-.er-msg{position:absolute;bottom:14%;left:50%;transform:translateX(-50%);text-align:center;width:84%;max-width:420px}
-.er-big{font-size:21px;font-weight:700;color:#ffdada;letter-spacing:.3px}
-.er-sub{font-size:14px;color:#ffb4b4;margin-top:6px;line-height:1.5}
-.er-count{font-size:36px;font-weight:800;color:#fff;margin-top:10px;font-variant-numeric:tabular-nums}
-.er-skip{font-size:12px;color:#ff9b9b;margin-top:14px;opacity:.8}
-@media (prefers-reduced-motion: reduce){.er-glow{animation:none}}
+/* EYE REST (verbatim from CommissionPro) */
+#eyeRest{position:fixed;inset:0;z-index:9000;pointer-events:none;display:none;align-items:center;justify-content:center;overflow:hidden;--erC1:#ff9a9a;--erC2:#ff2424;--erC3:rgba(235,0,18,.78);--erG:rgba(255,40,40,.6)}
+#eyeRest.on{display:flex;background:#000}
+#eyeRest .er-ring{position:absolute;left:50%;top:50%;border-radius:50%;will-change:transform,opacity;opacity:0;border:3px solid var(--erC2);box-shadow:0 0 26px var(--erG),inset 0 0 18px var(--erG)}
+#eyeRest .er-veil{position:absolute;inset:0;background:#000;opacity:0;will-change:opacity}
+#eyeRest .er-rays{position:absolute;left:50%;top:50%;width:0;height:0;will-change:transform,opacity;filter:saturate(1.25) brightness(1.15)}
+#eyeRest .er-ray{position:absolute;left:0;top:0;width:80vmax;height:5px;transform-origin:0 50%;border-radius:5px;
+  background:linear-gradient(90deg,var(--erC1) 0%,var(--erC2) 36%,var(--erC3) 68%,transparent 100%);box-shadow:0 0 8px var(--erG)}
+#eyeRest .er-core{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;will-change:transform,opacity;opacity:0;
+  background:radial-gradient(circle,#fff 0%,var(--erC1) 26%,var(--erC2) 54%,transparent 80%);box-shadow:0 0 40px var(--erG)}
+#eyeRest .er-msg{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);text-align:center;opacity:0;will-change:opacity;width:84%;max-width:420px}
+#eyeRest .er-big{font-size:21px;font-weight:700;color:#ffdada;letter-spacing:.3px}
+#eyeRest .er-sub{font-size:14px;color:#ffb4b4;margin-top:6px;line-height:1.5}
+#eyeRest .er-count{font-size:36px;font-weight:800;color:#fff;margin-top:10px;font-variant-numeric:tabular-nums}
+#eyeRest .er-skip{font-size:12px;color:#ff9b9b;margin-top:14px;opacity:.8}
+@media (prefers-reduced-motion: reduce){#eyeRest .er-rays,#eyeRest .er-core{animation:none!important}}
+/* PRICE BOOK (verbatim from CommissionPro) */
+.price-hint{font-size:12.5px;color:#999;line-height:1.6;margin-bottom:14px}
+.price-group{margin-bottom:6px}
+.price-cat-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:14.5px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;padding:13px 2px;border-bottom:1.5px solid #2c2c2c;user-select:none;-webkit-tap-highlight-color:transparent}
+.price-chev{font-size:18px;transition:transform .22s ease;opacity:.85}
+.price-cat-head.open .price-chev{transform:rotate(180deg)}
+.pc-count{display:inline-block;font-size:10px;font-weight:700;background:rgba(255,255,255,.13);color:inherit;border-radius:20px;padding:2px 8px;margin-left:7px;vertical-align:middle}
+.price-cat-body{padding-top:2px}
+.price-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #222}
+.price-name{font-size:14px;color:#ededed;font-weight:600}
+.price-in-wrap{position:relative;flex-shrink:0}
+.price-in-wrap::before{content:'$';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#888;font-size:14px;pointer-events:none}
+.price-in{width:104px;padding:8px 10px 8px 22px;background:#1a1a1a;border:1.5px solid #444;border-radius:8px;color:#fff;font-size:16px;font-weight:600;outline:none;text-align:right}
+.price-in:focus{border-color:var(--gold);background:#1e1e1e}
 .set-sec{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin:22px 0 10px;padding-top:16px;border-top:1px solid var(--border)}
 .set-version{text-align:center;font-size:11px;color:#666;margin-top:20px;letter-spacing:.3px}
 /* STOCK */
@@ -235,7 +254,7 @@ datalist{display:none}
     </div>
     <div class="topbar-actions">
       <button class="gear-btn er-btn" onclick="eyeRest()" aria-label="Eye rest" title="Eye rest"><i class="ti ti-eye"></i></button>
-      <button class="gear-btn" onclick="openInsights()" aria-label="Insights" title="Insights"><i class="ti ti-currency-dollar"></i></button>
+      <button class="gear-btn" onclick="openPrices()" aria-label="Price book" title="Price book"><i class="ti ti-currency-dollar"></i></button>
       <button class="gear-btn" onclick="showView('clients')" aria-label="Clients" title="Clients"><i class="ti ti-users"></i></button>
       <button class="gear-btn" onclick="openSettings()" aria-label="Settings" title="Settings"><i class="ti ti-settings"></i></button>
     </div>
@@ -302,7 +321,7 @@ datalist{display:none}
       </div>
       <div class="row2">
         <div><label>Duration (min)</label><input id="fDur" type="number" inputmode="numeric" placeholder="60" oninput="checkConflict()"></div>
-        <div><label>Price ($)</label><input id="fPrice" type="number" inputmode="decimal" placeholder="0"></div>
+        <div><label>Price ($)</label><input id="fPrice" type="number" inputmode="decimal" placeholder="0" oninput="priceManual=true"></div>
       </div>
 
       <label>Notes <span style="color:#666;font-weight:400">(optional)</span></label>
@@ -426,6 +445,11 @@ datalist{display:none}
       <button class="btn btn-sm" style="flex:1" onclick="saveHours()"><i class="ti ti-check"></i> Save hours</button>
     </div>
 
+    <div class="set-sec">Insights</div>
+    <div class="btn-row" style="margin-top:0">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openInsights()"><i class="ti ti-chart-bar"></i> View insights</button>
+    </div>
+
     <div class="set-sec">Backup</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Export saves everything (appointments, clients, services, hours) to a file. Import restores it — handy when switching devices.</div>
     <div class="btn-row" style="margin-top:0">
@@ -464,12 +488,31 @@ datalist{display:none}
   </div>
 </div>
 
-<!-- EYE REST OVERLAY -->
-<div id="eyeRest" onclick="endEyeRest()">
-  <div class="er-glow"></div>
-  <div class="er-msg">
+<!-- PRICE BOOK SHEET -->
+<div class="modal" id="priceModal" onclick="if(event.target===this)closePrices()">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title"><i class="ti ti-tag" style="font-size:15px;vertical-align:-2px;margin-right:7px;color:var(--gold)"></i>Your price book</div>
+    <p class="price-hint">Set what you charge for each service. Leave blank for ones you don't offer. When you combine services in a booking, the Price auto-fills with the total — you can still adjust it.</p>
+    <div class="svc-mode" style="margin-bottom:12px">
+      <button type="button" class="svc-mode-btn on" data-pmode="hair" onclick="setPriceMode('hair')"><i class="ti ti-scissors m-ico"></i>Hair</button>
+      <button type="button" class="svc-mode-btn" data-pmode="nail" onclick="setPriceMode('nail')"><i class="ti ti-sparkles m-ico"></i>Nail</button>
+    </div>
+    <div id="priceList"></div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn" onclick="closePrices()"><i class="ti ti-check"></i> Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- EYE REST OVERLAY (verbatim from CommissionPro) -->
+<div id="eyeRest" aria-hidden="true">
+  <div class="er-veil" id="erVeil"></div>
+  <div class="er-rays" id="erRays"></div>
+  <div class="er-core" id="erCore"></div>
+  <div class="er-msg" id="erMsg">
     <div class="er-big">Rest your eyes</div>
-    <div class="er-sub">Look at something about 20 feet away until the timer reaches zero.</div>
+    <div class="er-sub">Look at something about 20 feet away<br>until the timer reaches zero.</div>
     <div class="er-count" id="erCount">22</div>
     <div class="er-skip">tap anywhere to finish early</div>
   </div>
@@ -598,7 +641,7 @@ function pickService(name){
   var list=servicesInField();
   var i=list.map(function(s){return s.toLowerCase()}).indexOf(name.toLowerCase());
   if(i>=0)list.splice(i,1);else list.push(name);
-  setField(list);syncChips();
+  setField(list);syncChips();applyAutoPrice();
 }
 function promoteFav(name){
   var favs=getFavorites();
@@ -607,6 +650,7 @@ function promoteFav(name){
   if(list.map(function(s){return s.toLowerCase()}).indexOf(name.toLowerCase())===-1)list.push(name);
   setField(list);
   buildChips();
+  applyAutoPrice();
   toast('Pinned to Quick picks ★');
 }
 function demoteFav(name){
@@ -662,6 +706,7 @@ function addCustom(){
   setField(list);
   $('fCustom').value='';
   buildChips();
+  applyAutoPrice();
   toast('Added “'+name+'”');
 }
 
@@ -704,8 +749,9 @@ function stLabel(s){return {confirmed:'Confirmed',done:'Done',noshow:'No-show',c
 
 /* ===== ADD / EDIT ===== */
 var editingId=null;
+var priceManual=false;
 function openAdd(){
-  editingId=null;
+  editingId=null;priceManual=false;
   $('addTitle').textContent='New appointment';
   $('editExtra').style.display='none';
   $('fName').value='';$('fPhone').value='';$('fService').value='';$('fCustom').value='';
@@ -840,7 +886,7 @@ function revertStockForAppt(id){
 function editFromSheet(){
   var a=appts.find(function(x){return x.id===sheetId});if(!a)return;
   closeSheet('apptModal');
-  editingId=a.id;
+  editingId=a.id;priceManual=true;
   $('addTitle').textContent='Edit appointment';
   $('editExtra').style.display='flex';
   fillClientList();
@@ -1183,20 +1229,123 @@ function startFresh(){
   },{title:'Start fresh?',yesLabel:'Continue',danger:true});
 }
 
-/* ===== eye rest (look-away timer with breathing 670nm glow) ===== */
-var erActive=false, erIv=null;
+/* ===== eye rest — verbatim engine from CommissionPro (rays, rings, core, colour cycle) ===== */
+var ER={built:false,active:false};
+var ER_COLORS={
+  red:   {c1:'#ff9a9a',c2:'#ff2424',c3:'rgba(235,0,18,.78)',g:'rgba(255,40,40,.6)'},
+  amber: {c1:'#ffd29a',c2:'#ff9e2c',c3:'rgba(220,120,0,.72)',g:'rgba(255,150,30,.55)'},
+  yellow:{c1:'#fff0b0',c2:'#ffd23c',c3:'rgba(220,170,0,.7)',g:'rgba(255,200,40,.5)'},
+  green: {c1:'#b6f5cf',c2:'#36d07a',c3:'rgba(0,150,80,.7)',g:'rgba(40,210,120,.5)'}
+};
+var ER_ORDER=['red','amber','yellow','green'];
+function erColorPref(){var p=getPrefs();return p.erColor||'cycle';}
+function erSetColor(key){var c=ER_COLORS[key]||ER_COLORS.red;var el=document.getElementById('eyeRest');if(!el)return;el.style.setProperty('--erC1',c.c1);el.style.setProperty('--erC2',c.c2);el.style.setProperty('--erC3',c.c3);el.style.setProperty('--erG',c.g);}
+function setErColor(key,btn){var p=getPrefs();p.erColor=key;setPrefs(p);if(key!=='cycle')erSetColor(key);if(btn){btn.parentNode.querySelectorAll('.erc-btn').forEach(function(x){x.classList.remove('sel');});btn.classList.add('sel');}}
+function markErColor(){var v=erColorPref();document.querySelectorAll('.erc-btn').forEach(function(x){x.classList.toggle('sel',x.dataset.v===v);});}
+var erReduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+function erBuild(){
+  if(ER.built) return;
+  var rest=document.getElementById('eyeRest'),wrap=document.getElementById('erRays'); if(!wrap||!rest) return;
+  var N=24; for(var i=0;i<N;i++){ var r=document.createElement('div'); r.className='er-ray'; r.style.transform='rotate('+(i*(360/N))+'deg)'; wrap.appendChild(r); }
+  ER.rings=[]; for(var j=0;j<3;j++){ var rg=document.createElement('div'); rg.className='er-ring'; rg.style.width=rg.style.height='60px'; rg.style.margin='-30px 0 0 -30px'; rest.appendChild(rg); ER.rings.push(rg); }
+  ER.built=true;
+}
+function erBreath(){
+  erBuild();
+  if(ER.cycling){ erSetColor(ER_ORDER[ER.cycIdx%ER_ORDER.length]); ER.cycIdx++; }
+  var core=document.getElementById('erCore'),wrap=document.getElementById('erRays');
+  var big=Math.max(innerWidth,innerHeight), ringMax=big/60*1.1;
+  var cycle=4200+Math.random()*1400;
+  var erupt=Math.random()<0.28;
+  var rayScale=erupt?1.18:0.96, rk=erupt?ringMax*1.15:ringMax;
+  if(core) core.animate([
+    {opacity:0,transform:'scale(.5)'},
+    {opacity:1,transform:'scale(1)',offset:.18},
+    {opacity:1,transform:'scale('+(erupt?3.2:2.4)+')',offset:.5},
+    {opacity:1,transform:'scale(1)',offset:.82},
+    {opacity:0,transform:'scale(.5)'}
+  ],{duration:cycle,easing:'cubic-bezier(.37,0,.34,1)'});
+  if(wrap){ wrap.style.opacity='1';
+    wrap.animate([
+      {opacity:0,transform:'scale(.06)'},
+      {opacity:.9,transform:'scale('+(rayScale*0.45)+')',offset:.22},
+      {opacity:1,transform:'scale('+rayScale+')',offset:.5},
+      {opacity:.85,transform:'scale('+(rayScale*0.5)+')',offset:.8},
+      {opacity:0,transform:'scale(.08)'}
+    ],{duration:cycle,easing:'cubic-bezier(.37,0,.34,1)'});
+  }
+  (ER.rings||[]).forEach(function(rg,idx){
+    rg.animate([
+      {opacity:0,transform:'scale(.3)'},
+      {opacity:.8,transform:'scale('+(rk*0.5)+')',offset:.4},
+      {opacity:0,transform:'scale('+rk+')'}
+    ],{duration:cycle*0.82,delay:idx*(cycle*0.12),easing:'cubic-bezier(.2,.6,.3,1)'});
+  });
+  return cycle;
+}
 function eyeRest(){
-  if(erActive)return;
-  erActive=true;
-  $('eyeRest').classList.add('on');
-  var n=22;$('erCount').textContent=n;
-  erIv=setInterval(function(){n--;if($('erCount'))$('erCount').textContent=n;if(n<=0)endEyeRest();},1000);
+  var rest=document.getElementById('eyeRest'),msg=document.getElementById('erMsg'),count=document.getElementById('erCount');
+  if(!rest||ER.active) return;
+  ER.active=true; rest.classList.add('on'); rest.style.pointerEvents='auto'; if(msg) msg.style.opacity='';
+  var pref=erColorPref();
+  ER.cycling=(pref==='cycle'); ER.cycIdx=0; if(!ER.cycling) erSetColor(pref);
+  function endRest(){ if(!ER.active) return;
+    if(ER._iv){clearInterval(ER._iv);ER._iv=null;} if(ER._bt){clearTimeout(ER._bt);ER._bt=null;}
+    if(msg) msg.animate([{opacity:1},{opacity:0}],{duration:600,fill:'forwards'});
+    setTimeout(function(){ rest.classList.remove('on'); rest.onclick=null; ER.active=false; if(msg) msg.style.opacity=''; },650);
+  }
+  rest.onclick=endRest;
+  if(msg) msg.animate([{opacity:0},{opacity:1}],{duration:900,delay:400,fill:'forwards'});
+  function loop(){ if(!ER.active) return; var cyc=erReduce.matches?4000:erBreath(); ER._bt=setTimeout(loop, cyc-350); }
+  loop();
+  var n=22; if(count) count.textContent=n;
+  ER._iv=setInterval(function(){ n--; if(count) count.textContent=n; if(n<=0){ endRest(); } },1000);
 }
-function endEyeRest(){
-  if(!erActive)return;erActive=false;
-  if(erIv){clearInterval(erIv);erIv=null;}
-  $('eyeRest').classList.remove('on');
+
+/* ===== PRICE BOOK (verbatim from CommissionPro, adapted to ap_prefs + fPrice) ===== */
+var priceMode='hair';
+function getPrices(){var p=getPrefs();return (p.prices&&typeof p.prices==='object')?p.prices:{};}
+function savePrices(obj){var p=getPrefs();p.prices=obj;setPrefs(p);}
+function setPrice(name,val){
+  var prices=getPrices();
+  var v=parseFloat(val);
+  if(isNaN(v)||val===''){ delete prices[name]; } else { prices[name]=v; }
+  savePrices(prices);
 }
+function applyAutoPrice(){
+  if(priceManual)return;
+  var prices=getPrices();
+  var list=servicesInField();
+  var sum=0,any=false;
+  list.forEach(function(n){var p=parseFloat(prices[n]);if(!isNaN(p)){sum+=p;any=true;}});
+  if(any){ var cc=$('fPrice'); if(cc){ cc.value=(Math.round(sum*100)/100); } }
+}
+function setPriceMode(m){priceMode=m;document.querySelectorAll('#priceModal .svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.pmode===m);});buildPriceList();}
+function buildPriceList(){
+  var prices=getPrices();
+  var groups=SERVICE_GROUPS.filter(function(g){return g.d===priceMode||g.d==='both';});
+  var html=groups.map(function(g){
+    var items=g.s.slice().sort(function(a,b){return a[0].localeCompare(b[0]);});
+    var priced=items.filter(function(it){return prices[it[0]]!==undefined&&prices[it[0]]!==null&&prices[it[0]]!=='';}).length;
+    var rows=items.map(function(it){
+      var n=it[0];
+      var val=(prices[n]!==undefined&&prices[n]!==null)?prices[n]:'';
+      return '<div class="price-row"><span class="price-name">'+esc(n)+'</span><span class="price-in-wrap"><input class="price-in" type="number" inputmode="decimal" placeholder="0" value="'+val+'" oninput="setPrice(\''+n.replace(/'/g,"\\'")+'\',this.value)"></span></div>';
+    }).join('');
+    var col=catColorOf(g.c);
+    var badge=priced?'<span class="pc-count">'+priced+'</span>':'';
+    return '<div class="price-group"><div class="price-cat-head" onclick="togglePriceCat(this)" style="color:'+col+';border-color:'+col+'66"><span>'+esc(g.c)+badge+'</span><i class="ti ti-chevron-down price-chev"></i></div><div class="price-cat-body" style="display:none">'+rows+'</div></div>';
+  }).join('');
+  var el=$('priceList');if(el)el.innerHTML=html;
+}
+function togglePriceCat(head){
+  var body=head.nextElementSibling;if(!body)return;
+  var open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  head.classList.toggle('open',!open);
+}
+function openPrices(){priceMode=getMode();document.querySelectorAll('#priceModal .svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.pmode===priceMode);});buildPriceList();$('priceModal').classList.add('show');}
+function closePrices(){$('priceModal').classList.remove('show');applyAutoPrice();}
 
 /* ===== toast ===== */
 var toastT;
