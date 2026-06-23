@@ -110,6 +110,12 @@ textarea{min-height:64px;resize:vertical}
 .svc-panel{margin-top:9px}
 .svc-cat{font-size:12px;font-weight:800;color:#b9b9b9;letter-spacing:.3px;margin:14px 0 7px;display:flex;align-items:center;gap:7px}
 .svc-cat:first-child{margin-top:6px}
+.svc-catwrap{margin-top:3px}
+.svc-cat-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;padding:11px 2px;border-bottom:1.5px solid #2c2c2c;user-select:none;-webkit-tap-highlight-color:transparent}
+.svc-chev{font-size:17px;transition:transform .22s ease;opacity:.85}
+.svc-cat-head.open .svc-chev{transform:rotate(180deg)}
+.svc-count{display:inline-block;font-size:10px;font-weight:700;background:rgba(255,255,255,.13);color:inherit;border-radius:20px;padding:2px 8px;margin-left:7px;vertical-align:middle}
+.svc-cat-body{padding:9px 0 4px}
 .qp-hint{font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:0}
 .svc-row{display:flex;flex-wrap:wrap;gap:7px}
 .svc-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;min-height:33px;border-radius:20px;border:1.5px solid #444;background:#1a1a1a;color:#ccc;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
@@ -534,7 +540,12 @@ function buildChips(){
     if(!rest.length)return '';
     var chips=rest.map(function(it){return chipHTML(it[0],it[1],false)}).join('');
     var col=(g.c==='Your services')?'var(--gold)':catColorOf(g.c);
-    return '<div class="svc-cat" style="color:'+col+'">'+esc(g.c)+'</div><div class="svc-row">'+chips+'</div>';
+    return '<div class="svc-catwrap">'+
+      '<div class="svc-cat-head" data-cat="'+esc(g.c)+'" onclick="toggleSvcCat(this)" style="color:'+col+';border-color:'+col+'55">'+
+        '<span>'+esc(g.c)+'<span class="svc-count">'+rest.length+'</span></span>'+
+        '<i class="ti ti-chevron-down svc-chev"></i></div>'+
+      '<div class="svc-cat-body" style="display:none"><div class="svc-row">'+chips+'</div></div>'+
+    '</div>';
   }).join('');
   document.querySelectorAll('.svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.mode===mode)});
   syncChips();
@@ -567,7 +578,25 @@ function demoteFav(name){
     $('svcMore').style.display='block';
     $('svcMoreBtn').innerHTML='<i class="ti ti-chevron-up"></i> Hide services';
   }
+  // open the category it landed in
+  var cat=categoryOf(name);
+  if(cat){
+    document.querySelectorAll('#svcMore .svc-cat-head').forEach(function(hd){
+      if(hd.dataset.cat===cat){hd.nextElementSibling.style.display='block';hd.classList.add('open');}
+    });
+  }
   toast('Moved to More services');
+}
+function categoryOf(name){
+  var found='';
+  groupsForMode(svcMode).forEach(function(g){g.s.forEach(function(it){if(it[0].toLowerCase()===name.toLowerCase())found=g.c;})});
+  return found;
+}
+function toggleSvcCat(head){
+  var body=head.nextElementSibling;if(!body)return;
+  var open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  head.classList.toggle('open',!open);
 }
 function syncChips(){
   var have=servicesInField().map(function(s){return s.toLowerCase()});
