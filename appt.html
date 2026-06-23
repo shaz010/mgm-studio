@@ -233,19 +233,19 @@ textarea{min-height:64px;resize:vertical}
 .mcell.sel{outline:2px solid var(--gold);outline-offset:-2px}
 .mcell-n{font-size:15px;font-weight:700;color:var(--text);line-height:1}
 .mcell.today .mcell-n{color:var(--gold)}
-.mcell-c{font-size:9.5px;font-weight:700;margin-top:3px;line-height:1}
-/* density fills — stepped for clear contrast */
-.mcell.d1{background:#10300c;border-color:#2f6322}
-.mcell.d2{background:#2c6a16;border-color:#5fa82c}
-.mcell.d3{background:#67b81f;border-color:#9fe85a}
-.mcell.d1 .mcell-n{color:#cfeebf}.mcell.d2 .mcell-n{color:#eefcdc}.mcell.d3 .mcell-n{color:#0a2008}
-.mcell.d1 .mcell-c{color:#7fc85a}.mcell.d2 .mcell-c{color:#d4f4a0}.mcell.d3 .mcell-c{color:#16330a}
+.mcell-c{font-size:10.5px;font-weight:800;margin-top:3px;line-height:1}
+/* density fills — wide stepped contrast for instant read */
+.mcell.d1{background:#16280f;border-color:#3a5f27}
+.mcell.d2{background:#3a7a1b;border-color:#6cbb32}
+.mcell.d3{background:#8ee030;border-color:#b6f266}
+.mcell.d1 .mcell-n{color:#bcdca6}.mcell.d2 .mcell-n{color:#f2ffe2}.mcell.d3 .mcell-n{color:#0c2204}
+.mcell.d1 .mcell-c{color:#6fb048}.mcell.d2 .mcell-c{color:#dcf8a8}.mcell.d3 .mcell-c{color:#143006}
 .month-legend{display:flex;justify-content:center;gap:16px;margin-top:14px;font-size:11.5px;color:var(--muted);font-weight:600}
 .month-legend span{display:inline-flex;align-items:center;gap:6px}
-.md-dot{width:11px;height:11px;border-radius:3px;display:inline-block}
-.md-dot.light{background:#10300c;border:1.5px solid #2f6322}
-.md-dot.medium{background:#2c6a16;border:1.5px solid #5fa82c}
-.md-dot.full{background:#67b81f;border:1.5px solid #9fe85a}
+.md-dot{width:12px;height:12px;border-radius:3px;display:inline-block}
+.md-dot.light{background:#16280f;border:1.5px solid #3a5f27}
+.md-dot.medium{background:#3a7a1b;border:1.5px solid #6cbb32}
+.md-dot.full{background:#8ee030;border:1.5px solid #b6f266}
 /* Week grid */
 .grid-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -2px}
 .wg{display:grid;position:relative}
@@ -348,6 +348,41 @@ textarea{min-height:64px;resize:vertical}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .toast i{color:var(--gold)}
 datalist{display:none}
+/* SELF-BOOKING */
+.sb-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#111;border:1px solid var(--border-bright);border-radius:11px;padding:13px 14px;cursor:pointer}
+.sb-tt{font-size:14px;font-weight:700;color:var(--text)}
+.sb-ts{font-size:12px;color:var(--muted);margin-top:2px}
+.sb-toggle-row.on .sb-ts{color:var(--green)}
+.sb-switch{width:46px;height:27px;border-radius:14px;background:#333;flex-shrink:0;position:relative;transition:background .2s}
+.sb-switch span{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:left .2s}
+.sb-toggle-row.on .sb-switch{background:var(--gold)}
+.sb-toggle-row.on .sb-switch span{left:22px}
+.sb-badge{display:inline-block;min-width:18px;padding:0 5px;border-radius:10px;background:var(--red);color:#fff;font-size:11px;font-weight:700;line-height:18px;text-align:center;margin-left:4px}
+.sb-conn{font-size:11.5px;color:var(--muted);margin-top:10px;display:flex;align-items:center;gap:5px}
+.sb-conn i{font-size:13px;color:#888}
+.sb-conn.live i{color:var(--green)}
+.sb-conn.off i{color:#888}
+/* request cards */
+.req-card{background:#111;border:1px solid var(--border-bright);border-radius:12px;padding:13px;margin-bottom:10px}
+.req-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:9px}
+.req-name{font-size:15px;font-weight:700;color:var(--text)}
+.req-meta{font-size:12.5px;color:var(--text2);margin-top:3px;line-height:1.5}
+.req-meta i{font-size:12px;width:14px;color:var(--muted)}
+.req-notes{font-size:12px;color:var(--muted);font-style:italic;margin-top:4px}
+.req-pill{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.req-pill.pending{background:#0d1a2e;border:1px solid #1a3a6a;color:#7eb8ff}
+.req-pill.clash{background:#2a1207;border:1px solid #7a3a1a;color:#ffae6b}
+.req-pill.custom{background:#1f1a2e;border:1px solid #3a2f5a;color:#b89cff}
+.req-acts{display:flex;gap:7px;align-items:center}
+.req-btn{flex:1;text-align:center;font-size:12.5px;font-weight:700;padding:9px;border-radius:9px;cursor:pointer;border:1.5px solid;display:flex;align-items:center;justify-content:center;gap:5px}
+.req-btn.app{background:#0a1f12;border-color:#1a4a2a;color:var(--green)}
+.req-btn.dec{background:transparent;border-color:#7a2a2a;color:var(--red)}
+.req-btn:active{transform:scale(.97)}
+.req-star{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:9px;border:1.5px solid #554000;color:var(--gold);cursor:pointer;flex-shrink:0}
+.req-star.on{background:var(--gold-dim)}
+.req-warn{font-size:11.5px;color:#ffae6b;background:#2a1207;border:1px solid #7a3a1a;border-radius:8px;padding:7px 9px;margin-bottom:8px;line-height:1.4}
+.req-empty{text-align:center;padding:30px 16px;color:var(--muted);font-size:13px}
+.req-empty i{font-size:32px;display:block;margin-bottom:8px;color:#444}
 </style>
 </head>
 <body>
@@ -585,6 +620,20 @@ datalist{display:none}
       <button class="btn btn-sm" style="flex:1" onclick="saveHours()"><i class="ti ti-check"></i> Save hours</button>
     </div>
 
+    <div class="set-sec">Self-booking</div>
+    <div class="sb-toggle-row" onclick="toggleBookingOpen()">
+      <div>
+        <div class="sb-tt">Let clients book themselves</div>
+        <div class="sb-ts" id="sbStatus">Off — your link won't accept bookings</div>
+      </div>
+      <div class="sb-switch" id="sbSwitch"><span></span></div>
+    </div>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openRequests()"><i class="ti ti-inbox"></i> Requests <span class="sb-badge" id="sbReqBadge" style="display:none">0</span></button>
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="copyBookingLink()"><i class="ti ti-link"></i> Copy link</button>
+    </div>
+    <div class="sb-conn" id="sbConn"><i class="ti ti-point"></i> <span id="sbConnTxt">Connecting…</span></div>
+
     <div class="set-sec">Insights</div>
     <div class="btn-row" style="margin-top:0">
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openInsights()"><i class="ti ti-chart-bar"></i> View insights</button>
@@ -625,6 +674,16 @@ datalist{display:none}
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('confirmModal')">Cancel</button>
       <button class="btn btn-sm" id="cfYes" style="flex:1">Confirm</button>
     </div>
+  </div>
+</div>
+
+<!-- REQUESTS SHEET -->
+<div class="modal" id="requestsModal" onclick="if(event.target===this)closeSheet('requestsModal')">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title"><i class="ti ti-inbox" style="font-size:16px;vertical-align:-2px;margin-right:7px;color:var(--gold)"></i>Booking requests</div>
+    <p class="sheet-sub" id="reqSub">Clients' requests land here. Nothing touches your calendar until you approve it.</p>
+    <div id="reqList"></div>
   </div>
 </div>
 
@@ -673,6 +732,8 @@ datalist{display:none}
 
 <div class="toast" id="toast"><i class="ti ti-check"></i><span id="toastMsg">Saved</span></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
 /* ===== service catalog — identical to CommissionPro ===== */
 const SERVICE_GROUPS=[
@@ -1142,6 +1203,7 @@ function commitSave(){
   editingId=null;
   toast(wasEdit?'Updated':'Booked in');
   showView('day');
+  if(typeof publishAvailability==='function')publishAvailability();
 }
 function cancelEdit(){editingId=null;showView('day')}
 function deleteAppt(){
@@ -1149,6 +1211,7 @@ function deleteAppt(){
   askConfirm('Delete this appointment?',function(){
     appts=appts.filter(function(a){return a.id!==editingId});save(APPTS,appts);
     editingId=null;toast('Deleted');showView('day');
+    if(typeof publishAvailability==='function')publishAvailability();
   },{title:'Delete appointment',yesLabel:'Delete',danger:true});
 }
 
@@ -1174,6 +1237,7 @@ function setStatus(s){
   document.querySelectorAll('#statusGrid .status-opt').forEach(function(o){o.classList.toggle('sel',o.dataset.s===s)});
   renderDay();
   toast(s==='done'?'Done · stock updated':stLabel(s));
+  if(typeof publishAvailability==='function')publishAvailability();
 }
 function splitSvc(str){return (str||'').split('+').map(function(x){return x.trim()}).filter(Boolean);}
 function applyStockForAppt(id){
@@ -1404,6 +1468,7 @@ function openSettings(){
   $('setStylist').value=p.stylist||'';
   $('setVersion').textContent='AppointmentPro · '+VERSION;
   renderHours(true);
+  syncBookingToggle();renderReqBadge();
   $('settingsModal').classList.add('show');
 }
 function saveBusiness(){
@@ -1479,6 +1544,7 @@ function saveHours(){
   var p=getPrefs();
   p.hours=hoursDraft.map(function(d){return {open:d.open,start:d.start,end:d.end}});
   setPrefs(p);toast('Hours saved');
+  if(typeof publishAvailability==='function')publishAvailability();
 }
 
 /* ----- backup: export / import ----- */
@@ -1677,6 +1743,202 @@ function toast(msg,warn){
   clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},1900);
 }
 
+/* ===== SELF-BOOKING (Firebase Firestore) ===== */
+var FB_CONFIG={
+  apiKey:"AIzaSyCxPNPOcu-ShSRXDJtwdNBZJ6kFaxQ8apM",
+  authDomain:"telemetry-eagle.firebaseapp.com",
+  projectId:"telemetry-eagle",
+  storageBucket:"telemetry-eagle.firebasestorage.app",
+  messagingSenderId:"216199298094",
+  appId:"1:216199298094:web:665c061ebe07d3c23373bf"
+};
+var SALON_ID='mgm-studio';
+var db=null, fbReady=false, pendingReqs=[], _reqUnsub=null;
+
+function bookingOpen(){return getPrefs().bookingOpen===true;}
+function bookingLink(){return location.origin+location.pathname.replace(/appt\.html$/,'book.html');}
+
+function initFB(){
+  try{
+    if(typeof firebase==='undefined'||!firebase.initializeApp){setConnState('off','Offline — open this on the internet to sync');return false;}
+    if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(FB_CONFIG);
+    db=firebase.firestore();
+    fbReady=true;
+    setConnState('live','Connected — self-booking ready');
+    publishAvailability();
+    listenRequests();
+    return true;
+  }catch(e){console.warn('Firebase init failed',e);setConnState('off','Couldn’t connect — try again later');return false;}
+}
+function setConnState(state,txt){
+  var el=$('sbConn');if(!el)return;
+  el.className='sb-conn '+(state||'');
+  var t=$('sbConnTxt');if(t)t.textContent=txt;
+}
+
+/* ---- availability published for the client page ---- */
+function publishAvailability(){
+  if(!fbReady)return;
+  try{
+    var p=getPrefs();
+    var taken=appts.filter(function(a){return a.status!=='cancelled'&&a.status!=='noshow'})
+      .map(function(a){return {date:a.date,time:a.time,dur:(+a.dur||60)};});
+    var svc=bookableServices();
+    db.collection('public').doc(SALON_ID).set({
+      bookingOpen:bookingOpen(),
+      salonName:getBizName()||'Salon',
+      hours:getHours(),
+      services:svc,
+      taken:taken,
+      updatedAt:Date.now()
+    },{merge:true}).catch(function(e){console.warn('publish',e);});
+  }catch(e){console.warn('publish err',e);}
+}
+function bookableServices(){
+  // favourites first, else first 12 from catalog of current trade
+  var favs=getFavorites();
+  if(favs&&favs.length)return favs.slice(0,18);
+  var names=[];SERVICE_GROUPS.forEach(function(g){g.s.forEach(function(it){names.push(it[0]);});});
+  return names.slice(0,18);
+}
+
+/* ---- live request inbox ---- */
+function listenRequests(){
+  if(!fbReady)return;
+  try{
+    if(_reqUnsub)_reqUnsub();
+    _reqUnsub=db.collection('requests')
+      .where('salon','==',SALON_ID).where('status','==','pending')
+      .onSnapshot(function(snap){
+        pendingReqs=[];
+        snap.forEach(function(d){var r=d.data();r._id=d.id;pendingReqs.push(r);});
+        pendingReqs.sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0);});
+        // auto-confirm trusted clients (still conflict-checked)
+        pendingReqs.forEach(function(r){ if(isTrustedPhone(r.phone)&&!reqConflict(r)){autoApprove(r);} });
+        renderReqBadge();
+        if($('requestsModal')&&$('requestsModal').classList.contains('show'))renderRequests();
+      },function(err){console.warn('listen err',err);});
+  }catch(e){console.warn('listen',e);}
+}
+function renderReqBadge(){
+  var n=pendingReqs.length;
+  var b=$('sbReqBadge');if(b){b.textContent=n;b.style.display=n?'inline-block':'none';}
+}
+
+/* ---- trust ---- */
+function isTrustedPhone(phone){
+  if(!phone)return false;
+  var pn=(''+phone).replace(/\D/g,'');
+  return clients.some(function(c){return c.trusted&&c.phone&&(''+c.phone).replace(/\D/g,'')===pn;});
+}
+function toggleTrust(phone){
+  var pn=(''+phone).replace(/\D/g,'');
+  var c=clients.find(function(x){return x.phone&&(''+x.phone).replace(/\D/g,'')===pn;});
+  if(!c){ // create a light client record so trust can stick
+    c={id:'c'+Date.now(),name:reqNameFor(phone)||'Client',phone:phone,trusted:true};
+    clients.push(c);
+  }else{ c.trusted=!c.trusted; }
+  save(CLIENTS,clients);
+  renderRequests();
+  toast(c.trusted?'Trusted — their bookings auto-confirm':'Trust removed');
+}
+function reqNameFor(phone){var r=pendingReqs.find(function(x){return x.phone===phone;});return r?r.name:'';}
+
+/* ---- conflict check (reuse overlap logic) ---- */
+function reqConflict(r){
+  var dur=(+r.dur||60);
+  var s=slotMins(r.time), e=s+dur;
+  return appts.some(function(a){
+    if(a.date!==r.date)return false;
+    if(a.status==='cancelled'||a.status==='noshow')return false;
+    var as=slotMins(a.time), ae=as+(+a.dur||60);
+    return s<ae && e>as;
+  });
+}
+function slotMins(t){if(!t)return 0;var p=(''+t).split(':');return (+p[0])*60+(+p[1]||0);}
+
+/* ---- approve / decline ---- */
+function autoApprove(r){
+  // add appt, mark request approved
+  appts.push({id:'a'+Date.now()+Math.floor(Math.random()*999),name:r.name,phone:r.phone||'',service:r.service||'',date:r.date,time:r.time,dur:(+r.dur||60),price:(+r.price||0),notes:r.notes||'',status:'confirmed',viaBooking:true});
+  save(APPTS,appts);
+  if(fbReady&&r._id)db.collection('requests').doc(r._id).update({status:'approved'}).catch(function(){});
+  publishAvailability();
+  renderDay();
+}
+function approveRequest(id){
+  var r=pendingReqs.find(function(x){return x._id===id;});if(!r)return;
+  if(reqConflict(r)){
+    askConfirm('That time now clashes with another booking. Approve anyway?',function(){doApprove(r);});
+    return;
+  }
+  doApprove(r);
+}
+function doApprove(r){
+  appts.push({id:'a'+Date.now()+Math.floor(Math.random()*999),name:r.name,phone:r.phone||'',service:r.service||'',date:r.date,time:r.time,dur:(+r.dur||60),price:(+r.price||0),notes:r.notes||'',status:'confirmed',viaBooking:true});
+  save(APPTS,appts);
+  if(fbReady&&r._id)db.collection('requests').doc(r._id).update({status:'approved'}).catch(function(){});
+  pendingReqs=pendingReqs.filter(function(x){return x._id!==r._id;});
+  publishAvailability();renderReqBadge();renderRequests();renderDay();
+  toast('Approved · added to your calendar');
+}
+function declineRequest(id){
+  var r=pendingReqs.find(function(x){return x._id===id;});if(!r)return;
+  if(fbReady&&r._id)db.collection('requests').doc(r._id).update({status:'declined'}).catch(function(){});
+  pendingReqs=pendingReqs.filter(function(x){return x._id!==id;});
+  renderReqBadge();renderRequests();
+  toast('Declined');
+}
+
+/* ---- requests UI ---- */
+function openRequests(){renderRequests();$('requestsModal').classList.add('show');}
+function renderRequests(){
+  var el=$('reqList');if(!el)return;
+  if(!fbReady){el.innerHTML='<div class="req-empty"><i class="ti ti-wifi-off"></i>Not connected yet.<br>Open this page on the internet and turn self-booking on.</div>';return;}
+  if(!pendingReqs.length){el.innerHTML='<div class="req-empty"><i class="ti ti-inbox"></i>No requests right now.<br>Share your booking link to get started.</div>';return;}
+  el.innerHTML=pendingReqs.map(function(r){
+    var clash=reqConflict(r);
+    var trusted=isTrustedPhone(r.phone);
+    var pill=r.custom?'<span class="req-pill custom">Custom time</span>':'<span class="req-pill pending">Pending</span>';
+    return '<div class="req-card">'+
+      (clash?'<div class="req-warn"><i class="ti ti-alert-triangle"></i> This slot now clashes with another booking.</div>':'')+
+      '<div class="req-top"><div><div class="req-name">'+esc(r.name)+'</div>'+
+        '<div class="req-meta"><i class="ti ti-scissors"></i> '+esc(r.service||'—')+'<br>'+
+        '<i class="ti ti-calendar"></i> '+fmtReqDate(r.date)+' · '+to12(r.time)+'<br>'+
+        '<i class="ti ti-phone"></i> '+(r.phone?esc(r.phone):'<span style="color:#888">no number given</span>')+'</div>'+
+        (r.notes?'<div class="req-notes">“'+esc(r.notes)+'”</div>':'')+
+      '</div>'+pill+'</div>'+
+      '<div class="req-acts">'+
+        '<div class="req-btn app" onclick="approveRequest(\''+r._id+'\')"><i class="ti ti-check"></i> Approve</div>'+
+        '<div class="req-btn dec" onclick="declineRequest(\''+r._id+'\')"><i class="ti ti-x"></i> Decline</div>'+
+        '<div class="req-star'+(trusted?' on':'')+'" onclick="toggleTrust(\''+esc(r.phone||'')+'\')" title="Trust this client"><i class="ti ti-star"></i></div>'+
+      '</div></div>';
+  }).join('');
+}
+function fmtReqDate(ds){try{return parseDate(ds).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}catch(e){return ds;}}
+
+/* ---- master toggle ---- */
+function toggleBookingOpen(){
+  var p=getPrefs();p.bookingOpen=!(p.bookingOpen===true);setPrefs(p);
+  syncBookingToggle();
+  publishAvailability();
+  toast(p.bookingOpen?'Self-booking is ON':'Self-booking is OFF');
+}
+function syncBookingToggle(){
+  var on=bookingOpen();
+  var row=$('sbSwitch')?$('sbSwitch').parentNode:null;
+  if(row)row.classList.toggle('on',on);
+  var st=$('sbStatus');if(st)st.textContent=on?'On — clients can request bookings':'Off — your link won’t accept bookings';
+}
+function copyBookingLink(){
+  var link=bookingLink();
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(link).then(function(){toast('Link copied');},function(){promptLink(link);});}
+    else promptLink(link);
+  }catch(e){promptLink(link);}
+}
+function promptLink(link){try{window.prompt('Your booking link — copy and share:',link);}catch(e){toast(link);}}
+
 /* ===== init ===== */
 applyBranding();
 $('cfYes').onclick=function(){
@@ -1684,6 +1946,8 @@ $('cfYes').onclick=function(){
   var fn=_cfYes;_cfYes=null;if(fn)fn();
 };
 renderDay();
+syncBookingToggle();
+initFB();
 </script>
 </body>
 </html>
