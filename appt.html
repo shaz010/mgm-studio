@@ -35,6 +35,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .gear-btn:active{border-color:var(--gold);color:var(--gold)}
 .set-sec{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin:22px 0 10px;padding-top:16px;border-top:1px solid var(--border)}
 .set-version{text-align:center;font-size:11px;color:#666;margin-top:20px;letter-spacing:.3px}
+/* STOCK */
+.stk{display:flex;align-items:center;gap:12px;background:#111;border:1px solid var(--border-bright);border-radius:11px;padding:12px 13px;margin-bottom:9px}
+.stk.low{border-color:var(--bred);background:#180c0c}
+.stk-body{flex:1;min-width:0;cursor:pointer}
+.stk-name{font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stk-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.stk-low-tag{color:var(--red);font-weight:700}
+.stk-qtywrap{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.stk-step{width:34px;height:34px;border-radius:9px;border:1.5px solid var(--border-bright);background:#1a1a1a;color:var(--text);font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1}
+.stk-step:active{border-color:var(--gold);color:var(--gold)}
+.stk-step.minus{color:var(--red)}
+.stk-qty{font-size:18px;font-weight:700;color:var(--gold);min-width:26px;text-align:center}
+.reorder-card{background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:11px;padding:12px 14px;margin-bottom:14px}
+.reorder-head{font-size:13px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.reorder-item{font-size:13px;color:var(--text2);padding:3px 0;display:flex;justify-content:space-between;gap:10px}
+.reorder-item b{color:var(--text)}
 .hrow{display:flex;align-items:center;gap:10px;background:#111;border:1px solid var(--border-bright);border-radius:10px;padding:9px 11px;margin-bottom:7px}
 .hrow-day{font-size:13px;font-weight:600;color:var(--text);width:42px;flex-shrink:0}
 .hrow-toggle{width:42px;height:24px;border-radius:14px;background:#333;border:none;position:relative;cursor:pointer;flex-shrink:0;transition:background .15s}
@@ -196,6 +212,7 @@ datalist{display:none}
     <button class="tab active" data-view="day" onclick="showView('day')"><i class="ti ti-calendar"></i><span>Day</span></button>
     <button class="tab" data-view="add" onclick="openAdd()"><i class="ti ti-calendar-plus"></i><span>Add</span></button>
     <button class="tab" data-view="clients" onclick="showView('clients')"><i class="ti ti-users"></i><span>Clients</span></button>
+    <button class="tab" data-view="stock" onclick="showView('stock')"><i class="ti ti-package"></i><span>Stock</span></button>
   </div>
 
   <!-- DAY VIEW -->
@@ -279,6 +296,16 @@ datalist{display:none}
     <div id="clientsList"></div>
   </div>
 
+  <!-- STOCK VIEW -->
+  <div class="view" id="view-stock">
+    <div class="section-head">
+      <div class="section-title">Stock</div>
+      <button class="btn btn-ghost btn-sm" onclick="openStockSheet()"><i class="ti ti-plus"></i> Add item</button>
+    </div>
+    <div id="reorderStrip"></div>
+    <div id="stockList"></div>
+  </div>
+
 </div>
 
 <!-- APPOINTMENT DETAIL SHEET -->
@@ -319,6 +346,28 @@ datalist{display:none}
   </div>
 </div>
 
+<!-- STOCK ITEM SHEET -->
+<div class="modal" id="stockModal" onclick="if(event.target===this)closeSheet('stockModal')">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title" id="skTitle">Add stock item</div>
+    <label>Item name</label>
+    <input id="skName" placeholder="e.g. 6N color tube, 20vol peroxide, foils">
+    <div class="row2">
+      <div><label>In stock now</label><input id="skQty" type="number" inputmode="numeric" placeholder="0"></div>
+      <div><label>Reorder at</label><input id="skMin" type="number" inputmode="numeric" placeholder="2"></div>
+    </div>
+    <label>Unit <span style="color:#666;font-weight:400">(optional)</span></label>
+    <input id="skUnit" placeholder="tubes, bottles, packs…">
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn" onclick="saveStock()"><i class="ti ti-check"></i> Save item</button>
+    </div>
+    <div class="btn-row" id="skDel" style="display:none">
+      <button class="btn btn-danger btn-sm" style="flex:1" onclick="deleteStock()"><i class="ti ti-trash"></i> Delete item</button>
+    </div>
+  </div>
+</div>
+
 <!-- SETTINGS SHEET -->
 <div class="modal" id="settingsModal" onclick="if(event.target===this)closeSheet('settingsModal')">
   <div class="sheet">
@@ -343,10 +392,10 @@ datalist{display:none}
     </div>
 
     <div class="set-sec">Backup</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Export saves everything (appointments, clients, services, hours) to a file. Import restores it — handy when switching phones.</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Export saves everything (appointments, clients, services, hours) to a file. Import restores it — handy when switching devices.</div>
     <div class="btn-row" style="margin-top:0">
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="exportData()"><i class="ti ti-download"></i> Export backup</button>
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('importFile').click()"><i class="ti ti-upload"></i> Import</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="exportData()"><i class="ti ti-upload"></i> Export backup</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('importFile').click()"><i class="ti ti-download"></i> Import</button>
     </div>
     <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(event)">
 
@@ -405,7 +454,7 @@ var CAT_COLORS={'Cuts & Styling':'#FFC04D','Color':'#FF7AB0','Highlights':'#FFE1
 function catColorOf(c){return CAT_COLORS[c]||'#FFC04D';}
 
 /* ===== storage (ap_ namespace; client shape matches CommissionPro cp_clients) ===== */
-var APPTS='ap_appts', CLIENTS='ap_clients', CUSTOM='ap_custom', PREFS='ap_prefs';
+var APPTS='ap_appts', CLIENTS='ap_clients', CUSTOM='ap_custom', PREFS='ap_prefs', STOCK='ap_stock';
 function load(k,fb){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?fb:v;}catch(e){return fb;}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){alert('Could not save — storage may be full.');}}
 function $(i){return document.getElementById(i)}
@@ -416,7 +465,8 @@ function jsq(n){return String(n).replace(/'/g,"\\'");}
 var appts=load(APPTS,[]);
 var clients=load(CLIENTS,[]);
 var customSvc=load(CUSTOM,[]);   /* [{name,mode}] your own services, kept forever */
-function reload(){appts=load(APPTS,[]);clients=load(CLIENTS,[]);customSvc=load(CUSTOM,[]);}
+var stock=load(STOCK,[]);        /* [{id,name,qty,min,unit,used}] inventory */
+function reload(){appts=load(APPTS,[]);clients=load(CLIENTS,[]);customSvc=load(CUSTOM,[]);stock=load(STOCK,[]);}
 
 /* ===== prefs: favourites + last mode ===== */
 function getPrefs(){return load(PREFS,{});}
@@ -442,6 +492,7 @@ function showView(v){
   document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.view===v)});
   if(v==='day')renderDay();
   if(v==='clients')renderClients();
+  if(v==='stock')renderStock();
   window.scrollTo(0,0);
 }
 
@@ -737,6 +788,86 @@ function deleteClient(){
   },{title:'Delete client',yesLabel:'Delete client',danger:true});
 }
 
+/* ===== STOCK / INVENTORY ===== */
+function renderStock(){
+  reload();
+  var low=stock.filter(function(s){return (+s.qty||0)<=(+s.min||0)});
+  var strip=$('reorderStrip');
+  if(low.length){
+    strip.innerHTML='<div class="reorder-card"><div class="reorder-head"><i class="ti ti-alert-triangle"></i> Reorder ('+low.length+')</div>'+
+      low.map(function(s){
+        var need=Math.max((+s.min||0)*2-(+s.qty||0),1);
+        return '<div class="reorder-item"><span><b>'+esc(s.name)+'</b> — '+(+s.qty||0)+' left</span><span>get ~'+need+(s.unit?' '+esc(s.unit):'')+'</span></div>';
+      }).join('')+'</div>';
+  }else{strip.innerHTML='';}
+
+  if(!stock.length){
+    $('stockList').innerHTML='<div class="empty"><i class="ti ti-package"></i><div class="empty-t">No stock items yet</div><div class="empty-s">Add the supplies you use — color tubes, peroxide, foils — and tick them down as you go. The app flags what to reorder.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openStockSheet()"><i class="ti ti-plus"></i> Add item</button></div>';
+    return;
+  }
+  var sorted=stock.slice().sort(function(a,b){
+    var la=(+a.qty||0)<=(+a.min||0), lb=(+b.qty||0)<=(+b.min||0);
+    if(la!==lb)return la?-1:1;
+    return a.name.localeCompare(b.name);
+  });
+  $('stockList').innerHTML=sorted.map(function(s){
+    var qty=+s.qty||0, min=+s.min||0, isLow=qty<=min;
+    var sub=isLow?'<span class="stk-low-tag">Reorder now</span> · used '+(+s.used||0)+(s.unit?' · '+esc(s.unit):'')
+                 :(s.unit?esc(s.unit)+' · ':'')+'reorder at '+min+' · used '+(+s.used||0);
+    return '<div class="stk'+(isLow?' low':'')+'">'+
+      '<div class="stk-body" onclick="openStockSheet(\''+s.id+'\')"><div class="stk-name">'+esc(s.name)+'</div><div class="stk-sub">'+sub+'</div></div>'+
+      '<div class="stk-qtywrap">'+
+        '<button class="stk-step minus" onclick="useStock(\''+s.id+'\')" aria-label="used one">−</button>'+
+        '<div class="stk-qty">'+qty+'</div>'+
+        '<button class="stk-step" onclick="addStockQty(\''+s.id+'\')" aria-label="add one">+</button>'+
+      '</div></div>';
+  }).join('');
+}
+function useStock(id){           /* used one: qty down, used count up */
+  stock=stock.map(function(s){
+    if(s.id!==id)return s;
+    var q=Math.max((+s.qty||0)-1,0);
+    var u=(+s.used||0)+((+s.qty||0)>0?1:0);
+    return Object.assign({},s,{qty:q,used:u});
+  });
+  save(STOCK,stock);renderStock();
+}
+function addStockQty(id){        /* restocked one */
+  stock=stock.map(function(s){return s.id===id?Object.assign({},s,{qty:(+s.qty||0)+1}):s});
+  save(STOCK,stock);renderStock();
+}
+var stockId=null;
+function openStockSheet(id){
+  stockId=id||null;
+  if(id){
+    var s=stock.find(function(x){return x.id===id});
+    $('skTitle').textContent='Edit item';
+    $('skName').value=s.name;$('skQty').value=s.qty;$('skMin').value=s.min;$('skUnit').value=s.unit||'';
+    $('skDel').style.display='flex';
+  }else{
+    $('skTitle').textContent='Add stock item';
+    $('skName').value='';$('skQty').value='';$('skMin').value='';$('skUnit').value='';
+    $('skDel').style.display='none';
+  }
+  $('stockModal').classList.add('show');
+}
+function saveStock(){
+  var name=$('skName').value.trim();if(!name){toast('Add an item name',1);return;}
+  if(stockId){
+    stock=stock.map(function(s){return s.id===stockId?Object.assign({},s,{name:name,qty:+$('skQty').value||0,min:+$('skMin').value||0,unit:$('skUnit').value.trim()}):s});
+  }else{
+    stock.push({id:uid(),name:name,qty:+$('skQty').value||0,min:+$('skMin').value||0,unit:$('skUnit').value.trim(),used:0});
+  }
+  save(STOCK,stock);closeSheet('stockModal');renderStock();toast('Item saved');
+}
+function deleteStock(){
+  if(!stockId)return;
+  askConfirm('Delete this stock item?',function(){
+    stock=stock.filter(function(s){return s.id!==stockId});save(STOCK,stock);
+    closeSheet('stockModal');renderStock();toast('Deleted');
+  },{title:'Delete item',yesLabel:'Delete item',danger:true});
+}
+
 /* ===== in-app confirm dialog (native confirm() is blocked in some webviews) ===== */
 var _cfYes=null;
 function askConfirm(msg,onYes,opts){
@@ -760,7 +891,7 @@ function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
   {open:true,start:'09:00',end:'18:00'},
   {open:true,start:'09:00',end:'16:00'},
-  {open:false,start:'10:00',end:'15:00'}
+  {open:true,start:'10:00',end:'15:00'}
 ];}
 function getHours(){var p=getPrefs();return (Array.isArray(p.hours)&&p.hours.length===7)?p.hours:defaultHours();}
 function getBizName(){var p=getPrefs();return (p.bizName&&p.bizName.trim())||'MGM Studio';}
@@ -807,7 +938,7 @@ function saveHours(){
 /* ----- backup: export / import ----- */
 function exportData(){
   var data={app:'AppointmentPro',version:VERSION,exported:new Date().toISOString(),
-    appts:load(APPTS,[]),clients:load(CLIENTS,[]),custom:load(CUSTOM,[]),prefs:getPrefs()};
+    appts:load(APPTS,[]),clients:load(CLIENTS,[]),custom:load(CUSTOM,[]),stock:load(STOCK,[]),prefs:getPrefs()};
   try{
     var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     var url=URL.createObjectURL(blob);
@@ -829,6 +960,7 @@ function importData(ev){
       if(Array.isArray(d.appts))save(APPTS,d.appts);
       if(Array.isArray(d.clients))save(CLIENTS,d.clients);
       if(Array.isArray(d.custom))save(CUSTOM,d.custom);
+      if(Array.isArray(d.stock))save(STOCK,d.stock);
       if(d.prefs&&typeof d.prefs==='object')setPrefs(d.prefs);
       reload();applyBranding();svcMode=getMode();
       closeSheet('settingsModal');showView('day');toast('Backup restored');
@@ -854,10 +986,11 @@ function startFresh(){
         localStorage.removeItem(APPTS);
         localStorage.removeItem(CLIENTS);
         localStorage.removeItem(CUSTOM);
+        localStorage.removeItem(STOCK);
         localStorage.removeItem(PREFS);
       }catch(e){}
       /* reset in-memory state instantly — no slow full-page reload */
-      appts=[];clients=[];customSvc=[];
+      appts=[];clients=[];customSvc=[];stock=[];
       svcMode='hair';
       editingId=null;clientId=null;
       viewDate=new Date();viewDate.setHours(12,0,0,0);
