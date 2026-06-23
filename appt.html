@@ -169,6 +169,48 @@ textarea{min-height:64px;resize:vertical}
 
 .daybar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .daybar-nav{width:40px;height:40px;border-radius:10px;border:1.5px solid var(--border-bright);background:#111;color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.weekstrip{display:flex;align-items:center;gap:6px;margin-bottom:12px}
+/* Day/Week segmented toggle */
+.seg{display:flex;gap:4px;background:#0a0a0a;border:1px solid var(--border-bright);border-radius:10px;padding:4px;margin-bottom:12px}
+.seg-btn{flex:1;padding:8px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.seg-btn i{font-size:15px}
+.seg-btn.on{background:var(--bg3);color:var(--gold);border:1px solid var(--gold-border)}
+/* Week list */
+.weekrange{text-align:center;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px}
+.wl-day{margin-bottom:14px}
+.wl-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 2px 8px;border-bottom:1.5px solid #2c2c2c;margin-bottom:8px}
+.wl-head.is-today .wl-dname{color:var(--gold)}
+.wl-dname{font-size:14px;font-weight:800;color:var(--text);letter-spacing:.2px}
+.wl-dname span{font-size:12px;font-weight:600;color:var(--muted);margin-left:6px}
+.wl-dmeta{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
+.wl-dmeta b{color:var(--green)}
+.wl-open{font-size:12.5px;color:#666;padding:4px 2px 10px;font-style:italic}
+.wl-appt{display:flex;align-items:center;gap:11px;background:#111;border:1px solid var(--border-bright);border-radius:10px;padding:10px 12px;margin-bottom:7px;cursor:pointer;transition:border-color .15s}
+.wl-appt:active{border-color:var(--gold)}
+.wl-appt.cancelled,.wl-appt.noshow{opacity:.5}
+.wl-appt.cancelled .wl-name{text-decoration:line-through}
+.wl-bar{width:3px;align-self:stretch;border-radius:3px;background:var(--blue);flex-shrink:0}
+.wl-appt.done .wl-bar{background:var(--green)}
+.wl-appt.cancelled .wl-bar,.wl-appt.noshow .wl-bar{background:var(--red)}
+.wl-time{font-size:13px;font-weight:700;color:var(--text);min-width:62px}
+.wl-info{flex:1;min-width:0}
+.wl-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wl-svc{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.wl-price{font-size:13px;font-weight:700;color:var(--green);white-space:nowrap}
+.wnav{width:26px;height:50px;flex-shrink:0;border-radius:8px;border:1.5px solid var(--border-bright);background:#111;color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer}
+.wnav:active{border-color:var(--gold);color:var(--gold)}
+.wcells{display:flex;gap:4px;flex:1;min-width:0}
+.wcell{flex:1;min-width:0;background:#111;border:1.5px solid var(--border-bright);border-radius:9px;padding:6px 0 4px;text-align:center;cursor:pointer;transition:transform .12s,border-color .15s,background .15s}
+.wcell:active{transform:scale(.94)}
+.wcell.sel{background:var(--gold-dim);border-color:var(--gold)}
+.wcell.past{opacity:.5}
+.wcell-d{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.wcell.sel .wcell-d{color:var(--gold)}
+.wcell-n{font-size:15px;font-weight:700;color:var(--text);margin-top:1px;line-height:1.1}
+.wcell.today .wcell-n{color:var(--gold)}
+.wcell.sel .wcell-n{color:var(--gold)}
+.wcell-dot{height:7px;margin-top:3px;display:flex;justify-content:center;align-items:center}
+.wcell-dot span{width:5px;height:5px;border-radius:50%;background:var(--gold);display:block}
 .daybar-nav:active{border-color:var(--gold)}
 .daybar-date{text-align:center;flex:1}
 .daybar-day{font-size:17px;font-weight:700;color:var(--text)}
@@ -269,21 +311,32 @@ datalist{display:none}
 
   <!-- DAY VIEW -->
   <div class="view active" id="view-day">
-    <div class="daybar">
-      <div class="daybar-nav" onclick="moveDay(-1)"><i class="ti ti-chevron-left"></i></div>
-      <div class="daybar-date">
-        <div class="daybar-day" id="dayLabel">Today</div>
-        <div class="daybar-full" id="dayFull"></div>
-        <span class="daybar-today" id="jumpToday" onclick="goToday()" style="display:none">Jump to today</span>
+    <div class="seg" id="daySeg">
+      <button class="seg-btn on" data-m="day" onclick="setDayMode('day')"><i class="ti ti-calendar"></i> Day</button>
+      <button class="seg-btn" data-m="week" onclick="setDayMode('week')"><i class="ti ti-calendar-week"></i> Week</button>
+    </div>
+    <div class="weekstrip" id="weekStrip"></div>
+    <div id="dayPane">
+      <div class="daybar">
+        <div class="daybar-nav" onclick="moveDay(-1)"><i class="ti ti-chevron-left"></i></div>
+        <div class="daybar-date">
+          <div class="daybar-day" id="dayLabel">Today</div>
+          <div class="daybar-full" id="dayFull"></div>
+          <span class="daybar-today" id="jumpToday" onclick="goToday()" style="display:none">Jump to today</span>
+        </div>
+        <div class="daybar-nav" onclick="moveDay(1)"><i class="ti ti-chevron-right"></i></div>
       </div>
-      <div class="daybar-nav" onclick="moveDay(1)"><i class="ti ti-chevron-right"></i></div>
+      <div class="day-stats">
+        <div class="dstat"><div class="dstat-v" id="statCount">0</div><div class="dstat-l">Booked</div></div>
+        <div class="dstat"><div class="dstat-v" id="statHours">0h</div><div class="dstat-l">Chair time</div></div>
+        <div class="dstat"><div class="dstat-v" id="statRev">$0</div><div class="dstat-l">Expected</div></div>
+      </div>
+      <div id="dayList"></div>
     </div>
-    <div class="day-stats">
-      <div class="dstat"><div class="dstat-v" id="statCount">0</div><div class="dstat-l">Booked</div></div>
-      <div class="dstat"><div class="dstat-v" id="statHours">0h</div><div class="dstat-l">Chair time</div></div>
-      <div class="dstat"><div class="dstat-v" id="statRev">$0</div><div class="dstat-l">Expected</div></div>
+    <div id="weekPane" style="display:none">
+      <div class="weekrange" id="weekRange"></div>
+      <div id="weekList"></div>
     </div>
-    <div id="dayList"></div>
   </div>
 
   <!-- ADD/EDIT VIEW -->
@@ -713,8 +766,72 @@ function addCustom(){
 /* ===== DAY VIEW ===== */
 function moveDay(n){viewDate.setDate(viewDate.getDate()+n);renderDay()}
 function goToday(){viewDate=new Date();viewDate.setHours(12,0,0,0);renderDay()}
+function startOfWeek(d){var x=new Date(d);x.setHours(12,0,0,0);var dow=(x.getDay()+6)%7;x.setDate(x.getDate()-dow);return x;}
+function pickDay(ds){viewDate=parseDate(ds);renderDay();}
+function moveWeek(n){viewDate.setDate(viewDate.getDate()+n*7);renderDay();}
+function renderWeekStrip(){
+  var sow=startOfWeek(viewDate);
+  var sel=ymd(viewDate), today=todayStr();
+  var L=['M','T','W','T','F','S','S'];
+  var cells='';
+  for(var i=0;i<7;i++){
+    var d=new Date(sow);d.setDate(sow.getDate()+i);
+    var ds=ymd(d);
+    var cnt=appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'}).length;
+    var cls='wcell'+(ds===sel?' sel':'')+(ds===today?' today':'')+(ds<today?' past':'');
+    cells+='<div class="'+cls+'" onclick="pickDay(\''+ds+'\')">'+
+      '<div class="wcell-d">'+L[i]+'</div>'+
+      '<div class="wcell-n">'+d.getDate()+'</div>'+
+      '<div class="wcell-dot">'+(cnt?'<span></span>':'')+'</div></div>';
+  }
+  var el=$('weekStrip');
+  if(el)el.innerHTML='<div class="wnav" onclick="moveWeek(-1)"><i class="ti ti-chevron-left"></i></div><div class="wcells">'+cells+'</div><div class="wnav" onclick="moveWeek(1)"><i class="ti ti-chevron-right"></i></div>';
+}
+var dayMode='day';
+function setDayMode(m){
+  dayMode=m;
+  document.querySelectorAll('#daySeg .seg-btn').forEach(function(b){b.classList.toggle('on',b.dataset.m===m)});
+  renderDay();
+}
+function renderWeekList(){
+  var sow=startOfWeek(viewDate), today=todayStr();
+  var DNAMES=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  var end=new Date(sow);end.setDate(sow.getDate()+6);
+  $('weekRange').textContent=sow.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  var html='';
+  for(var i=0;i<7;i++){
+    var d=new Date(sow);d.setDate(sow.getDate()+i);
+    var ds=ymd(d), isToday=ds===today;
+    var list=appts.filter(function(a){return a.date===ds}).sort(function(a,b){return (a.time||'').localeCompare(b.time||'')});
+    var active=list.filter(function(a){return a.status!=='cancelled'&&a.status!=='noshow'});
+    var rev=active.reduce(function(s,a){return s+(+a.price||0)},0);
+    var meta=active.length?('<b>'+active.length+'</b> booked · '+fmt$(rev)):'open';
+    var rows=list.length?list.map(function(a){
+      var st=a.status||'confirmed';
+      return '<div class="wl-appt '+st+'" onclick="openSheet(\''+a.id+'\')">'+
+        '<div class="wl-bar"></div>'+
+        '<div class="wl-time">'+to12(a.time)+'</div>'+
+        '<div class="wl-info"><div class="wl-name">'+esc(a.name)+'</div><div class="wl-svc">'+esc(a.service||'—')+'</div></div>'+
+        '<div class="wl-price">'+fmt$(a.price)+'</div></div>';
+    }).join(''):'<div class="wl-open">Open — no bookings</div>';
+    html+='<div class="wl-day">'+
+      '<div class="wl-head'+(isToday?' is-today':'')+'"><div class="wl-dname">'+DNAMES[i]+'<span>'+d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+(isToday?' · today':'')+'</span></div><div class="wl-dmeta">'+meta+'</div></div>'+
+      rows+'</div>';
+  }
+  $('weekList').innerHTML=html;
+}
 function renderDay(){
   reload();
+  renderWeekStrip();
+  if(dayMode==='week'){
+    $('dayPane').style.display='none';
+    $('weekPane').style.display='block';
+    renderWeekList();
+    window.scrollTo(0,0);
+    return;
+  }
+  $('dayPane').style.display='block';
+  $('weekPane').style.display='none';
   var ds=ymd(viewDate), isToday=ds===todayStr();
   var wd=viewDate.toLocaleDateString('en-US',{weekday:'long'});
   var full=viewDate.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
