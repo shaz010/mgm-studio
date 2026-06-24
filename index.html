@@ -189,9 +189,15 @@ footer .cr{font-size:13px;color:var(--mut2)}
   *{transition:none!important;scroll-behavior:auto}
   .rv{opacity:1;transform:none}
 }
+.update-bar{position:fixed;left:50%;top:14px;transform:translateX(-50%) translateY(-160%);z-index:99999;background:var(--gold);color:#1a1208;font-weight:800;font-size:13.5px;padding:11px 18px;border-radius:30px;box-shadow:0 8px 24px rgba(0,0,0,.55);cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+.update-bar.show{transform:translateX(-50%) translateY(0)}
+.update-bar:active{transform:translateX(-50%) translateY(0) scale(.96)}
 </style>
 </head>
 <body>
+
+<div id="updateBar" class="update-bar"><span style="font-size:15px">&#8635;</span> New version ready — tap to update</div>
+
 <div class="glowbg"></div>
 
 <nav class="nav">
@@ -375,6 +381,7 @@ footer .cr{font-size:13px;color:var(--mut2)}
 
 <script>
 (function(){
+  var VERSION='cp-sales v1.0';
   var rm=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
   // reveal on scroll
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.14});
@@ -416,6 +423,21 @@ footer .cr{font-size:13px;color:var(--mut2)}
     document.querySelector('.caps').addEventListener('mouseleave',start);
     show(0); start();
   }
+  // auto-detect a fresh upload — tap-to-update bar, never auto-reloads
+  var ub=document.getElementById('updateBar');
+  if(ub){ ub.addEventListener('click',function(){ location.replace(location.pathname+'?v='+Date.now()); }); }
+  function checkForUpdate(){
+    try{
+      fetch(location.pathname+'?_t='+Date.now(),{cache:'no-store'})
+        .then(function(r){return r.text();})
+        .then(function(txt){
+          var m=txt.match(/var VERSION='([^']+)'/);
+          if(m&&m[1]&&m[1]!==VERSION&&ub){ ub.classList.add('show'); }
+        }).catch(function(){});
+    }catch(e){}
+  }
+  setTimeout(checkForUpdate,8000);
+  setInterval(checkForUpdate,60000);
 })();
 </script>
 </body>
