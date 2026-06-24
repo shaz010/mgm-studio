@@ -1860,30 +1860,45 @@ function reqConflict(r){
 function slotMins(t){if(!t)return 0;var p=(''+t).split(':');return (+p[0])*60+(+p[1]||0);}
 
 /* ---- approve / decline ---- */
-function autoApprove(r){
-  // add appt, mark request approved
-  appts.push({id:'a'+Date.now()+Math.floor(Math.random()*999),name:r.name,phone:r.phone||'',service:r.service||'',date:r.date,time:r.time,dur:(+r.dur||60),price:(+r.price||0),notes:r.notes||'',status:'confirmed',viaBooking:true});
+function commitApproved(r,silent){
+  var noteParts=[];
+  if(r.notes)noteParts.push(r.notes);
+  if(r.hair)noteParts.push('Hair — '+r.hair);
+  appts.push({id:'a'+Date.now()+Math.floor(Math.random()*999),name:r.name,phone:r.phone||'',service:r.service||'',date:r.date,time:r.time,dur:(+r.dur||60),price:(+r.price||0),notes:noteParts.join(' | '),status:'confirmed',viaBooking:true});
   save(APPTS,appts);
+  addClientFromBooking(r);
   if(fbReady&&r._id)db.collection('requests').doc(r._id).update({status:'approved'}).catch(function(){});
-  publishAvailability();
+  pendingReqs=pendingReqs.filter(function(x){return x._id!==r._id;});
+  if(!silent){
+    viewDate=parseDate(r.date);dayMode='day';
+    document.querySelectorAll('#daySeg .seg-btn').forEach(function(b){b.classList.toggle('on',b.dataset.m==='day')});
+    closeSheet('requestsModal');
+    toast('Approved · added to '+fmtReqDate(r.date));
+  }
+  publishAvailability();renderReqBadge();renderRequests();
+  if(typeof renderClients==='function')renderClients();
   renderDay();
 }
+function addClientFromBooking(r){
+  var pn=(''+(r.phone||'')).replace(/\D/g,'');
+  var existing=clients.find(function(c){
+    if(pn&&c.phone&&(''+c.phone).replace(/\D/g,'')===pn)return true;
+    return c.name&&r.name&&c.name.toLowerCase()===r.name.toLowerCase();
+  });
+  if(existing){ if(r.phone&&!existing.phone)existing.phone=r.phone; }
+  else{ clients.push({id:'c'+Date.now()+Math.floor(Math.random()*999),name:r.name||'Client',phone:r.phone||'',email:'',notes:r.hair?('Hair: '+r.hair):''}); }
+  save(CLIENTS,clients);
+}
+function autoApprove(r){commitApproved(r,true);}
 function approveRequest(id){
   var r=pendingReqs.find(function(x){return x._id===id;});if(!r)return;
   if(reqConflict(r)){
-    askConfirm('That time now clashes with another booking. Approve anyway?',function(){doApprove(r);});
+    askConfirm('That time now clashes with another booking. Approve anyway?',function(){commitApproved(r,false);});
     return;
   }
-  doApprove(r);
+  commitApproved(r,false);
 }
-function doApprove(r){
-  appts.push({id:'a'+Date.now()+Math.floor(Math.random()*999),name:r.name,phone:r.phone||'',service:r.service||'',date:r.date,time:r.time,dur:(+r.dur||60),price:(+r.price||0),notes:r.notes||'',status:'confirmed',viaBooking:true});
-  save(APPTS,appts);
-  if(fbReady&&r._id)db.collection('requests').doc(r._id).update({status:'approved'}).catch(function(){});
-  pendingReqs=pendingReqs.filter(function(x){return x._id!==r._id;});
-  publishAvailability();renderReqBadge();renderRequests();renderDay();
-  toast('Approved · added to your calendar');
-}
+function doApprove(r){commitApproved(r,false);}
 function declineRequest(id){
   var r=pendingReqs.find(function(x){return x._id===id;});if(!r)return;
   if(fbReady&&r._id)db.collection('requests').doc(r._id).update({status:'declined'}).catch(function(){});
