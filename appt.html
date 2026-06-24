@@ -1554,7 +1554,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v1.5 · hair pricing';
+var VERSION='v1.6 · hair pricing';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -1682,6 +1682,7 @@ function exportData(){
     toast('Backup exported');
   }catch(e){toast('Export failed',1);}
 }
+var _importing=false;
 function importData(ev){
   var file=ev.target.files&&ev.target.files[0];if(!file){return;}
   var reader=new FileReader();
@@ -1690,13 +1691,22 @@ function importData(ev){
     try{d=JSON.parse(e.target.result);}catch(err){toast('Could not read that file',1);ev.target.value='';return;}
     if(!d||d.app!=='AppointmentPro'){toast('Not an AppointmentPro backup',1);ev.target.value='';return;}
     askConfirm('Import this backup? It replaces everything currently on this device.',function(){
-      if(Array.isArray(d.appts))save(APPTS,d.appts);
-      if(Array.isArray(d.clients))save(CLIENTS,d.clients);
-      if(Array.isArray(d.custom))save(CUSTOM,d.custom);
-      if(Array.isArray(d.stock))save(STOCK,d.stock);
-      if(d.prefs&&typeof d.prefs==='object')setPrefs(d.prefs);
-      reload();applyBranding();svcMode=getMode();
-      closeSheet('settingsModal');showView('day');toast('Backup restored');
+      if(_importing)return;
+      _importing=true;
+      toast('Restoring…');
+      try{
+        if(Array.isArray(d.appts))save(APPTS,d.appts);
+        if(Array.isArray(d.clients))save(CLIENTS,d.clients);
+        if(Array.isArray(d.custom))save(CUSTOM,d.custom);
+        if(Array.isArray(d.stock))save(STOCK,d.stock);
+        if(d.prefs&&typeof d.prefs==='object')setPrefs(d.prefs);
+        reload();applyBranding();svcMode=getMode();
+        closeSheet('settingsModal');showView('day');
+        toast('Backup restored');
+      }catch(err){toast('Import failed',1);}
+      // refresh the booking page's availability in the background — never blocks the UI
+      setTimeout(function(){try{publishAvailability();}catch(_){}},60);
+      setTimeout(function(){_importing=false;},400);
     },{title:'Import backup',yesLabel:'Import & replace',danger:true});
     ev.target.value='';
   };
