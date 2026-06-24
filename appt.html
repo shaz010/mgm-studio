@@ -1181,7 +1181,7 @@ function fillClientList(){
 }
 function onNamePick(){
   var n=$('fName').value.trim().toLowerCase();
-  var c=clients.find(function(x){return x.name.toLowerCase()===n});
+  var c=clients.find(function(x){return x.name&&x.name.toLowerCase()===n});
   if(c&&!$('fPhone').value)$('fPhone').value=c.phone||'';
 }
 function checkConflict(){
@@ -1231,7 +1231,7 @@ function commitSave(){
   if(editingId){appts=appts.map(function(a){return a.id===editingId?rec:a})}
   else{appts.push(rec)}
   save(APPTS,appts);
-  if(name && !clients.find(function(c){return c.name.toLowerCase()===name.toLowerCase()})){
+  if(name && !clients.find(function(c){return c.name&&c.name.toLowerCase()===name.toLowerCase()})){
     clients.push({id:uid(),name:name,phone:rec.phone,email:''});save(CLIENTS,clients);
   }
   viewDate=parseDate(date);
@@ -1340,9 +1340,9 @@ function renderClients(){
     $('clientsList').innerHTML='<div class="empty"><i class="ti ti-user-question"></i><div class="empty-t">No clients yet</div><div class="empty-s">Clients are added automatically when you book them — or add one now.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openClientSheet()"><i class="ti ti-user-plus"></i> Add client</button></div>';
     return;
   }
-  var sorted=clients.slice().sort(function(a,b){return a.name.localeCompare(b.name)});
+  var sorted=clients.slice().sort(function(a,b){return (a.name||'').localeCompare(b.name||'')});
   $('clientsList').innerHTML=sorted.map(function(c){
-    var count=appts.filter(function(a){return a.name.toLowerCase()===c.name.toLowerCase()&&a.status!=='cancelled'}).length;
+    var count=appts.filter(function(a){return a.name&&c.name&&a.name.toLowerCase()===c.name.toLowerCase()&&a.status!=='cancelled'}).length;
     return '<div class="lrow" onclick="openClientSheet(\''+c.id+'\')">'+
       '<div class="lrow-av">'+esc((c.name[0]||'?').toUpperCase())+'</div>'+
       '<div class="lrow-body"><div class="lrow-name">'+esc(c.name)+'</div><div class="lrow-sub">'+(c.phone?esc(c.phone):'No phone')+'</div></div>'+
@@ -1398,7 +1398,7 @@ function renderStock(){
   var sorted=stock.slice().sort(function(a,b){
     var la=(+a.qty||0)<=(+a.min||0), lb=(+b.qty||0)<=(+b.min||0);
     if(la!==lb)return la?-1:1;
-    return a.name.localeCompare(b.name);
+    return (a.name||'').localeCompare(b.name||'');
   });
   $('stockList').innerHTML=sorted.map(function(s){
     var qty=+s.qty||0, min=+s.min||0, isLow=qty<=min;
