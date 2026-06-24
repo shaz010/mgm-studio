@@ -55,6 +55,16 @@ textarea{resize:vertical;min-height:60px}
 .cs-sub{font-size:14px;color:var(--muted);line-height:1.6;max-width:340px}
 .empty-slots{text-align:center;color:var(--muted);font-size:13px;padding:18px;font-style:italic}
 .hidden{display:none}
+/* My Hair */
+.returning-btn{font-size:11px;font-weight:600;color:var(--muted);background:transparent;border:1.5px solid var(--border-bright);border-radius:20px;padding:5px 11px;cursor:pointer;display:flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0}
+.returning-btn.on{color:var(--gold);border-color:var(--gold);background:var(--gold-dim)}
+#hairWrap.collapsed{display:none}
+.hair-hint{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 14px}
+.hair-row{margin-bottom:13px}
+.hair-lbl{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:7px}
+.hchip{font-size:13px;font-weight:600;padding:7px 13px;border-radius:20px;background:#1a1a1a;border:1.5px solid var(--border-bright);color:var(--text2);cursor:pointer;transition:all .15s}
+.hchip.sel{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.hchip:active{transform:scale(.95)}
 .spin{width:34px;height:34px;border:3px solid var(--border-bright);border-top-color:var(--gold);border-radius:50%;animation:sp 0.8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 </style>
@@ -111,6 +121,57 @@ textarea{resize:vertical;min-height:60px}
   <div class="custom-wrap" id="customWrap">
     <label>Preferred time</label>
     <input type="text" id="customTime" placeholder="e.g. Tuesday after 6pm, or 5:15">
+  </div>
+
+  <div class="sec" style="display:flex;align-items:center;justify-content:space-between">
+    <span>My hair</span>
+    <button class="returning-btn" id="returningBtn" onclick="toggleReturning()"><i class="ti ti-user-check"></i> I've been here before</button>
+  </div>
+  <div id="hairWrap">
+    <p class="hair-hint">A quick picture of your hair helps your stylist set the right time &amp; price. Tap all that apply.</p>
+    <div class="hair-row">
+      <div class="hair-lbl">Length</div>
+      <div class="chips" data-hair="length">
+        <div class="hchip" onclick="toggleHair(this)">Short</div>
+        <div class="hchip" onclick="toggleHair(this)">Shoulder</div>
+        <div class="hchip" onclick="toggleHair(this)">Long</div>
+        <div class="hchip" onclick="toggleHair(this)">Extra long</div>
+      </div>
+    </div>
+    <div class="hair-row">
+      <div class="hair-lbl">Thickness</div>
+      <div class="chips" data-hair="thickness">
+        <div class="hchip" onclick="toggleHair(this)">Thick</div>
+        <div class="hchip" onclick="toggleHair(this)">Med-thick</div>
+        <div class="hchip" onclick="toggleHair(this)">Thin</div>
+      </div>
+    </div>
+    <div class="hair-row">
+      <div class="hair-lbl">Colour now</div>
+      <div class="chips" data-hair="colour">
+        <div class="hchip" onclick="toggleHair(this)">Dark</div>
+        <div class="hchip" onclick="toggleHair(this)">Brown</div>
+        <div class="hchip" onclick="toggleHair(this)">Light</div>
+      </div>
+    </div>
+    <div class="hair-row">
+      <div class="hair-lbl">Grey</div>
+      <div class="chips" data-hair="grey">
+        <div class="hchip" onclick="toggleHair(this)">A little grey</div>
+        <div class="hchip" onclick="toggleHair(this)">Partially grey</div>
+        <div class="hchip" onclick="toggleHair(this)">Fully grey</div>
+      </div>
+    </div>
+    <div class="hair-row">
+      <div class="hair-lbl">Previously had <span style="color:var(--muted);font-weight:400">(important)</span></div>
+      <div class="chips" data-hair="history">
+        <div class="hchip" onclick="toggleHair(this)">Coloured</div>
+        <div class="hchip" onclick="toggleHair(this)">Highlighted</div>
+        <div class="hchip" onclick="toggleHair(this)">Permed</div>
+      </div>
+    </div>
+    <label>Anything else? <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+    <textarea id="fHairNotes" placeholder="e.g. recently box-dyed, sensitive scalp, going much lighter"></textarea>
   </div>
 
   <div class="sec">Your details</div>
@@ -234,6 +295,27 @@ function pickTime(el){
   document.querySelectorAll('#slotGrid .slot').forEach(function(c){c.classList.toggle('sel',c===el);});
   updateBtn();
 }
+/* ---- My Hair ---- */
+var returning=false;
+function toggleHair(el){el.classList.toggle('sel');}
+function toggleReturning(){
+  returning=!returning;
+  $('returningBtn').classList.toggle('on',returning);
+  $('hairWrap').classList.toggle('collapsed',returning);
+}
+function collectHair(){
+  if(returning)return '';
+  var parts=[];
+  document.querySelectorAll('#hairWrap [data-hair]').forEach(function(row){
+    var picks=[];
+    row.querySelectorAll('.hchip.sel').forEach(function(c){picks.push(c.textContent.trim());});
+    if(picks.length)parts.push(cap(row.dataset.hair)+': '+picks.join(', '));
+  });
+  var extra=($('fHairNotes').value||'').trim();
+  if(extra)parts.push('Note: '+extra);
+  return parts.join(' | ');
+}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 function toggleCustom(){
   customMode=!customMode;
   $('customWrap').classList.toggle('on',customMode);
@@ -261,7 +343,7 @@ function submitBooking(){
   var rec={
     salon:SALON_ID,name:name,phone:phone,service:selSvc,
     date:selDate,time:time||'09:00',dur:60,price:0,
-    notes:notesFull,custom:!!isCustom,status:'pending',createdAt:Date.now()
+    notes:notesFull,hair:collectHair(),custom:!!isCustom,status:'pending',createdAt:Date.now()
   };
   db.collection('requests').add(rec).then(function(){
     var when=isCustom?$('customTime').value.trim():(to12(selTime)+' on '+new Date(selDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}));
@@ -274,8 +356,12 @@ function submitBooking(){
   });
 }
 function resetForm(){
-  selSvc='';selTime='';customMode=false;
+  selSvc='';selTime='';customMode=false;returning=false;
   $('fName').value='';$('fPhone').value='';$('fNotes').value='';$('customTime').value='';
+  if($('fHairNotes'))$('fHairNotes').value='';
+  document.querySelectorAll('#hairWrap .hchip.sel').forEach(function(c){c.classList.remove('sel');});
+  if($('returningBtn'))$('returningBtn').classList.remove('on');
+  if($('hairWrap'))$('hairWrap').classList.remove('collapsed');
   $('bookBtn').innerHTML='<i class="ti ti-send"></i> Request booking';$('bookBtn').disabled=true;
   loadPending(function(){buildForm();show('formView');});
 }
