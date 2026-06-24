@@ -1591,7 +1591,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v2.2 · auto-update';
+var VERSION='v2.3 · multi-svc price';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -1886,6 +1886,19 @@ function hairPrice(service,hd){
   if(hd.history&&hd.history.length){addS+=M.historyAdd;why.push('prev. treated');}
   return {price:Math.round(base*mult+addS),base:base,applied:true,why:why};
 }
+/* sum hair-aware pricing across a multi-service string ("A + B"); single service is unchanged */
+function combinedHairPrice(service,hd){
+  var parts=splitSvc(service);
+  if(parts.length<=1)return hairPrice(service,hd);
+  var price=0,base=0,applied=false,why=[];
+  parts.forEach(function(p){
+    var r=hairPrice(p,hd);
+    price+=r.price;base+=r.base;
+    if(r.applied)applied=true;
+    r.why.forEach(function(w){if(why.indexOf(w)<0)why.push(w);});
+  });
+  return {price:price,base:base,applied:applied,why:why};
+}
 function applyAutoPrice(){
   if(priceManual)return;
   var prices=getPrices();
@@ -2060,7 +2073,7 @@ function commitApproved(r,silent){
   var noteParts=[];
   if(r.notes)noteParts.push(r.notes);
   if(r.hair)noteParts.push('Hair — '+r.hair);
-  var hp=hairPrice(r.service,r.hairData);
+  var hp=combinedHairPrice(r.service,r.hairData);
   var apptPrice=(+r.price>0)?(+r.price):hp.price;
   appts.push({id:'a'+Date.now()+Math.floor(Math.random()*999),name:r.name,phone:r.phone||'',service:r.service||'',date:r.date,time:r.time,dur:(+r.dur||60),price:apptPrice,notes:noteParts.join(' | '),status:'confirmed',viaBooking:true});
   save(APPTS,appts);
@@ -2115,7 +2128,7 @@ function renderRequests(){
   el.innerHTML=pendingReqs.map(function(r){
     var clash=reqConflict(r);
     var trusted=isTrustedPhone(r.phone);
-    var hp=hairPrice(r.service,r.hairData);
+    var hp=combinedHairPrice(r.service,r.hairData);
     var pill=r.custom?'<span class="req-pill custom">Custom time</span>':'<span class="req-pill pending">Pending</span>';
     if(r.customSvc)pill='<span class="req-pill custom">Off-menu service</span>'+pill;
     return '<div class="req-card">'+

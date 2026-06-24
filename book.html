@@ -10,7 +10,7 @@
 :root{--bg:#0a0a0a;--bg2:#141414;--bg3:#1c1c1c;--gold:#FFB800;--gold-dim:rgba(255,184,0,.13);--gold-border:rgba(255,184,0,.4);--text:#f5f5f5;--text2:#cfcfcf;--muted:#8a8a8a;--border:#222;--border-bright:#333;--green:#5ddb7c;--red:#ff7070;--blue:#7eb8ff}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.5;padding:0 0 40px}
-.wrap{max-width:560px;margin:0 auto;padding:16px 15px}
+.wrap{width:100%;box-sizing:border-box;margin:0;padding:16px max(16px,env(safe-area-inset-left)) 16px max(16px,env(safe-area-inset-right))}
 .brand{display:flex;align-items:center;gap:12px;margin:8px 0 18px}
 .brand-ic{width:40px;height:40px;background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:21px;flex-shrink:0}
 .brand-name{font-size:18px;font-weight:700}
@@ -19,6 +19,11 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{font-size:13px;font-weight:600;padding:8px 13px;border-radius:20px;background:#1a1a1a;border:1.5px solid var(--border-bright);color:var(--text2);cursor:pointer;transition:all .15s}
 .chip.sel{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.svc-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.svc-pills:empty{display:none}
+.svc-pill{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;padding:7px 10px 7px 12px;border-radius:20px;background:var(--gold-dim);border:1.5px solid var(--gold);color:var(--gold)}
+.svc-pill span.x{cursor:pointer;font-weight:800;font-size:15px;line-height:1;opacity:.8}
+.svc-pill span.x:active{opacity:1}
 .chip:active{transform:scale(.95)}
 .dates{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
 .datecell{flex:0 0 auto;width:58px;background:#111;border:1.5px solid var(--border-bright);border-radius:11px;padding:8px 0;text-align:center;cursor:pointer;transition:all .15s}
@@ -120,6 +125,7 @@ textarea{resize:vertical;min-height:60px}
   <div class="custom-wrap" id="otherSvcWrap">
     <input type="text" id="otherSvc" placeholder="e.g. scalp treatment, colour correction" oninput="onOtherSvc()">
   </div>
+  <div class="svc-pills" id="svcPills"></div>
 
   <div class="sec">Pick a day</div>
   <div class="dates" id="dateRow"></div>
@@ -209,7 +215,7 @@ var FB_CONFIG={
 var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 
-var db=null, info=null, pendingMap={}, selSvc='', selDate='', selTime='', customMode=false, otherSvcMode=false;
+var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false;
 
 function $(id){return document.getElementById(id);}
 var VERSION='book v1.0';
@@ -284,23 +290,41 @@ function buildForm(){
   $('dateRow').innerHTML=row;
   if(first){selDate=first;markSel('dateRow',first,'d');renderSlots();}
 }
+function allSvcs(){
+  var arr=selSvcArr.slice();
+  var c=$('otherSvc')?$('otherSvc').value.trim():'';
+  if(otherSvcMode && c) arr.push(c);
+  return arr;
+}
+function renderSvcPills(){
+  var el=$('svcPills'); if(!el) return;
+  el.innerHTML=selSvcArr.map(function(s){
+    return '<span class="svc-pill">'+esc(s)+'<span class="x" onclick="removeSvc(\''+esc(s).replace(/'/g,"\\'")+'\')">\u00d7</span></span>';
+  }).join('');
+}
 function pickSvc(el){
-  selSvc=el.dataset.s;
-  // picking a chip clears the custom-service entry
-  otherSvcMode=false;$('otherSvcWrap').classList.remove('on');$('otherSvcBtn').classList.remove('on');$('otherSvc').value='';
-  document.querySelectorAll('#svcChips .chip').forEach(function(c){c.classList.toggle('sel',c===el);});
+  var s=el.dataset.s;
+  var i=selSvcArr.indexOf(s);
+  if(i>=0){selSvcArr.splice(i,1);el.classList.remove('sel');}
+  else{selSvcArr.push(s);el.classList.add('sel');}
+  renderSvcPills();
+  updateBtn();
+}
+function removeSvc(s){
+  var i=selSvcArr.indexOf(s);
+  if(i>=0)selSvcArr.splice(i,1);
+  document.querySelectorAll('#svcChips .chip').forEach(function(c){if(c.dataset.s===s)c.classList.remove('sel');});
+  renderSvcPills();
   updateBtn();
 }
 function toggleOtherSvc(){
   otherSvcMode=!otherSvcMode;
   $('otherSvcWrap').classList.toggle('on',otherSvcMode);
   $('otherSvcBtn').classList.toggle('on',otherSvcMode);
-  if(otherSvcMode){selSvc='';document.querySelectorAll('#svcChips .chip').forEach(function(c){c.classList.remove('sel');});}
-  else{$('otherSvc').value='';}
+  if(!otherSvcMode)$('otherSvc').value='';
   updateBtn();
 }
 function onOtherSvc(){
-  selSvc=$('otherSvc').value.trim();
   updateBtn();
 }
 function pickDate(el){selDate=el.dataset.d;selTime='';markSel('dateRow',selDate,'d');renderSlots();updateBtn();}
@@ -363,7 +387,7 @@ function toggleCustom(){
   updateBtn();
 }
 function updateBtn(){
-  var ok=selSvc && selDate && (selTime || (customMode && $('customTime').value.trim()));
+  var ok=allSvcs().length && selDate && (selTime || (customMode && $('customTime').value.trim()));
   $('bookBtn').disabled=!ok;
 }
 document.addEventListener('input',function(e){if(e.target&&e.target.id==='customTime')updateBtn();});
@@ -371,22 +395,24 @@ document.addEventListener('input',function(e){if(e.target&&e.target.id==='custom
 /* ---- submit ---- */
 function submitBooking(){
   var name=$('fName').value.trim(), phone=$('fPhone').value.trim(), notes=$('fNotes').value.trim();
+  var svcs=allSvcs();
   if(!name){alert('Please add your name');return;}
   if(!phone){alert('Please add a phone number');return;}
-  if(!selSvc){alert('Please pick a service');return;}
+  if(!svcs.length){alert('Please pick at least one service');return;}
+  var svcStr=svcs.join(' + ');
   var isCustom=customMode && $('customTime').value.trim();
   var time=isCustom?'':selTime;
   var notesFull=isCustom?('Requested time: '+$('customTime').value.trim()+(notes?(' — '+notes):'')):notes;
   if(!time && !isCustom){alert('Please pick a time');return;}
   $('bookBtn').disabled=true;$('bookBtn').innerHTML='<i class="ti ti-loader"></i> Sending…';
   var rec={
-    salon:SALON_ID,name:name,phone:phone,service:selSvc,
+    salon:SALON_ID,name:name,phone:phone,service:svcStr,
     date:selDate,time:time||'09:00',dur:60,price:0,
-    notes:notesFull,hair:collectHair(),hairData:collectHairData(),custom:!!isCustom,customSvc:!!otherSvcMode,status:'pending',createdAt:Date.now()
+    notes:notesFull,hair:collectHair(),hairData:collectHairData(),custom:!!isCustom,customSvc:!!(otherSvcMode && $('otherSvc').value.trim()),status:'pending',createdAt:Date.now()
   };
   db.collection('requests').add(rec).then(function(){
     var when=isCustom?$('customTime').value.trim():(to12(selTime)+' on '+new Date(selDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}));
-    $('doneSub').innerHTML='Your request for <b>'+esc(selSvc)+'</b> ('+esc(when)+') has been sent. You\u2019ll get a confirmation once it\u2019s approved.';
+    $('doneSub').innerHTML='Your request for <b>'+esc(svcStr)+'</b> ('+esc(when)+') has been sent. You\u2019ll get a confirmation once it\u2019s approved.';
     show('doneView');
   }).catch(function(e){
     console.warn(e);
@@ -395,7 +421,9 @@ function submitBooking(){
   });
 }
 function resetForm(){
-  selSvc='';selTime='';customMode=false;returning=false;otherSvcMode=false;
+  selSvcArr=[];selTime='';customMode=false;returning=false;otherSvcMode=false;
+  document.querySelectorAll('#svcChips .chip.sel').forEach(function(c){c.classList.remove('sel');});
+  if($('svcPills'))$('svcPills').innerHTML='';
   $('fName').value='';$('fPhone').value='';$('fNotes').value='';$('customTime').value='';
   if($('otherSvc'))$('otherSvc').value='';
   if($('otherSvcWrap'))$('otherSvcWrap').classList.remove('on');
