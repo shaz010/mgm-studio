@@ -111,13 +111,17 @@ textarea{resize:vertical;min-height:60px}
 
   <div class="sec">Service</div>
   <div class="chips" id="svcChips"></div>
+  <button class="none-btn" id="otherSvcBtn" onclick="toggleOtherSvc()" style="margin-top:9px">Don't see your service? Add it here</button>
+  <div class="custom-wrap" id="otherSvcWrap">
+    <input type="text" id="otherSvc" placeholder="e.g. scalp treatment, colour correction" oninput="onOtherSvc()">
+  </div>
 
   <div class="sec">Pick a day</div>
   <div class="dates" id="dateRow"></div>
 
   <div class="sec">Pick a time</div>
   <div class="slots" id="slotGrid"></div>
-  <button class="none-btn" id="noneBtn" onclick="toggleCustom()">None of these work? Request another time</button>
+  <button class="none-btn" id="noneBtn" onclick="toggleCustom()">None of these work? Please request another time</button>
   <div class="custom-wrap" id="customWrap">
     <label>Preferred time</label>
     <input type="text" id="customTime" placeholder="e.g. Tuesday after 6pm, or 5:15">
@@ -200,7 +204,7 @@ var FB_CONFIG={
 var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 
-var db=null, info=null, pendingMap={}, selSvc='', selDate='', selTime='', customMode=false;
+var db=null, info=null, pendingMap={}, selSvc='', selDate='', selTime='', customMode=false, otherSvcMode=false;
 
 function $(id){return document.getElementById(id);}
 function show(id){['loadingView','closedView','errorView','doneView','formView'].forEach(function(v){$(v).classList.toggle('hidden',v!==id);});}
@@ -274,7 +278,25 @@ function buildForm(){
   $('dateRow').innerHTML=row;
   if(first){selDate=first;markSel('dateRow',first,'d');renderSlots();}
 }
-function pickSvc(el){selSvc=el.dataset.s;document.querySelectorAll('#svcChips .chip').forEach(function(c){c.classList.toggle('sel',c===el);});updateBtn();}
+function pickSvc(el){
+  selSvc=el.dataset.s;
+  // picking a chip clears the custom-service entry
+  otherSvcMode=false;$('otherSvcWrap').classList.remove('on');$('otherSvcBtn').classList.remove('on');$('otherSvc').value='';
+  document.querySelectorAll('#svcChips .chip').forEach(function(c){c.classList.toggle('sel',c===el);});
+  updateBtn();
+}
+function toggleOtherSvc(){
+  otherSvcMode=!otherSvcMode;
+  $('otherSvcWrap').classList.toggle('on',otherSvcMode);
+  $('otherSvcBtn').classList.toggle('on',otherSvcMode);
+  if(otherSvcMode){selSvc='';document.querySelectorAll('#svcChips .chip').forEach(function(c){c.classList.remove('sel');});}
+  else{$('otherSvc').value='';}
+  updateBtn();
+}
+function onOtherSvc(){
+  selSvc=$('otherSvc').value.trim();
+  updateBtn();
+}
 function pickDate(el){selDate=el.dataset.d;selTime='';markSel('dateRow',selDate,'d');renderSlots();updateBtn();}
 function markSel(wrap,val,attr){document.querySelectorAll('#'+wrap+' [data-'+attr+']').forEach(function(c){c.classList.toggle('sel',c.dataset[attr]===val);});}
 function renderSlots(){
@@ -343,7 +365,7 @@ function submitBooking(){
   var rec={
     salon:SALON_ID,name:name,phone:phone,service:selSvc,
     date:selDate,time:time||'09:00',dur:60,price:0,
-    notes:notesFull,hair:collectHair(),custom:!!isCustom,status:'pending',createdAt:Date.now()
+    notes:notesFull,hair:collectHair(),custom:!!isCustom,customSvc:!!otherSvcMode,status:'pending',createdAt:Date.now()
   };
   db.collection('requests').add(rec).then(function(){
     var when=isCustom?$('customTime').value.trim():(to12(selTime)+' on '+new Date(selDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}));
@@ -356,8 +378,11 @@ function submitBooking(){
   });
 }
 function resetForm(){
-  selSvc='';selTime='';customMode=false;returning=false;
+  selSvc='';selTime='';customMode=false;returning=false;otherSvcMode=false;
   $('fName').value='';$('fPhone').value='';$('fNotes').value='';$('customTime').value='';
+  if($('otherSvc'))$('otherSvc').value='';
+  if($('otherSvcWrap'))$('otherSvcWrap').classList.remove('on');
+  if($('otherSvcBtn'))$('otherSvcBtn').classList.remove('on');
   if($('fHairNotes'))$('fHairNotes').value='';
   document.querySelectorAll('#hairWrap .hchip.sel').forEach(function(c){c.classList.remove('sel');});
   if($('returningBtn'))$('returningBtn').classList.remove('on');
