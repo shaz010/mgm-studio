@@ -399,18 +399,19 @@ datalist{display:none}
 .req-empty i{font-size:32px;display:block;margin-bottom:8px;color:#444}
 .cb-tap{cursor:pointer;transition:transform .12s,box-shadow .12s}
 .cb-tap:active{transform:scale(.92)}
-.cb-top{display:flex;align-items:center;gap:12px;margin-bottom:4px}
-.cb-topsub{font-size:12.5px;color:var(--muted);margin-top:2px}
-.cb-head{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:4px 0 8px;font-weight:700}
-.cb-appt{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border-bright);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:background .12s}
+.cb-top{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.cb-top .sheet-title{font-size:22px!important}
+.cb-topsub{font-size:15px;color:var(--muted);margin-top:3px}
+.cb-head{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--gold);margin:10px 0 10px;font-weight:800}
+.cb-appt{display:flex;align-items:center;gap:14px;background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:15px 16px;margin-bottom:10px;cursor:pointer;transition:background .12s}
 .cb-appt:active{background:var(--gold-dim)}
-.cb-when{flex-shrink:0;min-width:74px}
-.cb-date{font-size:12.5px;font-weight:700}
-.cb-time{font-size:11px;color:var(--muted)}
+.cb-when{flex-shrink:0;min-width:92px}
+.cb-date{font-size:16px;font-weight:800}
+.cb-time{font-size:14px;color:var(--muted);margin-top:2px}
 .cb-mid{flex:1;min-width:0}
-.cb-svc{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cb-note{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-.cb-price{font-size:13px;font-weight:700;color:var(--gold);flex-shrink:0}
+.cb-svc{font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cb-note{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+.cb-price{font-size:18px;font-weight:800;color:var(--gold);flex-shrink:0}
 .price-tools{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .hair-toggle{padding:8px 11px;border-radius:8px;border:1.5px solid #555;background:#1a1a1a;color:#999;cursor:pointer;font-size:12px;font-weight:800;white-space:nowrap;flex-shrink:0;transition:all .12s;-webkit-tap-highlight-color:transparent}
 .hair-toggle.on{border-color:var(--gold);color:#1a1208;background:var(--gold)}
@@ -1356,12 +1357,15 @@ function reconcileClients(){
   var changed=false;
   appts.forEach(function(a){
     if(!a.name)return;
-    var pn=(''+(a.phone||'')).replace(/\D/g,'');
+    var an=a.name.toLowerCase(), ap=(''+(a.phone||'')).replace(/\D/g,'');
     var exists=clients.find(function(c){
-      if(pn&&c.phone&&(''+c.phone).replace(/\D/g,'')===pn)return true;
-      return c.name&&c.name.toLowerCase()===a.name.toLowerCase();
+      if(!c.name||c.name.toLowerCase()!==an)return false;
+      var cp=(''+(c.phone||'')).replace(/\D/g,'');
+      // same name: same person only if phones match, or one side has no phone
+      return (!ap||!cp||ap===cp);
     });
     if(!exists){clients.push({id:'c'+Date.now()+Math.floor(Math.random()*99999),name:a.name,phone:a.phone||'',email:'',notes:''});changed=true;}
+    else if(a.phone&&!exists.phone){exists.phone=a.phone;changed=true;}
   });
   if(changed)save(CLIENTS,clients);
 }
@@ -1550,7 +1554,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v1.3 · hair pricing';
+var VERSION='v1.5 · hair pricing';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -2003,7 +2007,9 @@ function reqConflict(r){
 function slotMins(t){if(!t)return 0;var p=(''+t).split(':');return (+p[0])*60+(+p[1]||0);}
 
 /* ---- approve / decline ---- */
+var _approved={};
 function commitApproved(r,silent){
+  if(r._id){ if(_approved[r._id])return; _approved[r._id]=true; }
   var noteParts=[];
   if(r.notes)noteParts.push(r.notes);
   if(r.hair)noteParts.push('Hair — '+r.hair);
@@ -2025,10 +2031,11 @@ function commitApproved(r,silent){
   renderDay();
 }
 function addClientFromBooking(r){
-  var pn=(''+(r.phone||'')).replace(/\D/g,'');
+  var rn=(r.name||'').toLowerCase(), rp=(''+(r.phone||'')).replace(/\D/g,'');
   var existing=clients.find(function(c){
-    if(pn&&c.phone&&(''+c.phone).replace(/\D/g,'')===pn)return true;
-    return c.name&&r.name&&c.name.toLowerCase()===r.name.toLowerCase();
+    if(!c.name||!rn||c.name.toLowerCase()!==rn)return false;
+    var cp=(''+(c.phone||'')).replace(/\D/g,'');
+    return (!rp||!cp||rp===cp);
   });
   if(existing){ if(r.phone&&!existing.phone)existing.phone=r.phone; }
   else{ clients.push({id:'c'+Date.now()+Math.floor(Math.random()*999),name:r.name||'Client',phone:r.phone||'',email:'',notes:r.hair?('Hair: '+r.hair):''}); }
