@@ -241,6 +241,17 @@ textarea{min-height:64px;resize:vertical}
 .mcell.d1 .mcell-n{color:#bcdca6}.mcell.d2 .mcell-n{color:#f2ffe2}.mcell.d3 .mcell-n{color:#0c2204}
 .mcell.d1 .mcell-c{color:#6fb048}.mcell.d2 .mcell-c{color:#dcf8a8}.mcell.d3 .mcell-c{color:#143006}
 .month-legend{display:flex;justify-content:center;gap:16px;margin-top:14px;font-size:11.5px;color:var(--muted);font-weight:600}
+.month-peek{margin-top:14px}
+.mp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.mp-date{font-size:14px;font-weight:700;color:var(--text)}
+.mp-open{font-size:12px;font-weight:700;color:var(--gold);background:var(--gold-dim);border:1.5px solid var(--gold-border);border-radius:20px;padding:5px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.mp-open:active{transform:scale(.96)}
+.mp-row{display:flex;align-items:center;gap:10px;background:#111;border:1px solid var(--border-bright);border-radius:9px;padding:8px 11px;margin-bottom:6px;cursor:pointer}
+.mp-row:active{border-color:var(--gold)}
+.mp-time{font-size:12.5px;font-weight:700;color:var(--text);min-width:60px}
+.mp-name{font-size:13.5px;font-weight:600;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-svc{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px}
+.mp-empty{font-size:12.5px;color:#666;font-style:italic;padding:6px 2px}
 .month-legend span{display:inline-flex;align-items:center;gap:6px}
 .md-dot{width:12px;height:12px;border-radius:3px;display:inline-block}
 .md-dot.light{background:#16280f;border:1.5px solid #3a5f27}
@@ -455,6 +466,7 @@ datalist{display:none}
       </div>
       <div class="month-dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
       <div class="month-grid" id="monthGrid"></div>
+      <div class="month-peek" id="monthPeek"></div>
       <div class="month-legend">
         <span><i class="md-dot light"></i> Light</span>
         <span><i class="md-dot medium"></i> Medium</span>
@@ -941,7 +953,7 @@ var dayMode='day';
 var monthDate=null;
 function setDayMode(m){
   dayMode=m;
-  if(m==='month'){monthDate=new Date(viewDate);monthDate.setHours(12,0,0,0);}
+  if(m==='month'){monthDate=new Date(viewDate);monthDate.setHours(12,0,0,0);monthSel=null;}
   document.querySelectorAll('#daySeg .seg-btn').forEach(function(b){b.classList.toggle('on',b.dataset.m===m)});
   renderDay();
 }
@@ -958,7 +970,7 @@ function renderMonth(){
   var first=new Date(y,mo,1,12,0,0);
   var lead=(first.getDay()+6)%7;            // Mon-first blanks
   var dim=new Date(y,mo+1,0).getDate();     // days in month
-  var today=todayStr(), sel=ymd(viewDate);
+  var today=todayStr(), sel=monthSel||ymd(viewDate);
   var html='';
   for(var b=0;b<lead;b++)html+='<div class="mcell blank"></div>';
   for(var day=1;day<=dim;day++){
@@ -975,6 +987,26 @@ function renderMonth(){
   $('monthGrid').innerHTML=html;
 }
 function pickMonthDay(ds){
+  monthSel=ds;
+  renderMonth();
+  renderMonthPeek(ds);
+}
+var monthSel=null;
+function renderMonthPeek(ds){
+  var el=$('monthPeek');if(!el)return;
+  var list=appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'})
+    .sort(function(a,b){return (a.time||'').localeCompare(b.time||'')});
+  var head='<div class="mp-head"><div class="mp-date">'+parseDate(ds).toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})+'</div>'+
+    '<div class="mp-open" onclick="openMonthDay(\''+ds+'\')"><i class="ti ti-arrow-right"></i> Open day</div></div>';
+  if(!list.length){el.innerHTML=head+'<div class="mp-empty">No bookings this day.</div>';return;}
+  el.innerHTML=head+list.map(function(a){
+    return '<div class="mp-row" onclick="openMonthDay(\''+ds+'\')">'+
+      '<div class="mp-time">'+to12(a.time)+'</div>'+
+      '<div class="mp-name">'+esc(a.name)+'</div>'+
+      '<div class="mp-svc">'+esc(a.service||'')+'</div></div>';
+  }).join('');
+}
+function openMonthDay(ds){
   viewDate=parseDate(ds);
   setDayMode('day');
 }
@@ -1075,6 +1107,7 @@ function renderDay(){
     $('monthPane').style.display='block';
     $('weekStrip').style.display='none';
     renderMonth();
+    renderMonthPeek(monthSel||ymd(viewDate));
     window.scrollTo(0,0);
     return;
   }
@@ -1287,8 +1320,22 @@ function editFromSheet(){
 function closeSheet(id){$(id).classList.remove('show')}
 
 /* ===== CLIENTS ===== */
+function reconcileClients(){
+  var changed=false;
+  appts.forEach(function(a){
+    if(!a.name)return;
+    var pn=(''+(a.phone||'')).replace(/\D/g,'');
+    var exists=clients.find(function(c){
+      if(pn&&c.phone&&(''+c.phone).replace(/\D/g,'')===pn)return true;
+      return c.name&&c.name.toLowerCase()===a.name.toLowerCase();
+    });
+    if(!exists){clients.push({id:'c'+Date.now()+Math.floor(Math.random()*99999),name:a.name,phone:a.phone||'',email:'',notes:''});changed=true;}
+  });
+  if(changed)save(CLIENTS,clients);
+}
 function renderClients(){
   reload();
+  reconcileClients();
   if(!clients.length){
     $('clientsList').innerHTML='<div class="empty"><i class="ti ti-user-question"></i><div class="empty-t">No clients yet</div><div class="empty-s">Clients are added automatically when you book them — or add one now.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openClientSheet()"><i class="ti ti-user-plus"></i> Add client</button></div>';
     return;
@@ -1447,7 +1494,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v1.0';
+var VERSION='v1.1 · self-booking';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -1917,6 +1964,7 @@ function renderRequests(){
     var clash=reqConflict(r);
     var trusted=isTrustedPhone(r.phone);
     var pill=r.custom?'<span class="req-pill custom">Custom time</span>':'<span class="req-pill pending">Pending</span>';
+    if(r.customSvc)pill='<span class="req-pill custom">Off-menu service</span>'+pill;
     return '<div class="req-card">'+
       (clash?'<div class="req-warn"><i class="ti ti-alert-triangle"></i> This slot now clashes with another booking.</div>':'')+
       '<div class="req-top"><div><div class="req-name">'+esc(r.name)+'</div>'+
