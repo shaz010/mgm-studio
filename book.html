@@ -67,9 +67,14 @@ textarea{resize:vertical;min-height:60px}
 .hchip:active{transform:scale(.95)}
 .spin{width:34px;height:34px;border:3px solid var(--border-bright);border-top-color:var(--gold);border-radius:50%;animation:sp 0.8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
+.update-bar{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 8px);transform:translateX(-50%) translateY(-140%);z-index:99999;background:var(--gold);color:#1a1208;font-weight:800;font-size:13.5px;padding:11px 18px;border-radius:30px;box-shadow:0 8px 24px rgba(0,0,0,.55);cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+.update-bar.show{transform:translateX(-50%) translateY(0)}
+.update-bar:active{transform:translateX(-50%) translateY(0) scale(.96)}
 </style>
 </head>
 <body>
+
+<div id="updateBar" class="update-bar" onclick="applyUpdate()"><i class="ti ti-refresh"></i> New version ready — tap to update</div>
 
 <!-- LOADING -->
 <div class="center-screen" id="loadingView">
@@ -207,6 +212,7 @@ var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvc='', selDate='', selTime='', customMode=false, otherSvcMode=false;
 
 function $(id){return document.getElementById(id);}
+var VERSION='book v1.0';
 function show(id){['loadingView','closedView','errorView','doneView','formView'].forEach(function(v){$(v).classList.toggle('hidden',v!==id);});}
 function mins(t){if(!t)return 0;var p=(''+t).split(':');return (+p[0])*60+(+p[1]||0);}
 function fromMins(m){var h=Math.floor(m/60),mm=m%60;return (h<10?'0':'')+h+':'+(mm<10?'0':'')+mm;}
@@ -401,6 +407,21 @@ function resetForm(){
   $('bookBtn').innerHTML='<i class="ti ti-send"></i> Request booking';$('bookBtn').disabled=true;
   loadPending(function(){buildForm();show('formView');});
 }
+
+/* auto-detect a fresh upload — shows a tap-to-update bar, never reloads on its own */
+function applyUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
+function checkForUpdate(){
+  try{
+    fetch(location.pathname+'?_t='+Date.now(),{cache:'no-store'})
+      .then(function(r){return r.text();})
+      .then(function(txt){
+        var m=txt.match(/var VERSION='([^']+)'/);
+        if(m&&m[1]&&m[1]!==VERSION){var b=$('updateBar');if(b)b.classList.add('show');}
+      }).catch(function(){});
+  }catch(e){}
+}
+setTimeout(checkForUpdate,8000);
+setInterval(checkForUpdate,60000);
 
 init();
 </script>
