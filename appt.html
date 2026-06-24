@@ -396,6 +396,20 @@ datalist{display:none}
 .req-warn{font-size:11.5px;color:#ffae6b;background:#2a1207;border:1px solid #7a3a1a;border-radius:8px;padding:7px 9px;margin-bottom:8px;line-height:1.4}
 .req-empty{text-align:center;padding:30px 16px;color:var(--muted);font-size:13px}
 .req-empty i{font-size:32px;display:block;margin-bottom:8px;color:#444}
+.cb-tap{cursor:pointer;transition:transform .12s,box-shadow .12s}
+.cb-tap:active{transform:scale(.92)}
+.cb-top{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.cb-topsub{font-size:12.5px;color:var(--muted);margin-top:2px}
+.cb-head{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:4px 0 8px;font-weight:700}
+.cb-appt{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border-bright);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:background .12s}
+.cb-appt:active{background:var(--gold-dim)}
+.cb-when{flex-shrink:0;min-width:74px}
+.cb-date{font-size:12.5px;font-weight:700}
+.cb-time{font-size:11px;color:var(--muted)}
+.cb-mid{flex:1;min-width:0}
+.cb-svc{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cb-note{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.cb-price{font-size:13px;font-weight:700;color:var(--gold);flex-shrink:0}
 </style>
 </head>
 <body>
@@ -584,6 +598,17 @@ datalist{display:none}
     <div class="btn-row" id="csDel" style="display:none">
       <button class="btn btn-danger btn-sm" style="flex:1" onclick="deleteClient()"><i class="ti ti-trash"></i> Delete client</button>
     </div>
+  </div>
+</div>
+
+<!-- CLIENT BOOKINGS (tap avatar) -->
+<div class="modal" id="clientBookingsModal" onclick="if(event.target===this)closeSheet('clientBookingsModal')">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="cb-top">
+      <div><div class="sheet-title" id="cbTitle" style="margin:0">Client</div><div class="cb-topsub" id="cbSub"></div></div>
+    </div>
+    <div id="cbList" style="margin-top:6px"></div>
   </div>
 </div>
 
@@ -1344,7 +1369,7 @@ function renderClients(){
   $('clientsList').innerHTML=sorted.map(function(c){
     var count=appts.filter(function(a){return a.name&&c.name&&a.name.toLowerCase()===c.name.toLowerCase()&&a.status!=='cancelled'}).length;
     return '<div class="lrow" onclick="openClientSheet(\''+c.id+'\')">'+
-      '<div class="lrow-av">'+esc((c.name[0]||'?').toUpperCase())+'</div>'+
+      '<div class="lrow-av cb-tap" onclick="event.stopPropagation();openClientBookings(\''+c.id+'\')">'+esc((c.name[0]||'?').toUpperCase())+'</div>'+
       '<div class="lrow-body"><div class="lrow-name">'+esc(c.name)+'</div><div class="lrow-sub">'+(c.phone?esc(c.phone):'No phone')+'</div></div>'+
       '<div class="lrow-right"><div class="lrow-rv">'+count+'</div><div class="lrow-rl">visit'+(count===1?'':'s')+'</div></div></div>';
   }).join('');
@@ -1376,6 +1401,30 @@ function deleteClient(){
     clients=clients.filter(function(c){return c.id!==clientId});save(CLIENTS,clients);
     closeSheet('clientModal');renderClients();toast('Deleted');
   },{title:'Delete client',yesLabel:'Delete client',danger:true});
+}
+function openClientBookings(id){
+  reload();
+  var c=clients.find(function(x){return x.id===id});if(!c)return;
+  $('cbTitle').textContent=c.name;
+  $('cbSub').textContent=c.phone?c.phone:'No phone';
+  var today=todayStr();
+  var mine=appts.filter(function(a){return a.name&&c.name&&a.name.toLowerCase()===c.name.toLowerCase()&&a.status!=='cancelled';});
+  var upcoming=mine.filter(function(a){return a.date>=today&&a.status!=='done'&&a.status!=='noshow';})
+                   .sort(function(a,b){return ((a.date||'')+(a.time||'')).localeCompare((b.date||'')+(b.time||''));});
+  var past=mine.filter(function(a){return !(a.date>=today&&a.status!=='done'&&a.status!=='noshow');})
+              .sort(function(a,b){return ((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||''));});
+  function row(a){
+    return '<div class="cb-appt" onclick="closeSheet(\'clientBookingsModal\');openSheet(\''+a.id+'\')">'+
+      '<div class="cb-when"><div class="cb-date">'+fmtReqDate(a.date)+'</div><div class="cb-time">'+to12(a.time)+'</div></div>'+
+      '<div class="cb-mid"><div class="cb-svc">'+esc(a.service||'—')+'</div>'+(a.notes?'<div class="cb-note">'+esc(a.notes)+'</div>':'')+'</div>'+
+      '<div class="cb-price">'+fmt$(a.price)+'</div></div>';
+  }
+  var html='';
+  if(upcoming.length){html+='<div class="cb-head">Upcoming</div>'+upcoming.map(row).join('');}
+  if(past.length){html+='<div class="cb-head" style="margin-top:14px">History</div>'+past.slice(0,8).map(row).join('');}
+  if(!html){html='<div class="empty" style="padding:24px 0"><i class="ti ti-calendar-off"></i><div class="empty-t">No bookings yet</div><div class="empty-s">When you book '+esc(c.name)+', their appointments show here.</div></div>';}
+  $('cbList').innerHTML=html;
+  $('clientBookingsModal').classList.add('show');
 }
 
 /* ===== STOCK / INVENTORY ===== */
