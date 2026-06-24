@@ -169,7 +169,9 @@ textarea{min-height:64px;resize:vertical}
 
 .daybar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .daybar-nav{width:40px;height:40px;border-radius:10px;border:1.5px solid var(--border-bright);background:#111;color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.weekstrip{display:flex;align-items:center;gap:6px;margin-bottom:12px}
+.weekstrip{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px;scrollbar-width:none}
+.weekstrip::-webkit-scrollbar{display:none}
+.wmonth{flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;opacity:.85;padding:0 3px}
 /* Day/Week segmented toggle */
 .seg{display:flex;gap:4px;background:#0a0a0a;border:1px solid var(--border-bright);border-radius:10px;padding:4px;margin-bottom:12px}
 .seg-btn{flex:1;padding:8px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
@@ -277,7 +279,7 @@ textarea{min-height:64px;resize:vertical}
 .wnav{width:26px;height:50px;flex-shrink:0;border-radius:8px;border:1.5px solid var(--border-bright);background:#111;color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer}
 .wnav:active{border-color:var(--gold);color:var(--gold)}
 .wcells{display:flex;gap:4px;flex:1;min-width:0}
-.wcell{flex:1;min-width:0;background:#111;border:1.5px solid var(--border-bright);border-radius:9px;padding:6px 0 4px;text-align:center;cursor:pointer;transition:transform .12s,border-color .15s,background .15s}
+.wcell{flex:0 0 auto;width:46px;background:#111;border:1.5px solid var(--border-bright);border-radius:9px;padding:6px 0 4px;text-align:center;cursor:pointer;transition:transform .12s,border-color .15s,background .15s}
 .wcell:active{transform:scale(.94)}
 .wcell.sel{background:var(--gold-dim);border-color:var(--gold)}
 .wcell.past{opacity:.5}
@@ -1000,22 +1002,39 @@ function startOfWeek(d){var x=new Date(d);x.setHours(12,0,0,0);var dow=(x.getDay
 function pickDay(ds){viewDate=parseDate(ds);renderDay();}
 function moveWeek(n){viewDate.setDate(viewDate.getDate()+n*7);renderDay();}
 function renderWeekStrip(){
-  var sow=startOfWeek(viewDate);
-  var sel=ymd(viewDate), today=todayStr();
-  var L=['M','T','W','T','F','S','S'];
-  var cells='';
-  for(var i=0;i<7;i++){
-    var d=new Date(sow);d.setDate(sow.getDate()+i);
-    var ds=ymd(d);
+  var el=$('weekStrip');if(!el)return;
+  var L=['S','M','T','W','T','F','S'];
+  var today=new Date();today.setHours(12,0,0,0);
+  var todayS=ymd(today), sel=ymd(viewDate);
+  // window: 1 week back → ~12 weeks ahead, extended to include viewDate if it falls outside
+  var start=new Date(today);start.setDate(today.getDate()-7);
+  var end=new Date(today);end.setDate(today.getDate()+84);
+  if(viewDate<start)start=new Date(viewDate);
+  if(viewDate>end){end=new Date(viewDate);end.setDate(end.getDate()+7);}
+  start.setHours(12,0,0,0);end.setHours(12,0,0,0);
+  var html='', d=new Date(start), lastMonth=-1;
+  while(d<=end){
+    var ds=ymd(d), m=d.getMonth();
+    if(m!==lastMonth){
+      var lbl=d.toLocaleDateString('en-US',{month:'short'});
+      if(d.getFullYear()!==today.getFullYear())lbl+=" '"+String(d.getFullYear()).slice(2);
+      html+='<div class="wmonth">'+lbl+'</div>';
+      lastMonth=m;
+    }
     var cnt=appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'}).length;
-    var cls='wcell'+(ds===sel?' sel':'')+(ds===today?' today':'')+(ds<today?' past':'');
-    cells+='<div class="'+cls+'" onclick="pickDay(\''+ds+'\')">'+
-      '<div class="wcell-d">'+L[i]+'</div>'+
+    var cls='wcell'+(ds===sel?' sel':'')+(ds===todayS?' today':'')+(ds<todayS?' past':'');
+    html+='<div class="'+cls+'" onclick="pickDay(\''+ds+'\')">'+
+      '<div class="wcell-d">'+L[d.getDay()]+'</div>'+
       '<div class="wcell-n">'+d.getDate()+'</div>'+
       '<div class="wcell-dot">'+(cnt?'<span></span>':'')+'</div></div>';
+    d.setDate(d.getDate()+1);
   }
-  var el=$('weekStrip');
-  if(el)el.innerHTML='<div class="wnav" onclick="moveWeek(-1)"><i class="ti ti-chevron-left"></i></div><div class="wcells">'+cells+'</div><div class="wnav" onclick="moveWeek(1)"><i class="ti ti-chevron-right"></i></div>';
+  el.innerHTML=html;
+  // center the selected day once layout settles
+  requestAnimationFrame(function(){
+    var s=el.querySelector('.wcell.sel');
+    if(s)el.scrollLeft=s.offsetLeft-el.clientWidth/2+s.offsetWidth/2;
+  });
 }
 var dayMode='day';
 var monthDate=null;
@@ -1591,7 +1610,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v2.3 · multi-svc price';
+var VERSION='v2.4 · scrolling days';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
