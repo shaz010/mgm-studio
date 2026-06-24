@@ -410,6 +410,12 @@ datalist{display:none}
 .cb-svc{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cb-note{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
 .cb-price{font-size:13px;font-weight:700;color:var(--gold);flex-shrink:0}
+.price-tools{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.hair-toggle{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1.5px solid #444;background:#1a1a1a;color:#777;cursor:pointer;font-size:17px;flex-shrink:0;transition:all .12s}
+.hair-toggle.on{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.hp-tag{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--gold);background:var(--gold-dim);border-radius:5px;padding:2px 6px;margin-left:6px;vertical-align:middle}
+.req-price{font-size:13px;color:var(--gold);font-weight:700;margin-top:6px}
+.req-why{font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
 </style>
 </head>
 <body>
@@ -731,7 +737,7 @@ datalist{display:none}
   <div class="sheet">
     <div class="sheet-grip"></div>
     <div class="sheet-title"><i class="ti ti-tag" style="font-size:15px;vertical-align:-2px;margin-right:7px;color:var(--gold)"></i>Your price book</div>
-    <p class="price-hint">Set what you charge for each service. Leave blank for ones you don't offer. When you combine services in a booking, the Price auto-fills with the total — you can still adjust it.</p>
+    <p class="price-hint">Set what you charge for each service. Leave blank for ones you don't offer. When you combine services in a booking, the Price auto-fills with the total — you can still adjust it.<br><br>Tap the <i class="ti ti-wand" style="color:var(--gold)"></i> wand to <b style="color:var(--gold)">auto-price by hair</b> — the price you set becomes the baseline (short, fine hair) and scales up for length, thickness, grey &amp; prior chemical work. Best for colour &amp; chemical services.</p>
     <div class="svc-mode" style="margin-bottom:12px">
       <button type="button" class="svc-mode-btn on" data-pmode="hair" onclick="setPriceMode('hair')"><i class="ti ti-scissors m-ico"></i>Hair</button>
       <button type="button" class="svc-mode-btn" data-pmode="nail" onclick="setPriceMode('nail')"><i class="ti ti-sparkles m-ico"></i>Nail</button>
@@ -1794,6 +1800,28 @@ function setPrice(name,val){
   if(isNaN(v)||val===''){ delete prices[name]; } else { prices[name]=v; }
   savePrices(prices);
 }
+/* ----- hair-based pricing ----- */
+var HAIRMODS_DEFAULT={
+  length:{'Short':1,'Shoulder':1.3,'Long':1.6,'Extra long':2},
+  thickness:{'Thin':1,'Med-thick':1.1,'Thick':1.25},
+  greyAdd:{'A little grey':0,'Partially grey':10,'Fully grey':20},
+  historyAdd:15
+};
+function getHairMods(){var p=getPrefs();return (p.hairMods&&typeof p.hairMods==='object')?{length:Object.assign({},HAIRMODS_DEFAULT.length,p.hairMods.length),thickness:Object.assign({},HAIRMODS_DEFAULT.thickness,p.hairMods.thickness),greyAdd:Object.assign({},HAIRMODS_DEFAULT.greyAdd,p.hairMods.greyAdd),historyAdd:(p.hairMods.historyAdd!=null?p.hairMods.historyAdd:HAIRMODS_DEFAULT.historyAdd)}:HAIRMODS_DEFAULT;}
+function getHairPriced(){var p=getPrefs();return (p.hairPriced&&typeof p.hairPriced==='object')?p.hairPriced:{};}
+function isHairPriced(name){return getHairPriced()[name]===true;}
+function toggleHairPriced(name){var p=getPrefs();var hp=p.hairPriced||{};hp[name]=!hp[name];if(!hp[name])delete hp[name];p.hairPriced=hp;setPrefs(p);buildPriceList();}
+function hairPrice(service,hd){
+  var prices=getPrices();
+  var base=parseFloat(prices[service]);if(isNaN(base))base=0;
+  if(!isHairPriced(service)||!hd||base<=0)return {price:base,base:base,applied:false,why:[]};
+  var M=getHairMods(),mult=1,addS=0,why=[];
+  if(hd.length&&M.length[hd.length]!=null){mult*=M.length[hd.length];if(M.length[hd.length]!==1)why.push(hd.length);}
+  if(hd.thickness&&M.thickness[hd.thickness]!=null){mult*=M.thickness[hd.thickness];if(M.thickness[hd.thickness]!==1)why.push(hd.thickness);}
+  if(hd.grey&&M.greyAdd[hd.grey]){addS+=M.greyAdd[hd.grey];why.push(hd.grey);}
+  if(hd.history&&hd.history.length){addS+=M.historyAdd;why.push('prev. treated');}
+  return {price:Math.round(base*mult+addS),base:base,applied:true,why:why};
+}
 function applyAutoPrice(){
   if(priceManual)return;
   var prices=getPrices();
@@ -1812,7 +1840,13 @@ function buildPriceList(){
     var rows=items.map(function(it){
       var n=it[0];
       var val=(prices[n]!==undefined&&prices[n]!==null)?prices[n]:'';
-      return '<div class="price-row"><span class="price-name">'+esc(n)+'</span><span class="price-in-wrap"><input class="price-in" type="number" inputmode="decimal" placeholder="0" value="'+val+'" oninput="setPrice(\''+n.replace(/'/g,"\\'")+'\',this.value)"></span></div>';
+      var e2=n.replace(/'/g,"\\'");
+      var hpOn=isHairPriced(n);
+      return '<div class="price-row"><span class="price-name">'+esc(n)+(hpOn?' <span class="hp-tag">by hair</span>':'')+'</span>'+
+        '<span class="price-tools">'+
+          '<button class="hair-toggle'+(hpOn?' on':'')+'" onclick="toggleHairPriced(\''+e2+'\')" title="Auto-price by client hair"><i class="ti ti-wand"></i></button>'+
+          '<span class="price-in-wrap"><input class="price-in" type="number" inputmode="decimal" placeholder="0" value="'+val+'" oninput="setPrice(\''+e2+'\',this.value)"></span>'+
+        '</span></div>';
     }).join('');
     var col=catColorOf(g.c);
     var badge=priced?'<span class="pc-count">'+priced+'</span>':'';
@@ -1960,7 +1994,9 @@ function commitApproved(r,silent){
   var noteParts=[];
   if(r.notes)noteParts.push(r.notes);
   if(r.hair)noteParts.push('Hair — '+r.hair);
-  appts.push({id:'a'+Date.now()+Math.floor(Math.random()*999),name:r.name,phone:r.phone||'',service:r.service||'',date:r.date,time:r.time,dur:(+r.dur||60),price:(+r.price||0),notes:noteParts.join(' | '),status:'confirmed',viaBooking:true});
+  var hp=hairPrice(r.service,r.hairData);
+  var apptPrice=(+r.price>0)?(+r.price):hp.price;
+  appts.push({id:'a'+Date.now()+Math.floor(Math.random()*999),name:r.name,phone:r.phone||'',service:r.service||'',date:r.date,time:r.time,dur:(+r.dur||60),price:apptPrice,notes:noteParts.join(' | '),status:'confirmed',viaBooking:true});
   save(APPTS,appts);
   addClientFromBooking(r);
   if(fbReady&&r._id)db.collection('requests').doc(r._id).update({status:'approved'}).catch(function(){});
@@ -2012,6 +2048,7 @@ function renderRequests(){
   el.innerHTML=pendingReqs.map(function(r){
     var clash=reqConflict(r);
     var trusted=isTrustedPhone(r.phone);
+    var hp=hairPrice(r.service,r.hairData);
     var pill=r.custom?'<span class="req-pill custom">Custom time</span>':'<span class="req-pill pending">Pending</span>';
     if(r.customSvc)pill='<span class="req-pill custom">Off-menu service</span>'+pill;
     return '<div class="req-card">'+
@@ -2022,6 +2059,7 @@ function renderRequests(){
         '<i class="ti ti-phone"></i> '+(r.phone?esc(r.phone):'<span style="color:#888">no number given</span>')+'</div>'+
         (r.notes?'<div class="req-notes">“'+esc(r.notes)+'”</div>':'')+
         (r.hair?'<div class="req-hair"><i class="ti ti-windsock"></i> '+esc(r.hair)+'</div>':'')+
+        (hp.base>0?'<div class="req-price"><i class="ti ti-cash"></i> '+fmt$(hp.price)+(hp.applied&&hp.why.length?' <span class="req-why">auto · '+esc(hp.why.join(' · '))+'</span>':'')+'</div>':'')+
       '</div>'+pill+'</div>'+
       '<div class="req-acts">'+
         '<div class="req-btn app" onclick="approveRequest(\''+r._id+'\')"><i class="ti ti-check"></i> Approve</div>'+

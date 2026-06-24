@@ -338,6 +338,17 @@ function collectHair(){
   return parts.join(' | ');
 }
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+function collectHairData(){
+  if(returning)return null;
+  var d={length:'',thickness:'',colour:'',grey:'',history:[]};
+  document.querySelectorAll('#hairWrap [data-hair]').forEach(function(row){
+    var key=row.dataset.hair, picks=[];
+    row.querySelectorAll('.hchip.sel').forEach(function(c){picks.push(c.textContent.trim());});
+    if(!picks.length)return;
+    if(key==='history'){d.history=picks;}else{d[key]=picks[0];}
+  });
+  return d;
+}
 function toggleCustom(){
   customMode=!customMode;
   $('customWrap').classList.toggle('on',customMode);
@@ -365,7 +376,7 @@ function submitBooking(){
   var rec={
     salon:SALON_ID,name:name,phone:phone,service:selSvc,
     date:selDate,time:time||'09:00',dur:60,price:0,
-    notes:notesFull,hair:collectHair(),custom:!!isCustom,customSvc:!!otherSvcMode,status:'pending',createdAt:Date.now()
+    notes:notesFull,hair:collectHair(),hairData:collectHairData(),custom:!!isCustom,customSvc:!!otherSvcMode,status:'pending',createdAt:Date.now()
   };
   db.collection('requests').add(rec).then(function(){
     var when=isCustom?$('customTime').value.trim():(to12(selTime)+' on '+new Date(selDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}));
