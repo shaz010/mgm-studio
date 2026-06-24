@@ -321,6 +321,8 @@ textarea{min-height:64px;resize:vertical}
 .pill.done{background:var(--bggreen);border:1px solid var(--bgreen);color:var(--green)}
 .pill.cancelled{background:var(--bgred);border:1px solid var(--bred);color:var(--red)}
 .pill.noshow{background:var(--bgred);border:1px solid var(--bred);color:var(--red)}
+.pill.ip{background:var(--gold-dim);border:1px solid var(--gold);color:var(--gold)}
+.appt.ip .appt-bar{background:var(--gold)}
 
 .lrow{display:flex;align-items:center;gap:12px;background:#111;border:1px solid var(--border-bright);border-radius:11px;padding:13px 14px;margin-bottom:9px;cursor:pointer;transition:border .15s}
 .lrow:active{border-color:var(--gold)}
@@ -412,6 +414,8 @@ datalist{display:none}
 .cb-svc{font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cb-note{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
 .cb-price{font-size:18px;font-weight:800;color:var(--gold);flex-shrink:0}
+.cb-appt.ip{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+.cb-ip{font-size:11.5px;font-weight:800;color:var(--gold);margin-top:4px;letter-spacing:.3px}
 .price-tools{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .hair-toggle{padding:8px 11px;border-radius:8px;border:1.5px solid #555;background:#1a1a1a;color:#999;cursor:pointer;font-size:12px;font-weight:800;white-space:nowrap;flex-shrink:0;transition:all .12s;-webkit-tap-highlight-color:transparent}
 .hair-toggle.on{border-color:var(--gold);color:#1a1208;background:var(--gold)}
@@ -802,6 +806,14 @@ const DEFAULT_FAVES=["Women's Haircut","Color","Highlights","Men's Haircut",'Cut
 const ICON_OF=(function(){var m={};SERVICE_GROUPS.forEach(function(g){g.s.forEach(function(it){m[it[0]]=it[1];});});return m;})();
 var CAT_COLORS={'Cuts & Styling':'#FFC04D','Color':'#FF7AB0','Highlights':'#FFE15A','Treatments':'#5FD6C6','Texture':'#B79CFF','Length & Volume':'#7FB4FF',"Men's Grooming":'#8FD17A','Nails — Hands':'#FF93A6','Nails — Feet':'#5FC8EC','Nails — Enhancements':'#CBA6FF','Brows & Lashes':'#E6B07E','Waxing':'#F4A6C8','Skin & Extras':'#9AD9A6'};
 function catColorOf(c){return CAT_COLORS[c]||'#FFC04D';}
+function isInProgress(a){
+  if(!a||a.status==='done'||a.status==='cancelled'||a.status==='noshow')return false;
+  var now=new Date();
+  var ds=ymd(new Date(now.getFullYear(),now.getMonth(),now.getDate(),12,0,0));
+  if(a.date!==ds)return false;          // only today
+  if(!a.time)return false;
+  return (now.getHours()*60+now.getMinutes())>=slotMins(a.time); // start time has passed
+}
 
 /* ===== storage (ap_ namespace; client shape matches CommissionPro cp_clients) ===== */
 var APPTS='ap_appts', CLIENTS='ap_clients', CUSTOM='ap_custom', PREFS='ap_prefs', STOCK='ap_stock';
@@ -1183,12 +1195,13 @@ function renderDay(){
   }
   $('dayList').innerHTML=list.map(function(a){
     var st=a.status||'confirmed';
-    return '<div class="appt '+st+'" onclick="openSheet(\''+a.id+'\')">'+
+    var ip=isInProgress(a);
+    return '<div class="appt '+st+(ip?' ip':'')+'" onclick="openSheet(\''+a.id+'\')">'+
       '<div class="appt-bar"></div>'+
       '<div class="appt-time"><div class="appt-t1">'+to12(a.time).replace(' ','<span style="font-size:11px"> ')+'</span></div><div class="appt-t2">'+(a.dur?a.dur+' min':'')+'</div></div>'+
       '<div class="appt-body"><div class="appt-name">'+esc(a.name)+'</div>'+
       '<div class="appt-svc">'+esc(a.service||'—')+'</div>'+
-      '<div class="appt-meta"><span class="pill '+st+'">'+stLabel(st)+'</span>'+(a.phone?'<span><i class="ti ti-phone" style="font-size:11px"></i> '+esc(a.phone)+'</span>':'')+'</div></div>'+
+      '<div class="appt-meta">'+(ip?'<span class="pill ip">● In progress</span>':'<span class="pill '+st+'">'+stLabel(st)+'</span>')+(a.phone?'<span><i class="ti ti-phone" style="font-size:11px"></i> '+esc(a.phone)+'</span>':'')+'</div></div>'+
       '<div class="appt-price">'+fmt$(a.price)+'</div></div>';
   }).join('');
 }
@@ -1425,8 +1438,9 @@ function openClientBookings(id){
   var past=mine.filter(function(a){return !(a.date>=today&&a.status!=='done'&&a.status!=='noshow');})
               .sort(function(a,b){return ((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||''));});
   function row(a){
-    return '<div class="cb-appt" onclick="closeSheet(\'clientBookingsModal\');openSheet(\''+a.id+'\')">'+
-      '<div class="cb-when"><div class="cb-date">'+fmtReqDate(a.date)+'</div><div class="cb-time">'+to12(a.time)+'</div></div>'+
+    var ip=isInProgress(a);
+    return '<div class="cb-appt'+(ip?' ip':'')+'" onclick="closeSheet(\'clientBookingsModal\');openSheet(\''+a.id+'\')">'+
+      '<div class="cb-when"><div class="cb-date">'+fmtReqDate(a.date)+'</div><div class="cb-time">'+to12(a.time)+'</div>'+(ip?'<div class="cb-ip">● In progress</div>':'')+'</div>'+
       '<div class="cb-mid"><div class="cb-svc">'+esc(a.service||'—')+'</div>'+(a.notes?'<div class="cb-note">'+esc(a.notes)+'</div>':'')+'</div>'+
       '<div class="cb-price">'+fmt$(a.price)+'</div></div>';
   }
@@ -1554,7 +1568,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v1.6 · hair pricing';
+var VERSION='v1.8 · in-progress';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -2131,6 +2145,14 @@ $('cfYes').onclick=function(){
 renderDay();
 syncBookingToggle();
 initFB();
+
+/* live status — refresh the Day view each minute so 'In progress' flips on its own */
+setInterval(function(){
+  try{
+    var dv=$('view-day');
+    if(dv&&dv.classList.contains('active')&&dayMode==='day')renderDay();
+  }catch(_){}
+},60000);
 </script>
 </body>
 </html>
