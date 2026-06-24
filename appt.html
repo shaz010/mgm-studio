@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>AppointmentPro — MGM Studio</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -23,7 +23,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   --red:#ff7070;--bgred:#2a0a0a;--bred:#7a2a2a;
   --pink:#FF6FC0;--purple:#cc99ff;
 }
-.app-shell{max-width:980px;margin:0 auto;padding:16px;width:100%;overflow-x:hidden;overflow-x:clip}
+.app-shell{max-width:980px;margin:0 auto;padding:16px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));width:100%;overflow-x:hidden;overflow-x:clip}
 
 .topbar{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:10px;margin-bottom:14px}
 .topbar-brand{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
