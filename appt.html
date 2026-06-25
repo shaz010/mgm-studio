@@ -451,7 +451,7 @@ datalist{display:none}
 .req-price{font-size:13px;color:var(--gold);font-weight:700;margin-top:6px}
 .req-why{font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
 /* ===== Holographic Noir theme (opt-in) ===== */
-body.theme-noir{background:#000;}
+body.theme-noir{background:#000;--bg:#000;--bg2:#000;}
 body.theme-noir .app-shell{background:#000}
 body.theme-noir .topbar{background:#000;border-color:#1c1c26}
 body.theme-noir .topbar-sub{color:#ffd24a;text-shadow:0 0 8px rgba(255,210,74,.4)}
@@ -494,7 +494,7 @@ body.theme-noir .stk,body.theme-noir .hrow,body.theme-noir .card,body.theme-noir
     <button class="tab active" data-view="day" onclick="showView('day')"><i class="ti ti-calendar"></i><span>Day</span></button>
     <button class="tab" data-view="add" onclick="openAdd()"><i class="ti ti-calendar-plus"></i><span>Add</span></button>
     <button class="tab" data-view="clients" onclick="showView('clients')"><i class="ti ti-users"></i><span>Clients</span></button>
-    <button class="tab" data-view="stock" onclick="showView('stock')"><i class="ti ti-package"></i><span>Stock</span></button>
+    <button class="tab" data-view="stock" onclick="showView('stock')"><i class="ti ti-package"></i><span>Inventory</span></button>
   </div>
 
   <!-- DAY VIEW -->
@@ -614,7 +614,7 @@ body.theme-noir .stk,body.theme-noir .hrow,body.theme-noir .card,body.theme-noir
   <!-- STOCK VIEW -->
   <div class="view" id="view-stock">
     <div class="section-head">
-      <div class="section-title">Stock</div>
+      <div class="section-title">Inventory</div>
       <button class="btn btn-ghost btn-sm" onclick="openStockSheet()"><i class="ti ti-plus"></i> Add item</button>
     </div>
     <div id="reorderStrip"></div>
@@ -676,7 +676,7 @@ body.theme-noir .stk,body.theme-noir .hrow,body.theme-noir .card,body.theme-noir
 <div class="modal" id="stockModal" onclick="if(event.target===this)closeSheet('stockModal')">
   <div class="sheet">
     <div class="sheet-grip"></div>
-    <div class="sheet-title" id="skTitle">Add stock item</div>
+    <div class="sheet-title" id="skTitle">Add inventory item</div>
     <label>Item name</label>
     <input id="skName" placeholder="e.g. 6N color tube, 20vol peroxide, foils">
     <div class="row2">
@@ -1576,7 +1576,7 @@ function renderStock(){
   }else{strip.innerHTML='';}
 
   if(!stock.length){
-    $('stockList').innerHTML='<div class="empty"><i class="ti ti-package"></i><div class="empty-t">No stock items yet</div><div class="empty-s">Add the supplies you use — color tubes, peroxide, foils — and tick them down as you go. The app flags what to reorder.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openStockSheet()"><i class="ti ti-plus"></i> Add item</button></div>';
+    $('stockList').innerHTML='<div class="empty"><i class="ti ti-package"></i><div class="empty-t">No inventory yet</div><div class="empty-s">Add the supplies you use — color tubes, peroxide, foils — and tick them down as you go. The app flags what to reorder.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openStockSheet()"><i class="ti ti-plus"></i> Add item</button></div>';
     return;
   }
   var sorted=stock.slice().sort(function(a,b){
@@ -1639,7 +1639,7 @@ function openStockSheet(id){
     stockLinksDraft=(s.links||[]).slice();
     $('skDel').style.display='flex';
   }else{
-    $('skTitle').textContent='Add stock item';
+    $('skTitle').textContent='Add inventory item';
     $('skName').value='';$('skQty').value='';$('skMin').value='';$('skUnit').value='';
     stockLinksDraft=[];
     $('skDel').style.display='none';
@@ -1658,7 +1658,7 @@ function saveStock(){
 }
 function deleteStock(){
   if(!stockId)return;
-  askConfirm('Delete this stock item?',function(){
+  askConfirm('Delete this inventory item?',function(){
     stock=stock.filter(function(s){return s.id!==stockId});save(STOCK,stock);
     closeSheet('stockModal');renderStock();toast('Deleted');
   },{title:'Delete item',yesLabel:'Delete item',danger:true});
@@ -1678,7 +1678,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v3.6 · strip months + week numbers';
+var VERSION='v3.7 · pitch black all pages + Inventory';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -1789,7 +1789,7 @@ function renderInsights(){
     '<div class="ins-group"><div class="ins-h">Money</div>'+
       row('Booked value','<b>'+fmt$(booked)+'</b>')+
       row('Completed ('+doneCount+')','<b>'+fmt$(doneVal)+'</b>')+'</div>'+
-    '<div class="ins-group"><div class="ins-h">Stock</div>'+
+    '<div class="ins-group"><div class="ins-h">Inventory</div>'+
       (topItem?row('Most used','<b>'+esc(topItem.name)+'</b> ('+(+topItem.used||0)+')'):'<div class="ins-empty">Mark appointments Done to track stock use.</div>')+'</div>';
 }
 
