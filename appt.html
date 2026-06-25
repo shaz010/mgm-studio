@@ -377,7 +377,7 @@ textarea{min-height:64px;resize:vertical}
 
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
 .modal.show{display:flex}
-.sheet{background:var(--bg2);border:1px solid var(--border-bright);border-bottom:none;border-radius:18px 18px 0 0;padding:20px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;animation:slideup .22s ease}
+.sheet{background:var(--bg2);border:1px solid var(--border-bright);border-bottom:none;border-radius:18px 18px 0 0;padding:20px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:slideup .22s ease}
 @keyframes slideup{from{transform:translateY(40px);opacity:.6}to{transform:translateY(0);opacity:1}}
 .sheet-grip{width:38px;height:4px;background:#444;border-radius:3px;margin:0 auto 16px}
 .sheet-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px}
@@ -506,12 +506,19 @@ body.theme-noir .stk,body.theme-noir .hrow,body.theme-noir .card,body.theme-noir
 .inv-low-badge{display:inline-block;margin-top:5px;font-size:9px;font-weight:800;letter-spacing:.5px;padding:2px 8px;border-radius:20px;color:#ff3b5c;border:1px solid #5a1422;background:#16070b}
 .inv-stepper{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .inv-del{width:30px;height:30px;border-radius:8px;border:1px solid #3a1219;background:transparent;color:#ff6b81;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;cursor:pointer}
+.inv-edit{width:30px;height:30px;border-radius:8px;border:1px solid var(--border-bright);background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;cursor:pointer}
+.inv-item{gap:8px}
+.inv-item .inv-ic{margin-right:2px}
 .inv-step{width:30px;height:30px;border-radius:9px;border:1px solid var(--border-bright);background:#0a0a0e;color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;line-height:1;cursor:pointer}
 .inv-qty{min-width:34px;text-align:center}
 .inv-qty-n{font-size:18px;font-weight:800;line-height:1}
 .inv-qty-n.low{color:#ff3b5c}
 .inv-qty-u{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
 .sk-cats{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+.sk-add{display:flex;gap:8px;margin-top:8px}
+.sk-add input{flex:1}
+.sk-add .btn{flex:0 0 auto}
+.sk-add-chip{border-style:dashed;border-color:var(--gold-border);color:var(--gold);background:transparent}
 .sk-cat{padding:7px 11px;border-radius:8px;border:1.5px solid var(--border-bright);background:#1a1a1a;color:var(--muted);font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
 .sk-cat.on{border-color:var(--gold);background:var(--gold-dim);color:var(--gold)}
 body.theme-noir .inv-kpi,body.theme-noir .inv-cat,body.theme-noir .inv-item,body.theme-noir .inv-seg{border-color:#1c1c26}
@@ -737,8 +744,16 @@ body.theme-noir .svc-more-btn{background:#000;border-color:#2e2e3a;color:#e8e8e8
     <input id="skName" placeholder="e.g. 6N color tube, 20vol peroxide, foils">
     <label style="margin-top:14px">Trade</label>
     <div id="skTrades" class="sk-cats"></div>
+    <div id="skTradeAdd" class="sk-add" style="display:none">
+      <input id="skTradeNew" placeholder="New trade name…" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();commitTrade()}">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="commitTrade()"><i class="ti ti-check"></i> Add</button>
+    </div>
     <label style="margin-top:14px">Category</label>
     <div id="skCats" class="sk-cats"></div>
+    <div id="skCatAdd" class="sk-add" style="display:none">
+      <input id="skCatNew" placeholder="New category name…" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();commitCat()}">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="commitCat()"><i class="ti ti-check"></i> Add</button>
+    </div>
     <div class="row2" style="margin-top:14px">
       <div><label>In stock now</label><input id="skQty" type="number" inputmode="numeric" placeholder="0"></div>
       <div><label>Reorder at</label><input id="skMin" type="number" inputmode="numeric" placeholder="2"></div>
@@ -748,8 +763,8 @@ body.theme-noir .svc-more-btn{background:#000;border-color:#2e2e3a;color:#e8e8e8
       <div><label>Cost each <span style="color:#666;font-weight:400">(optional)</span></label><input id="skCost" type="number" inputmode="decimal" placeholder="0"></div>
     </div>
     <div class="btn-row" style="margin-top:18px;gap:8px">
-      <button class="btn btn-ghost" style="flex:0 0 auto" onclick="closeSheet('stockModal')">Cancel</button>
-      <button class="btn" style="flex:1" onclick="saveStock()"><i class="ti ti-check"></i> Save item</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeSheet('stockModal')">Cancel</button>
+      <button class="btn" style="flex:2" onclick="saveStock()"><i class="ti ti-check"></i> Save item</button>
     </div>
     <div class="btn-row" id="skDel" style="display:none">
       <button class="btn btn-danger btn-sm" style="flex:1" onclick="deleteStock()"><i class="ti ti-trash"></i> Delete item</button>
@@ -1633,7 +1648,8 @@ var INV_TRADES=[
   {k:'esthetician',label:'Esthetician',icon:'ti-droplet'},
   {k:'barber',label:'Barber',icon:'ti-tools'},
   {k:'eyebrow',label:'Brows',icon:'ti-eye'},
-  {k:'massage',label:'Massage',icon:'ti-hand-stop'}
+  {k:'massage',label:'Massage',icon:'ti-hand-stop'},
+  {k:'other',label:'Other',icon:'ti-dots'}
 ];
 var INV_CATS={
   stylist:['Color','Developer','Lightening','Foils','Hairspray','Toner','Bond','Other'],
@@ -1642,9 +1658,10 @@ var INV_CATS={
   esthetician:['Cleanser','Exfoliant','Mask','Serum','Moisturizer','Wax','Strips','Gloves','Other'],
   barber:['Guards','Blades','Shave cream','Razors','Aftershave','Talc','Neck strips','Tonic','Other'],
   eyebrow:['Tint','Wax','Threads','Lamination','Brow gel','Strips','Tools','Other'],
-  massage:['Massage oil','Lotion','Hot stones','Towels','Disinfectant','Other']
+  massage:['Massage oil','Lotion','Hot stones','Towels','Disinfectant','Other'],
+  other:['Supplies','Tools','Other']
 };
-var TRADE_IC={stylist:'ic-cyan',nail:'ic-pink',hairext:'ic-purple',esthetician:'ic-green',barber:'ic-amber',eyebrow:'ic-pink',massage:'ic-cyan'};
+var TRADE_IC={stylist:'ic-cyan',nail:'ic-pink',hairext:'ic-purple',esthetician:'ic-green',barber:'ic-amber',eyebrow:'ic-pink',massage:'ic-cyan',other:'ic-gray'};
 var INV_ICON={
   'Color':['ti-droplet','ic-cyan'],'Developer':['ti-flask','ic-purple'],'Lightening':['ti-flask','ic-amber'],
   'Foils':['ti-scissors','ic-amber'],'Hairspray':['ti-droplet','ic-cyan'],'Toner':['ti-droplet','ic-cyan'],'Bond':['ti-flask','ic-green'],
@@ -1653,8 +1670,36 @@ var INV_ICON={
   'Tips/Forms':['ti-hand-finger','ic-pink'],'Prep':['ti-eraser','ic-green'],'Files':['ti-tools','ic-amber'],
   'Wipes':['ti-eraser','ic-green'],'Cuticle oil':['ti-droplet','ic-green'],'Glue':['ti-droplet','ic-pink'],'Other':['ti-package','ic-gray']
 };
-function tradeLabel(k){for(var i=0;i<INV_TRADES.length;i++){if(INV_TRADES[i].k===k)return INV_TRADES[i].label;}return 'Hair';}
+/* custom trades + categories (user-added, saved in prefs) */
+function getCustomTrades(){var p=getPrefs();return Array.isArray(p.customTrades)?p.customTrades:[];}
+function getCustomCats(trade){var p=getPrefs();var m=p.customCats||{};return Array.isArray(m[trade])?m[trade]:[];}
+function allTrades(){return INV_TRADES.concat(getCustomTrades().map(function(t){return {k:t.k,label:t.label,icon:'ti-tag'};}));}
+function catsFor(trade){var base=(INV_CATS[trade]||['Other']).slice();getCustomCats(trade).forEach(function(c){if(base.indexOf(c)<0)base.splice(Math.max(base.length-1,0),0,c);});return base;}
+function tradeLabel(k){var all=allTrades();for(var i=0;i<all.length;i++){if(all[i].k===k)return all[i].label;}return 'Hair';}
 function invIcon(c,trade){return INV_ICON[c]||['ti-package',TRADE_IC[trade]||'ic-gray'];}
+function addCustomTrade(label){
+  label=(label||'').trim();if(!label){toast('Type a trade name',1);return;}
+  var p=getPrefs();var list=Array.isArray(p.customTrades)?p.customTrades:[];var found=null;
+  list.forEach(function(t){if(t.label.toLowerCase()===label.toLowerCase())found=t;});
+  var key=found?found.k:('ct_'+Date.now().toString(36));
+  if(!found){list.push({k:key,label:label});p.customTrades=list;setPrefs(p);}
+  skTrade=key;skCat=(catsFor(key)[0]||'Other');
+  if($('skTradeAdd'))$('skTradeAdd').style.display='none';
+  renderStockTrades();renderStockCats();
+}
+function addCustomCat(name){
+  name=(name||'').trim();if(!name){toast('Type a category name',1);return;}
+  var p=getPrefs();var m=p.customCats||{};var arr=Array.isArray(m[skTrade])?m[skTrade]:[];
+  var have=catsFor(skTrade).map(function(x){return x.toLowerCase();}).indexOf(name.toLowerCase())>=0;
+  if(!have){arr.push(name);m[skTrade]=arr;p.customCats=m;setPrefs(p);}
+  skCat=name;
+  if($('skCatAdd'))$('skCatAdd').style.display='none';
+  renderStockCats();
+}
+function showTradeAdd(){var b=$('skTradeAdd');if(!b)return;b.style.display='flex';var i=$('skTradeNew');i.value='';setTimeout(function(){i.focus();},60);}
+function commitTrade(){addCustomTrade($('skTradeNew').value);}
+function showCatAdd(){var b=$('skCatAdd');if(!b)return;b.style.display='flex';var i=$('skCatNew');i.value='';setTimeout(function(){i.focus();},60);}
+function commitCat(){addCustomCat($('skCatNew').value);}
 var invTrade='stylist', invCat='all', skCat='Color', skTrade='stylist';
 function setInvTrade(t){invTrade=t;invCat='all';var p=getPrefs();p.invTrade=t;setPrefs(p);renderStock();}
 function setInvCat(c){invCat=c;renderStock();}
@@ -1667,8 +1712,8 @@ function delStockRow(id,ev){
 
 function renderStock(){
   reload();
-  $('invTrades').innerHTML=INV_TRADES.map(function(t){
-    return '<button class="inv-seg-btn'+(invTrade===t.k?' on':'')+'" data-t="'+t.k+'" onclick="setInvTrade(\''+t.k+'\')"><i class="ti '+t.icon+'"></i> '+t.label+'</button>';
+  $('invTrades').innerHTML=allTrades().map(function(t){
+    return '<button class="inv-seg-btn'+(invTrade===t.k?' on':'')+'" data-t="'+t.k+'" onclick="setInvTrade(\''+t.k+'\')"><i class="ti '+(t.icon||'ti-tag')+'"></i> '+esc(t.label)+'</button>';
   }).join('');
   var items=stock.filter(function(s){return (s.trade||'stylist')===invTrade});
   var low=items.filter(function(s){return (+s.qty||0)<=(+s.min||0)});
@@ -1683,7 +1728,7 @@ function renderStock(){
       low.map(function(s){return '<div class="inv-chip" onclick="openStockSheet(\''+s.id+'\')">'+esc(s.name)+'</div>';}).join('')+'</div></div>';
   }else{strip.innerHTML='';}
   var usedCats={};items.forEach(function(s){usedCats[s.cat||'Other']=true;});
-  var chips=['all'].concat((INV_CATS[invTrade]||[]).filter(function(c){return usedCats[c];}));
+  var chips=['all'].concat(catsFor(invTrade).filter(function(c){return usedCats[c];}));
   if(invCat!=='all'&&!usedCats[invCat])invCat='all';
   $('invCats').innerHTML=(chips.length>1?chips.map(function(c){
     return '<div class="inv-cat'+(invCat===c?' on':'')+'" onclick="setInvCat(\''+c+'\')">'+(c==='all'?'All':esc(c))+'</div>';
@@ -1704,6 +1749,7 @@ function renderStock(){
     return '<div class="inv-item'+(isLow?' low':'')+'">'+
       '<div class="inv-ic '+ico[1]+'" onclick="openStockSheet(\''+s.id+'\')"><i class="ti '+ico[0]+'"></i></div>'+
       '<div class="inv-mid" onclick="openStockSheet(\''+s.id+'\')"><div class="inv-n">'+esc(s.name)+'</div><div class="inv-s">'+sub+'</div>'+(isLow?'<div class="inv-low-badge">LOW · REORDER</div>':'')+'</div>'+
+      '<button class="inv-edit" onclick="openStockSheet(\''+s.id+'\')" aria-label="edit item"><i class="ti ti-pencil"></i></button>'+
       '<button class="inv-del" onclick="delStockRow(\''+s.id+'\',event)" aria-label="delete item"><i class="ti ti-trash"></i></button>'+
       '<div class="inv-stepper">'+
         '<button class="inv-step" onclick="useStock(\''+s.id+'\')" aria-label="used one">−</button>'+
@@ -1747,18 +1793,21 @@ function toggleStockLink(el,name){
   el.classList.toggle('sel');
 }
 function renderStockTrades(){
-  $('skTrades').innerHTML=INV_TRADES.map(function(t){
-    return '<button type="button" class="sk-cat'+(skTrade===t.k?' on':'')+'" onclick="selectStockTrade(\''+t.k+'\')">'+t.label+'</button>';
+  var html=allTrades().map(function(t){
+    return '<button type="button" class="sk-cat'+(skTrade===t.k?' on':'')+'" onclick="selectStockTrade(\''+t.k+'\')">'+esc(t.label)+'</button>';
   }).join('');
+  html+='<button type="button" class="sk-cat sk-add-chip" onclick="showTradeAdd()"><i class="ti ti-plus"></i> Add</button>';
+  $('skTrades').innerHTML=html;
 }
-function selectStockTrade(k){skTrade=k;skCat=(INV_CATS[k]||['Other'])[0];renderStockTrades();renderStockCats();}
+function selectStockTrade(k){skTrade=k;skCat=(catsFor(k)[0]||'Other');if($('skTradeAdd'))$('skTradeAdd').style.display='none';renderStockTrades();renderStockCats();}
 function renderStockCats(){
-  var cats=INV_CATS[skTrade]||INV_CATS.stylist;
-  $('skCats').innerHTML=cats.map(function(c){
-    return '<button type="button" class="sk-cat'+(skCat===c?' on':'')+'" onclick="selectStockCat(\''+c+'\')">'+esc(c)+'</button>';
+  var html=catsFor(skTrade).map(function(c){
+    return '<button type="button" class="sk-cat'+(skCat===c?' on':'')+'" onclick="selectStockCat(\''+jsq(c)+'\')">'+esc(c)+'</button>';
   }).join('');
+  html+='<button type="button" class="sk-cat sk-add-chip" onclick="showCatAdd()"><i class="ti ti-plus"></i> Add</button>';
+  $('skCats').innerHTML=html;
 }
-function selectStockCat(c){skCat=c;renderStockCats();}
+function selectStockCat(c){skCat=c;if($('skCatAdd'))$('skCatAdd').style.display='none';renderStockCats();}
 function openStockSheet(id){
   stockId=id||null;
   if(id){
@@ -1766,17 +1815,19 @@ function openStockSheet(id){
     $('skTitle').textContent='Edit item';
     $('skName').value=s.name;$('skQty').value=s.qty;$('skMin').value=s.min;$('skUnit').value=s.unit||'';$('skCost').value=(s.cost!=null&&s.cost!==0?s.cost:'');
     skTrade=s.trade||'stylist';
-    skCat=s.cat||(INV_CATS[skTrade]||INV_CATS.stylist)[0];
+    skCat=s.cat||(catsFor(skTrade)[0]||'Other');
     stockLinksDraft=(s.links||[]).slice();
     $('skDel').style.display='flex';
   }else{
     $('skTitle').textContent='Add inventory item';
     $('skName').value='';$('skQty').value='';$('skMin').value='';$('skUnit').value='';$('skCost').value='';
     skTrade=invTrade;
-    skCat=(INV_CATS[skTrade]||INV_CATS.stylist)[0];
+    skCat=(catsFor(skTrade)[0]||'Other');
     stockLinksDraft=[];
     $('skDel').style.display='none';
   }
+  if($('skTradeAdd'))$('skTradeAdd').style.display='none';
+  if($('skCatAdd'))$('skCatAdd').style.display='none';
   renderStockTrades();
   renderStockCats();
   $('stockModal').classList.add('show');
@@ -1814,7 +1865,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v3.9 · 7 trades + quick delete';
+var VERSION='v4.1 · row edit + sheet fit';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
