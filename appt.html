@@ -290,6 +290,8 @@ textarea{min-height:64px;resize:vertical}
 .wcell-n{font-size:15px;font-weight:700;color:var(--text);margin-top:1px;line-height:1.1}
 .wcell.today .wcell-n{color:var(--gold)}
 .wcell.sel .wcell-n{color:var(--gold)}
+.wcell-mo{font-size:9px;color:var(--muted);margin-top:1px;text-transform:uppercase;letter-spacing:.2px}
+.wcell.sel .wcell-mo{color:var(--gold)}
 .wcell-dot{height:7px;margin-top:3px;display:flex;justify-content:center;align-items:center}
 .wcell-dot span{width:5px;height:5px;border-radius:50%;background:var(--gold);display:block}
 .daybar-nav:active{border-color:var(--gold)}
@@ -1026,6 +1028,7 @@ function renderWeekStrip(){
     html+='<div class="'+cls+'" onclick="pickDay(\''+ds+'\')">'+
       '<div class="wcell-d">'+L[d.getDay()]+'</div>'+
       '<div class="wcell-n">'+d.getDate()+'</div>'+
+      '<div class="wcell-mo">'+d.toLocaleDateString('en-US',{month:'short'})+'</div>'+
       '<div class="wcell-dot">'+(cnt?'<span></span>':'')+'</div></div>';
     d.setDate(d.getDate()+1);
   }
@@ -1610,7 +1613,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v2.6 · tap-to-pick';
+var VERSION='v2.7 · day month tags';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},

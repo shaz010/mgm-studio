@@ -26,6 +26,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .svc-pill span.x:active{opacity:1}
 .chip:active{transform:scale(.95)}
 .dates{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.dmonth{flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;opacity:.85;padding:0 3px}
 .datecell{flex:0 0 auto;width:58px;background:#111;border:1.5px solid var(--border-bright);border-radius:11px;padding:8px 0;text-align:center;cursor:pointer;transition:all .15s}
 .datecell.sel{background:var(--gold-dim);border-color:var(--gold)}
 .datecell:active{transform:scale(.95)}
@@ -218,7 +219,7 @@ var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false;
 
 function $(id){return document.getElementById(id);}
-var VERSION='book v1.0';
+var VERSION='book v1.2 · month+dividers';
 function show(id){['loadingView','closedView','errorView','doneView','formView'].forEach(function(v){$(v).classList.toggle('hidden',v!==id);});}
 function mins(t){if(!t)return 0;var p=(''+t).split(':');return (+p[0])*60+(+p[1]||0);}
 function fromMins(m){var h=Math.floor(m/60),mm=m%60;return (h<10?'0':'')+h+':'+(mm<10?'0':'')+mm;}
@@ -275,13 +276,19 @@ function buildForm(){
   // dates: next WEEKS_AHEAD*7 days, only open days
   var hours=info.hours||[];
   var row='', today=new Date(); today.setHours(12,0,0,0);
-  var first='';
+  var first='', lastMonth=-1;
   for(var i=0;i<WEEKS_AHEAD*7;i++){
     var d=new Date(today); d.setDate(today.getDate()+i);
     var dh=hours[dayIdx(d)];
     if(dh&&dh.open===false)continue;
-    var ds=ymd(d);
+    var ds=ymd(d), mo=d.getMonth();
     if(!first)first=ds;
+    if(mo!==lastMonth){
+      var lbl=d.toLocaleDateString('en-US',{month:'short'});
+      if(d.getFullYear()!==today.getFullYear())lbl+=" '"+String(d.getFullYear()).slice(2);
+      row+='<div class="dmonth">'+lbl+'</div>';
+      lastMonth=mo;
+    }
     row+='<div class="datecell" data-d="'+ds+'" onclick="pickDate(this)">'+
       '<div class="dc-dow">'+['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()]+'</div>'+
       '<div class="dc-n">'+d.getDate()+'</div>'+
