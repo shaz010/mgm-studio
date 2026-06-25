@@ -2087,6 +2087,11 @@ let prefs = {};
 
 function loadPrefs(){
   try{ prefs = JSON.parse(localStorage.getItem(PREFS_KEY)||'{}'); }catch(e){ prefs={}; }
+  if(!prefs.noirDefaulted){
+    if(!prefs.theme || prefs.theme==='dark'){ prefs.theme='noir'; }
+    prefs.noirDefaulted=true;
+    try{ savePrefsToStorage(); }catch(e){}
+  }
   return prefs;
 }
 
@@ -2119,11 +2124,11 @@ function selThemeS(theme, btn){
 function selAccentS(accent, el){
   if(el){ document.querySelectorAll('.accent-swatch').forEach(s=>s.classList.remove('sel')); el.classList.add('sel'); }
   prefs.accent = accent;
-  applyTheme(prefs.theme||'dark', prefs.accent);
+  applyTheme(prefs.theme||'noir', prefs.accent);
   savePrefsToStorage();
 }
 function markCurrentThemeAccent(){
-  const th = prefs.theme||'dark';
+  const th = prefs.theme||'noir';
   document.querySelectorAll('.theme-btn').forEach(b=>{
     const m = (b.getAttribute('onclick')||'').match(/selThemeS\('(\w+)'/);
     b.classList.toggle('sel', !!m && m[1]===th);
@@ -2444,7 +2449,7 @@ function warpSet(st){ if(st){WARP.start(st);} else {WARP.stop();} }
 function initPrefs(){
   loadPrefs();
   applyLightComfort();
-  applyTheme(prefs.theme||'dark', prefs.accent||'gold');
+  applyTheme(prefs.theme||'noir', prefs.accent||'gold');
   updateBranding(prefs.name, prefs.salon);
   updateCommissionRate(prefs.rate||60);
   applyWallpaper(prefs.wallpaper||'none');
@@ -2453,7 +2458,7 @@ function initPrefs(){
 initPrefs();
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.1 · holographic noir';
+var VERSION='app v1.2 · noir default';
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
   try{
