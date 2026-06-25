@@ -980,7 +980,7 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
       <div class="legal-body">CommissionPro is a personal tracking tool. All figures are estimates based on the information you enter and are for your own reference only — not official payroll, tax, or accounting records. Commission splits and pay vary; the app reflects only the values you input and does not guarantee any amount. CommissionPro does not provide financial, legal, or tax advice. Always verify your earnings against your salon's official records.<br><br>Eye Rest is a relaxing visual and a reminder to rest your eyes. It is not a medical device or treatment, is not a substitute for professional eye care, and makes no health or therapeutic claims.<br><br><a href="privacy.html" target="_blank" style="color:var(--gold);text-decoration:none">Privacy Policy ↗</a> &nbsp;·&nbsp; <a href="terms.html" target="_blank" style="color:var(--gold);text-decoration:none">Terms of Service ↗</a></div>
     </details>
 
-    <div style="text-align:center;margin:16px 0 2px;font-size:11px;color:#666;letter-spacing:.3px">CommissionPro · build 71</div>
+    <div id="buildBadge" style="text-align:center;margin:16px 0 2px;font-size:11px;color:#666;letter-spacing:.3px">CommissionPro · build 71</div>
 
     <button class="setup-btn" onclick="saveSettings()">Save settings</button>
   </div>
@@ -2459,6 +2459,7 @@ initPrefs();
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
 var VERSION='app v1.2 · noir default';
+(function(){var b=document.getElementById('buildBadge');if(b)b.textContent='CommissionPro · '+VERSION.replace(/^app\s*/,'');})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
   try{
