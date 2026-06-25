@@ -562,6 +562,8 @@ body.theme-noir .tabs{background:#000}
 .sk-add-chip{border-style:dashed;border-color:var(--gold-border);color:var(--gold);background:transparent}
 .sk-mng{border-color:var(--border-bright);color:var(--text2);background:transparent}
 .sk-mng-del{border-color:#5a1422;color:#ff6b81;background:transparent}
+#skTrades .sk-cat:not(.sk-add-chip):not(.sk-mng):not(.sk-mng-del){color:#bfe3ef}
+#skCats .sk-cat:not(.sk-add-chip):not(.sk-mng):not(.sk-mng-del){color:#e7cdf2}
 </style>
 </head>
 <body>
@@ -796,9 +798,8 @@ body.theme-noir .tabs{background:#000}
       <div><label>Unit <span style="color:#666;font-weight:400">(optional)</span></label><input id="skUnit" placeholder="tubes, bottles…"></div>
       <div><label>Cost each <span style="color:#666;font-weight:400">(optional)</span></label><input id="skCost" type="number" inputmode="decimal" placeholder="0"></div>
     </div>
-    <div class="btn-row" style="margin-top:18px;gap:8px">
-      <button class="btn btn-ghost" style="flex:1" onclick="closeSheet('stockModal')">Cancel</button>
-      <button class="btn" style="flex:2" onclick="saveStock()"><i class="ti ti-check"></i> Save item</button>
+    <div class="btn-row" style="margin-top:18px">
+      <button class="btn" style="flex:1" onclick="doneStock()"><i class="ti ti-check"></i> Done</button>
     </div>
     <div class="btn-row" id="skDel" style="display:none">
       <button class="btn btn-danger btn-sm" style="flex:1" onclick="deleteStock()"><i class="ti ti-trash"></i> Delete item</button>
@@ -1964,6 +1965,11 @@ function openStockSheet(id){
   renderStockCats();
   $('stockModal').classList.add('show');
 }
+function doneStock(){
+  if($('skTradeAdd')&&$('skTradeAdd').style.display!=='none'&&$('skTradeNew').value.trim()){commitTrade();}
+  if($('skCatAdd')&&$('skCatAdd').style.display!=='none'&&$('skCatNew').value.trim()){commitCat();}
+  if($('skName').value.trim()){saveStock();}else{closeSheet('stockModal');}
+}
 function saveStock(){
   var name=$('skName').value.trim();if(!name){toast('Add an item name',1);return;}
   var cost=parseFloat($('skCost').value);if(isNaN(cost))cost=0;
@@ -1997,7 +2003,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.4 · iridescent nav + chips';
+var VERSION='v4.5 · Done button + tints';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
