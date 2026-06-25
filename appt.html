@@ -519,6 +519,9 @@ body.theme-noir .stk,body.theme-noir .hrow,body.theme-noir .card,body.theme-noir
 .sk-add input{flex:1}
 .sk-add .btn{flex:0 0 auto}
 .sk-add-chip{border-style:dashed;border-color:var(--gold-border);color:var(--gold);background:transparent}
+.sk-mng{border-color:var(--border-bright);color:var(--text2);background:transparent}
+.sk-mng-del{border-color:#5a1422;color:#ff6b81;background:transparent}
+.sheet-wide{max-width:min(940px,95vw);max-height:94vh}
 .sk-cat{padding:7px 11px;border-radius:8px;border:1.5px solid var(--border-bright);background:#1a1a1a;color:var(--muted);font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
 .sk-cat.on{border-color:var(--gold);background:var(--gold-dim);color:var(--gold)}
 body.theme-noir .inv-kpi,body.theme-noir .inv-cat,body.theme-noir .inv-item,body.theme-noir .inv-seg{border-color:#1c1c26}
@@ -737,7 +740,7 @@ body.theme-noir .svc-more-btn{background:#000;border-color:#2e2e3a;color:#e8e8e8
 
 <!-- STOCK ITEM SHEET -->
 <div class="modal" id="stockModal" onclick="if(event.target===this)closeSheet('stockModal')">
-  <div class="sheet">
+  <div class="sheet sheet-wide">
     <div class="sheet-grip"></div>
     <div class="sheet-title" id="skTitle">Add inventory item</div>
     <label>Item name</label>
@@ -1696,10 +1699,50 @@ function addCustomCat(name){
   if($('skCatAdd'))$('skCatAdd').style.display='none';
   renderStockCats();
 }
-function showTradeAdd(){var b=$('skTradeAdd');if(!b)return;b.style.display='flex';var i=$('skTradeNew');i.value='';setTimeout(function(){i.focus();},60);}
-function commitTrade(){addCustomTrade($('skTradeNew').value);}
-function showCatAdd(){var b=$('skCatAdd');if(!b)return;b.style.display='flex';var i=$('skCatNew');i.value='';setTimeout(function(){i.focus();},60);}
-function commitCat(){addCustomCat($('skCatNew').value);}
+var skTradeEditKey=null, skCatEditName=null;
+function isCustomTrade(k){return /^ct_/.test(k);}
+function isCustomCat(trade,c){return getCustomCats(trade).indexOf(c)>=0;}
+function showTradeAdd(){skTradeEditKey=null;var b=$('skTradeAdd');if(!b)return;b.style.display='flex';var i=$('skTradeNew');i.value='';setTimeout(function(){i.focus();},60);}
+function showTradeRename(key){var t=getCustomTrades().filter(function(x){return x.k===key;})[0];if(!t)return;skTradeEditKey=key;var b=$('skTradeAdd');if(!b)return;b.style.display='flex';var i=$('skTradeNew');i.value=t.label;setTimeout(function(){i.focus();if(i.select)i.select();},60);}
+function commitTrade(){var v=$('skTradeNew').value;if(skTradeEditKey){renameCustomTrade(skTradeEditKey,v);}else{addCustomTrade(v);}}
+function renameCustomTrade(key,label){
+  label=(label||'').trim();if(!label){toast('Type a trade name',1);return;}
+  var p=getPrefs();var list=getCustomTrades();list.forEach(function(t){if(t.k===key)t.label=label;});p.customTrades=list;setPrefs(p);
+  skTradeEditKey=null;if($('skTradeAdd'))$('skTradeAdd').style.display='none';
+  renderStockTrades();renderStockCats();renderStock();toast('Trade renamed');
+}
+function removeCustomTrade(key){
+  var cnt=stock.filter(function(s){return (s.trade||'stylist')===key;}).length;
+  var msg=cnt?('This trade has '+cnt+' item'+(cnt>1?'s':'')+' — they\'ll move to Hair.'):'Remove this custom trade?';
+  askConfirm(msg,function(){
+    if(cnt){stock=stock.map(function(s){return (s.trade||'stylist')===key?Object.assign({},s,{trade:'stylist'}):s;});save(STOCK,stock);}
+    var p=getPrefs();p.customTrades=getCustomTrades().filter(function(t){return t.k!==key;});setPrefs(p);
+    if(skTrade===key){skTrade='stylist';skCat=(catsFor('stylist')[0]||'Other');}
+    if(invTrade===key)invTrade='stylist';
+    if($('skTradeAdd'))$('skTradeAdd').style.display='none';
+    renderStockTrades();renderStockCats();renderStock();toast('Trade removed');
+  },{title:'Remove trade',yesLabel:'Remove',danger:true});
+}
+function showCatAdd(){skCatEditName=null;var b=$('skCatAdd');if(!b)return;b.style.display='flex';var i=$('skCatNew');i.value='';setTimeout(function(){i.focus();},60);}
+function showCatRename(name){skCatEditName=name;var b=$('skCatAdd');if(!b)return;b.style.display='flex';var i=$('skCatNew');i.value=name;setTimeout(function(){i.focus();if(i.select)i.select();},60);}
+function commitCat(){var v=$('skCatNew').value;if(skCatEditName){renameCustomCat(skTrade,skCatEditName,v);}else{addCustomCat(v);}}
+function renameCustomCat(trade,oldName,newName){
+  newName=(newName||'').trim();if(!newName){toast('Type a category name',1);return;}
+  var p=getPrefs();var m=p.customCats||{};m[trade]=(m[trade]||[]).map(function(c){return c===oldName?newName:c;});p.customCats=m;setPrefs(p);
+  stock=stock.map(function(s){return ((s.trade||'stylist')===trade&&s.cat===oldName)?Object.assign({},s,{cat:newName}):s;});save(STOCK,stock);
+  if(skCat===oldName)skCat=newName;skCatEditName=null;
+  if($('skCatAdd'))$('skCatAdd').style.display='none';
+  renderStockCats();renderStock();toast('Category renamed');
+}
+function removeCustomCat(trade,name){
+  askConfirm('Remove this category? Items in it become "Other".',function(){
+    var p=getPrefs();var m=p.customCats||{};m[trade]=(m[trade]||[]).filter(function(c){return c!==name;});p.customCats=m;setPrefs(p);
+    stock=stock.map(function(s){return ((s.trade||'stylist')===trade&&s.cat===name)?Object.assign({},s,{cat:'Other'}):s;});save(STOCK,stock);
+    if(skCat===name)skCat=(catsFor(trade)[0]||'Other');
+    if($('skCatAdd'))$('skCatAdd').style.display='none';
+    renderStockCats();renderStock();toast('Category removed');
+  },{title:'Remove category',yesLabel:'Remove',danger:true});
+}
 var invTrade='stylist', invCat='all', skCat='Color', skTrade='stylist';
 function setInvTrade(t){invTrade=t;invCat='all';var p=getPrefs();p.invTrade=t;setPrefs(p);renderStock();}
 function setInvCat(c){invCat=c;renderStock();}
@@ -1797,6 +1840,10 @@ function renderStockTrades(){
     return '<button type="button" class="sk-cat'+(skTrade===t.k?' on':'')+'" onclick="selectStockTrade(\''+t.k+'\')">'+esc(t.label)+'</button>';
   }).join('');
   html+='<button type="button" class="sk-cat sk-add-chip" onclick="showTradeAdd()"><i class="ti ti-plus"></i> Add</button>';
+  if(isCustomTrade(skTrade)){
+    html+='<button type="button" class="sk-cat sk-mng" onclick="showTradeRename(\''+skTrade+'\')"><i class="ti ti-pencil"></i> Rename</button>';
+    html+='<button type="button" class="sk-cat sk-mng-del" onclick="removeCustomTrade(\''+skTrade+'\')"><i class="ti ti-trash"></i></button>';
+  }
   $('skTrades').innerHTML=html;
 }
 function selectStockTrade(k){skTrade=k;skCat=(catsFor(k)[0]||'Other');if($('skTradeAdd'))$('skTradeAdd').style.display='none';renderStockTrades();renderStockCats();}
@@ -1805,6 +1852,10 @@ function renderStockCats(){
     return '<button type="button" class="sk-cat'+(skCat===c?' on':'')+'" onclick="selectStockCat(\''+jsq(c)+'\')">'+esc(c)+'</button>';
   }).join('');
   html+='<button type="button" class="sk-cat sk-add-chip" onclick="showCatAdd()"><i class="ti ti-plus"></i> Add</button>';
+  if(isCustomCat(skTrade,skCat)){
+    html+='<button type="button" class="sk-cat sk-mng" onclick="showCatRename(\''+jsq(skCat)+'\')"><i class="ti ti-pencil"></i> Rename</button>';
+    html+='<button type="button" class="sk-cat sk-mng-del" onclick="removeCustomCat(\''+skTrade+'\',\''+jsq(skCat)+'\')"><i class="ti ti-trash"></i></button>';
+  }
   $('skCats').innerHTML=html;
 }
 function selectStockCat(c){skCat=c;if($('skCatAdd'))$('skCatAdd').style.display='none';renderStockCats();}
@@ -1865,7 +1916,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.1 · row edit + sheet fit';
+var VERSION='v4.2 · edit/remove custom trades';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
