@@ -24,7 +24,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   --red:#ff7070;--bgred:#2a0a0a;--bred:#7a2a2a;
   --pink:#FF6FC0;--purple:#cc99ff;
 }
-.app-shell{width:100%;margin:0 auto;padding:16px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));overflow-x:hidden;overflow-x:clip}
+.app-shell{width:100%;max-width:540px;margin:0 auto;padding:16px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));overflow-x:hidden;overflow-x:clip}
 
 .topbar{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:10px;margin-bottom:14px}
 .topbar-brand{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
@@ -564,6 +564,15 @@ body.theme-noir .tabs{background:#000}
 .sk-mng-del{border-color:#5a1422;color:#ff6b81;background:transparent}
 #skTrades .sk-cat:not(.sk-add-chip):not(.sk-mng):not(.sk-mng-del){color:#bfe3ef}
 #skCats .sk-cat:not(.sk-add-chip):not(.sk-mng):not(.sk-mng-del){color:#e7cdf2}
+/* Month: fit on iPad/tablet + neon-green day counts in noir */
+@media(min-width:560px){
+  #monthPane{max-width:480px;margin-left:auto;margin-right:auto}
+}
+.mcell-c{font-size:11px}
+body.theme-noir .mcell-c{color:#3dff88;text-shadow:0 0 6px rgba(61,255,136,.55)}
+body.theme-noir .mcell.d2 .mcell-c{color:#5dffa0}
+body.theme-noir .mcell.d3 .mcell-c{color:#8effc0}
+body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
 </style>
 </head>
 <body>
@@ -2003,7 +2012,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.5 · Done button + tints';
+var VERSION='v4.6 · iPad month fix';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
