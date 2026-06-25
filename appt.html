@@ -564,6 +564,12 @@ body.theme-noir .tabs{background:#000}
 .sk-mng-del{border-color:#5a1422;color:#ff6b81;background:transparent}
 #skTrades .sk-cat:not(.sk-add-chip):not(.sk-mng):not(.sk-mng-del){color:#bfe3ef}
 #skCats .sk-cat:not(.sk-add-chip):not(.sk-mng):not(.sk-mng-del){color:#e7cdf2}
+.trades-pick{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.trade-opt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;border-radius:12px;border:1.5px solid var(--border-bright);background:#050507;color:var(--text2);font-size:15px;font-weight:700;cursor:pointer;width:100%}
+.trade-opt-l{display:flex;align-items:center;gap:10px}
+.trade-opt-c{font-size:22px;color:var(--muted);flex-shrink:0}
+.trade-opt.on{color:#fff;border-color:transparent;background:linear-gradient(#050507,#050507) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 12px rgba(167,139,250,.25)}
+.trade-opt.on .trade-opt-c{color:#5ddb7c}
 /* Month: fit on iPad/tablet + neon-green day counts in noir */
 @media(min-width:560px){
   #monthPane{max-width:480px;margin-left:auto;margin-right:auto}
@@ -721,7 +727,10 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
     <div class="inv-seg" id="invTrades"></div>
     <div class="inv-head">
       <div class="section-title">Inventory</div>
-      <button class="btn btn-ghost btn-sm" onclick="openStockSheet()"><i class="ti ti-plus"></i> Add item</button>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="openTrades()"><i class="ti ti-adjustments"></i> Trades</button>
+        <button class="btn btn-ghost btn-sm" onclick="openStockSheet()"><i class="ti ti-plus"></i> Add</button>
+      </div>
     </div>
     <div class="inv-kpis" id="invKpis"></div>
     <div id="reorderStrip"></div>
@@ -926,6 +935,19 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
   </div>
 </div>
 
+<!-- TRADES YOU WORK IN -->
+<div class="modal" id="tradesModal" onclick="if(event.target===this)closeSheet('tradesModal')">
+  <div class="sheet sheet-wide">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title"><i class="ti ti-checklist"></i> Trades you work in</div>
+    <div class="sheet-sub">Tick the trades you offer. The rest stay hidden so your inventory is just yours — change this anytime from the Trades button.</div>
+    <div id="tradesPick" class="trades-pick"></div>
+    <div class="btn-row" style="margin-top:18px">
+      <button class="btn" style="flex:1" onclick="saveTrades()"><i class="ti ti-check"></i> Done</button>
+    </div>
+  </div>
+</div>
+
 <!-- REQUESTS SHEET -->
 <div class="modal" id="requestsModal" onclick="if(event.target===this)closeSheet('requestsModal')">
   <div class="sheet">
@@ -1052,7 +1074,7 @@ function showView(v){
   document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.view===v)});
   if(v==='day')renderDay();
   if(v==='clients')renderClients();
-  if(v==='stock')renderStock();
+  if(v==='stock'){renderStock();var pp=getPrefs();if(!pp.tradesSetupDone){pp.tradesSetupDone=true;setPrefs(pp);setTimeout(openTrades,300);}}
   window.scrollTo(0,0);
 }
 
@@ -1731,6 +1753,9 @@ var INV_ICON={
 function getCustomTrades(){var p=getPrefs();return Array.isArray(p.customTrades)?p.customTrades:[];}
 function getCustomCats(trade){var p=getPrefs();var m=p.customCats||{};return Array.isArray(m[trade])?m[trade]:[];}
 function allTrades(){return INV_TRADES.concat(getCustomTrades().map(function(t){return {k:t.k,label:t.label,icon:'ti-tag'};}));}
+function getActiveTradeKeys(){var p=getPrefs();return (Array.isArray(p.activeTrades)&&p.activeTrades.length)?p.activeTrades:null;}
+function isTradeActive(k){var a=getActiveTradeKeys();return !a||a.indexOf(k)>=0;}
+function activeTrades(){var a=getActiveTradeKeys();var all=allTrades();return a?all.filter(function(t){return a.indexOf(t.k)>=0;}):all;}
 function catsFor(trade){var base=(INV_CATS[trade]||['Other']).slice();getCustomCats(trade).forEach(function(c){if(base.indexOf(c)<0)base.splice(Math.max(base.length-1,0),0,c);});return base;}
 function tradeLabel(k){var all=allTrades();for(var i=0;i<all.length;i++){if(all[i].k===k)return all[i].label;}return 'Hair';}
 function invIcon(c,trade){return INV_ICON[c]||['ti-package',TRADE_IC[trade]||'ic-gray'];}
@@ -1740,6 +1765,7 @@ function addCustomTrade(label){
   list.forEach(function(t){if(t.label.toLowerCase()===label.toLowerCase())found=t;});
   var key=found?found.k:('ct_'+Date.now().toString(36));
   if(!found){list.push({k:key,label:label});p.customTrades=list;setPrefs(p);}
+  var pa=getPrefs();if(Array.isArray(pa.activeTrades)&&pa.activeTrades.length&&pa.activeTrades.indexOf(key)<0){pa.activeTrades.push(key);setPrefs(pa);}
   skTrade=key;skCat=(catsFor(key)[0]||'Other');
   if($('skTradeAdd'))$('skTradeAdd').style.display='none';
   renderStockTrades();renderStockCats();
@@ -1807,11 +1833,38 @@ function delStockRow(id,ev){
   },{title:'Delete item',yesLabel:'Delete',danger:true});
 }
 var reorderChecked={};
+var _tradesSel={};
+function openTrades(){
+  var a=getActiveTradeKeys();
+  _tradesSel={};
+  allTrades().forEach(function(t){_tradesSel[t.k]=a?(a.indexOf(t.k)>=0):true;});
+  renderTradesPick();
+  $('tradesModal').classList.add('show');
+}
+function renderTradesPick(){
+  $('tradesPick').innerHTML=allTrades().map(function(t){
+    var on=!!_tradesSel[t.k];
+    return '<button type="button" class="trade-opt'+(on?' on':'')+'" onclick="toggleTradePick(\''+t.k+'\')">'+
+      '<span class="trade-opt-l"><i class="ti '+(t.icon||'ti-tag')+'"></i> '+esc(t.label)+'</span>'+
+      '<i class="ti '+(on?'ti-circle-check-filled':'ti-circle')+' trade-opt-c"></i></button>';
+  }).join('');
+}
+function toggleTradePick(k){_tradesSel[k]=!_tradesSel[k];renderTradesPick();}
+function saveTrades(){
+  var all=allTrades().map(function(t){return t.k;});
+  var keys=all.filter(function(k){return _tradesSel[k];});
+  if(!keys.length){toast('Pick at least one trade',1);return;}
+  var p=getPrefs();
+  p.activeTrades=(keys.length===all.length)?[]:keys;
+  p.tradesSetupDone=true;setPrefs(p);
+  if(keys.indexOf(invTrade)<0)invTrade=keys[0];
+  closeSheet('tradesModal');renderStock();toast('Trades updated');
+}
 function openReorder(){reorderChecked={};renderReorderList();$('reorderModal').classList.add('show');}
 function toggleReorderCheck(id){reorderChecked[id]=!reorderChecked[id];renderReorderList();}
 function renderReorderList(){
   reload();
-  var lowAll=stock.filter(function(s){return (+s.qty||0)<=(+s.min||0);});
+  var lowAll=stock.filter(function(s){return (+s.qty||0)<=(+s.min||0)&&isTradeActive(s.trade||'stylist');});
   var doneN=lowAll.filter(function(s){return reorderChecked[s.id];}).length;
   $('reorderSub').textContent=lowAll.length?(lowAll.length+' item'+(lowAll.length>1?'s':'')+' to restock'+(doneN?(' · '+doneN+' got'):'')):'';
   if(!lowAll.length){
@@ -1841,9 +1894,17 @@ function renderReorderList(){
 
 function renderStock(){
   reload();
-  $('invTrades').innerHTML=allTrades().map(function(t){
-    return '<button class="inv-seg-btn'+(invTrade===t.k?' on':'')+'" data-t="'+t.k+'" onclick="setInvTrade(\''+t.k+'\')"><i class="ti '+(t.icon||'ti-tag')+'"></i> '+esc(t.label)+'</button>';
-  }).join('');
+  var acts=activeTrades();if(!acts.length)acts=allTrades();
+  var actKeys=acts.map(function(t){return t.k;});
+  if(actKeys.indexOf(invTrade)<0)invTrade=actKeys[0];
+  var seg=$('invTrades');
+  if(acts.length<=1){seg.style.display='none';seg.innerHTML='';}
+  else{
+    seg.style.display='';
+    seg.innerHTML=acts.map(function(t){
+      return '<button class="inv-seg-btn'+(invTrade===t.k?' on':'')+'" data-t="'+t.k+'" onclick="setInvTrade(\''+t.k+'\')"><i class="ti '+(t.icon||'ti-tag')+'"></i> '+esc(t.label)+'</button>';
+    }).join('');
+  }
   var items=stock.filter(function(s){return (s.trade||'stylist')===invTrade});
   var low=items.filter(function(s){return (+s.qty||0)<=(+s.min||0)});
   var val=items.reduce(function(t,s){return t+((+s.qty||0)*(+s.cost||0))},0);
@@ -1851,7 +1912,7 @@ function renderStock(){
     '<div class="inv-kpi"><div class="inv-kpi-v ik-items">'+items.length+'</div><div class="inv-kpi-l">Items</div></div>'+
     '<div class="inv-kpi"><div class="inv-kpi-v ik-low">'+low.length+'</div><div class="inv-kpi-l">Running low</div></div>'+
     '<div class="inv-kpi"><div class="inv-kpi-v ik-val">'+(val?fmt$(val):'—')+'</div><div class="inv-kpi-l">Stock value</div></div>';
-  var lowAll=stock.filter(function(s){return (+s.qty||0)<=(+s.min||0);});
+  var lowAll=stock.filter(function(s){return (+s.qty||0)<=(+s.min||0)&&isTradeActive(s.trade||'stylist');});
   var strip=$('reorderStrip');
   if(lowAll.length){
     var byTrade={};lowAll.forEach(function(s){var k=s.trade||'stylist';byTrade[k]=(byTrade[k]||0)+1;});
@@ -1927,7 +1988,9 @@ function toggleStockLink(el,name){
   el.classList.toggle('sel');
 }
 function renderStockTrades(){
-  var html=allTrades().map(function(t){
+  var list=activeTrades();
+  if(list.map(function(t){return t.k;}).indexOf(skTrade)<0){var t0=allTrades().filter(function(t){return t.k===skTrade;})[0];if(t0)list=[t0].concat(list);}
+  var html=list.map(function(t){
     return '<button type="button" class="sk-cat'+(skTrade===t.k?' on':'')+'" onclick="selectStockTrade(\''+t.k+'\')">'+esc(t.label)+'</button>';
   }).join('');
   html+='<button type="button" class="sk-cat sk-add-chip" onclick="showTradeAdd()"><i class="ti ti-plus"></i> Add</button>';
@@ -2012,7 +2075,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.6 · iPad month fix';
+var VERSION='v4.7 · choose your trades';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
