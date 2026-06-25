@@ -172,6 +172,8 @@ textarea{min-height:64px;resize:vertical}
 .weekstrip{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px;scrollbar-width:none}
 .weekstrip::-webkit-scrollbar{display:none}
 .wmonth{flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;opacity:.85;padding:0 3px}
+.wtoday{position:sticky;left:0;z-index:2;flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:46px;border-radius:9px;background:var(--gold-dim);border:1.5px solid var(--gold);color:var(--gold);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;cursor:pointer;box-shadow:7px 0 9px -4px var(--bg)}
+.wtoday:active{transform:scale(.94)}
 /* Day/Week segmented toggle */
 .seg{display:flex;gap:4px;background:#0a0a0a;border:1px solid var(--border-bright);border-radius:10px;padding:4px;margin-bottom:12px}
 .seg-btn{flex:1;padding:8px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
@@ -471,13 +473,11 @@ datalist{display:none}
     <div class="weekstrip" id="weekStrip"></div>
     <div id="dayPane">
       <div class="daybar">
-        <div class="daybar-nav" onclick="moveDay(-1)"><i class="ti ti-chevron-left"></i></div>
         <div class="daybar-date">
           <div class="daybar-day" id="dayLabel">Today</div>
           <div class="daybar-full" id="dayFull"></div>
           <span class="daybar-today" id="jumpToday" onclick="goToday()" style="display:none"><i class="ti ti-arrow-back-up" style="font-size:13px"></i> Jump to today</span>
         </div>
-        <div class="daybar-nav" onclick="moveDay(1)"><i class="ti ti-chevron-right"></i></div>
       </div>
       <div class="day-stats">
         <div class="dstat"><div class="dstat-v" id="statCount">0</div><div class="dstat-l">Booked</div></div>
@@ -1029,7 +1029,7 @@ function renderWeekStrip(){
       '<div class="wcell-dot">'+(cnt?'<span></span>':'')+'</div></div>';
     d.setDate(d.getDate()+1);
   }
-  el.innerHTML=html;
+  el.innerHTML='<div class="wtoday" onclick="goToday()">Today</div>'+html;
   // center the selected day once layout settles
   requestAnimationFrame(function(){
     var s=el.querySelector('.wcell.sel');
@@ -1610,7 +1610,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v2.4 · scrolling days';
+var VERSION='v2.6 · tap-to-pick';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
