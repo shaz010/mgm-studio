@@ -181,6 +181,7 @@ textarea{min-height:64px;resize:vertical}
 .seg-btn.on{background:var(--bg3);color:var(--gold);border:1px solid var(--gold-border)}
 /* Week list */
 .weekrange{text-align:center;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px}
+.wk-tot{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:3px}
 .wl-day{margin-bottom:14px}
 .wl-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 2px 8px;border-bottom:1.5px solid #2c2c2c;margin-bottom:8px}
 .wl-head.is-today .wl-dname{color:var(--gold)}
@@ -246,6 +247,8 @@ textarea{min-height:64px;resize:vertical}
 .mcell.d1 .mcell-c{color:#6fb048}.mcell.d2 .mcell-c{color:#dcf8a8}.mcell.d3 .mcell-c{color:#143006}
 .month-legend{display:flex;justify-content:center;gap:16px;margin-top:14px;font-size:11.5px;color:var(--muted);font-weight:600}
 .month-peek{margin-top:14px}
+.month-tot{text-align:center;font-size:13.5px;font-weight:700;color:var(--text);margin-top:12px}
+.month-tot span{color:var(--muted);font-weight:600}
 .mp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
 .mp-date{font-size:14px;font-weight:700;color:var(--text)}
 .mp-open{font-size:12px;font-weight:700;color:var(--gold);background:var(--gold-dim);border:1.5px solid var(--gold-border);border-radius:20px;padding:5px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
@@ -301,8 +304,8 @@ textarea{min-height:64px;resize:vertical}
 .daybar-today{font-size:12.5px;color:var(--gold);cursor:pointer;font-weight:700;margin-top:5px;display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1.5px solid var(--gold-border);border-radius:20px;background:var(--gold-dim)}
 .daybar-today:active{background:#3a2c00}
 
-.day-stats{display:flex;gap:10px;margin-bottom:14px}
-.dstat{flex:1;background:#111;border:1px solid var(--border-bright);border-radius:10px;padding:11px;text-align:center}
+.day-stats{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.dstat{flex:1 1 calc(25% - 8px);min-width:104px;background:#111;border:1px solid var(--border-bright);border-radius:10px;padding:11px;text-align:center}
 .dstat-v{font-size:20px;font-weight:700;color:var(--gold)}
 .dstat-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
 
@@ -485,6 +488,7 @@ datalist{display:none}
         <div class="dstat"><div class="dstat-v" id="statCount">0</div><div class="dstat-l">Booked</div></div>
         <div class="dstat"><div class="dstat-v" id="statHours">0h</div><div class="dstat-l">Chair time</div></div>
         <div class="dstat"><div class="dstat-v" id="statRev">$0</div><div class="dstat-l">Expected</div></div>
+        <div class="dstat"><div class="dstat-v" id="statNet">$0</div><div class="dstat-l">Take-home</div></div>
       </div>
       <div id="dayList"></div>
     </div>
@@ -505,6 +509,7 @@ datalist{display:none}
       </div>
       <div class="month-dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
       <div class="month-grid" id="monthGrid"></div>
+      <div class="month-tot" id="monthTot"></div>
       <div class="month-peek" id="monthPeek"></div>
       <div class="month-legend">
         <span><i class="md-dot light"></i> Light</span>
@@ -676,6 +681,14 @@ datalist{display:none}
     <input id="setStylist" placeholder="Shown on bookings">
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-sm" style="flex:1" onclick="saveBusiness()"><i class="ti ti-check"></i> Save business</button>
+    </div>
+
+    <div class="set-sec">Your pay</div>
+    <label>Your split % <span style="color:#666;font-weight:400">(renters: 100)</span></label>
+    <input id="setSplit" type="number" inputmode="numeric" min="0" max="100" placeholder="60">
+    <div style="font-size:12px;color:var(--muted);margin:7px 0 0;line-height:1.5">Take-home = booked price × this %. Commission stylists enter their split; booth renters enter <b>100</b> to keep it all.</div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-sm" style="flex:1" onclick="saveSplit()"><i class="ti ti-check"></i> Save pay</button>
     </div>
 
     <div class="set-sec">Working hours</div>
@@ -1061,12 +1074,14 @@ function renderMonth(){
   var lead=(first.getDay()+6)%7;            // Mon-first blanks
   var dim=new Date(y,mo+1,0).getDate();     // days in month
   var today=todayStr(), sel=monthSel||ymd(viewDate);
-  var html='';
+  var html='', mg=0, mn=0, mc=0;
   for(var b=0;b<lead;b++)html+='<div class="mcell blank"></div>';
   for(var day=1;day<=dim;day++){
     var d=new Date(y,mo,day,12,0,0);
     var ds=ymd(d);
-    var cnt=appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'}).length;
+    var dayActive=appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'});
+    var cnt=dayActive.length;
+    dayActive.forEach(function(a){mg+=(+a.price||0);mn+=takeHome(a.price);mc++;});
     var dcls=densityClass(cnt);
     var cls='mcell'+(dcls?' '+dcls:'')+(ds===today?' today':'')+(ds===sel?' sel':'')+(ds<today?' past':'');
     html+='<div class="'+cls+'" onclick="pickMonthDay(\''+ds+'\')">'+
@@ -1075,6 +1090,8 @@ function renderMonth(){
     '</div>';
   }
   $('monthGrid').innerHTML=html;
+  var mt=$('monthTot');
+  if(mt){ mt.innerHTML = mc? (mc+' booked · <span>'+fmt$(mg)+(getSplit()<100?' · '+fmt$(mn)+' take-home':'')+'</span>') : ''; }
 }
 function pickMonthDay(ds){
   monthSel=ds;
@@ -1104,7 +1121,7 @@ function renderWeekList(){
   var sow=startOfWeek(viewDate), today=todayStr();
   var DNAMES=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   var end=new Date(sow);end.setDate(sow.getDate()+6);
-  $('weekRange').textContent=sow.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  $('weekRange').innerHTML=weekRangeHTML(sow,end);
   var html='';
   for(var i=0;i<7;i++){
     var d=new Date(sow);d.setDate(sow.getDate()+i);
@@ -1143,7 +1160,7 @@ function openAddAt(ds,time){
 function renderWeekGrid(){
   var sow=startOfWeek(viewDate), today=todayStr();
   var end=new Date(sow);end.setDate(sow.getDate()+6);
-  $('weekRange').textContent=sow.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  $('weekRange').innerHTML=weekRangeHTML(sow,end);
   var L=['M','T','W','T','F','S','S'];
   // gather this week's appts + smart time span
   var byDay=[]; var minH=24,maxH=0,any=false;
@@ -1233,6 +1250,7 @@ function renderDay(){
   $('statCount').textContent=active.length;
   $('statHours').textContent=(mins/60).toFixed(mins%60?1:0)+'h';
   $('statRev').textContent=fmt$(rev);
+  $('statNet').textContent=fmt$(active.reduce(function(s,a){return s+takeHome(a.price)},0));
 
   if(!list.length){
     $('dayList').innerHTML='<div class="empty"><i class="ti ti-calendar-off"></i><div class="empty-t">No appointments '+(isToday?'today':'this day')+'</div><div class="empty-s">A clear chair. Tap Add to book someone in.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openAdd()"><i class="ti ti-plus"></i> Add appointment</button></div>';
@@ -1347,7 +1365,7 @@ function openSheet(id){
   var a=appts.find(function(x){return x.id===id});if(!a)return;
   sheetId=id;
   $('dName').textContent=a.name;
-  $('dSub').textContent=to12(a.time)+' · '+(a.service||'')+' · '+fmt$(a.price)+(a.phone?' · '+a.phone:'');
+  $('dSub').textContent=to12(a.time)+' · '+(a.service||'')+' · '+fmt$(a.price)+((getSplit()<100&&(+a.price)>0)?' · '+fmt$(takeHome(a.price))+' take-home':'')+(a.phone?' · '+a.phone:'');
   if(a.notes){$('dNotes').textContent=a.notes;$('dNotes').style.display='block'}else{$('dNotes').style.display='none'}
   document.querySelectorAll('#statusGrid .status-opt').forEach(function(o){o.classList.toggle('sel',o.dataset.s===(a.status||'confirmed'))});
   $('apptModal').classList.add('show');
@@ -1613,7 +1631,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v2.8 · neutral brand';
+var VERSION='v3.0 · take-home everywhere';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -1634,6 +1652,7 @@ function openSettings(){
   var p=getPrefs();
   $('setBizName').value=p.bizName||'';
   $('setStylist').value=p.stylist||'';
+  $('setSplit').value=(p.splitPct!=null?p.splitPct:60);
   $('setVersion').textContent='AppointmentPro · '+VERSION;
   renderHours(true);
   syncBookingToggle();renderReqBadge();
@@ -1644,6 +1663,29 @@ function saveBusiness(){
   p.bizName=$('setBizName').value.trim();
   p.stylist=$('setStylist').value.trim();
   setPrefs(p);applyBranding();toast('Business saved');
+}
+/* ----- take-home: booked price × your split % (renters set 100) ----- */
+function getSplit(){var p=getPrefs();var s=parseFloat(p.splitPct);return isNaN(s)?60:Math.max(0,Math.min(100,s));}
+function takeHome(price){return Math.round((+price||0)*getSplit())/100;}
+function saveSplit(){
+  var p=getPrefs();var v=parseFloat($('setSplit').value);
+  if(isNaN(v))v=60; v=Math.max(0,Math.min(100,v));
+  p.splitPct=v;setPrefs(p);$('setSplit').value=v;
+  toast(v>=100?'Pay saved — you keep 100%':'Pay saved');
+  if(typeof dayMode!=='undefined'&&dayMode==='day')renderDay();
+}
+function weekTotals(sow){
+  var g=0,n=0,c=0;
+  for(var i=0;i<7;i++){var d=new Date(sow);d.setDate(sow.getDate()+i);var ds=ymd(d);
+    appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'}).forEach(function(a){g+=(+a.price||0);n+=takeHome(a.price);c++;});}
+  return {g:g,n:n,c:c};
+}
+function weekRangeHTML(sow,end){
+  var range=sow.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  var t=weekTotals(sow);
+  if(!t.c)return esc(range);
+  var net=getSplit()<100?' · '+fmt$(t.n)+' take-home':'';
+  return esc(range)+'<span class="wk-tot">'+t.c+' booked · '+fmt$(t.g)+net+'</span>';
 }
 
 /* ----- insights ----- */
