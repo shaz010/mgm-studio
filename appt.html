@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>AppointmentPro — MGM Studio</title>
+<title>AppointmentPro</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="AppointmentPro">
@@ -447,7 +447,7 @@ datalist{display:none}
       <div class="topbar-icon"><i class="ti ti-calendar-week"></i></div>
       <div>
         <div class="topbar-name"><span>Appointment</span>Pro</div>
-        <div class="topbar-sub" id="brandSub">MGM Studio</div>
+        <div class="topbar-sub" id="brandSub">Your Salon</div>
       </div>
     </div>
     <div class="topbar-actions">
@@ -671,7 +671,7 @@ datalist{display:none}
 
     <div class="set-sec">Business</div>
     <label>Business name</label>
-    <input id="setBizName" placeholder="MGM Studio" oninput="">
+    <input id="setBizName" placeholder="Salon name" oninput="">
     <label>Your name <span style="color:#666;font-weight:400">(optional)</span></label>
     <input id="setStylist" placeholder="Shown on bookings">
     <div class="btn-row" style="margin-top:14px">
@@ -1613,7 +1613,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v2.7 · day month tags';
+var VERSION='v2.8 · neutral brand';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -1625,7 +1625,7 @@ function defaultHours(){return [
   {open:true,start:'10:00',end:'15:00'}
 ];}
 function getHours(){var p=getPrefs();return (Array.isArray(p.hours)&&p.hours.length===7)?p.hours:defaultHours();}
-function getBizName(){var p=getPrefs();return (p.bizName&&p.bizName.trim())||'MGM Studio';}
+function getBizName(){var p=getPrefs();return (p.bizName&&p.bizName.trim())||'Your Salon';}
 function applyBranding(){var el=$('brandSub');if(el)el.textContent=getBizName();}
 
 function openSettings(){
