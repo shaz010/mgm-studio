@@ -450,20 +450,22 @@ datalist{display:none}
 .req-price{font-size:13px;color:var(--gold);font-weight:700;margin-top:6px}
 .req-why{font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
 /* ===== Holographic Noir theme (opt-in) ===== */
-body.theme-noir{background:radial-gradient(125% 70% at 16% -6%,#130e1f,#000 56%) fixed;}
-body.theme-noir .topbar{background:#0a0a0e;border-color:#1a1a22}
+body.theme-noir{background:#000;}
+body.theme-noir .app-shell{background:#000}
+body.theme-noir .topbar{background:#000;border-color:#1c1c26}
 body.theme-noir .topbar-sub{color:#ffd24a;text-shadow:0 0 8px rgba(255,210,74,.4)}
-body.theme-noir .gear-btn{background:#0d0a12;border-color:#2a1730;color:#ff5cf0}
+body.theme-noir .gear-btn{background:#000;border-color:#2a1730;color:#ff5cf0}
 body.theme-noir .gear-btn:not(.er-btn){-webkit-filter:drop-shadow(0 0 5px rgba(255,92,240,.5));filter:drop-shadow(0 0 5px rgba(255,92,240,.5))}
 body.theme-noir .gear-btn.er-btn{color:#e2483c}
-body.theme-noir .dstat{background:#0a0a0e;border-color:#1a1a22}
+body.theme-noir .dstat{background:#000;border-color:#1c1c26}
 body.theme-noir #statCount{color:#3b82f6;text-shadow:0 0 10px rgba(59,130,246,.55)}
 body.theme-noir #statHours{color:#fbbf24;text-shadow:0 0 10px rgba(251,191,36,.5)}
 body.theme-noir #statRev{text-shadow:0 0 12px rgba(57,255,20,.55)}
 body.theme-noir #statNet{background-image:linear-gradient(100deg,#a78bfa,#f5a8ff,#7df9ff,#d8b4fe,#a78bfa);-webkit-filter:drop-shadow(0 0 10px rgba(213,160,255,.8));filter:drop-shadow(0 0 10px rgba(213,160,255,.8))}
-body.theme-noir #netTile{border:1px solid transparent;background:linear-gradient(#0a0a0e,#0a0a0e) padding-box,linear-gradient(120deg,#a78bfa,#7df9ff,#f5a8ff) border-box}
-body.theme-noir .appt{background:#08080b;border-color:#1a1a22}
+body.theme-noir #netTile{border:1px solid transparent;background:linear-gradient(#000,#000) padding-box,linear-gradient(120deg,#a78bfa,#7df9ff,#f5a8ff) border-box}
+body.theme-noir .appt{background:#000;border-color:#1c1c26}
 body.theme-noir .appt-price{text-shadow:0 0 8px rgba(57,255,20,.45)}
+body.theme-noir .stk,body.theme-noir .hrow,body.theme-noir .card,body.theme-noir .wl-appt,body.theme-noir .mcell,body.theme-noir .mp-row,body.theme-noir .wcell,body.theme-noir .lrow,body.theme-noir .status-opt,body.theme-noir .sb-toggle-row,body.theme-noir .req-card,body.theme-noir .daybar-nav,body.theme-noir .wnav{background:#000;border-color:#1c1c26}
 </style>
 </head>
 <body>
@@ -601,7 +603,7 @@ body.theme-noir .appt-price{text-shadow:0 0 8px rgba(57,255,20,.45)}
   <!-- CLIENTS VIEW -->
   <div class="view" id="view-clients">
     <div class="section-head">
-      <div class="section-title">Clients</div>
+      <div class="section-title">Clients <span id="clientCount" style="color:var(--muted);font-weight:600;font-size:14px"></span></div>
       <button class="btn btn-ghost btn-sm" onclick="openClientSheet()"><i class="ti ti-user-plus"></i> Add</button>
     </div>
     <div id="clientsList"></div>
@@ -1482,6 +1484,7 @@ function reconcileClients(){
 function renderClients(){
   reload();
   reconcileClients();
+  var _cc=$('clientCount'); if(_cc)_cc.textContent=clients.length?('· '+clients.length):'';
   if(!clients.length){
     $('clientsList').innerHTML='<div class="empty"><i class="ti ti-user-question"></i><div class="empty-t">No clients yet</div><div class="empty-s">Clients are added automatically when you book them — or add one now.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openClientSheet()"><i class="ti ti-user-plus"></i> Add client</button></div>';
     return;
@@ -1665,7 +1668,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v3.3 · holographic noir';
+var VERSION='v3.4 · pitch black + client count';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
