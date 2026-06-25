@@ -546,6 +546,22 @@ body.theme-noir input:-webkit-autofill,body.theme-noir input:-webkit-autofill:ho
 body.theme-noir .svc-mode-btn{background:#000;border-color:#2e2e3a}
 body.theme-noir .svc-chip:not(.sel){background:#000;border-color:#2e2e3a;color:#e8e8e8}
 body.theme-noir .svc-more-btn{background:#000;border-color:#2e2e3a;color:#e8e8e8}
+/* ===== Iridescent nav + chips (pitch-black, legible) ===== */
+.tab{color:var(--text2);font-weight:600}
+.inv-seg-btn{color:var(--text2)}
+.inv-cat{color:var(--text2)}
+.sk-cat{background:#050507;color:var(--text2);border:1.5px solid #3a3a48}
+.tab.active,.inv-seg-btn.on,.inv-cat.on,.sk-cat.on{
+  color:#fff!important;
+  border:1px solid transparent!important;
+  background:linear-gradient(#050507,#050507) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;
+  box-shadow:0 0 12px rgba(167,139,250,.30)!important;
+  text-shadow:0 0 7px rgba(103,232,249,.30)!important;
+}
+body.theme-noir .tabs{background:#000}
+.sk-add-chip{border-style:dashed;border-color:var(--gold-border);color:var(--gold);background:transparent}
+.sk-mng{border-color:var(--border-bright);color:var(--text2);background:transparent}
+.sk-mng-del{border-color:#5a1422;color:#ff6b81;background:transparent}
 </style>
 </head>
 <body>
@@ -1981,7 +1997,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.3 · master reorder list';
+var VERSION='v4.4 · iridescent nav + chips';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
