@@ -307,6 +307,7 @@ textarea{min-height:64px;resize:vertical}
 .day-stats{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
 .dstat{flex:1 1 calc(25% - 8px);min-width:104px;background:#111;border:1px solid var(--border-bright);border-radius:10px;padding:11px;text-align:center}
 .dstat-v{font-size:20px;font-weight:700;color:var(--gold)}
+#statRev{color:var(--green)}
 .dstat-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
 
 .appt{display:flex;gap:12px;background:#111;border:1px solid var(--border-bright);border-radius:11px;padding:13px 14px;margin-bottom:10px;cursor:pointer;transition:border .15s;align-items:flex-start}
@@ -1091,7 +1092,7 @@ function renderMonth(){
   }
   $('monthGrid').innerHTML=html;
   var mt=$('monthTot');
-  if(mt){ mt.innerHTML = mc? (mc+' booked · <span>'+fmt$(mg)+(getSplit()<100?' · '+fmt$(mn)+' take-home':'')+'</span>') : ''; }
+  if(mt){ mt.innerHTML = mc? (mc+' booked · <span style="color:var(--green)">'+fmt$(mg)+'</span>'+(getSplit()<100?' · <span style="color:var(--gold)">'+fmt$(mn)+' take-home</span>':'')) : ''; }
 }
 function pickMonthDay(ds){
   monthSel=ds;
@@ -1631,7 +1632,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v3.0 · take-home everywhere';
+var VERSION='v3.1 · colour-coded money';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -1684,8 +1685,8 @@ function weekRangeHTML(sow,end){
   var range=sow.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   var t=weekTotals(sow);
   if(!t.c)return esc(range);
-  var net=getSplit()<100?' · '+fmt$(t.n)+' take-home':'';
-  return esc(range)+'<span class="wk-tot">'+t.c+' booked · '+fmt$(t.g)+net+'</span>';
+  var net=getSplit()<100?' · <span style="color:var(--gold)">'+fmt$(t.n)+' take-home</span>':'';
+  return esc(range)+'<span class="wk-tot">'+t.c+' booked · <span style="color:var(--green)">'+fmt$(t.g)+'</span>'+net+'</span>';
 }
 
 /* ----- insights ----- */
