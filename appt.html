@@ -20,6 +20,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   --text:#f5f5f5;--text2:#cccccc;--muted:#999;
   --blue:#7eb8ff;--bgblue:#0d1a2e;--bblue:#1a3a6a;
   --green:#5ddb7c;--bggreen:#0a1f12;--bgreen:#1a4a2a;
+  --purple:#c084fc;
   --red:#ff7070;--bgred:#2a0a0a;--bred:#7a2a2a;
   --pink:#FF6FC0;--purple:#cc99ff;
 }
@@ -308,6 +309,14 @@ textarea{min-height:64px;resize:vertical}
 .dstat{flex:1 1 calc(25% - 8px);min-width:104px;background:#111;border:1px solid var(--border-bright);border-radius:10px;padding:11px;text-align:center}
 .dstat-v{font-size:20px;font-weight:700;color:var(--gold)}
 #statRev{color:var(--green)}
+#statNet{
+  background:linear-gradient(100deg,#8b5cf6,#e879f9,#67e8f9,#c084fc,#8b5cf6);
+  background-size:220% auto;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  animation:iridShift 5s linear infinite;
+}
+@keyframes iridShift{to{background-position:-220% center}}
 .dstat-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
 
 .appt{display:flex;gap:12px;background:#111;border:1px solid var(--border-bright);border-radius:11px;padding:13px 14px;margin-bottom:10px;cursor:pointer;transition:border .15s;align-items:flex-start}
@@ -440,6 +449,21 @@ datalist{display:none}
 .hp-tag{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--gold);background:var(--gold-dim);border-radius:5px;padding:2px 6px;margin-left:6px;vertical-align:middle}
 .req-price{font-size:13px;color:var(--gold);font-weight:700;margin-top:6px}
 .req-why{font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+/* ===== Holographic Noir theme (opt-in) ===== */
+body.theme-noir{background:radial-gradient(125% 70% at 16% -6%,#130e1f,#000 56%) fixed;}
+body.theme-noir .topbar{background:#0a0a0e;border-color:#1a1a22}
+body.theme-noir .topbar-sub{color:#ffd24a;text-shadow:0 0 8px rgba(255,210,74,.4)}
+body.theme-noir .gear-btn{background:#0d0a12;border-color:#2a1730;color:#ff5cf0}
+body.theme-noir .gear-btn:not(.er-btn){-webkit-filter:drop-shadow(0 0 5px rgba(255,92,240,.5));filter:drop-shadow(0 0 5px rgba(255,92,240,.5))}
+body.theme-noir .gear-btn.er-btn{color:#e2483c}
+body.theme-noir .dstat{background:#0a0a0e;border-color:#1a1a22}
+body.theme-noir #statCount{color:#3b82f6;text-shadow:0 0 10px rgba(59,130,246,.55)}
+body.theme-noir #statHours{color:#fbbf24;text-shadow:0 0 10px rgba(251,191,36,.5)}
+body.theme-noir #statRev{text-shadow:0 0 12px rgba(57,255,20,.55)}
+body.theme-noir #statNet{background-image:linear-gradient(100deg,#a78bfa,#f5a8ff,#7df9ff,#d8b4fe,#a78bfa);-webkit-filter:drop-shadow(0 0 10px rgba(213,160,255,.8));filter:drop-shadow(0 0 10px rgba(213,160,255,.8))}
+body.theme-noir #netTile{border:1px solid transparent;background:linear-gradient(#0a0a0e,#0a0a0e) padding-box,linear-gradient(120deg,#a78bfa,#7df9ff,#f5a8ff) border-box}
+body.theme-noir .appt{background:#08080b;border-color:#1a1a22}
+body.theme-noir .appt-price{text-shadow:0 0 8px rgba(57,255,20,.45)}
 </style>
 </head>
 <body>
@@ -489,7 +513,7 @@ datalist{display:none}
         <div class="dstat"><div class="dstat-v" id="statCount">0</div><div class="dstat-l">Booked</div></div>
         <div class="dstat"><div class="dstat-v" id="statHours">0h</div><div class="dstat-l">Chair time</div></div>
         <div class="dstat"><div class="dstat-v" id="statRev">$0</div><div class="dstat-l">Expected</div></div>
-        <div class="dstat"><div class="dstat-v" id="statNet">$0</div><div class="dstat-l">Take-home</div></div>
+        <div class="dstat" id="netTile"><div class="dstat-v" id="statNet">$0</div><div class="dstat-l">Take-home</div></div>
       </div>
       <div id="dayList"></div>
     </div>
@@ -690,6 +714,15 @@ datalist{display:none}
     <div style="font-size:12px;color:var(--muted);margin:7px 0 0;line-height:1.5">Take-home = booked price × this %. Commission stylists enter their split; booth renters enter <b>100</b> to keep it all.</div>
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-sm" style="flex:1" onclick="saveSplit()"><i class="ti ti-check"></i> Save pay</button>
+    </div>
+
+    <div class="set-sec">Appearance</div>
+    <div class="sb-toggle-row" onclick="toggleNoir()">
+      <div>
+        <div class="sb-tt">Holographic Noir</div>
+        <div class="sb-ts" id="noirStatus">Off — classic dark</div>
+      </div>
+      <div class="sb-switch" id="noirSwitch"><span></span></div>
     </div>
 
     <div class="set-sec">Working hours</div>
@@ -1092,7 +1125,7 @@ function renderMonth(){
   }
   $('monthGrid').innerHTML=html;
   var mt=$('monthTot');
-  if(mt){ mt.innerHTML = mc? (mc+' booked · <span style="color:var(--green)">'+fmt$(mg)+'</span>'+(getSplit()<100?' · <span style="color:var(--gold)">'+fmt$(mn)+' take-home</span>':'')) : ''; }
+  if(mt){ mt.innerHTML = mc? (mc+' booked · <span style="color:var(--green)">'+fmt$(mg)+'</span>'+(getSplit()<100?' · <span style="color:var(--purple)">'+fmt$(mn)+' take-home</span>':'')) : ''; }
 }
 function pickMonthDay(ds){
   monthSel=ds;
@@ -1632,7 +1665,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v3.1 · colour-coded money';
+var VERSION='v3.3 · holographic noir';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -1656,7 +1689,7 @@ function openSettings(){
   $('setSplit').value=(p.splitPct!=null?p.splitPct:60);
   $('setVersion').textContent='AppointmentPro · '+VERSION;
   renderHours(true);
-  syncBookingToggle();renderReqBadge();
+  syncBookingToggle();renderReqBadge();applyTheme();
   $('settingsModal').classList.add('show');
 }
 function saveBusiness(){
@@ -1675,6 +1708,17 @@ function saveSplit(){
   toast(v>=100?'Pay saved — you keep 100%':'Pay saved');
   if(typeof dayMode!=='undefined'&&dayMode==='day')renderDay();
 }
+function applyTheme(){
+  var on=!!getPrefs().noir;
+  document.body.classList.toggle('theme-noir',on);
+  var sw=$('noirSwitch'); var row=sw?sw.closest('.sb-toggle-row'):null;
+  if(row)row.classList.toggle('on',on);
+  var st=$('noirStatus'); if(st)st.textContent=on?'On — holographic noir':'Off — classic dark';
+}
+function toggleNoir(){
+  var p=getPrefs();p.noir=!p.noir;setPrefs(p);applyTheme();
+  toast(p.noir?'Holographic Noir on':'Classic dark');
+}
 function weekTotals(sow){
   var g=0,n=0,c=0;
   for(var i=0;i<7;i++){var d=new Date(sow);d.setDate(sow.getDate()+i);var ds=ymd(d);
@@ -1685,7 +1729,7 @@ function weekRangeHTML(sow,end){
   var range=sow.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   var t=weekTotals(sow);
   if(!t.c)return esc(range);
-  var net=getSplit()<100?' · <span style="color:var(--gold)">'+fmt$(t.n)+' take-home</span>':'';
+  var net=getSplit()<100?' · <span style="color:var(--purple)">'+fmt$(t.n)+' take-home</span>':'';
   return esc(range)+'<span class="wk-tot">'+t.c+' booked · <span style="color:var(--green)">'+fmt$(t.g)+'</span>'+net+'</span>';
 }
 
@@ -2239,6 +2283,7 @@ function promptLink(link){try{window.prompt('Your booking link — copy and shar
 
 /* ===== init ===== */
 applyBranding();
+applyTheme();
 $('cfYes').onclick=function(){
   $('confirmModal').classList.remove('show');
   var fn=_cfYes;_cfYes=null;if(fn)fn();
