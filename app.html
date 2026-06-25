@@ -870,6 +870,7 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
         <button class="theme-btn" onclick="selThemeS('dark',this)"><span class="theme-icon">🌙</span>Dark</button>
         <button class="theme-btn" onclick="selThemeS('light',this)"><span class="theme-icon">☀️</span>Light</button>
         <button class="theme-btn" onclick="selThemeS('auto',this)"><span class="theme-icon">⚡</span>Auto</button>
+        <button class="theme-btn" onclick="selThemeS('noir',this)"><span class="theme-icon">🪩</span>Noir</button>
       </div>
     </div>
 
@@ -1534,6 +1535,19 @@ function printInvoice(){
   .inv-total-row.final{font-size:19px;font-weight:700;color:#111;margin-top:10px;padding-top:10px;border-top:0.5px solid #ddd}
   .inv-note{margin-top:18px;padding:11px 15px;background:#fffbeb;border-radius:6px;font-size:11px;color:#854d0e;border:0.5px solid #fde68a}
   .inv-footer{margin-top:16px;text-align:center;font-size:10px;color:#bbb;padding-top:12px;border-top:0.5px solid #eee}
+/* ===== Holographic Noir — matches AppointmentPro ===== */
+body.theme-noir{--bg:#000;--bg2:#000;--bg3:#000;background:#000}
+body.theme-noir #warpLayer,body.theme-noir #luminaLayer{display:none!important}
+body.theme-noir .app-shell{background:#000!important}
+body.theme-noir .panel,body.theme-noir .topbar,body.theme-noir .card,body.theme-noir .sum-c,body.theme-noir .month-item,body.theme-noir .fbtn,body.theme-noir .ins-card,body.theme-noir .row-box,body.theme-noir table,body.theme-noir thead tr,body.theme-noir tbody tr{background:#000!important;border-color:#1c1c26!important}
+body.theme-noir input,body.theme-noir select,body.theme-noir textarea{background:#000!important;border-color:#4a4a5a!important;color:#fff!important}
+body.theme-noir .tabs{background:#000!important}
+body.theme-noir .tab{color:var(--text2)}
+body.theme-noir .topbar-name span{text-shadow:0 0 8px rgba(255,184,0,.4)}
+body.theme-noir .topbar-sub{color:#ffd24a;text-shadow:0 0 8px rgba(255,210,74,.35)}
+body.theme-noir .tab.active{color:#fff!important;border:1px solid transparent!important;background:linear-gradient(#050507,#050507) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 10px rgba(167,139,250,.3)!important;text-shadow:0 0 7px rgba(103,232,249,.3)}
+body.theme-noir .total-rb{border:1px solid transparent!important;background:linear-gradient(#000,#000) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 16px rgba(167,139,250,.22)!important}
+body.theme-noir .total-v{background:linear-gradient(110deg,#a78bfa 0%,#f5a8ff 35%,#67e8f9 70%,#a78bfa 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent!important;text-shadow:none}
   @media print{body{padding:18px}}</style>
   </head><body>${content}</body></html>`);
   w.document.close();setTimeout(()=>w.print(),500);
@@ -2082,7 +2096,7 @@ function savePrefsToStorage(){
 
 function applyTheme(theme, accent){
   const body = document.body;
-  body.classList.remove('theme-dark','theme-light','theme-auto');
+  body.classList.remove('theme-dark','theme-light','theme-auto','theme-noir');
   body.classList.remove('accent-gold','accent-rose','accent-ocean','accent-forest','accent-purple');
   if(theme==='auto'){
     const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -2092,8 +2106,9 @@ function applyTheme(theme, accent){
   }
   body.classList.add('accent-'+(accent||'gold'));
   if(typeof syncRootBg==='function')syncRootBg();
-  if(typeof luminaSet==='function') luminaSet(window.CURRENT_WP==='lumina' && !body.classList.contains('theme-light'));
-  if(typeof warpSet==='function') warpSet(!body.classList.contains('theme-light') ? warpStyleFor(window.CURRENT_WP) : null);
+  var _noWP = body.classList.contains('theme-light') || theme==='noir';
+  if(typeof luminaSet==='function') luminaSet(window.CURRENT_WP==='lumina' && !_noWP);
+  if(typeof warpSet==='function') warpSet(!_noWP ? warpStyleFor(window.CURRENT_WP) : null);
 }
 function selThemeS(theme, btn){
   if(btn){ document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
@@ -2438,7 +2453,7 @@ function initPrefs(){
 initPrefs();
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.0';
+var VERSION='app v1.1 · holographic noir';
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
   try{
