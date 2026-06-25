@@ -734,9 +734,13 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
 .lc-slider{-webkit-appearance:none;appearance:none;width:100%;height:10px;border-radius:6px;background:linear-gradient(90deg,#cfcfcf,#3a3a3a);outline:none;margin:8px 0 2px}
 .lc-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:28px;height:28px;border-radius:50%;background:var(--gold);border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);cursor:pointer}
 .lc-slider::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:var(--gold);border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);cursor:pointer}
+.update-bar{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 8px);transform:translateX(-50%) translateY(-160%);z-index:100000;background:var(--gold);color:#1a1208;font-weight:800;font-size:13.5px;padding:11px 18px;border-radius:30px;box-shadow:0 8px 24px rgba(0,0,0,.55);cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+.update-bar.show{transform:translateX(-50%) translateY(0)}
+.update-bar:active{transform:translateX(-50%) translateY(0) scale(.96)}
 </style>
 </head>
 <body>
+<div id="updateBar" class="update-bar" onclick="applyUpdate()"><i class="ti ti-refresh"></i> New version ready — tap to update</div>
 <div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px;display:none">v</div>
 
 <canvas id="warpLayer" aria-hidden="true"></canvas>
@@ -2432,6 +2436,24 @@ function initPrefs(){
 }
 
 initPrefs();
+
+/* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
+var VERSION='app v1.0';
+function applyUpdate(){ location.reload(); }
+function checkForUpdate(){
+  try{
+    fetch('app.html',{cache:'no-store',headers:{'Accept':'text/html'}})
+      .then(function(r){return r.text();})
+      .then(function(txt){
+        var m=txt.match(/var VERSION='([^']+)'/);
+        if(m&&m[1]&&m[1]!==VERSION&&!document.getElementById('updBanner')){
+          var b=document.getElementById('updateBar'); if(b)b.classList.add('show');
+        }
+      }).catch(function(){});
+  }catch(e){}
+}
+setTimeout(checkForUpdate,8000);
+setInterval(checkForUpdate,60000);
 </script>
 </body>
 </html>
