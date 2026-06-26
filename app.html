@@ -354,7 +354,7 @@ body.theme-light .ins-sub{color:#666}
 .fbtn:hover{border-color:#666;color:#eee}
 
 /* SUMMARY ROW */
-.sum-row{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:18px}
+.sum-row{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:18px}
 @media(max-width:520px){.sum-row{grid-template-columns:repeat(2,1fr)}}
 .sum-c{background:#111;border:1px solid #333;border-radius:9px;padding:12px;text-align:center}
 .sum-lbl{font-size:10px;color:#777;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;font-weight:600}
@@ -1193,7 +1193,8 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
         <div class="sum-c"><div class="sum-lbl">Total charged</div><div class="sum-val sv-g" id="sCharge">$0</div></div>
         <div class="sum-c"><div class="sum-lbl">Salon 40%</div><div class="sum-val sv-b" id="sSalon">$0</div></div>
         <div class="sum-c"><div class="sum-lbl">My 60%</div><div class="sum-val sv-gr" id="sMe">$0</div></div>
-        <div class="sum-c"><div class="sum-lbl">Tips + my total</div><div class="sum-val sv-g" id="sTotal">$0</div></div>
+        <div class="sum-c"><div class="sum-lbl">Tips</div><div class="sum-val sv-gr" id="sTips">$0</div></div>
+        <div class="sum-c"><div class="sum-lbl">Take-home</div><div class="sum-val sv-g" id="sTotal">$0</div></div>
       </div>
       <div id="tableView">
         <div class="tbl-wrap">
@@ -1359,6 +1360,7 @@ function updateSummary(filtered){
   $('sCharge').textContent=fmtR(filtered.reduce((s,a)=>s+a.charge,0));
   $('sSalon').textContent=fmtR(filtered.reduce((s,a)=>s+a.salon,0));
   $('sMe').textContent=fmtR(filtered.reduce((s,a)=>s+a.me,0));
+  $('sTips').textContent=fmtR(filtered.reduce((s,a)=>s+a.tip,0));
   $('sTotal').textContent=fmtR(filtered.reduce((s,a)=>s+a.me+a.tip,0));
 }
 function renderTable(){
@@ -1527,6 +1529,13 @@ function renderInvoice(){
       <div class="inv-total-row final"><span>Amount owed to ${getName()||'Your name'}</span><span style="color:#166534">$${totMe.toFixed(2)}</span></div>
     </div>
     <div class="inv-note"><strong>Note:</strong> Tips totalling $${totTip.toFixed(2)} were paid directly by clients and are not included in this commission statement.</div>
+    <div class="inv-taxbox">
+      <div class="inv-taxbox-h">For your own records — income summary (not part of the request above)</div>
+      <div class="inv-tax-row"><span>Service commission (taxable)</span><span>$${totMe.toFixed(2)}</span></div>
+      <div class="inv-tax-row"><span>Tips received — may qualify for federal tip deduction</span><span>$${totTip.toFixed(2)}</span></div>
+      <div class="inv-tax-row inv-tax-total"><span>Total income this period</span><span>$${(totMe+totTip).toFixed(2)}</span></div>
+      <div class="inv-tax-note">Tips remain subject to Social Security &amp; Medicare. The federal &ldquo;no tax on tips&rdquo; deduction (up to $25,000, tax years 2025&ndash;2028) reduces federal income tax only and has eligibility and income limits &mdash; confirm with a tax professional.</div>
+    </div>
     <div class="inv-footer">Salon · Generated ${issued} · ${invNum}</div>`;
 }
 function printInvoice(){
@@ -1548,6 +1557,11 @@ function printInvoice(){
   .inv-total-row{display:flex;justify-content:space-between;font-size:13px;color:#666;margin-bottom:7px}
   .inv-total-row.final{font-size:19px;font-weight:700;color:#111;margin-top:10px;padding-top:10px;border-top:0.5px solid #ddd}
   .inv-note{margin-top:18px;padding:11px 15px;background:#fffbeb;border-radius:6px;font-size:11px;color:#854d0e;border:0.5px solid #fde68a}
+  .inv-taxbox{margin-top:14px;padding:14px 16px;background:#f0f9f4;border:0.5px solid #bfe3cd;border-radius:8px}
+  .inv-taxbox-h{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#15803d;margin-bottom:9px}
+  .inv-tax-row{display:flex;justify-content:space-between;font-size:12px;color:#444;margin-bottom:6px}
+  .inv-tax-total{font-weight:700;color:#111;font-size:13px;border-top:0.5px solid #cce8d6;padding-top:7px;margin-top:2px}
+  .inv-tax-note{font-size:10px;color:#777;line-height:1.6;margin-top:9px}
   .inv-footer{margin-top:16px;text-align:center;font-size:10px;color:#bbb;padding-top:12px;border-top:0.5px solid #eee}
   @media print{body{padding:18px}}</style>
   </head><body>${content}</body></html>`);
@@ -2503,7 +2517,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.18 · noir settings';
+var VERSION='app v1.19 · tip breakdown';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
