@@ -8,6 +8,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="AppointmentPro">
 <meta name="theme-color" content="#FFB800">
+<link rel="manifest" href="appt-manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="appt-touch-icon.png">
+<link rel="apple-touch-icon" href="appt-icon-192.png">
+<link rel="icon" type="image/png" href="appt-icon-192.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -812,6 +816,9 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
     <label>Name</label><input id="csName" placeholder="Client name">
     <label>Phone</label><input id="csPhone" type="tel" placeholder="(555) 123-4567">
     <label>Email <span style="color:#666;font-weight:400">(optional)</span></label><input id="csEmail" type="email" placeholder="name@email.com">
+    <label>Saved price <span style="color:#666;font-weight:400">(auto-remembered)</span></label>
+    <div class="ap-price-wrap"><span class="ap-price-cur">$</span><input id="csPrice" type="number" inputmode="decimal" min="0" step="1" placeholder="—" class="ap-price-in"></div>
+    <div style="font-size:12px;color:var(--muted);margin:7px 0 2px;line-height:1.5">Their go-to price — auto-fills when you approve their bookings. Edit anytime (e.g. if they change their look).</div>
     <div class="btn-row" style="margin-top:16px">
       <button class="btn" onclick="saveClient()"><i class="ti ti-check"></i> Save client</button>
     </div>
@@ -1767,17 +1774,22 @@ function openClientSheet(id){
     var c=clients.find(function(x){return x.id===id});
     $('csTitle').textContent='Edit client';
     $('csName').value=c.name;$('csPhone').value=c.phone||'';$('csEmail').value=c.email||'';
+    $('csPrice').value=(c.savedPrice>0)?c.savedPrice:'';
     $('csDel').style.display='flex';
   }else{
     $('csTitle').textContent='Add client';
     $('csName').value='';$('csPhone').value='';$('csEmail').value='';
+    $('csPrice').value='';
     $('csDel').style.display='none';
   }
   $('clientModal').classList.add('show');
 }
 function saveClient(){
   var name=$('csName').value.trim();if(!name){toast('Add a name',1);return;}
-  var rec={id:clientId||uid(),name:name,phone:$('csPhone').value.trim(),email:$('csEmail').value.trim()};
+  var prev=clientId?clients.find(function(c){return c.id===clientId;}):null;
+  var rec=Object.assign({},prev||{},{id:clientId||uid(),name:name,phone:$('csPhone').value.trim(),email:$('csEmail').value.trim()});
+  var sp=parseFloat($('csPrice').value);
+  if(!isNaN(sp)&&sp>0)rec.savedPrice=sp; else delete rec.savedPrice;
   if(clientId){clients=clients.map(function(c){return c.id===clientId?rec:c})}else{clients.push(rec)}
   save(CLIENTS,clients);closeSheet('clientModal');renderClients();toast('Client saved');
 }
@@ -2171,7 +2183,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.15 · trade system';
+var VERSION='v4.17 · saved client price';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -2688,11 +2700,14 @@ function commitApproved(r,silent){
   var noteParts=[];
   if(r.notes)noteParts.push(r.notes);
   if(r.hair)noteParts.push('Hair — '+r.hair);
+  var _cf=clientForReq(r);
+  var _saved=(_cf&&+_cf.savedPrice>0)?+_cf.savedPrice:0;
   var hp=combinedHairPrice(r.service,r.hairData);
-  var apptPrice=(+r.price>0)?(+r.price):hp.price;
+  var apptPrice=(+r.price>0)?(+r.price):(_saved>0?_saved:hp.price);
   appts.push({id:'a'+Date.now()+Math.floor(Math.random()*999),name:r.name,phone:r.phone||'',service:r.service||'',date:r.date,time:r.time,dur:(+r.dur||60),price:apptPrice,notes:noteParts.join(' | '),status:'confirmed',viaBooking:true});
   save(APPTS,appts);
   addClientFromBooking(r);
+  if(apptPrice>0){var _c2=clientForReq(r);if(_c2){_c2.savedPrice=apptPrice;save(CLIENTS,clients);}}
   if(fbReady&&r._id)db.collection('requests').doc(r._id).update({status:'approved'}).catch(function(){});
   pendingReqs=pendingReqs.filter(function(x){return x._id!==r._id;});
   if(!silent){
@@ -2728,13 +2743,28 @@ function approveRequest(id){
 }
 function doApprove(r){commitApproved(r,false);}
 var _apR=null;
+function clientForReq(r){
+  if(!r)return null;
+  var rp=(''+(r.phone||'')).replace(/\D/g,''), rn=(r.name||'').toLowerCase();
+  return clients.find(function(c){
+    var cp=(''+(c.phone||'')).replace(/\D/g,'');
+    if(rp&&cp&&rp===cp)return true;
+    return c.name&&rn&&c.name.toLowerCase()===rn;
+  })||null;
+}
 function openApprovePrice(r){
   _apR=r;
+  var c=clientForReq(r);
+  var saved=(c&&+c.savedPrice>0)?+c.savedPrice:0;
   var hp=combinedHairPrice(r.service,r.hairData);
-  var suggested=(+r.price>0)?(+r.price):(+(hp&&hp.price)||0);
+  var suggested=(+r.price>0)?(+r.price):(saved>0?saved:(+(hp&&hp.price)||0));
   var who=$('apPriceWho');if(who)who.textContent=(r.name||'Client')+' · '+(r.service||'Service');
   var inp=$('apPriceInput');if(inp)inp.value=suggested>0?suggested:'';
-  var hint=$('apPriceHint');if(hint)hint.textContent=suggested>0?'Suggested from your Price Book — edit if needed.':'No saved price for this service — type one in.';
+  var hint=$('apPriceHint');
+  if(hint){
+    if(saved>0)hint.textContent='⭐ Saved price for '+(r.name||'this client')+' — adjust if their look changed.';
+    else hint.textContent=suggested>0?'Suggested from your Price Book — edit if needed.':'No saved price yet — type one in.';
+  }
   var m=$('approvePriceModal');if(m)m.classList.add('show');
   setTimeout(function(){if(inp)inp.focus();},120);
 }
