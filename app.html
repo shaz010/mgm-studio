@@ -756,6 +756,21 @@ body.theme-noir .sc-s{background:#06101f!important;border-color:#1a3a6a!importan
 body.theme-noir .sc-m{background:#04140b!important;border-color:#1a4a2a!important}
 body.theme-noir[class*="wp-"]{background:#000!important}
 body.theme-noir .mgm-hero{background:#000!important;border-color:#1c1c26!important}
+/* -- Noir polish: varied iridescent edges for Appointments + MGM owes -- */
+body.theme-noir .fbtn.active{color:#fff!important;border:1px solid transparent!important;background:linear-gradient(#050507,#050507) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 10px rgba(167,139,250,.3)!important;text-shadow:0 0 7px rgba(103,232,249,.3)}
+body.theme-noir .sum-c{border:1px solid transparent!important}
+body.theme-noir .sum-c:has(.sv-g){background:linear-gradient(#000,#000) padding-box,linear-gradient(135deg,#FFB800,#ffe6a6,#FFB800) border-box!important;box-shadow:0 0 12px rgba(255,184,0,.16)!important}
+body.theme-noir .sum-c:has(.sv-b){background:linear-gradient(#000,#000) padding-box,linear-gradient(135deg,#67e8f9,#7eb8ff,#67e8f9) border-box!important;box-shadow:0 0 12px rgba(126,184,255,.18)!important}
+body.theme-noir .sum-c:has(.sv-gr){background:linear-gradient(#000,#000) padding-box,linear-gradient(135deg,#5ddb7c,#9af0b4,#5ddb7c) border-box!important;box-shadow:0 0 12px rgba(93,219,124,.18)!important}
+body.theme-noir .sum-c:has(#sTotal){background:linear-gradient(#000,#000) padding-box,linear-gradient(120deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 16px rgba(167,139,250,.24)!important}
+body.theme-noir .sv-b{text-shadow:0 0 9px rgba(126,184,255,.4)}
+body.theme-noir .sv-gr{text-shadow:0 0 9px rgba(93,219,124,.4)}
+body.theme-noir .sv-g{text-shadow:0 0 9px rgba(255,184,0,.35)}
+body.theme-noir #sTotal{background:linear-gradient(110deg,#a78bfa,#f5a8ff,#67e8f9,#a78bfa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent!important;text-shadow:none}
+body.theme-noir .mgm-hero{border:1px solid transparent!important;background:linear-gradient(#000,#000) padding-box,linear-gradient(120deg,#67e8f9,#7eb8ff,#a78bfa,#67e8f9) border-box!important;box-shadow:0 0 20px rgba(126,184,255,.16)!important}
+body.theme-noir .mgm-owed-lbl{color:#8fe3ff!important;text-shadow:0 0 8px rgba(103,232,249,.3)}
+body.theme-noir .mgm-owed-val{background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent!important;text-shadow:none}
+body.theme-noir .btn-paid-main,body.theme-noir .btn-mark-paid{background:#04140b!important;border:1px solid #2a6a3a!important;color:#7cf0a0!important;box-shadow:0 0 10px rgba(93,219,124,.2)!important}
 </style>
 </head>
 <body>
@@ -2465,7 +2480,7 @@ function initPrefs(){
 initPrefs();
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.5 · noir live';
+var VERSION='app v1.6 · iridescent tabs';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
