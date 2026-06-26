@@ -213,6 +213,25 @@ body.theme-noir .pg-foot{color:#a4a4a4}
 .reset-app-btn{width:100%;padding:11px;border-radius:11px;border:1px solid #5a2a2a;background:transparent;color:#c66;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .reset-app-btn:active{background:rgba(200,80,80,.12)}
 body.theme-light .reset-app-btn{border-color:#e0b4b4;color:#b14}
+.danger-details{border:1px solid #3a2a2a;border-radius:11px;overflow:hidden}
+.danger-summary{list-style:none;cursor:pointer;padding:13px 15px;font-size:12.5px;font-weight:700;color:#c98a93;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+.danger-summary::-webkit-details-marker{display:none}
+.danger-summary .ti{font-size:15px}
+.danger-summary::after{content:'⌄';margin-left:auto;font-size:15px;color:#a07078}
+.danger-details[open] .danger-summary::after{content:'⌃'}
+.danger-body{padding:2px 15px 15px}
+.erase-modal{display:none;position:fixed;inset:0;z-index:100050;background:rgba(0,0,0,.9);align-items:center;justify-content:center;padding:26px}
+.erase-modal.open{display:flex}
+.erase-card{max-width:380px;width:100%;background:#0a0608;border:1.5px solid #ff2b4a;border-radius:18px;padding:26px 22px;text-align:center;box-shadow:0 0 30px rgba(255,43,74,.45),inset 0 0 22px rgba(255,43,74,.08)}
+.erase-icon{font-size:40px;color:#ff2b4a;margin-bottom:8px;text-shadow:0 0 14px rgba(255,43,74,.85)}
+.erase-title{font-size:22px;font-weight:800;color:#ff3355;margin-bottom:13px;letter-spacing:.3px;text-shadow:0 0 12px rgba(255,43,74,.75),0 0 26px rgba(255,43,74,.4)}
+.erase-msg{font-size:14px;color:#ffd6dd;line-height:1.6;margin-bottom:10px}
+.erase-msg b{color:#ff8093}
+.erase-tip{font-size:12px;color:#c98a93;line-height:1.55;margin-bottom:20px}
+.erase-actions{display:flex;gap:10px}
+.erase-cancel{flex:1.3;padding:13px;border-radius:12px;border:1px solid #4a4a4a;background:#161616;color:#f0f0f0;font-size:14.5px;font-weight:700;cursor:pointer}
+.erase-go{flex:1;padding:13px;border-radius:12px;border:1px solid #ff2b4a;background:rgba(255,43,74,.16);color:#ff4d68;font-size:14.5px;font-weight:800;cursor:pointer;text-shadow:0 0 8px rgba(255,43,74,.6);box-shadow:0 0 16px rgba(255,43,74,.32)}
+.erase-go:active{background:rgba(255,43,74,.32)}
 .legal-foot summary::-webkit-details-marker{display:none}
 .legal-foot summary::after{content:'⌄';margin-left:auto;font-size:14px;opacity:.6}
 .legal-foot[open] summary::after{content:'⌃'}
@@ -798,6 +817,18 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
 </head>
 <body>
 <div id="updateBar" class="update-bar" onclick="applyUpdate()"><i class="ti ti-refresh"></i> New version ready — tap to update</div>
+<div id="eraseModal" class="erase-modal" onclick="if(event.target===this)closeEraseModal()">
+  <div class="erase-card">
+    <div class="erase-icon"><i class="ti ti-alert-triangle"></i></div>
+    <div class="erase-title">Erase everything?</div>
+    <div class="erase-msg">This permanently deletes <b>all bookings, client cards, prices and your salon details</b> on this device. It cannot be undone.</div>
+    <div class="erase-tip">Tip: tap “Save a copy of my data” first if you might want it back.</div>
+    <div class="erase-actions">
+      <button class="erase-cancel" onclick="closeEraseModal()">Keep my data</button>
+      <button class="erase-go" onclick="confirmErase()">Erase all</button>
+    </div>
+  </div>
+</div>
 <div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px;display:none">v</div>
 
 
@@ -1032,8 +1063,13 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
     </div>
 
     <div class="setup-section">
-      <button class="reset-app-btn" onclick="resetApp()"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Start fresh — erase all my data</button>
-      <div class="reset-qp-hint" style="margin-top:7px">Wipes all bookings, client cards, prices and salon details on this device for a clean start. Back up first if unsure — your purchase stays unlocked.</div>
+      <details class="danger-details">
+        <summary class="danger-summary"><i class="ti ti-alert-triangle"></i> Reset &amp; erase options</summary>
+        <div class="danger-body">
+          <button class="reset-app-btn" onclick="resetApp()"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Start fresh — erase all my data</button>
+          <div class="reset-qp-hint" style="margin-top:7px">Wipes all bookings, client cards, prices and salon details on this device for a clean start. Back up first if unsure — your purchase stays unlocked.</div>
+        </div>
+      </details>
     </div>
 
     <details class="ty-details" ontoggle="if(this.open)buildTaxYear()">
@@ -1698,9 +1734,9 @@ var CAT_COLORS={'Haircuts':'#FFC04D','Styling':'#FFD27A','Color':'#FF7AB0','High
 function catColorOf(c){return CAT_COLORS[c]||'#FFC04D';}
 function getFavorites(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return Array.isArray(p.favorites)?p.favorites:DEFAULT_FAVES.slice();}catch(e){return DEFAULT_FAVES.slice();}}
 function saveFavorites(arr){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.favorites=arr;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.favorites=arr;}
-function resetApp(){
-  if(!confirm('Start fresh?\n\nThis erases ALL bookings, client cards, prices and your salon details on THIS device. It cannot be undone.\n\nTip: tap "Save a copy of my data" first if you might want it back.'))return;
-  if(!confirm('Are you sure? Your data on this device will be permanently erased.'))return;
+function resetApp(){ var m=document.getElementById('eraseModal'); if(m)m.classList.add('open'); }
+function closeEraseModal(){ var m=document.getElementById('eraseModal'); if(m)m.classList.remove('open'); }
+function confirmErase(){
   try{
     localStorage.removeItem('cp_appts');
     localStorage.removeItem('cp_paid');
@@ -2592,7 +2628,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.24 · checkbox fix';
+var VERSION='app v1.25 · safe erase';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
