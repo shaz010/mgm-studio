@@ -1,5 +1,5 @@
 // CommissionPro service worker — network-first so the app always updates.
-const CACHE = 'commissionpro-v71';
+const CACHE = 'commissionpro-v72';
 const ASSETS = ['./', './index.html', './app.html', './manifest.json', './icon-192.png'];
 
 self.addEventListener('install', (e) => {
@@ -25,7 +25,7 @@ self.addEventListener('fetch', (e) => {
 
   if (isPage) {
     e.respondWith(
-      fetch(req)
+      fetch(req, {cache:'no-store'})
         .then((res) => {
           if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {}); }
           return res;

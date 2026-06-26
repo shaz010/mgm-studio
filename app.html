@@ -980,7 +980,7 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
       <div class="legal-body">CommissionPro is a personal tracking tool. All figures are estimates based on the information you enter and are for your own reference only — not official payroll, tax, or accounting records. Commission splits and pay vary; the app reflects only the values you input and does not guarantee any amount. CommissionPro does not provide financial, legal, or tax advice. Always verify your earnings against your salon's official records.<br><br>Eye Rest is a relaxing visual and a reminder to rest your eyes. It is not a medical device or treatment, is not a substitute for professional eye care, and makes no health or therapeutic claims.<br><br><a href="privacy.html" target="_blank" style="color:var(--gold);text-decoration:none">Privacy Policy ↗</a> &nbsp;·&nbsp; <a href="terms.html" target="_blank" style="color:var(--gold);text-decoration:none">Terms of Service ↗</a></div>
     </details>
 
-    <div id="buildBadge" style="text-align:center;margin:16px 0 2px;font-size:11px;color:#666;letter-spacing:.3px">CommissionPro · build 71</div>
+    <div id="buildBadge" style="text-align:center;margin:16px 0 2px;font-size:12.5px;color:#cfcfda;font-weight:600;letter-spacing:.3px">CommissionPro · build 71</div>
 
     <button class="setup-btn" onclick="saveSettings()">Save settings</button>
   </div>
@@ -1548,6 +1548,10 @@ body.theme-noir .topbar-sub{color:#ffd24a;text-shadow:0 0 8px rgba(255,210,74,.3
 body.theme-noir .tab.active{color:#fff!important;border:1px solid transparent!important;background:linear-gradient(#050507,#050507) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 10px rgba(167,139,250,.3)!important;text-shadow:0 0 7px rgba(103,232,249,.3)}
 body.theme-noir .total-rb{border:1px solid transparent!important;background:linear-gradient(#000,#000) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 16px rgba(167,139,250,.22)!important}
 body.theme-noir .total-v{background:linear-gradient(110deg,#a78bfa 0%,#f5a8ff 35%,#67e8f9 70%,#a78bfa 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent!important;text-shadow:none}
+body.theme-noir .calc-hint,body.theme-noir .svc-chip,body.theme-noir .svc-more,body.theme-noir .svc-more::after,body.theme-noir .price-in,body.theme-noir .reset-qp-btn,body.theme-noir .pg-card,body.theme-noir .client-card,body.theme-noir .cf-in,body.theme-noir .ck-box,body.theme-noir .cf-seg-btn,body.theme-noir .cf-disc,body.theme-noir .btn-cancel,body.theme-noir #apptSearch,body.theme-noir .svc-mode-btn,body.theme-noir .modal,body.theme-noir .setup-card,body.theme-noir .inv-tbl th,body.theme-noir .qp-hint,body.theme-noir .cc-flag.muted,body.theme-noir .sum-c,body.theme-noir .month-item,body.theme-noir tbody tr,body.theme-noir tbody tr:hover,body.theme-noir .tbl-wrap tbody tr,body.theme-noir .tbl-wrap tbody tr:hover{background:#000!important;border-color:#1c1c26!important}
+body.theme-noir input:focus,body.theme-noir select:focus,body.theme-noir .cf-in:focus,body.theme-noir .price-in:focus{background:#0a0a0e!important;border-color:#a78bfa!important}
+body.theme-noir .sc-s{background:#06101f!important;border-color:#1a3a6a!important}
+body.theme-noir .sc-m{background:#04140b!important;border-color:#1a4a2a!important}
   @media print{body{padding:18px}}</style>
   </head><body>${content}</body></html>`);
   w.document.close();setTimeout(()=>w.print(),500);
@@ -2458,7 +2462,7 @@ function initPrefs(){
 initPrefs();
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.2 · noir default';
+var VERSION='app v1.3 · full noir + fresh cache';
 (function(){var b=document.getElementById('buildBadge');if(b)b.textContent='CommissionPro · '+VERSION.replace(/^app\s*/,'');})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
