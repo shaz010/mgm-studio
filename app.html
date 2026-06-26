@@ -195,7 +195,7 @@ body.theme-light .reset-app-btn{border-color:#e0b4b4;color:#b14}
 .legal-body{font-size:11px;color:#888;line-height:1.6;margin-top:10px}
 body.theme-light .legal-foot summary{color:#666}
 body.theme-light .legal-body{color:#777}
-#payGate{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;overflow:hidden;background:rgba(5,5,8,.92);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);padding:24px}
+#payGate{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;overflow:hidden;background:rgba(5,5,8,.985);padding:24px}
 #payGate.on{display:flex}
 .pg-card{width:100%;max-width:380px;background:#141414;border:1px solid #2a2a2a;border-radius:20px;padding:30px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 .pg-logo{font-size:30px;color:var(--gold)}
@@ -639,9 +639,11 @@ body.accent-gold{--gold:#FFB800;--gold2:#2a1f00;--gold3:#665522;--gold-light:#FF
 .setup-btn:hover{opacity:.88}
 
 /* Settings panel */
-.settings-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;align-items:flex-end;justify-content:center;padding:0}
+.settings-panel{display:none;position:fixed;inset:0;background:#000;z-index:500;align-items:flex-end;justify-content:center;padding:0}
+body.theme-light .settings-panel{background:#ececed}
 .settings-panel.open{display:flex}
 .settings-sheet{background:#141414;border:1px solid #2a2a2a;border-radius:20px 20px 0 0;padding:28px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto}
+body.theme-noir .settings-sheet{background:#0a0a0c;border-color:#1d1d22}
 .settings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
 .settings-title{font-size:17px;font-weight:700;color:#f0f0f0}
 .settings-close{background:none;border:none;color:#666;font-size:22px;cursor:pointer;padding:4px}
@@ -716,7 +718,7 @@ body.theme-noir .btn-paid-main,body.theme-noir .btn-mark-paid{background:#04140b
 body.theme-noir .svc-trade-change{color:#cbd5ff;border-color:#23232e;background:#0a0a0e}
 body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!important;background:linear-gradient(#000,#000) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 10px rgba(167,139,250,.25)}
 .trade-screen{position:fixed;inset:0;z-index:7000;background:#000;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
-.tour-screen{position:fixed;inset:0;z-index:7100;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:24px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.tour-screen{position:fixed;inset:0;z-index:7100;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:24px}
 .tour-card{width:100%;max-width:380px;background:#0a0a0e;border:1.5px solid #23232e;border-radius:22px;padding:30px 24px 22px;text-align:center}
 body.theme-noir .tour-card{border:1px solid transparent;background:linear-gradient(#070708,#070708) padding-box,linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 26px rgba(167,139,250,.22)}
 .tour-ic{font-size:36px;margin-bottom:12px;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
@@ -1588,7 +1590,7 @@ var TRADES=[
   {k:'nail',label:'Nails',icon:'ti-hand-finger'},
   {k:'lash',label:'Lash',icon:'ti-feather'},
   {k:'brow',label:'Brows',icon:'ti-eye'},
-  {k:'esth',label:'Skin & Facials',icon:'ti-mask'},
+  {k:'esth',label:'Esthetician',icon:'ti-mask'},
   {k:'makeup',label:'Makeup',icon:'ti-brush'},
   {k:'massage',label:'Massage',icon:'ti-hand-stop'},
   {k:'hairext',label:'Extensions',icon:'ti-wind'}
@@ -2501,7 +2503,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.16 · resilient boot';
+var VERSION='app v1.18 · noir settings';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
