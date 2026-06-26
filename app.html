@@ -817,7 +817,18 @@ body.theme-noir .tour-card{border:1px solid transparent;background:linear-gradie
 .trade-tile i{font-size:28px;color:#cbd5ff}
 .trade-tile span{font-size:13px;font-weight:700;color:#e8e8f2}
 .trade-tile:hover{border-color:transparent;background:linear-gradient(#0a0a0e,#0a0a0e) padding-box,linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 18px rgba(167,139,250,.28)}
-</style>
+.svc-addsvc{margin-top:16px;padding-top:13px;border-top:1px dashed #2a2a33}
+.svc-addsvc-hint{font-size:12px;color:var(--muted);margin-bottom:9px}
+.svc-addsvc-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--gold);background:transparent;border:1.5px dashed var(--gold-border);padding:9px 15px;border-radius:20px;cursor:pointer}
+.svc-addsvc-btn i{font-size:15px}
+.svc-addsvc-row{display:flex;gap:8px;margin-top:8px}
+.svc-addsvc-go{flex:1;padding:11px;border:none;border-radius:12px;font-weight:800;font-size:14px;color:#06060a;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);cursor:pointer}
+.svc-addsvc-cancel{flex:0 0 auto;padding:11px 16px;border:1px solid #2a2a33;border-radius:12px;font-weight:700;font-size:14px;color:var(--muted);background:transparent;cursor:pointer}
+.svc-del{font-size:13px!important;color:#ff7a90!important;margin-left:1px}
+.svc-customchip{border-color:#4a3a5e!important}
+body.theme-noir .svc-addsvc-btn{color:#cbd5ff;border-color:#33334a}
+body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5e!important}
+
 </head>
 <body>
 <div id="updateBar" class="update-bar" onclick="applyUpdate()"><i class="ti ti-refresh"></i> New version ready — tap to update</div>
@@ -901,7 +912,7 @@ body.theme-noir .tour-card{border:1px solid transparent;background:linear-gradie
     <div class="setup-section">
       <div class="setup-section-title">Your details</div>
       <label class="setup-label">Your name</label>
-      <input class="setup-input" type="text" id="setupName" placeholder="e.g. Shahbaz Mirshahi">
+      <input class="setup-input" type="text" id="setupName" placeholder="e.g. Alex Rivera">
       <div class="setup-row" style="margin-top:10px">
         <div>
           <label class="setup-label">Salon name</label>
@@ -1057,6 +1068,12 @@ body.theme-noir .tour-card{border:1px solid transparent;background:linear-gradie
       </div>
       <button class="cf-disc-edit" onclick="resetQuickPicks()" style="margin-top:14px"><i class="ti ti-rotate" style="font-size:13px"></i> Reset Quick Picks to defaults</button>
       <button class="cf-disc-edit" onclick="forceUpdate()" style="margin-top:6px;display:block"><i class="ti ti-refresh" style="font-size:13px"></i> Force update to latest version</button>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">Your name</div>
+      <input class="setup-input" type="text" id="cfgName" placeholder="e.g. Alex Rivera" autocomplete="off" oninput="saveName(this.value)">
+      <div class="reset-qp-hint" style="margin-top:7px">Shows on your earnings card and commission statement. Leave blank to just show “You”.</div>
     </div>
 
     <div class="setup-section">
@@ -1252,7 +1269,7 @@ body.theme-noir .tour-card{border:1px solid transparent;background:linear-gradie
         <div class="ctitle"><i class="ti ti-calculator"></i>Earnings breakdown</div>
         <div class="split-grid">
           <div class="sc sc-s"><div class="sc-lbl">Salon</div><div class="sc-pct">40% of charge</div><div class="sc-amt" id="eSalon">$0</div></div>
-          <div class="sc sc-m"><div class="sc-lbl">Shahbaz</div><div class="sc-pct">60% of charge</div><div class="sc-amt" id="eMe">$0</div></div>
+          <div class="sc sc-m"><div class="sc-lbl" id="eMeLbl">You</div><div class="sc-pct">60% of charge</div><div class="sc-amt" id="eMe">$0</div></div>
         </div>
         <div class="row-box tip-rb"><span class="box-lbl"><i class="ti ti-heart" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Tip — 100% mine</span><span class="tip-v" id="eTip">$0.00</span></div>
         <div class="row-box total-rb" style="margin-top:7px"><span class="box-lbl" style="font-size:14px;color:var(--gold);font-weight:600">My total take-home</span><span class="total-v" id="eTotal">$0.00</span></div>
@@ -1330,7 +1347,9 @@ body.theme-noir .tour-card{border:1px solid transparent;background:linear-gradie
 </div>
 
 <script>
-const STYLIST='Shahbaz Mirshahi';
+function getName(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.name||'').trim();}catch(e){return '';}}
+function saveName(v){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.name=v;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.name=v;applyName();}
+function applyName(){var l=document.getElementById('eMeLbl');if(l)l.textContent=getName()||'You';}
 let data=[],paidMonths={},activeFilter='all',editingId=null;
 var APPTS_KEY='cp_appts',PAID_KEY='cp_paid';
 function loadAppts(){try{var a=JSON.parse(localStorage.getItem(APPTS_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return[];}}
@@ -1596,7 +1615,7 @@ function renderInvoice(){
   }).join('');
   $('invoicePreview').innerHTML=`
     <div class="inv-header">
-      <div><div class="inv-from-name">${STYLIST}</div>
+      <div><div class="inv-from-name">${getName()||'Your name'}</div>
         <div class="inv-from-detail">Hair Stylist &nbsp;·&nbsp; Salon<br>${fmtMonth(ym)} &nbsp;·&nbsp; Commission rate: 60%<br>Invoice #: ${invNum}</div></div>
       <div class="inv-to"><div class="inv-to-label">Payment request to</div>
         <div class="inv-to-salon">Salon</div>
@@ -1615,7 +1634,7 @@ function renderInvoice(){
     <div class="inv-totals">
       <div class="inv-total-row"><span>Total revenue generated</span><span>$${totCharge.toFixed(2)}</span></div>
       <div class="inv-total-row"><span>Salon share (40%)</span><span style="color:#1e40af">– $${totSalon.toFixed(2)}</span></div>
-      <div class="inv-total-row final"><span>Amount owed to ${STYLIST}</span><span style="color:#166534">$${totMe.toFixed(2)}</span></div>
+      <div class="inv-total-row final"><span>Amount owed to ${getName()||'Your name'}</span><span style="color:#166534">$${totMe.toFixed(2)}</span></div>
     </div>
     <div class="inv-note"><strong>Note:</strong> Tips totalling $${totTip.toFixed(2)} were paid directly by clients and are not included in this commission statement.</div>
     <div class="inv-footer">Salon · Generated ${issued} · ${invNum}</div>`;
@@ -1623,7 +1642,7 @@ function renderInvoice(){
 function printInvoice(){
   const content=$('invoicePreview').innerHTML;
   const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>Commission Statement — ${STYLIST}</title>
+  w.document.write(`<!DOCTYPE html><html><head><title>Commission Statement — ${getName()||'Your name'}</title>
   <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:32px;color:#1a1a1a;max-width:720px;margin:0 auto}
   .inv-header{display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:2.5px solid #111}
   .inv-from-name{font-size:22px;font-weight:700;margin-bottom:5px}.inv-from-detail{font-size:12px;color:#555;line-height:1.8}
@@ -1759,7 +1778,17 @@ function importData(input){
 }
 function getMode(){return getTrade()||'hair';}
 function saveMode(m){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.svcMode=m;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.svcMode=m;}
-function groupsForMode(m){return SERVICE_GROUPS.filter(function(g){return g.d===m||g.d==='both';});}
+function getCustomSvc(m){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');var c=p.customSvc&&p.customSvc[m];return Array.isArray(c)?c:[];}catch(e){return [];}}
+function saveCustomSvc(m,arr){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');if(!p.customSvc||typeof p.customSvc!=='object')p.customSvc={};p.customSvc[m]=arr;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs){if(!prefs.customSvc)prefs.customSvc={};prefs.customSvc[m]=arr;}}
+function groupsForMode(m){var base=SERVICE_GROUPS.filter(function(g){return g.d===m||g.d==='both';});var cust=getCustomSvc(m);if(cust.length)base=base.concat([{c:'My added services',d:m,custom:true,s:cust}]);return base;}
+function svcExists(m,name){var low=name.toLowerCase();var inCat=SERVICE_GROUPS.filter(function(g){return g.d===m||g.d==='both';}).some(function(g){return g.s.some(function(it){return it[0].toLowerCase()===low;});});return inCat||getCustomSvc(m).some(function(it){return it[0].toLowerCase()===low;});}
+function addCustomSvc(name){name=(name||'').trim();if(!name)return false;var m=getMode();if(svcExists(m,name))return 'dup';var cur=getCustomSvc(m);cur.push([name,'sparkles']);saveCustomSvc(m,cur);var favs=getFavorites();if(favs.indexOf(name)===-1){favs.push(name);saveFavorites(favs);}return true;}
+function removeCustomSvc(name){var m=getMode();var cur=getCustomSvc(m).filter(function(it){return it[0]!==name;});saveCustomSvc(m,cur);var favs=getFavorites().filter(function(n){return n!==name;});saveFavorites(favs);buildServiceChips();}
+function customChipHTML(name,icon){var safe=name.replace(/"/g,'&quot;');return '<button type="button" class="svc-chip svc-customchip" data-name="'+safe+'" onclick="pickService(\''+jsq(name)+'\',this)"><i class="ti ti-'+(icon||'sparkles')+'"></i>'+name+'<i class="ti ti-x svc-del" onclick="event.stopPropagation();removeCustomSvc(\''+jsq(name)+'\')"></i></button>';}
+function addSvcHTML(){return '<div class="svc-addsvc"><div class="svc-addsvc-hint">Don\'t see your service?</div><button type="button" class="svc-addsvc-btn" id="svcAddBtn" onclick="openAddSvc()"><i class="ti ti-plus"></i> Add a service</button><div class="svc-addsvc-form" id="svcAddForm" style="display:none"><input id="svcAddName" class="cf-in" type="text" placeholder="Service name (e.g. Permanent Makeup)" autocomplete="off"><div class="svc-addsvc-row"><button type="button" class="svc-addsvc-go" onclick="commitAddSvc()">Add</button><button type="button" class="svc-addsvc-cancel" onclick="closeAddSvc()">Cancel</button></div></div></div>';}
+function openAddSvc(){var f=document.getElementById('svcAddForm'),b=document.getElementById('svcAddBtn');if(f)f.style.display='block';if(b)b.style.display='none';var i=document.getElementById('svcAddName');if(i){i.value='';i.style.borderColor='';setTimeout(function(){i.focus();},40);}}
+function closeAddSvc(){var f=document.getElementById('svcAddForm'),b=document.getElementById('svcAddBtn');if(f)f.style.display='none';if(b)b.style.display='';}
+function commitAddSvc(){var i=document.getElementById('svcAddName');if(!i)return;var v=i.value.trim();if(!v){i.focus();return;}var r=addCustomSvc(v);if(r==='dup'){i.style.borderColor='#ff5a7a';i.focus();return;}buildServiceChips();var m=document.getElementById('svcMore');if(m)m.style.display='block';var b=document.getElementById('svcMoreBtn');if(b)b.innerHTML='<i class="ti ti-chevron-up more-chev"></i> <span class="more-txt">Hide services</span>';}
 function jsq(n){return n.replace(/'/g,"\\'");}
 function chipHTML(name,icon,isFav){
   var safe=name.replace(/"/g,'&quot;');
@@ -1787,11 +1816,16 @@ function buildServiceChips(){
   var more=$('svcMore');
   if(more){
     more.innerHTML=groups.map(function(g){
+      if(g.custom){
+        if(!g.s.length)return '';
+        var cc=g.s.slice().sort(function(a,b){return a[0].localeCompare(b[0]);}).map(function(it){return customChipHTML(it[0],it[1]);}).join('');
+        return '<div class="svc-cat-wrap open"><button type="button" class="svc-cat-head" onclick="toggleSvcCat(this)"><span class="svc-cat-name" style="color:#a78bfa">'+g.c+'</span><span class="svc-cat-count">'+g.s.length+'</span><i class="ti ti-chevron-down svc-cat-chev"></i></button><div class="svc-row svc-cat-body">'+cc+'</div></div>';
+      }
       var rest=g.s.filter(function(it){return favs.indexOf(it[0])===-1;}).slice().sort(function(a,b){return a[0].localeCompare(b[0]);});
       if(!rest.length)return '';
       var chips=rest.map(function(it){return chipHTML(it[0],it[1],false);}).join('');
       return '<div class="svc-cat-wrap"><button type="button" class="svc-cat-head" onclick="toggleSvcCat(this)"><span class="svc-cat-name" style="color:'+catColorOf(g.c)+'">'+g.c+'</span><span class="svc-cat-count">'+rest.length+'</span><i class="ti ti-chevron-down svc-cat-chev"></i></button><div class="svc-row svc-cat-body">'+chips+'</div></div>';
-    }).join('');
+    }).join('')+addSvcHTML();
   }
   // reflect active mode button
   document.querySelectorAll('.svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.mode===mode);});
@@ -1971,7 +2005,7 @@ function applyAutoPrice(){
 function setPriceMode(m){priceMode=m;document.querySelectorAll('#priceModal .svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.pmode===m);});buildPriceList();}
 function buildPriceList(){
   var prices=getPrices();
-  var groups=SERVICE_GROUPS.filter(function(g){return g.d===priceMode||g.d==='both';});
+  var groups=groupsForMode(priceMode);
   var html=groups.map(function(g){
     var items=g.s.slice().sort(function(a,b){return a[0].localeCompare(b[0]);});
     var priced=items.filter(function(it){return prices[it[0]]!==undefined&&prices[it[0]]!==null&&prices[it[0]]!=='';}).length;
@@ -2591,9 +2625,10 @@ function initPrefs(){
 
 initPrefs();
 maybeShowTradePicker();
+applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName();
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.12 · collapsible categories';
+var VERSION='app v1.13 · add service + name';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
