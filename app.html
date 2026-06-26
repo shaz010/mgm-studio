@@ -184,6 +184,17 @@ body.theme-light .svc-more::after{background:#fff}
 .reset-qp-btn{width:100%;padding:11px;background:#1a1a1a;border:1.5px solid #444;border-radius:9px;color:#ddd;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .reset-qp-btn:active{border-color:var(--gold);color:var(--gold)}
 .reset-qp-hint{font-size:11.5px;color:#888;line-height:1.5;margin-top:8px}
+.ty-details{margin:14px 0 4px;border-top:1px solid var(--border);padding-top:14px}
+.ty-summary{font-size:12px;color:#999;cursor:pointer;list-style:none;font-weight:600;letter-spacing:.2px;display:flex;align-items:center}
+.ty-summary::-webkit-details-marker{display:none}
+.ty-summary::after{content:'⌄';font-size:14px;color:#777;margin-left:6px}
+.ty-body{padding-top:13px}
+.ty-controls{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.ty-controls label{font-size:12px;color:#888}
+.ty-controls select{background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 11px;font-size:15px}
+.ty-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text2);padding:7px 0;border-bottom:.5px solid var(--border)}
+.ty-total{font-weight:700;color:var(--gold);border-bottom:none;padding-top:9px;font-size:15px}
+.ty-note{font-size:10.5px;color:#777;line-height:1.65;margin-top:13px}
 .legal-foot{margin:18px 0 4px;border-top:1px solid var(--border);padding-top:14px}
 .legal-foot summary{font-size:12px;color:#999;cursor:pointer;list-style:none;font-weight:600;letter-spacing:.2px;display:flex;align-items:center}
 .reset-app-btn{width:100%;padding:11px;border-radius:11px;border:1px solid #5a2a2a;background:transparent;color:#c66;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
@@ -949,15 +960,9 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
     </div>
 
     <div class="setup-section">
-      <div class="setup-section-title">Fun FX ✨</div>
-      <div class="theme-grid" id="fxGrid" style="grid-template-columns:repeat(4,1fr)">
-        <button class="theme-btn fx-btn" data-fx="off" onclick="setFx('off',this)">Off</button>
-        <button class="theme-btn fx-btn" data-fx="gentle" onclick="setFx('gentle',this)">Gentle</button>
-        <button class="theme-btn fx-btn" data-fx="lively" onclick="setFx('lively',this)">Lively</button>
-        <button class="theme-btn fx-btn" data-fx="party" onclick="setFx('party',this)">Party</button>
-      </div>
-      <button class="cf-disc-edit" onclick="resetQuickPicks()" style="margin-top:14px"><i class="ti ti-rotate" style="font-size:13px"></i> Reset Quick Picks to defaults</button>
-      <button class="cf-disc-edit" onclick="forceUpdate()" style="margin-top:6px;display:block"><i class="ti ti-refresh" style="font-size:13px"></i> Force update to latest version</button>
+      <div class="setup-section-title">Updates</div>
+      <button class="cf-disc-edit" onclick="forceUpdate()" style="display:block"><i class="ti ti-refresh" style="font-size:13px"></i> Force update to latest version</button>
+      <div class="reset-qp-hint" style="margin-top:7px">Pulls the newest version if you're not seeing recent changes.</div>
     </div>
 
     <div class="setup-section">
@@ -992,6 +997,15 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       <button class="reset-app-btn" onclick="resetApp()"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Start fresh — erase all my data</button>
       <div class="reset-qp-hint" style="margin-top:7px">Wipes all bookings, client cards, prices and salon details on this device for a clean start. Back up first if unsure — your purchase stays unlocked.</div>
     </div>
+
+    <details class="ty-details" ontoggle="if(this.open)buildTaxYear()">
+      <summary class="ty-summary">Income by tax year</summary>
+      <div class="ty-body">
+        <div class="ty-controls"><label>Year</label><select id="taxYearSel" onchange="renderTaxYear()"></select></div>
+        <div id="taxYearOut"></div>
+        <div class="ty-note"><strong>Income only.</strong> This does <strong>not</strong> include your business expenses or deductions — those are totalled separately and are usually a bigger part of the picture. For an accurate return, work with a tax professional. Tips still owe Social Security &amp; Medicare; the federal tip deduction has eligibility and income limits.</div>
+      </div>
+    </details>
 
     <details class="legal-foot">
       <summary><i class="ti ti-shield-check" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Legal &amp; disclaimers</summary>
@@ -1252,6 +1266,10 @@ document.getElementById('cDate').value=todayDate.toISOString().split('T')[0];
 function $(i){return document.getElementById(i)}
 function fmt(n){return '$'+(+n||0).toFixed(2)}
 function fmtR(n){return '$'+Math.round(+n||0)}
+function _tyYears(){var ys={},cy=new Date().getFullYear();ys[cy]=1;loadAppts().forEach(function(a){if(a&&a.date)ys[String(a.date).slice(0,4)]=1;});return Object.keys(ys).sort().reverse();}
+function _tyFmt(n){return '$'+(Math.round((+n||0)*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function renderTaxYear(){var sel=document.getElementById('taxYearSel'),out=document.getElementById('taxYearOut');if(!sel||!out)return;var y=sel.value||String(new Date().getFullYear()),me=0,tip=0,n=0;loadAppts().forEach(function(a){if(a&&a.date&&String(a.date).slice(0,4)===y){me+=(+a.me||0);tip+=(+a.tip||0);n++;}});out.innerHTML='<div class="ty-row"><span>Appointments</span><span>'+n+'</span></div><div class="ty-row"><span>Service commission (taxable)</span><span>'+_tyFmt(me)+'</span></div><div class="ty-row"><span>Tips received</span><span>'+_tyFmt(tip)+'</span></div><div class="ty-row ty-total"><span>Total income '+y+'</span><span>'+_tyFmt(me+tip)+'</span></div>';}
+function buildTaxYear(){var sel=document.getElementById('taxYearSel');if(!sel)return;var ys=_tyYears(),cur=sel.value;sel.innerHTML=ys.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');if(cur&&ys.indexOf(cur)>=0)sel.value=cur;else sel.value=String(new Date().getFullYear());renderTaxYear();}
 function fmtMonth(ym){const[y,m]=ym.split('-');return new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'})}
 function toYM(d){return d.slice(0,7)}
 function weekNum(ds){const d=new Date(ds+'T12:00:00'),j=new Date(d.getFullYear(),0,1);return Math.ceil(((d-j)/86400000+j.getDay()+1)/7)}
@@ -2517,7 +2535,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.19 · tip breakdown';
+var VERSION='app v1.21 · tax year';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
