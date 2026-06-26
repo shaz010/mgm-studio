@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MGM Studio — Shahbaz Mirshahi</title>
+<title>CommissionPro</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="CommissionPro">
@@ -562,7 +562,7 @@ body.theme-light td{color:#1a1a1a;font-weight:600}
 body.theme-light .td-m{color:#555}
 body.theme-light th{color:#444;font-weight:700}
 body.theme-light .week-header{color:#3a3a3a;font-weight:700}
-/* MGM owes me */
+/* Salon owes me */
 body.theme-light .month-item{background:#f7f5ef;border-color:#dad8cf}
 body.theme-light .mi-month{color:#1a1a1a;font-weight:700}
 body.theme-light .mi-appts{color:#4a4a4a}
@@ -773,8 +773,27 @@ body.theme-noir .mgm-owed-val{background:linear-gradient(110deg,#67e8f9,#a78bfa,
 body.theme-noir .btn-paid-main,body.theme-noir .btn-mark-paid{background:#04140b!important;border:1px solid #2a6a3a!important;color:#7cf0a0!important;box-shadow:0 0 10px rgba(93,219,124,.2)!important}
 .svc-trade-label{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:800;letter-spacing:.3px;color:var(--gold);padding:7px 14px;border:1.5px solid var(--gold-border);border-radius:20px;background:var(--gold-dim)}
 .svc-trade-label i{font-size:15px}
+.svc-trade-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.svc-trade-change{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--muted);background:transparent;border:1px solid #2a2a2a;padding:6px 11px;border-radius:18px;cursor:pointer;transition:transform .14s ease}
+.svc-trade-change:active{transform:scale(.95)}
+.svc-trade-change i{font-size:14px}
+body.theme-noir .svc-trade-change{color:#cbd5ff;border-color:#23232e;background:#0a0a0e}
 body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!important;background:linear-gradient(#000,#000) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 10px rgba(167,139,250,.25)}
 .trade-screen{position:fixed;inset:0;z-index:7000;background:#000;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
+.tour-screen{position:fixed;inset:0;z-index:7100;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:24px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.tour-card{width:100%;max-width:380px;background:#0a0a0e;border:1.5px solid #23232e;border-radius:22px;padding:30px 24px 22px;text-align:center}
+body.theme-noir .tour-card{border:1px solid transparent;background:linear-gradient(#070708,#070708) padding-box,linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 26px rgba(167,139,250,.22)}
+.tour-ic{font-size:36px;margin-bottom:12px;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.tour-step{font-size:11px;font-weight:700;letter-spacing:1px;color:#7a7a88;text-transform:uppercase;margin-bottom:8px}
+.tour-title{font-size:20px;font-weight:800;color:#fff;margin-bottom:8px}
+.tour-text{font-size:14px;line-height:1.55;color:#b8b8c4;margin-bottom:18px}
+.tour-text b{color:#e8e8f2;font-weight:800}
+.tour-dots{display:flex;gap:7px;justify-content:center;margin-bottom:18px}
+.tour-dots span{width:7px;height:7px;border-radius:50%;background:#2e2e3a;transition:background .2s,width .2s}
+.tour-dots span.on{width:20px;border-radius:4px;background:linear-gradient(90deg,#67e8f9,#a78bfa)}
+.tour-btn{width:100%;padding:13px;border:none;border-radius:14px;font-size:15px;font-weight:800;color:#06060a;cursor:pointer;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);transition:transform .14s ease}
+.tour-btn:active{transform:scale(.97)}
+.tour-skip{margin-top:10px;background:transparent;border:none;color:#7a7a88;font-size:13px;font-weight:600;cursor:pointer;padding:6px}
 .trade-back{position:absolute;top:18px;left:16px;display:inline-flex;align-items:center;gap:6px;background:#0a0a0e;border:1.5px solid #23232e;color:#cbd5ff;font-size:13px;font-weight:700;padding:9px 14px;border-radius:20px;cursor:pointer;z-index:1;transition:transform .14s ease}
 .trade-back:active{transform:scale(.95)}
 .trade-back i{font-size:15px}
@@ -850,6 +869,19 @@ body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!importa
   </div>
 </div>
 
+<!-- QUICK TOUR -->
+<div class="tour-screen" id="tourScreen" style="display:none">
+  <div class="tour-card">
+    <div class="tour-ic" id="tourIc"><i class="ti ti-confetti"></i></div>
+    <div class="tour-step" id="tourStep">1 / 4</div>
+    <div class="tour-title" id="tourTitle"></div>
+    <div class="tour-text" id="tourText"></div>
+    <div class="tour-dots" id="tourDots"></div>
+    <button type="button" class="tour-btn" id="tourBtn" onclick="tourNext()">Next</button>
+    <button type="button" class="tour-skip" onclick="endTour()">Skip</button>
+  </div>
+</div>
+
 <!-- SETUP SCREEN -->
 <div class="setup-screen" id="setupScreen" style="display:none">
   <div class="setup-card">
@@ -864,7 +896,7 @@ body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!importa
       <div class="setup-row" style="margin-top:10px">
         <div>
           <label class="setup-label">Salon name</label>
-          <input class="setup-input" type="text" id="setupSalon" placeholder="e.g. MGM Salon">
+          <input class="setup-input" type="text" id="setupSalon" placeholder="e.g. Salon">
         </div>
         <div>
           <label class="setup-label">Your commission %</label>
@@ -1021,6 +1053,7 @@ body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!importa
     <div class="setup-section">
       <div class="setup-section-title">Your trade</div>
       <button class="cf-disc-edit" onclick="closeSettings();openTradePicker()" style="display:block"><i class="ti ti-arrows-exchange" style="font-size:13px"></i> Change my trade</button>
+      <button class="cf-disc-edit" onclick="closeSettings();openTour()" style="display:block;margin-top:6px"><i class="ti ti-help-circle" style="font-size:13px"></i> Replay quick tour</button>
       <div class="reset-qp-hint" style="margin-top:7px">Switches your booking screen and price list to a different trade. Your bookings and clients are kept.</div>
     </div>
 
@@ -1074,7 +1107,7 @@ body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!importa
       <div class="tabs">
         <button class="tab active" onclick="newBooking()"><i class="ti ti-calendar-plus" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>New booking</button>
         <button class="tab" onclick="showTab('hist')"><i class="ti ti-list" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Appointments</button>
-        <button class="tab" onclick="showTab('mgm')"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>MGM owes me</button>
+        <button class="tab" onclick="showTab('mgm')"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Salon owes me</button>
       </div>
     </div>
   </div>
@@ -1083,7 +1116,7 @@ body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!importa
   <div class="modal-overlay" id="exportModal">
     <div class="modal">
       <div class="modal-bar">
-        <span class="modal-title"><i class="ti ti-file-invoice" style="font-size:14px;vertical-align:-2px;margin-right:7px"></i>Payment request — MGM Salon</span>
+        <span class="modal-title"><i class="ti ti-file-invoice" style="font-size:14px;vertical-align:-2px;margin-right:7px"></i>Payment request — Salon</span>
         <button class="modal-close" onclick="closeExport()"><i class="ti ti-x"></i></button>
       </div>
       <div class="modal-body">
@@ -1195,7 +1228,7 @@ body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!importa
         <label>Service</label><input type="text" id="cCat" placeholder="Tap services below to combine, or type your own…" oninput="syncServiceChips()">
         <div class="svc-panel" id="svcPanel">
           <div class="svc-cat">Services</div>
-          <div class="svc-trade-label" id="svcTradeLabel"></div>
+          <div class="svc-trade-row"><div class="svc-trade-label" id="svcTradeLabel"></div><button type="button" class="svc-trade-change" onclick="openTradePicker()"><i class="ti ti-arrows-exchange"></i> Change</button></div>
           <div class="svc-cat" style="display:flex;align-items:center;gap:7px">Quick picks <span class="qp-hint"><i class="ti ti-arrows-move" style="font-size:11px;vertical-align:-1px"></i> hold &amp; drag to arrange</span></div>
           <div class="svc-row" id="favRow"></div>
           <button type="button" class="svc-more" id="svcMoreBtn" onclick="toggleMore()"><i class="ti ti-chevron-down more-chev"></i> <span class="more-txt">More services</span></button>
@@ -1209,7 +1242,7 @@ body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!importa
       <div class="card" id="earnCard" onclick="zoomEarnings()" title="Tap to enlarge">
         <div class="ctitle"><i class="ti ti-calculator"></i>Earnings breakdown</div>
         <div class="split-grid">
-          <div class="sc sc-s"><div class="sc-lbl">MGM Salon</div><div class="sc-pct">40% of charge</div><div class="sc-amt" id="eSalon">$0</div></div>
+          <div class="sc sc-s"><div class="sc-lbl">Salon</div><div class="sc-pct">40% of charge</div><div class="sc-amt" id="eSalon">$0</div></div>
           <div class="sc sc-m"><div class="sc-lbl">Shahbaz</div><div class="sc-pct">60% of charge</div><div class="sc-amt" id="eMe">$0</div></div>
         </div>
         <div class="row-box tip-rb"><span class="box-lbl"><i class="ti ti-heart" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Tip — 100% mine</span><span class="tip-v" id="eTip">$0.00</span></div>
@@ -1242,7 +1275,7 @@ body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!importa
       <div class="insights-row" id="insights"></div>
       <div class="sum-row">
         <div class="sum-c"><div class="sum-lbl">Total charged</div><div class="sum-val sv-g" id="sCharge">$0</div></div>
-        <div class="sum-c"><div class="sum-lbl">MGM 40%</div><div class="sum-val sv-b" id="sSalon">$0</div></div>
+        <div class="sum-c"><div class="sum-lbl">Salon 40%</div><div class="sum-val sv-b" id="sSalon">$0</div></div>
         <div class="sum-c"><div class="sum-lbl">My 60%</div><div class="sum-val sv-gr" id="sMe">$0</div></div>
         <div class="sum-c"><div class="sum-lbl">Tips + my total</div><div class="sum-val sv-g" id="sTotal">$0</div></div>
       </div>
@@ -1251,7 +1284,7 @@ body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!importa
           <table>
             <thead><tr>
               <th>Client</th><th>Date</th><th>Wk</th><th>Category</th>
-              <th class="r">Charge</th><th class="r th-b">MGM 40%</th>
+              <th class="r">Charge</th><th class="r th-b">Salon 40%</th>
               <th class="r th-gr">Me 60%</th><th class="r th-gr">Tip</th>
               <th class="r th-g">My total</th><th></th>
             </tr></thead>
@@ -1269,7 +1302,7 @@ body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!importa
     <div class="mgm-wrap">
       <div class="mgm-hero">
         <div>
-          <div class="mgm-owed-lbl"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>MGM owes Shahbaz</div>
+          <div class="mgm-owed-lbl"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Salon owes me</div>
           <div class="mgm-owed-val" id="mgmOwed">$0</div>
           <div class="mgm-sub" id="mgmSubtext">Unpaid 60% commission accumulating</div>
         </div>
@@ -1430,7 +1463,7 @@ function renderTable(){
       <td class="td-m" style="color:#555" data-label="Week">Wk${weekNum(a.date)}</td>
       <td class="td-cat" data-label="Category">${a.cat||'—'}</td>
       <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td>
-      <td class="td-b r" data-label="MGM 40%">${fmt(a.salon)}</td>
+      <td class="td-b r" data-label="Salon 40%">${fmt(a.salon)}</td>
       <td class="td-gr r" data-label="Me 60%">${fmt(a.me)}</td>
       <td class="td-gr r" data-label="Tip">${fmt(a.tip)}</td>
       <td class="td-g r" data-label="My total">${fmt(a.me+a.tip)}</td>
@@ -1456,7 +1489,7 @@ function renderWeekly(){
       const ds=new Date(a.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
       return`<tr><td class="td-c" data-label="Client">${a.name}</td><td class="td-m" data-label="Date">${ds}</td>
         <td class="td-cat" data-label="Category">${a.cat||'—'}</td>
-        <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td><td class="td-b r" data-label="MGM 40%">${fmt(a.salon)}</td>
+        <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td><td class="td-b r" data-label="Salon 40%">${fmt(a.salon)}</td>
         <td class="td-gr r" data-label="Me 60%">${fmt(a.me)}</td><td class="td-gr r" data-label="Tip">${fmt(a.tip)}</td>
         <td class="td-g r" data-label="My total">${fmt(a.me+a.tip)}</td></tr>`;
     }).join('');
@@ -1467,7 +1500,7 @@ function renderWeekly(){
       </div>
       <div class="tbl-wrap"><table>
         <thead><tr><th>Client</th><th>Date</th><th>Category</th>
-          <th class="r">Charge</th><th class="r th-b">MGM 40%</th>
+          <th class="r">Charge</th><th class="r th-b">Salon 40%</th>
           <th class="r th-gr">Me 60%</th><th class="r th-gr">Tip</th><th class="r th-g">My total</th>
         </tr></thead><tbody>${rows}</tbody>
       </table></div></div>`;
@@ -1487,7 +1520,7 @@ function renderMgm(){
   $('mgmNextDue').textContent=new Date(now.getFullYear(),now.getMonth()+1,0).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   $('mgmSubtext').textContent=totalOwed>0?'Unpaid 60% commission accumulating':'All commissions paid — you\'re square!';
   const sorted=Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0]));
-  if(!sorted.length){$('monthRows').innerHTML='<div class="empty"><i class="ti ti-building-store"></i>Start booking clients to track what MGM owes you.</div>';return;}
+  if(!sorted.length){$('monthRows').innerHTML='<div class="empty"><i class="ti ti-building-store"></i>Start booking clients to track what the Salon owes you.</div>';return;}
   $('monthRows').innerHTML=sorted.map(([ym,mo])=>{
     const paid=!!paidMonths[ym];
     const paidDate=paid?new Date(paidMonths[ym]).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):null;
@@ -1495,7 +1528,7 @@ function renderMgm(){
       <div>
         <div class="mi-month">${fmtMonth(ym)}</div>
         <div class="mi-appts">${mo.appts} appointment${mo.appts!==1?'s':''} &nbsp;·&nbsp; Commission $${mo.totMe.toFixed(2)} &nbsp;·&nbsp; Tips $${mo.totTip.toFixed(2)} (direct)</div>
-        <div class="mi-date-lbl ${paid?'sp':'su'}">${paid?'Paid on '+paidDate:'Awaiting payment from MGM'}</div>
+        <div class="mi-date-lbl ${paid?'sp':'su'}">${paid?'Paid on '+paidDate:'Awaiting payment from the Salon'}</div>
       </div>
       <div style="text-align:right">
         <div class="mi-amt ${paid?'pa':'ua'}">$${mo.totMe.toFixed(2)}</div>
@@ -1555,28 +1588,28 @@ function renderInvoice(){
   $('invoicePreview').innerHTML=`
     <div class="inv-header">
       <div><div class="inv-from-name">${STYLIST}</div>
-        <div class="inv-from-detail">Hair Stylist &nbsp;·&nbsp; MGM Salon<br>${fmtMonth(ym)} &nbsp;·&nbsp; Commission rate: 60%<br>Invoice #: ${invNum}</div></div>
+        <div class="inv-from-detail">Hair Stylist &nbsp;·&nbsp; Salon<br>${fmtMonth(ym)} &nbsp;·&nbsp; Commission rate: 60%<br>Invoice #: ${invNum}</div></div>
       <div class="inv-to"><div class="inv-to-label">Payment request to</div>
-        <div class="inv-to-salon">MGM Salon</div>
+        <div class="inv-to-salon">Salon</div>
         <div style="font-size:11px;color:#888;margin-top:4px;line-height:1.6">Issued: ${issued}<br>Due by: ${dueDate}</div></div>
     </div>
     <div class="inv-meta">
       <div class="inv-meta-item"><div class="inv-meta-lbl">Appointments</div><div class="inv-meta-val">${appts.length}</div></div>
       <div class="inv-meta-item"><div class="inv-meta-lbl">Revenue generated</div><div class="inv-meta-val">$${totCharge.toFixed(2)}</div></div>
-      <div class="inv-meta-item"><div class="inv-meta-lbl">MGM share (40%)</div><div class="inv-meta-val" style="color:#1e40af">$${totSalon.toFixed(2)}</div></div>
+      <div class="inv-meta-item"><div class="inv-meta-lbl">Salon share (40%)</div><div class="inv-meta-val" style="color:#1e40af">$${totSalon.toFixed(2)}</div></div>
       <div class="inv-meta-item"><div class="inv-meta-lbl">Amount owed (60%)</div><div class="inv-meta-val" style="color:#166534">$${totMe.toFixed(2)}</div></div>
     </div>
     <table class="inv-tbl">
-      <thead><tr><th>#</th><th>Client</th><th>Date</th><th>Service</th><th class="r">Charged</th><th class="r">MGM 40%</th><th class="r">My 60%</th></tr></thead>
+      <thead><tr><th>#</th><th>Client</th><th>Date</th><th>Service</th><th class="r">Charged</th><th class="r">Salon 40%</th><th class="r">My 60%</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
     <div class="inv-totals">
       <div class="inv-total-row"><span>Total revenue generated</span><span>$${totCharge.toFixed(2)}</span></div>
-      <div class="inv-total-row"><span>MGM salon share (40%)</span><span style="color:#1e40af">– $${totSalon.toFixed(2)}</span></div>
+      <div class="inv-total-row"><span>Salon share (40%)</span><span style="color:#1e40af">– $${totSalon.toFixed(2)}</span></div>
       <div class="inv-total-row final"><span>Amount owed to ${STYLIST}</span><span style="color:#166534">$${totMe.toFixed(2)}</span></div>
     </div>
     <div class="inv-note"><strong>Note:</strong> Tips totalling $${totTip.toFixed(2)} were paid directly by clients and are not included in this commission statement.</div>
-    <div class="inv-footer">MGM Studio · Generated ${issued} · ${invNum}</div>`;
+    <div class="inv-footer">Salon · Generated ${issued} · ${invNum}</div>`;
 }
 function printInvoice(){
   const content=$('invoicePreview').innerHTML;
@@ -1652,8 +1685,20 @@ function renderTradeLabel(){var k=getMode();var a=document.getElementById('svcTr
 function renderTradePicker(){var g=document.getElementById('tradeGrid');if(!g)return;g.innerHTML=TRADES.map(function(t){return '<button type="button" class="trade-tile" onclick="pickTrade(\''+t.k+'\')"><i class="ti '+t.icon+'"></i><span>'+t.label+'</span></button>';}).join('');}
 function openTradePicker(){renderTradePicker();var sc=document.getElementById('tradeScreen');if(sc)sc.style.display='flex';}
 function closeTradePicker(){var sc=document.getElementById('tradeScreen');if(sc)sc.style.display='none';}
-function pickTrade(k){setTrade(k);var sc=document.getElementById('tradeScreen');if(sc)sc.style.display='none';if(typeof buildServiceChips==='function')buildServiceChips();renderTradeLabel();}
-function maybeShowTradePicker(){var t='';try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');t=p.trade;}catch(e){}if(!t)openTradePicker();}
+function pickTrade(k){setTrade(k);var sc=document.getElementById('tradeScreen');if(sc)sc.style.display='none';if(typeof buildServiceChips==='function')buildServiceChips();renderTradeLabel();maybeShowTour();}
+function maybeShowTradePicker(){var t='';try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');t=p.trade;}catch(e){}if(!t){openTradePicker();}else{maybeShowTour();}}
+var TOUR=[
+ {ic:'ti-briefcase',t:'Your trade',x:'You\'re all set. Tap <b>Change</b> on the booking screen anytime to switch trades — it never locks you in.'},
+ {ic:'ti-calendar-plus',t:'Book & track',x:'Add a client and pick the service. Your commission split is worked out for you automatically.'},
+ {ic:'ti-chart-bar',t:'See your money',x:'The tabs up top show your earnings and exactly what the Salon owes you.'},
+ {ic:'ti-settings',t:'Everything else',x:'Price Book, themes and more live in <b>Settings</b> — the gear at the top right.'}
+];
+var tourI=0;
+function renderTour(){var s=TOUR[tourI];if(!s)return;document.getElementById('tourIc').innerHTML='<i class="ti '+s.ic+'"></i>';document.getElementById('tourStep').textContent=(tourI+1)+' / '+TOUR.length;document.getElementById('tourTitle').textContent=s.t;document.getElementById('tourText').innerHTML=s.x;document.getElementById('tourDots').innerHTML=TOUR.map(function(_,i){return '<span class="'+(i===tourI?'on':'')+'"></span>';}).join('');document.getElementById('tourBtn').textContent=(tourI===TOUR.length-1)?'Got it':'Next';}
+function tourNext(){if(tourI>=TOUR.length-1){endTour();return;}tourI++;renderTour();}
+function endTour(){var sc=document.getElementById('tourScreen');if(sc)sc.style.display='none';try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.tourDone=true;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.tourDone=true;}
+function openTour(){tourI=0;renderTour();var sc=document.getElementById('tourScreen');if(sc)sc.style.display='flex';}
+function maybeShowTour(){var done=false;try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');done=!!p.tourDone;}catch(e){}if(!done)openTour();}
 var CAT_COLORS={'Haircuts':'#FFC04D','Styling':'#FFD27A','Color':'#FF7AB0','Highlights':'#FFE15A','Treatments':'#5FD6C6','Texture':'#B79CFF','Barbering':'#8FD17A','Beard & Shave':'#C9A87C','Nails - Hands':'#FF93A6','Nails - Feet':'#5FC8EC','Nails - Enhancements':'#CBA6FF','Lash Extensions':'#67E8F9','Lash Extras':'#9FE0FF','Brows':'#E6B07E','Facials':'#9AD9A6','Waxing & Skin':'#F4A6C8','Makeup':'#FF7AB0','Massage':'#B79CFF','Extensions':'#7FB4FF'};
 function catColorOf(c){return CAT_COLORS[c]||'#FFC04D';}
 function getFavorites(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return Array.isArray(p.favorites)?p.favorites:DEFAULT_FAVES.slice();}catch(e){return DEFAULT_FAVES.slice();}}
@@ -2538,7 +2583,7 @@ initPrefs();
 maybeShowTradePicker();
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.9 · trade back button';
+var VERSION='app v1.11 · clean title';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
