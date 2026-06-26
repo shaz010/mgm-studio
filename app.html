@@ -491,8 +491,6 @@ body.theme-light .setup-label{color:#444}
 body.theme-light .topbar-sub{color:#666}
 body.theme-light .qp-hint{background:#e6e6e0;color:#555}
 body.theme-light .app-shell{background:#f5f5f0}
-/* let wallpapers show through in light theme too */
-body[class*="wp-"]:not(.theme-light) .app-shell{background:transparent!important}
 body.theme-light .panel{background:#fff;border-color:#ddd}
 body.theme-light .card{background:#f8f8f4;border-color:#ddd}
 body.theme-light input,body.theme-light select{background:#fff;border-color:#ccc;color:#1a1a1a}
@@ -651,77 +649,6 @@ body.accent-gold{--gold:#FFB800;--gold2:#2a1f00;--gold3:#665522;--gold-light:#FF
 .gear-btn{background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;color:#666;font-size:20px;transition:color .2s}
 .gear-btn:hover{color:var(--gold)}
 
-/* ── WALLPAPERS (animated) ── */
-.wp-swatch{height:36px;border-radius:8px;cursor:pointer;border:2.5px solid transparent;transition:all .2s;position:relative;background-size:cover!important}
-.wp-swatch.sel{border-color:#fff;transform:scale(1.1)}
-.wp-swatch.sel::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.7)}
-@keyframes wpShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-@keyframes wpShiftV{0%{background-position:50% 0%}50%{background-position:50% 100%}100%{background-position:50% 0%}}
-@keyframes wpDrift{from{background-position:0 0,0 0,0 0,0 0,0 0}to{background-position:-700px 500px,-500px 350px,-900px 650px,-600px 420px,0 0}}
-@keyframes wpDriftR{from{background-position:0 0,0 0,0 0,0 0,0 0}to{background-position:700px -480px,520px -340px,880px -620px,600px -400px,0 0}}
-@keyframes wpGridMove{from{background-position:0 0,0 0,0 0}to{background-position:44px 44px,44px 44px,0 0}}
-@keyframes wpMeteor{0%{background-position:0 0,0 0,0 0,130% -30%}100%{background-position:-700px 500px,-500px 350px,-900px 650px,-30% 130%}}
-body.wp-starfield{background:radial-gradient(1.5px 1.5px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 75% 65%,#cfe3ff,transparent),radial-gradient(1.5px 1.5px at 50% 85%,#fff,transparent),radial-gradient(1px 1px at 85% 20%,#bcd,transparent),linear-gradient(160deg,#05060f,#0a0a22 60%,#06040f)!important;background-size:700px 700px,500px 500px,900px 900px,600px 600px,100% 100%!important;animation:wpDrift 90s linear infinite}
-body.wp-nebula{background:radial-gradient(1px 1px at 30% 40%,#fff,transparent),radial-gradient(1px 1px at 80% 70%,#fde,transparent),radial-gradient(1.5px 1.5px at 60% 20%,#fff,transparent),radial-gradient(1px 1px at 15% 80%,#cdf,transparent),linear-gradient(125deg,#1a0a2e,#3a1a5a 35%,#0f3460 70%,#1a0a2e)!important;background-size:800px 800px,600px 600px,700px 700px,500px 500px,400% 400%!important;animation:wpDrift 110s linear infinite,wpShift 24s ease infinite}
-body.wp-aurora{background:linear-gradient(135deg,#001a1a 0%,#003a2a 25%,#0d3a5a 50%,#1a0d4a 75%,#001a1a 100%)!important;background-size:400% 400%!important;animation:wpShift 16s ease infinite}
-body.wp-galaxy{background:radial-gradient(1.5px 1.5px at 25% 35%,#fff,transparent),radial-gradient(1px 1px at 70% 60%,#dce,transparent),radial-gradient(1px 1px at 45% 80%,#fff,transparent),radial-gradient(1.5px 1.5px at 88% 25%,#fbd,transparent),radial-gradient(ellipse 70% 55% at 50% 50%,#3a1a6a 0%,#160a2e 45%,#08040f 100%)!important;background-size:650px 650px,520px 520px,800px 800px,560px 560px,100% 100%!important;animation:wpDriftR 100s linear infinite}
-body.wp-cosmos{background:radial-gradient(1.5px 1.5px at 18% 28%,#fff,transparent),radial-gradient(1px 1px at 68% 62%,#cde,transparent),radial-gradient(1px 1px at 52% 82%,#fff,transparent),radial-gradient(1.5px 1.5px at 82% 18%,#bcf,transparent),linear-gradient(180deg,#02030c,#0a1840 55%,#040a1f)!important;background-size:720px 720px,540px 540px,860px 860px,600px 600px,100% 200%!important;animation:wpDrift 95s linear infinite,wpShiftV 30s ease infinite}
-body.wp-meteor{background:radial-gradient(1.5px 1.5px at 22% 32%,#fff,transparent),radial-gradient(1px 1px at 72% 64%,#cde,transparent),radial-gradient(1px 1px at 48% 84%,#fff,transparent),linear-gradient(120deg,transparent 46%,rgba(150,200,255,.5) 50%,transparent 54%),linear-gradient(125deg,#070710,#13112e 60%,#070512)!important;background-size:680px 680px,520px 520px,820px 820px,300px 300px,100% 100%!important;animation:wpMeteor 7s linear infinite}
-body.wp-ocean{background:linear-gradient(180deg,#001520,#003a4a 40%,#00536a 70%,#001a2a)!important;background-size:200% 400%!important;animation:wpShiftV 14s ease infinite}
-body.wp-ember{background:radial-gradient(ellipse at bottom,#3a1000 0%,#1a0600 40%,#000 100%)!important;background-size:160% 160%!important;animation:wpShiftV 9s ease-in-out infinite}
-body.wp-sunset{background:linear-gradient(160deg,#2a0a2a,#7a2a10 40%,#c25a1a 60%,#2a0a14)!important;background-size:400% 400%!important;animation:wpShift 17s ease infinite}
-body.wp-neon{background:linear-gradient(120deg,#0a0024,#2a0a4a 30%,#0a2a5a 60%,#3a0a3a 100%)!important;background-size:400% 400%!important;animation:wpShift 12s linear infinite}
-body.wp-plasma{background:linear-gradient(120deg,#3a0a4a,#0a2a5a 25%,#0a4a3a 50%,#4a0a2a 75%,#3a0a4a)!important;background-size:500% 500%!important;animation:wpShift 15s ease infinite}
-body.wp-midnight{background:linear-gradient(135deg,#06061a,#14143a 45%,#0a0a28 70%,#06061a)!important;background-size:400% 400%!important;animation:wpShift 22s ease infinite}
-body.wp-emerald{background:linear-gradient(135deg,#001208,#0a3a1a 40%,#0d5a2a 65%,#001a0a)!important;background-size:400% 400%!important;animation:wpShift 18s ease infinite}
-body.wp-rosegold{background:linear-gradient(135deg,#1a0610,#3a1420 35%,#5a3018 60%,#1a0a10)!important;background-size:400% 400%!important;animation:wpShift 20s ease infinite}
-body.wp-grid{background:linear-gradient(rgba(120,180,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.12) 1px,transparent 1px),radial-gradient(circle at 50% 0%,#0b1326,#050810)!important;background-size:44px 44px,44px 44px,100% 100%!important;animation:wpGridMove 6s linear infinite}
-@media (prefers-reduced-motion: reduce){body[class*="wp-"]{animation:none!important}}
-
-/* ── LUMINA animated wallpaper (cool-running: transform/opacity only) ── */
-#luminaLayer{display:none;position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;
-  background:radial-gradient(120% 90% at 50% 18%,#0b1233 0%,#070a1c 48%,#04050d 100%)}
-body.wp-lumina:not(.theme-light) #luminaLayer{display:block}
-/* Wallpapers show as a living watermark in DARK mode only (Light mode = clean & readable) */
-body.wp-lumina:not(.theme-light){background:transparent!important}
-body[class*="wp-"]:not(.theme-light) .panel{background:rgba(15,16,26,.56)}
-body[class*="wp-"]:not(.theme-light) .card{background:rgba(20,21,32,.72)}
-body[class*="wp-"]:not(.theme-light) .topbar{background:rgba(15,16,26,.62)}
-body[class*="wp-"]:not(.theme-light) .tabs{background:rgba(13,14,24,.5)}
-body[class*="wp-"]:not(.theme-light) .sum-c{background:rgba(20,21,32,.66)}
-body[class*="wp-"]:not(.theme-light) .hist-wrap,body[class*="wp-"]:not(.theme-light) .mgm-hero{background:rgba(20,21,32,.5)}
-/* in Light mode, switch every wallpaper OFF: no background, no animation, no Lumina layer */
-body.theme-light[class*="wp-"]{background:#e8e6de!important;animation:none!important}
-body.theme-light #luminaLayer{display:none!important}
-#warpLayer{display:none;position:fixed;inset:0;z-index:-1;pointer-events:none;background:#02030a}
-body[class*="wp-warp"]:not(.theme-light) #warpLayer{display:block}
-body.theme-light #warpLayer{display:none!important}
-body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){background:transparent!important}
-#luminaLayer .lm-blobwrap{position:absolute;inset:0;will-change:filter;animation:lmHue 84s ease-in-out infinite}
-@keyframes lmHue{0%,100%{filter:hue-rotate(-34deg)}50%{filter:hue-rotate(34deg)}}
-#luminaLayer .lm-blob{position:absolute;width:85vmax;height:85vmax;border-radius:50%;mix-blend-mode:screen;will-change:transform,opacity}
-#luminaLayer .lm-b1{background:radial-gradient(circle,rgba(38,214,198,.55) 0%,rgba(38,214,198,0) 62%);top:-25vmax;left:-20vmax;animation:lmD1 30s ease-in-out infinite,lmP 13s ease-in-out infinite}
-#luminaLayer .lm-b2{background:radial-gradient(circle,rgba(70,108,255,.55) 0%,rgba(70,108,255,0) 62%);top:-10vmax;right:-25vmax;animation:lmD2 38s ease-in-out infinite,lmP 17s ease-in-out infinite}
-#luminaLayer .lm-b3{background:radial-gradient(circle,rgba(150,72,255,.5) 0%,rgba(150,72,255,0) 62%);bottom:-28vmax;left:-10vmax;animation:lmD3 44s ease-in-out infinite,lmP 19s ease-in-out infinite}
-#luminaLayer .lm-b4{background:radial-gradient(circle,rgba(255,82,164,.42) 0%,rgba(255,82,164,0) 62%);bottom:-22vmax;right:-15vmax;animation:lmD4 34s ease-in-out infinite,lmP 15s ease-in-out infinite}
-@keyframes lmD1{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(22vmax,14vmax) scale(1.12)}66%{transform:translate(8vmax,26vmax) scale(.95)}}
-@keyframes lmD2{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-20vmax,18vmax) scale(1.1)}66%{transform:translate(-6vmax,30vmax) scale(.93)}}
-@keyframes lmD3{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(18vmax,-16vmax) scale(.92)}66%{transform:translate(30vmax,-4vmax) scale(1.14)}}
-@keyframes lmD4{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-16vmax,-20vmax) scale(1.1)}66%{transform:translate(-28vmax,-6vmax) scale(.96)}}
-@keyframes lmP{0%,100%{opacity:.85}50%{opacity:.5}}
-#luminaLayer .lm-stars{position:absolute;inset:0;background:radial-gradient(1px 1px at 18% 28%,rgba(255,255,255,.7),transparent),radial-gradient(1px 1px at 72% 62%,rgba(200,220,255,.6),transparent),radial-gradient(1px 1px at 45% 82%,rgba(255,255,255,.55),transparent),radial-gradient(1.5px 1.5px at 85% 22%,rgba(190,210,255,.6),transparent),radial-gradient(1px 1px at 30% 55%,rgba(255,255,255,.45),transparent);background-size:520px 520px,420px 420px,600px 600px,480px 480px,360px 360px;opacity:.5;animation:lmTwinkle 9s ease-in-out infinite}
-@keyframes lmTwinkle{0%,100%{opacity:.42}50%{opacity:.62}}
-#luminaLayer .lm-comet{position:absolute;left:0;top:0;width:10px;height:10px;margin:-5px 0 0 -5px;will-change:transform,opacity;opacity:0}
-#luminaLayer .lm-comet .lm-core{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,#fff 0%,var(--c) 50%,transparent 76%);box-shadow:0 0 14px 5px var(--glow),0 0 30px 12px rgba(120,160,255,.22)}
-#luminaLayer .lm-comet .lm-tail{position:absolute;right:6px;top:50%;width:150px;height:3px;transform:translateY(-50%);border-radius:3px;background:linear-gradient(90deg,transparent 0%,var(--c) 72%,#ffffff 100%);opacity:.9}
-#luminaLayer #lmA{--c:#ff9ec4;--glow:rgba(255,150,200,.5)}
-#luminaLayer #lmB{--c:#8ec9ff;--glow:rgba(140,200,255,.5)}
-#luminaLayer .lm-fin{position:absolute;inset:0}
-#luminaLayer .lm-heart{position:absolute;left:50%;top:50%;width:60vmin;height:55vmin;margin:-27.5vmin 0 0 -30vmin;will-change:transform,opacity;opacity:0;filter:drop-shadow(0 0 22px rgba(255,90,150,.6)) drop-shadow(0 0 54px rgba(255,150,90,.4))}
-#luminaLayer .lm-heart path{fill:none;stroke:url(#lmHg);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-#luminaLayer .lm-burst{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;will-change:transform,opacity;opacity:0;background:radial-gradient(circle,rgba(255,255,255,.9) 0%,rgba(255,120,170,.6) 22%,rgba(255,160,90,.3) 45%,rgba(150,120,255,0) 70%)}
-#luminaLayer .lm-ring{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;will-change:transform,opacity;opacity:0;border:3px solid rgba(255,170,200,.7);box-shadow:0 0 24px rgba(255,150,190,.5)}
-@media (prefers-reduced-motion: reduce){#luminaLayer .lm-blob,#luminaLayer .lm-stars,#luminaLayer .lm-blobwrap{animation:none!important}#luminaLayer .lm-comet,#luminaLayer .lm-fin{display:none}}
 
 /* ── EYE REST: deep 670nm-red starburst + 20-20-20 cue ── */
 #eyeRest{position:fixed;inset:0;z-index:9000;pointer-events:none;display:none;align-items:center;justify-content:center;overflow:hidden;--erC1:#ff9a9a;--erC2:#ff2424;--erC3:rgba(235,0,18,.78);--erG:rgba(255,40,40,.6)}
@@ -828,13 +755,12 @@ body.theme-noir .tour-card{border:1px solid transparent;background:linear-gradie
 .svc-customchip{border-color:#4a3a5e!important}
 body.theme-noir .svc-addsvc-btn{color:#cbd5ff;border-color:#33334a}
 body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5e!important}
-
+</style>
 </head>
 <body>
 <div id="updateBar" class="update-bar" onclick="applyUpdate()"><i class="ti ti-refresh"></i> New version ready — tap to update</div>
 <div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px;display:none">v</div>
 
-<canvas id="warpLayer" aria-hidden="true"></canvas>
 
 <div id="payGate" role="dialog" aria-modal="true">
   <div class="pg-card">
@@ -852,19 +778,6 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
   </div>
 </div>
 
-<div id="luminaLayer" aria-hidden="true">
-  <div class="lm-blobwrap"><div class="lm-blob lm-b1"></div><div class="lm-blob lm-b2"></div><div class="lm-blob lm-b3"></div><div class="lm-blob lm-b4"></div></div>
-  <div class="lm-stars"></div>
-  <div class="lm-comet" id="lmA"><div class="lm-tail"></div><div class="lm-core"></div></div>
-  <div class="lm-comet" id="lmB"><div class="lm-tail"></div><div class="lm-core"></div></div>
-  <div class="lm-fin" id="lmFin">
-    <svg class="lm-heart" id="lmHeart" viewBox="0 0 100 92" preserveAspectRatio="xMidYMid meet">
-      <defs><linearGradient id="lmHg" x1="0" y1="0" x2="1" y2="1"><stop id="lmHs1" offset="0" stop-color="#ff5e9c"/><stop id="lmHs2" offset=".5" stop-color="#ff8fb4"/><stop id="lmHs3" offset="1" stop-color="#ffb86b"/></linearGradient></defs>
-      <path id="lmHpath" d="M50 84 C50 84 12 58 12 33 C12 18 26 13 35 21 C41 26 50 35 50 35 C50 35 59 26 65 21 C74 13 88 18 88 33 C88 58 50 84 50 84 Z"/>
-    </svg>
-    <div class="lm-ring" id="lmRing"></div><div class="lm-burst" id="lmBurst"></div>
-  </div>
-</div>
 
 <div id="eyeRest" aria-hidden="true">
   <div class="er-veil" id="erVeil"></div>
@@ -1000,31 +913,6 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       </div>
     </div>
 
-    <div class="setup-section">
-      <div class="setup-section-title">Wallpaper</div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px" id="wpGrid">
-      <div class="wp-swatch sel" data-wp="none" onclick="selWP(this,'none')" style="background:#1a1a1a" title="None"></div>
-      <div class="wp-swatch" data-wp="starfield" onclick="selWP(this,'starfield')" style="background:radial-gradient(1px 1px at 30% 35%,#fff,transparent),radial-gradient(1px 1px at 70% 65%,#fff,transparent),linear-gradient(160deg,#05060f,#0a0a22)" title="Starfield"></div>
-      <div class="wp-swatch" data-wp="nebula" onclick="selWP(this,'nebula')" style="background:linear-gradient(125deg,#1a0a2e,#3a1a5a,#0f3460)" title="Nebula"></div>
-      <div class="wp-swatch" data-wp="aurora" onclick="selWP(this,'aurora')" style="background:linear-gradient(135deg,#001a1a,#0d3a2a,#1a0d4a)" title="Aurora"></div>
-      <div class="wp-swatch" data-wp="galaxy" onclick="selWP(this,'galaxy')" style="background:radial-gradient(ellipse at 50% 50%,#3a1a6a,#160a2e,#08040f)" title="Galaxy"></div>
-      <div class="wp-swatch" data-wp="cosmos" onclick="selWP(this,'cosmos')" style="background:linear-gradient(180deg,#02030c,#0a1840,#040a1f)" title="Cosmos"></div>
-      <div class="wp-swatch" data-wp="meteor" onclick="selWP(this,'meteor')" style="background:linear-gradient(120deg,#070710,#13112e),linear-gradient(120deg,transparent 46%,rgba(150,200,255,.6) 50%,transparent 54%)" title="Meteor"></div>
-      <div class="wp-swatch" data-wp="ocean" onclick="selWP(this,'ocean')" style="background:linear-gradient(180deg,#001520,#00536a)" title="Ocean"></div>
-      <div class="wp-swatch" data-wp="ember" onclick="selWP(this,'ember')" style="background:radial-gradient(ellipse at bottom,#3a1000,#000)" title="Ember"></div>
-      <div class="wp-swatch" data-wp="sunset" onclick="selWP(this,'sunset')" style="background:linear-gradient(160deg,#2a0a2a,#c25a1a)" title="Sunset"></div>
-      <div class="wp-swatch" data-wp="neon" onclick="selWP(this,'neon')" style="background:linear-gradient(120deg,#0a0024,#0a2a5a,#3a0a3a)" title="Neon"></div>
-      <div class="wp-swatch" data-wp="plasma" onclick="selWP(this,'plasma')" style="background:linear-gradient(120deg,#3a0a4a,#0a4a3a,#4a0a2a)" title="Plasma"></div>
-      <div class="wp-swatch" data-wp="midnight" onclick="selWP(this,'midnight')" style="background:linear-gradient(135deg,#06061a,#14143a)" title="Midnight"></div>
-      <div class="wp-swatch" data-wp="emerald" onclick="selWP(this,'emerald')" style="background:linear-gradient(135deg,#001208,#0d5a2a)" title="Emerald"></div>
-      <div class="wp-swatch" data-wp="rosegold" onclick="selWP(this,'rosegold')" style="background:linear-gradient(135deg,#1a0610,#5a3018)" title="Rose gold"></div>
-      <div class="wp-swatch" data-wp="grid" onclick="selWP(this,'grid')" style="background:#0a0a0a;background-image:linear-gradient(rgba(120,180,255,.25) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.25) 1px,transparent 1px);background-size:8px 8px" title="Grid"></div>
-      <div class="wp-swatch" data-wp="lumina" onclick="selWP(this,'lumina')" style="background:radial-gradient(circle at 28% 30%,#ff9ec4,transparent 42%),radial-gradient(circle at 72% 70%,#8ec9ff,transparent 46%),linear-gradient(135deg,#0b1233,#1a0a3a 60%,#04050d)" title="Lumina ✦"></div>
-      <div class="wp-swatch" data-wp="warp" onclick="selWP(this,'warp')" style="background:radial-gradient(circle at 50% 50%,rgba(200,225,255,.55),transparent 58%),repeating-linear-gradient(90deg,transparent 0 6px,rgba(190,215,255,.55) 6px 7px),#02030a" title="Warp 🚀"></div>
-      <div class="wp-swatch" data-wp="warpprism" onclick="selWP(this,'warpprism')" style="background:repeating-linear-gradient(90deg,transparent 0 5px,rgba(255,80,90,.6) 5px 6px,transparent 6px 9px,rgba(80,255,140,.6) 9px 10px,transparent 10px 13px,rgba(90,150,255,.6) 13px 14px),#02030a" title="Warp prism 🌈"></div>
-      <div class="wp-swatch" data-wp="warpjump" onclick="selWP(this,'warpjump')" style="background:radial-gradient(circle at 50% 50%,rgba(210,230,255,.85),transparent 52%),repeating-linear-gradient(90deg,transparent 0 5px,rgba(180,210,255,.45) 5px 6px),#02030a" title="Warp jump ✦"></div>
-      </div>
-    </div>
 
     <div class="setup-section">
       <div class="setup-section-title">Light mode comfort ☀️</div>
@@ -2279,9 +2167,6 @@ function applyTheme(theme, accent){
   if(!body.classList.contains('theme-light')) body.classList.add('theme-noir');
   body.classList.add('accent-'+(accent||'gold'));
   if(typeof syncRootBg==='function')syncRootBg();
-  var _noWP = body.classList.contains('theme-noir');
-  if(typeof luminaSet==='function') luminaSet(window.CURRENT_WP==='lumina' && !_noWP);
-  if(typeof warpSet==='function') warpSet(!_noWP ? warpStyleFor(window.CURRENT_WP) : null);
 }
 function selThemeS(theme, btn){
   if(btn){ document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
@@ -2518,19 +2403,7 @@ function lmRunFinale(){
 }
 function lmTick(){ if(LM.on&&!LM.busy&&!lmReduce.matches&&!document.hidden&&Math.random()<0.05) lmRunFinale(); }
 
-function luminaSet(on){
-  LM.on=on;
-  if(on){
-    if(lmReduce.matches) return;
-    if(!LM.started){ LM.started=true; lmStartComets(); if(!LM.timer) LM.timer=setInterval(lmTick,9000); }
-  } else {
-    LM.started=false;
-    if(LM.timer){clearInterval(LM.timer);LM.timer=null;}
-    LM.busy=false;
-    [lmEl('lmA'),lmEl('lmB')].forEach(function(el){ if(el){el.getAnimations().forEach(function(a){a.cancel();});el.style.opacity='0';} });
-    var h=lmEl('lmHeart'); if(h) h.style.opacity='0';
-  }
-}
+function luminaSet(on){}
 document.addEventListener('visibilitychange',function(){
   if(!document.hidden&&LM.on&&!LM.busy&&!lmReduce.matches){ var A=lmEl('lmA'); if(A&&!A.getAnimations().length) lmStartComets(); }
 });
@@ -2611,8 +2484,8 @@ var WARP=(function(){
   document.addEventListener('visibilitychange',function(){visible=!document.hidden;if(visible&&running)last=performance.now();});
   return {start:start,stop:stop,pause:pause,resume:resume};
 })();
-function warpStyleFor(wp){return wp==='warp'?'star':wp==='warpprism'?'prism':wp==='warpjump'?'jump':null;}
-function warpSet(st){ if(st){WARP.start(st);} else {WARP.stop();} }
+function warpStyleFor(wp){return null;}
+function warpSet(st){}
 
 function initPrefs(){
   loadPrefs();
@@ -2628,7 +2501,7 @@ maybeShowTradePicker();
 applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName();
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.13 · add service + name';
+var VERSION='app v1.15 · style tag fix';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
