@@ -565,6 +565,29 @@ body.theme-noir input,body.theme-noir select,body.theme-noir textarea{background
 body.theme-noir input:focus,body.theme-noir select:focus,body.theme-noir textarea:focus{background:#000;border-color:var(--gold)}
 body.theme-noir input:-webkit-autofill,body.theme-noir input:-webkit-autofill:hover,body.theme-noir input:-webkit-autofill:focus{-webkit-box-shadow:0 0 0 1000px #000 inset}
 body.theme-noir .svc-mode-btn{background:#000;border-color:#2e2e3a}
+.trade-screen{position:fixed;inset:0;z-index:7000;background:#000;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
+.trade-back{position:absolute;top:18px;left:16px;display:inline-flex;align-items:center;gap:6px;background:#0a0a0e;border:1.5px solid #23232e;color:#cbd5ff;font-size:13px;font-weight:700;padding:9px 14px;border-radius:20px;cursor:pointer;z-index:1;transition:transform .14s ease}
+.trade-back:active{transform:scale(.95)}
+.trade-back i{font-size:15px}
+.trade-card{width:100%;max-width:540px;text-align:center;margin:auto}
+.trade-logo{font-size:30px;margin-bottom:10px;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.trade-title{font-size:26px;font-weight:800;color:#fff;margin-bottom:8px}
+.trade-sub{font-size:14px;color:#9a9aa8;margin-bottom:24px;line-height:1.55;padding:0 8px}
+.trade-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:460px){.trade-grid{grid-template-columns:repeat(2,1fr)}}
+.trade-tile{background:#0a0a0e;border:1.5px solid #23232e;border-radius:16px;padding:20px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:9px;transition:transform .14s ease,border-color .2s,box-shadow .25s}
+.trade-tile:active{transform:scale(.95)}
+.trade-tile i{font-size:28px;color:#cbd5ff}
+.trade-tile span{font-size:13px;font-weight:700;color:#e8e8f2}
+.trade-tile:hover{border-color:transparent;background:linear-gradient(#0a0a0e,#0a0a0e) padding-box,linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 18px rgba(167,139,250,.28)}
+.svc-trade-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.svc-trade-label{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:800;letter-spacing:.3px;color:var(--gold);padding:7px 14px;border:1.5px solid var(--gold-border);border-radius:20px;background:var(--gold-dim)}
+.svc-trade-label i{font-size:15px}
+.svc-trade-change{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--muted);background:transparent;border:1px solid #2a2a2a;padding:6px 11px;border-radius:18px;cursor:pointer;transition:transform .14s ease}
+.svc-trade-change:active{transform:scale(.95)}
+.svc-trade-change i{font-size:14px}
+body.theme-noir .svc-trade-change{color:#cbd5ff;border-color:#23232e;background:#0a0a0e}
+body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!important;background:linear-gradient(#000,#000) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 10px rgba(167,139,250,.25)}
 body.theme-noir .svc-chip:not(.sel){background:#000;border-color:#2e2e3a;color:#e8e8e8}
 body.theme-noir .svc-more-btn{background:#000;border-color:#2e2e3a;color:#e8e8e8}
 /* ===== Iridescent nav + chips (pitch-black, legible) ===== */
@@ -697,10 +720,7 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
       <label>Service</label>
       <input id="fService" placeholder="Tap services below to combine, or type your own…" oninput="syncChips()">
       <div id="svcSelected" class="svc-selected"></div>
-      <div class="svc-mode">
-        <button type="button" class="svc-mode-btn on" data-mode="hair" onclick="setMode('hair')"><i class="ti ti-scissors m-ico"></i>Hair</button>
-        <button type="button" class="svc-mode-btn" data-mode="nail" onclick="setMode('nail')"><i class="ti ti-sparkles m-ico"></i>Nail</button>
-      </div>
+      <div class="svc-trade-row"><div class="svc-trade-label" id="svcTradeLabel"></div><button type="button" class="svc-trade-change" onclick="openTradePicker()"><i class="ti ti-arrows-exchange"></i> Change</button></div>
       <div class="svc-panel">
         <div class="svc-cat" style="color:var(--gold)">Quick picks <span class="qp-hint">— tap to add · ★ removes</span></div>
         <div class="svc-row" id="favRow"></div>
@@ -881,6 +901,10 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
       <div class="sb-switch" id="noirSwitch"><span></span></div>
     </div>
 
+    <div class="set-sec">My trade</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Your booking &amp; price screens show only this trade's services. Pick a different one to switch.</div>
+    <button class="btn btn-ghost btn-sm" style="width:100%" onclick="closeSheet('settingsModal');openTradePicker()"><i class="ti ti-arrows-exchange"></i> Change my trade</button>
+
     <div class="set-sec">Working hours</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Sets your open hours. The client booking page (coming soon) will only offer slots inside these.</div>
     <div id="hoursList"></div>
@@ -995,15 +1019,21 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
 </div>
 
 <!-- PRICE BOOK SHEET -->
+<div class="trade-screen" id="tradeScreen" style="display:none">
+  <button type="button" class="trade-back" onclick="closeTradePicker()"><i class="ti ti-arrow-left"></i> Back</button>
+  <div class="trade-card">
+    <div class="trade-logo"><i class="ti ti-sparkles"></i></div>
+    <div class="trade-title">What's your trade?</div>
+    <div class="trade-sub">Pick what you do &mdash; your booking &amp; price screens tailor themselves to it. You can change this anytime in Settings.</div>
+    <div class="trade-grid" id="tradeGrid"></div>
+  </div>
+</div>
 <div class="modal" id="priceModal" onclick="if(event.target===this)closePrices()">
   <div class="sheet">
     <div class="sheet-grip"></div>
     <div class="sheet-title"><i class="ti ti-tag" style="font-size:15px;vertical-align:-2px;margin-right:7px;color:var(--gold)"></i>Your price book</div>
     <p class="price-hint">Set what you charge for each service. Leave blank for ones you don't offer. When you combine services in a booking, the Price auto-fills with the total — you can still adjust it.<br><br>Tap <b style="color:var(--gold)">By hair</b> next to a service to <b style="color:var(--gold)">auto-price by the client's hair</b> — the price you set becomes the baseline (short, fine hair) and scales up for length, thickness, grey &amp; prior chemical work. Best for colour &amp; highlight services.</p>
-    <div class="svc-mode" style="margin-bottom:12px">
-      <button type="button" class="svc-mode-btn on" data-pmode="hair" onclick="setPriceMode('hair')"><i class="ti ti-scissors m-ico"></i>Hair</button>
-      <button type="button" class="svc-mode-btn" data-pmode="nail" onclick="setPriceMode('nail')"><i class="ti ti-sparkles m-ico"></i>Nail</button>
-    </div>
+    <div class="svc-trade-row" style="margin-bottom:12px"><div class="svc-trade-label" id="priceTradeLabel"></div><button type="button" class="svc-trade-change" onclick="closePrices();openTradePicker()"><i class="ti ti-arrows-exchange"></i> Change</button></div>
     <div id="priceList"></div>
     <div class="btn-row" style="margin-top:16px">
       <button class="btn" onclick="closePrices()"><i class="ti ti-check"></i> Done</button>
@@ -1045,20 +1075,26 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
 /* ===== service catalog — identical to CommissionPro ===== */
 const SERVICE_GROUPS=[
   {c:'Color',d:'hair',s:[['Color','palette'],['Root Touch-up','brush'],['Root Smudge','brush'],['All-Over Color','palette'],['Gray Coverage','palette'],["Men's Color",'palette'],['Vivid Color','diamond'],['Color Correction','palette'],['Toner / Gloss','droplet']]},
-  {c:'Highlights',d:'hair',s:[['Highlights','sparkles'],['Partial Highlight','sparkles'],['Full Highlight','sparkles'],['Lowlights','sparkles'],['Balayage','sparkles'],['Foilage','sparkles'],['Ombré','color-swatch'],['Babylights','sparkles']]},
-  {c:'Cuts & Styling',d:'hair',s:[["Women's Haircut",'scissors'],["Men's Haircut",'user'],['Kids Haircut','mood-kid'],['Cut & Style','scissors'],['Bang Trim','cut'],['Blow Dry','wind'],['Silk Press','flame'],['Curls','wave-sine'],['Wand Curls','wand'],['Hand-Styled','hand-finger'],['Updo','crown'],['Special Occasion','sparkles'],['Bridal','heart'],['Braids','line'],['Roller Set','circle']]},
+  {c:'Highlights',d:'hair',s:[['Highlights','sparkles'],['Partial Highlight','sparkles'],['Full Highlight','sparkles'],['Lowlights','sparkles'],['Balayage','sparkles'],['Foilage','sparkles'],['Ombre','color-swatch'],['Babylights','sparkles']]},
+  {c:'Haircuts',d:'hair',s:[["Women's Haircut",'scissors'],["Men's Haircut",'user'],['Kids Haircut','mood-kid'],['Bang / Fringe Trim','cut'],['Dry Trim','scissors'],['Restyle / Major Cut','scissors'],['Trim Only','cut']]},
+  {c:'Styling',d:'hair',s:[['Blow Dry','wind'],['Curls','wave-sine'],['Wand Curls','wand'],['Straighten / Flat Iron','minus'],['Beach Waves','wave-sine'],['Silk Press','flame'],['Hand-Styled','hand-finger'],['Updo','crown'],['Braids','line'],['Roller Set','circle'],['Special Occasion','sparkles'],['Bridal Styling','heart']]},
   {c:'Treatments',d:'hair',s:[['Treatment','flask'],['Deep Conditioning','droplet'],['Olaplex','flask'],['Scalp Treatment','massage'],['Keratin','flame'],['Brazilian Blowout','flame'],['Clarifying','droplet'],['Gloss / Shine','droplet']]},
   {c:'Texture',d:'hair',s:[['Perm','wave-sine'],['Relaxer','wave-sine'],['Permanent Straightening','wave-sine']]},
-  {c:'Length & Volume',d:'hair',s:[['Extensions','plus'],['Tape-In','plus'],['Sew-In / Weave','plus'],['Fusion','plus']]},
-  {c:'Brows & Lashes',d:'hair',s:[['Brow Shaping','eye'],['Brow Wax','eye'],['Brow Tint','palette'],['Lash Lift','eye'],['Lash Extensions','sparkles'],['Lash Fill','sparkles']]},
-  {c:'Skin & Extras',d:'hair',s:[['Facial','mood-happy'],['Makeup','brush'],['Spray Tan','spray'],['Massage','massage']]},
-  {c:'Waxing',d:'hair',s:[['Face Wax','droplet'],['Lip / Chin Wax','droplet'],['Body Wax','droplet'],['Threading','needle']]},
-  {c:"Men's Grooming",d:'hair',s:[['Beard Trim','mustache'],['Hot Towel Shave','cut'],['Line-up','cut'],['Fade','cut'],['Buzz Cut','cut'],['Head Shave','user'],['Mustache Trim','mustache']]},
-  {c:'Nails — Hands',d:'nail',s:[['Manicure','hand-stop'],['Gel Manicure','hand-stop'],['Spa Manicure','hand-stop'],['Dip Powder','diamond'],['Polish Change','droplet']]},
-  {c:'Nails — Feet',d:'nail',s:[['Pedicure','shoe'],['Gel Pedicure','shoe'],['Spa Pedicure','shoe']]},
-  {c:'Nails — Enhancements',d:'nail',s:[['Acrylic Full Set','diamond'],['Acrylic Fill','diamond'],['Gel-X Extensions','diamond'],['Builder Gel','diamond'],['Polygel','diamond'],['Overlay','diamond'],['Nail Art','star'],['French / Ombré','color-swatch'],['Nail Repair','tool'],['Removal / Soak-Off','eraser']]}
+  {c:'Barbering',d:'barber',s:[['Haircut','scissors'],["Men's Haircut",'user'],['Kids Cut','mood-kid'],['Skin Fade','cut'],['Taper','cut'],['Buzz Cut','cut'],['Line-up / Edge-up','cut'],['Head Shave','razor'],['Design / Pattern','star']]},
+  {c:'Beard & Shave',d:'barber',s:[['Beard Trim','mustache'],['Beard Sculpt','mustache'],['Hot Towel Shave','razor'],['Mustache Trim','mustache'],['Razor Line','razor']]},
+  {c:'Nails - Hands',d:'nail',s:[['Manicure','hand-stop'],['Gel Manicure','hand-stop'],['Spa Manicure','hand-stop'],['Dip Powder','diamond'],['Polish Change','droplet']]},
+  {c:'Nails - Feet',d:'nail',s:[['Pedicure','shoe'],['Gel Pedicure','shoe'],['Spa Pedicure','shoe']]},
+  {c:'Nails - Enhancements',d:'nail',s:[['Acrylic Full Set','diamond'],['Acrylic Fill','diamond'],['Gel-X Extensions','diamond'],['Builder Gel','diamond'],['Polygel','diamond'],['Overlay','diamond'],['Nail Art','star'],['French / Ombre','color-swatch'],['Nail Repair','tool'],['Removal / Soak-Off','eraser']]},
+  {c:'Lash Extensions',d:'lash',s:[['Classic Set','feather'],['Hybrid Set','feather'],['Volume Set','feather'],['Mega Volume','feather'],['Lash Fill','feather'],['Lash Removal','eraser']]},
+  {c:'Lash Extras',d:'lash',s:[['Lash Lift','eye'],['Lash Tint','droplet'],['Lash Bath / Clean','droplet']]},
+  {c:'Brows',d:'brow',s:[['Brow Shaping','eye'],['Brow Wax','droplet'],['Brow Tint','palette'],['Brow Lamination','eye'],['Henna Brows','palette'],['Threading','needle'],['Microblading','pencil'],['Brow Tweeze','eye']]},
+  {c:'Facials',d:'esth',s:[['Facial','mood-happy'],['Deep Cleanse Facial','mood-happy'],['Chemical Peel','droplet'],['Dermaplane','razor'],['Microdermabrasion','sparkles'],['LED Therapy','bulb']]},
+  {c:'Waxing & Skin',d:'esth',s:[['Face Wax','droplet'],['Lip / Chin Wax','droplet'],['Body Wax','droplet'],['Brazilian Wax','droplet'],['Spray Tan','spray']]},
+  {c:'Makeup',d:'makeup',s:[['Makeup Application','brush'],['Bridal Makeup','heart'],['Glam Makeup','sparkles'],['Soft Glam','brush'],['Special Occasion','crown'],['Strip Lashes','feather'],['Makeup Lesson','school']]},
+  {c:'Massage',d:'massage',s:[['Swedish Massage','hand-stop'],['Deep Tissue','hand-stop'],['Hot Stone','flame'],['Scalp Massage','massage'],['Aromatherapy','droplet'],['Sports Massage','hand-stop'],['Relaxation','mood-happy']]},
+  {c:'Extensions',d:'hairext',s:[['Tape-In','wind'],['Sew-In / Weave','wind'],['Fusion / K-Tip','wind'],['Hand-Tied','wind'],['Micro-Link','wind'],['Move-up / Maintenance','refresh'],['Extension Removal','eraser']]}
 ];
-const DEFAULT_FAVES=["Women's Haircut","Color","Highlights","Men's Haircut",'Cut & Style','Blow Dry','Balayage','Root Touch-up','Toner / Gloss','Treatment','Keratin','Updo','Beard Trim','Kids Haircut','Manicure','Gel Manicure','Spa Manicure','Pedicure','Gel Pedicure','Spa Pedicure','Acrylic Full Set','Acrylic Fill','Gel-X Extensions','Dip Powder','Polish Change','Nail Art','Removal / Soak-Off'];
+const DEFAULT_FAVES=["Women's Haircut","Color","Highlights","Men's Haircut",'Blow Dry','Curls','Balayage','Root Touch-up','Toner / Gloss','Treatment','Keratin','Updo','Wand Curls','Hand-Styled','Manicure','Gel Manicure','Spa Manicure','Pedicure','Gel Pedicure','Acrylic Full Set','Acrylic Fill','Gel-X Extensions','Dip Powder','Polish Change','Nail Art','Haircut','Skin Fade','Beard Trim','Line-up / Edge-up','Hot Towel Shave','Classic Set','Hybrid Set','Volume Set','Lash Fill','Lash Lift','Brow Shaping','Brow Wax','Brow Tint','Brow Lamination','Threading','Facial','Deep Cleanse Facial','Chemical Peel','Body Wax','Spray Tan','Makeup Application','Bridal Makeup','Glam Makeup','Strip Lashes','Swedish Massage','Deep Tissue','Hot Stone','Scalp Massage','Tape-In','Sew-In / Weave','Hand-Tied','Move-up / Maintenance'];
 const ICON_OF=(function(){var m={};SERVICE_GROUPS.forEach(function(g){g.s.forEach(function(it){m[it[0]]=it[1];});});return m;})();
 var CAT_COLORS={'Cuts & Styling':'#FFC04D','Color':'#FF7AB0','Highlights':'#FFE15A','Treatments':'#5FD6C6','Texture':'#B79CFF','Length & Volume':'#7FB4FF',"Men's Grooming":'#8FD17A','Nails — Hands':'#FF93A6','Nails — Feet':'#5FC8EC','Nails — Enhancements':'#CBA6FF','Brows & Lashes':'#E6B07E','Waxing':'#F4A6C8','Skin & Extras':'#9AD9A6'};
 function catColorOf(c){return CAT_COLORS[c]||'#FFC04D';}
@@ -1093,6 +1129,26 @@ function getFavorites(){var p=getPrefs();return Array.isArray(p.favorites)?p.fav
 function saveFavorites(arr){var p=getPrefs();p.favorites=arr;setPrefs(p);}
 function getMode(){var p=getPrefs();return p.svcMode||'hair';}
 function saveMode(m){var p=getPrefs();p.svcMode=m;setPrefs(p);}
+/* ===== TRADE SYSTEM (pick one, others vanish) ===== */
+var TRADES=[
+  {k:'hair',label:'Hair',icon:'ti-scissors'},
+  {k:'barber',label:'Barber',icon:'ti-razor'},
+  {k:'nail',label:'Nails',icon:'ti-hand-finger'},
+  {k:'lash',label:'Lash',icon:'ti-feather'},
+  {k:'brow',label:'Brows',icon:'ti-eye'},
+  {k:'esth',label:'Esthetician',icon:'ti-mask'},
+  {k:'makeup',label:'Makeup',icon:'ti-brush'},
+  {k:'massage',label:'Massage',icon:'ti-hand-stop'},
+  {k:'hairext',label:'Extensions',icon:'ti-wind'}
+];
+function tradeLabel(k){for(var i=0;i<TRADES.length;i++){if(TRADES[i].k===k)return TRADES[i].label;}return 'Hair';}
+function tradeIcon(k){for(var i=0;i<TRADES.length;i++){if(TRADES[i].k===k)return TRADES[i].icon;}return 'ti-scissors';}
+function renderTradeLabel(){var k=getMode();var a=$('svcTradeLabel');if(a)a.innerHTML='<i class="ti '+tradeIcon(k)+'"></i> '+tradeLabel(k)+' services';var b=$('priceTradeLabel');if(b)b.innerHTML='<i class="ti '+tradeIcon(k)+'"></i> '+tradeLabel(k)+' price list';}
+function renderTradePicker(){var g=$('tradeGrid');if(!g)return;g.innerHTML=TRADES.map(function(t){return '<button type="button" class="trade-tile" onclick="pickTrade(\''+t.k+'\')"><i class="ti '+t.icon+'"></i><span>'+t.label+'</span></button>';}).join('');}
+function openTradePicker(){renderTradePicker();var sc=$('tradeScreen');if(sc)sc.style.display='flex';}
+function closeTradePicker(){var sc=$('tradeScreen');if(sc)sc.style.display='none';}
+function pickTrade(k){svcMode=k;saveMode(k);buildChips();renderTradeLabel();var sc=$('tradeScreen');if(sc)sc.style.display='none';}
+function maybeShowTradePicker(){if(!getPrefs().svcMode)openTradePicker();}
 
 /* ===== date helpers ===== */
 var viewDate=new Date();viewDate.setHours(12,0,0,0);
@@ -1128,6 +1184,7 @@ function chipHTML(name,icon,isFav){
   return '<button type="button" class="svc-chip" data-name="'+esc(name)+'" onclick="promoteFav(\''+jsq(name)+'\')"><i class="ti ti-'+(icon||'point')+'"></i>'+esc(name)+'<i class="ti ti-star svc-star"></i></button>';
 }
 function buildChips(){
+  renderTradeLabel();
   var favs=getFavorites(), mode=svcMode, groups=groupsForMode(mode);
   var modeNames={};groups.forEach(function(g){g.s.forEach(function(it){modeNames[it[0]]=1})});
   var favHere=favs.filter(function(n){return modeNames[n]});
@@ -2114,7 +2171,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.14 · price on approve';
+var VERSION='v4.15 · trade system';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -2495,7 +2552,7 @@ function togglePriceCat(head){
   body.style.display=open?'none':'block';
   head.classList.toggle('open',!open);
 }
-function openPrices(){priceMode=getMode();document.querySelectorAll('#priceModal .svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.pmode===priceMode);});buildPriceList();$('priceModal').classList.add('show');}
+function openPrices(){priceMode=getMode();renderTradeLabel();buildPriceList();$('priceModal').classList.add('show');}
 function closePrices(){$('priceModal').classList.remove('show');applyAutoPrice();}
 
 /* ===== toast ===== */
@@ -2765,6 +2822,8 @@ try{var _sv=load('ap_view',null);if(_sv){
 }}catch(e){}
 renderDay();
 syncBookingToggle();
+renderTradeLabel();
+maybeShowTradePicker();
 initFB();
 
 /* live status — refresh the Day view each minute so 'In progress' flips on its own */
