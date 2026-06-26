@@ -281,6 +281,8 @@ body.theme-light .legal-body{color:#777}
 .ck input:checked + .ck-box{background:var(--gold);border-color:var(--gold)}
 .ck input:checked + .ck-box::after{transform:rotate(-45deg) scale(1)}
 .ck-cond input:checked + .ck-box{background:#ff8585;border-color:#ff8585}
+body.theme-noir .ck input:checked + .ck-box{background:var(--gold)!important;border-color:var(--gold)!important}
+body.theme-noir .ck-cond input:checked + .ck-box{background:#ff8585!important;border-color:#ff8585!important}
 .ck-txt{font-size:14px;color:#ddd;line-height:1.45;padding-top:3px}
 .ck-row{border-bottom:1px solid #222;padding:9px 2px}
 .ck-agree{margin-top:10px}
@@ -2590,7 +2592,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.23 · booking link';
+var VERSION='app v1.24 · checkbox fix';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
