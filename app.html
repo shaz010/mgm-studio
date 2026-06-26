@@ -737,6 +737,25 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
 .update-bar{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 8px);transform:translateX(-50%) translateY(-160%);z-index:100000;background:var(--gold);color:#1a1208;font-weight:800;font-size:13.5px;padding:11px 18px;border-radius:30px;box-shadow:0 8px 24px rgba(0,0,0,.55);cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;transition:transform .32s cubic-bezier(.2,.8,.2,1)}
 .update-bar.show{transform:translateX(-50%) translateY(0)}
 .update-bar:active{transform:translateX(-50%) translateY(0) scale(.96)}
+/* ===== Holographic Noir — matches AppointmentPro ===== */
+body.theme-noir{--bg:#000;--bg2:#000;--bg3:#000;background:#000}
+body.theme-noir #warpLayer,body.theme-noir #luminaLayer{display:none!important}
+body.theme-noir .app-shell{background:#000!important}
+body.theme-noir .panel,body.theme-noir .topbar,body.theme-noir .card,body.theme-noir .sum-c,body.theme-noir .month-item,body.theme-noir .fbtn,body.theme-noir .ins-card,body.theme-noir .row-box,body.theme-noir table,body.theme-noir thead tr,body.theme-noir tbody tr{background:#000!important;border-color:#1c1c26!important}
+body.theme-noir input,body.theme-noir select,body.theme-noir textarea{background:#000!important;border-color:#4a4a5a!important;color:#fff!important}
+body.theme-noir .tabs{background:#000!important}
+body.theme-noir .tab{color:var(--text2)}
+body.theme-noir .topbar-name span{text-shadow:0 0 8px rgba(255,184,0,.4)}
+body.theme-noir .topbar-sub{color:#ffd24a;text-shadow:0 0 8px rgba(255,210,74,.35)}
+body.theme-noir .tab.active{color:#fff!important;border:1px solid transparent!important;background:linear-gradient(#050507,#050507) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 10px rgba(167,139,250,.3)!important;text-shadow:0 0 7px rgba(103,232,249,.3)}
+body.theme-noir .total-rb{border:1px solid transparent!important;background:linear-gradient(#000,#000) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 16px rgba(167,139,250,.22)!important}
+body.theme-noir .total-v{background:linear-gradient(110deg,#a78bfa 0%,#f5a8ff 35%,#67e8f9 70%,#a78bfa 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent!important;text-shadow:none}
+body.theme-noir .calc-hint,body.theme-noir .svc-chip,body.theme-noir .svc-more,body.theme-noir .svc-more::after,body.theme-noir .price-in,body.theme-noir .reset-qp-btn,body.theme-noir .pg-card,body.theme-noir .client-card,body.theme-noir .cf-in,body.theme-noir .ck-box,body.theme-noir .cf-seg-btn,body.theme-noir .cf-disc,body.theme-noir .btn-cancel,body.theme-noir #apptSearch,body.theme-noir .svc-mode-btn,body.theme-noir .modal,body.theme-noir .setup-card,body.theme-noir .inv-tbl th,body.theme-noir .qp-hint,body.theme-noir .cc-flag.muted,body.theme-noir .sum-c,body.theme-noir .month-item,body.theme-noir tbody tr,body.theme-noir tbody tr:hover,body.theme-noir .tbl-wrap tbody tr,body.theme-noir .tbl-wrap tbody tr:hover{background:#000!important;border-color:#1c1c26!important}
+body.theme-noir input:focus,body.theme-noir select:focus,body.theme-noir .cf-in:focus,body.theme-noir .price-in:focus{background:#0a0a0e!important;border-color:#a78bfa!important}
+body.theme-noir .sc-s{background:#06101f!important;border-color:#1a3a6a!important}
+body.theme-noir .sc-m{background:#04140b!important;border-color:#1a4a2a!important}
+body.theme-noir[class*="wp-"]{background:#000!important}
+body.theme-noir .mgm-hero{background:#000!important;border-color:#1c1c26!important}
 </style>
 </head>
 <body>
@@ -1535,23 +1554,6 @@ function printInvoice(){
   .inv-total-row.final{font-size:19px;font-weight:700;color:#111;margin-top:10px;padding-top:10px;border-top:0.5px solid #ddd}
   .inv-note{margin-top:18px;padding:11px 15px;background:#fffbeb;border-radius:6px;font-size:11px;color:#854d0e;border:0.5px solid #fde68a}
   .inv-footer{margin-top:16px;text-align:center;font-size:10px;color:#bbb;padding-top:12px;border-top:0.5px solid #eee}
-/* ===== Holographic Noir — matches AppointmentPro ===== */
-body.theme-noir{--bg:#000;--bg2:#000;--bg3:#000;background:#000}
-body.theme-noir #warpLayer,body.theme-noir #luminaLayer{display:none!important}
-body.theme-noir .app-shell{background:#000!important}
-body.theme-noir .panel,body.theme-noir .topbar,body.theme-noir .card,body.theme-noir .sum-c,body.theme-noir .month-item,body.theme-noir .fbtn,body.theme-noir .ins-card,body.theme-noir .row-box,body.theme-noir table,body.theme-noir thead tr,body.theme-noir tbody tr{background:#000!important;border-color:#1c1c26!important}
-body.theme-noir input,body.theme-noir select,body.theme-noir textarea{background:#000!important;border-color:#4a4a5a!important;color:#fff!important}
-body.theme-noir .tabs{background:#000!important}
-body.theme-noir .tab{color:var(--text2)}
-body.theme-noir .topbar-name span{text-shadow:0 0 8px rgba(255,184,0,.4)}
-body.theme-noir .topbar-sub{color:#ffd24a;text-shadow:0 0 8px rgba(255,210,74,.35)}
-body.theme-noir .tab.active{color:#fff!important;border:1px solid transparent!important;background:linear-gradient(#050507,#050507) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 10px rgba(167,139,250,.3)!important;text-shadow:0 0 7px rgba(103,232,249,.3)}
-body.theme-noir .total-rb{border:1px solid transparent!important;background:linear-gradient(#000,#000) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 16px rgba(167,139,250,.22)!important}
-body.theme-noir .total-v{background:linear-gradient(110deg,#a78bfa 0%,#f5a8ff 35%,#67e8f9 70%,#a78bfa 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent!important;text-shadow:none}
-body.theme-noir .calc-hint,body.theme-noir .svc-chip,body.theme-noir .svc-more,body.theme-noir .svc-more::after,body.theme-noir .price-in,body.theme-noir .reset-qp-btn,body.theme-noir .pg-card,body.theme-noir .client-card,body.theme-noir .cf-in,body.theme-noir .ck-box,body.theme-noir .cf-seg-btn,body.theme-noir .cf-disc,body.theme-noir .btn-cancel,body.theme-noir #apptSearch,body.theme-noir .svc-mode-btn,body.theme-noir .modal,body.theme-noir .setup-card,body.theme-noir .inv-tbl th,body.theme-noir .qp-hint,body.theme-noir .cc-flag.muted,body.theme-noir .sum-c,body.theme-noir .month-item,body.theme-noir tbody tr,body.theme-noir tbody tr:hover,body.theme-noir .tbl-wrap tbody tr,body.theme-noir .tbl-wrap tbody tr:hover{background:#000!important;border-color:#1c1c26!important}
-body.theme-noir input:focus,body.theme-noir select:focus,body.theme-noir .cf-in:focus,body.theme-noir .price-in:focus{background:#0a0a0e!important;border-color:#a78bfa!important}
-body.theme-noir .sc-s{background:#06101f!important;border-color:#1a3a6a!important}
-body.theme-noir .sc-m{background:#04140b!important;border-color:#1a4a2a!important}
   @media print{body{padding:18px}}</style>
   </head><body>${content}</body></html>`);
   w.document.close();setTimeout(()=>w.print(),500);
@@ -2463,7 +2465,7 @@ function initPrefs(){
 initPrefs();
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.4 · noir forced';
+var VERSION='app v1.5 · noir live';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
