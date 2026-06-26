@@ -121,6 +121,15 @@ body.theme-light input:-webkit-autofill,body.theme-light textarea:-webkit-autofi
 .svc-cat{font-size:13px;font-weight:800;color:#b9b9b9;letter-spacing:.3px;margin:15px 0 7px}
 .svc-cat:first-child{margin-top:6px}
 .svc-row{display:flex;flex-wrap:wrap;gap:6px}
+.svc-cat-wrap{margin:9px 0 4px}
+.svc-cat-head{width:100%;display:flex;align-items:center;gap:9px;background:transparent;border:none;padding:9px 2px;cursor:pointer;text-align:left}
+.svc-cat-name{font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;flex:1}
+.svc-cat-count{font-size:11px;font-weight:700;color:var(--muted);background:rgba(150,150,170,.14);padding:1px 8px;border-radius:10px}
+.svc-cat-chev{font-size:16px;color:var(--muted);transition:transform .22s ease}
+.svc-cat-wrap.open .svc-cat-chev{transform:rotate(180deg)}
+.svc-cat-body{display:none;margin-top:4px}
+.svc-cat-wrap.open .svc-cat-body{display:flex}
+body.theme-noir .svc-cat-count{background:#15151c;color:#cbd5ff}
 .svc-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;border:1.5px solid #444;background:#1a1a1a;color:#ccc;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
 .svc-chip i{font-size:14px;color:var(--gold)}
 .svc-chip:hover{border-color:#666;color:#fff}
@@ -1761,6 +1770,7 @@ function chipHTML(name,icon,isFav){
   // More: tap promotes it up into Quick picks for future use
   return '<button type="button" class="svc-chip svc-add" data-name="'+safe+'" onclick="promoteFav(\''+jsq(name)+'\',this)"><i class="ti ti-'+(icon||'point')+'"></i>'+name+'<i class="ti ti-star svc-star"></i></button>';
 }
+function toggleSvcCat(btn){btn.parentNode.classList.toggle('open');}
 function buildServiceChips(){
   renderTradeLabel();
   var favs=getFavorites();
@@ -1780,7 +1790,7 @@ function buildServiceChips(){
       var rest=g.s.filter(function(it){return favs.indexOf(it[0])===-1;}).slice().sort(function(a,b){return a[0].localeCompare(b[0]);});
       if(!rest.length)return '';
       var chips=rest.map(function(it){return chipHTML(it[0],it[1],false);}).join('');
-      return '<div class="svc-cat" style="color:'+catColorOf(g.c)+'">'+g.c+'</div><div class="svc-row">'+chips+'</div>';
+      return '<div class="svc-cat-wrap"><button type="button" class="svc-cat-head" onclick="toggleSvcCat(this)"><span class="svc-cat-name" style="color:'+catColorOf(g.c)+'">'+g.c+'</span><span class="svc-cat-count">'+rest.length+'</span><i class="ti ti-chevron-down svc-cat-chev"></i></button><div class="svc-row svc-cat-body">'+chips+'</div></div>';
     }).join('');
   }
   // reflect active mode button
@@ -2583,7 +2593,7 @@ initPrefs();
 maybeShowTradePicker();
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.11 · clean title';
+var VERSION='app v1.12 · collapsible categories';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
