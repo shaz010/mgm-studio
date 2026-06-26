@@ -980,7 +980,7 @@ body.wp-lumina:not(.theme-light),body[class*="wp-warp"]:not(.theme-light){backgr
       <div class="legal-body">CommissionPro is a personal tracking tool. All figures are estimates based on the information you enter and are for your own reference only — not official payroll, tax, or accounting records. Commission splits and pay vary; the app reflects only the values you input and does not guarantee any amount. CommissionPro does not provide financial, legal, or tax advice. Always verify your earnings against your salon's official records.<br><br>Eye Rest is a relaxing visual and a reminder to rest your eyes. It is not a medical device or treatment, is not a substitute for professional eye care, and makes no health or therapeutic claims.<br><br><a href="privacy.html" target="_blank" style="color:var(--gold);text-decoration:none">Privacy Policy ↗</a> &nbsp;·&nbsp; <a href="terms.html" target="_blank" style="color:var(--gold);text-decoration:none">Terms of Service ↗</a></div>
     </details>
 
-    <div id="buildBadge" style="text-align:center;margin:16px 0 2px;font-size:12.5px;color:#cfcfda;font-weight:600;letter-spacing:.3px">CommissionPro · build 71</div>
+    <div id="buildBadge" style="text-align:center;margin:16px 0 2px;font-size:12.5px;color:#888;letter-spacing:.3px">CommissionPro · build 71</div>
 
     <button class="setup-btn" onclick="saveSettings()">Save settings</button>
   </div>
@@ -2113,9 +2113,10 @@ function applyTheme(theme, accent){
   } else {
     body.classList.add('theme-'+(theme||'dark'));
   }
+  if(!body.classList.contains('theme-light')) body.classList.add('theme-noir');
   body.classList.add('accent-'+(accent||'gold'));
   if(typeof syncRootBg==='function')syncRootBg();
-  var _noWP = body.classList.contains('theme-light') || theme==='noir';
+  var _noWP = body.classList.contains('theme-noir');
   if(typeof luminaSet==='function') luminaSet(window.CURRENT_WP==='lumina' && !_noWP);
   if(typeof warpSet==='function') warpSet(!_noWP ? warpStyleFor(window.CURRENT_WP) : null);
 }
@@ -2462,8 +2463,8 @@ function initPrefs(){
 initPrefs();
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.3 · full noir + fresh cache';
-(function(){var b=document.getElementById('buildBadge');if(b)b.textContent='CommissionPro · '+VERSION.replace(/^app\s*/,'');})();
+var VERSION='app v1.4 · noir forced';
+(function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
   try{
