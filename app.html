@@ -195,6 +195,19 @@ body.theme-light .svc-more::after{background:#fff}
 .ty-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text2);padding:7px 0;border-bottom:.5px solid var(--border)}
 .ty-total{font-weight:700;color:var(--gold);border-bottom:none;padding-top:9px;font-size:15px}
 .ty-note{font-size:10.5px;color:#777;line-height:1.65;margin-top:13px}
+/* Older-eyes legibility: lift muted text on Noir (contrast control is Light-mode only) */
+body.theme-noir .setup-section-title{color:#9e9e9e}
+body.theme-noir .reset-qp-hint{color:#b4b4b4}
+body.theme-noir .data-howto{color:#b4b4b4}
+body.theme-noir .sum-lbl{color:#a8a8a8}
+body.theme-noir .ty-note{color:#a6a6a6;font-size:11.5px}
+body.theme-noir .ty-summary{color:#bfbfbf}
+body.theme-noir .ty-controls label{color:#b4b4b4}
+body.theme-noir .legal-foot summary{color:#b4b4b4}
+body.theme-noir .legal-body{color:#aeaeae;font-size:12px}
+body.theme-noir .price-hint{color:#b4b4b4}
+body.theme-noir .svc-empty,body.theme-noir .client-empty{color:#9e9e9e}
+body.theme-noir .pg-foot{color:#a4a4a4}
 .legal-foot{margin:18px 0 4px;border-top:1px solid var(--border);padding-top:14px}
 .legal-foot summary{font-size:12px;color:#999;cursor:pointer;list-style:none;font-weight:600;letter-spacing:.2px;display:flex;align-items:center}
 .reset-app-btn{width:100%;padding:11px;border-radius:11px;border:1px solid #5a2a2a;background:transparent;color:#c66;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
@@ -204,6 +217,17 @@ body.theme-light .reset-app-btn{border-color:#e0b4b4;color:#b14}
 .legal-foot summary::after{content:'⌄';margin-left:auto;font-size:14px;opacity:.6}
 .legal-foot[open] summary::after{content:'⌃'}
 .legal-body{font-size:11px;color:#888;line-height:1.6;margin-top:10px}
+.backup-status{font-size:12.5px;margin-top:12px;display:flex;align-items:center;gap:6px;line-height:1.45;color:#7fc89a}
+.backup-status .ti{font-size:15px;flex-shrink:0}
+.backup-status.due{color:#e3b341}
+body.theme-noir .setup-section-title{color:#a6a6a6;font-size:12px}
+body.theme-noir .reset-qp-hint{color:#acacac;font-size:12.5px}
+body.theme-noir .data-howto{color:#acacac;font-size:12px}
+body.theme-noir .ty-note{color:#a8a8a8;font-size:11.5px}
+body.theme-noir .ty-controls label,body.theme-noir .setup-label{color:#b4b4b4}
+body.theme-noir .sum-lbl{color:#9e9e9e;font-size:11px}
+body.theme-noir .legal-body{color:#a8a8a8;font-size:11.5px}
+body.theme-noir .legal-foot summary,body.theme-noir .ty-summary{color:#b4b4b4}
 body.theme-light .legal-foot summary{color:#666}
 body.theme-light .legal-body{color:#777}
 #payGate{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;overflow:hidden;background:rgba(5,5,8,.985);padding:24px}
@@ -940,7 +964,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
         <button class="theme-btn lctx-btn" data-v="normal" onclick="setLctx('normal',this)">Normal</button>
         <button class="theme-btn lctx-btn" data-v="high" onclick="setLctx('high',this)">High contrast</button>
       </div>
-      <div style="font-size:11.5px;color:#888;margin-top:8px;line-height:1.5">Applies to Light mode. Try <b>Sepia + High contrast</b> for the easiest read.</div>
+      <div style="font-size:12px;color:#a8a8a8;margin-top:8px;line-height:1.5">Applies to Light mode. Try <b>Sepia + High contrast</b> for the easiest read.</div>
     </div>
 
     <div class="setup-section">
@@ -979,8 +1003,20 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
     </div>
 
     <div class="setup-section">
+      <div class="setup-section-title">Client booking 🔗</div>
+      <input class="setup-input" type="url" id="cfgBookLink" placeholder="https://… your booking page link" autocomplete="off" inputmode="url" oninput="saveBookLink(this.value)">
+      <div class="reset-qp-hint" style="margin-top:7px">Paste your AppointmentPro booking link here. Clients book through it — you approve requests inside AppointmentPro. Your CommissionPro data stays on this device.</div>
+      <div id="bookLinkActions" style="display:none;margin-top:11px">
+        <button class="cf-disc-edit" onclick="shareBookLink()" style="display:block"><i class="ti ti-share" style="font-size:13px"></i> Share booking link</button>
+        <button class="cf-disc-edit" onclick="copyBookLink()" style="display:block;margin-top:6px"><i class="ti ti-copy" style="font-size:13px"></i> Copy link</button>
+        <button class="cf-disc-edit" onclick="openBookLink()" style="display:block;margin-top:6px"><i class="ti ti-external-link" style="font-size:13px"></i> Open to preview</button>
+      </div>
+    </div>
+
+    <div class="setup-section">
       <div class="setup-section-title">Your data 💾</div>
       <div class="reset-qp-hint" style="margin-bottom:12px">Your bookings live privately on this device. Use these to keep a safe copy — or to copy everything to another device (like your iPad).</div>
+      <div id="backupStatus" class="backup-status"></div>
       <button class="data-btn data-btn-primary" onclick="exportData()"><i class="ti ti-download"></i> Save a copy of my data</button>
       <button class="data-btn" onclick="document.getElementById('importFile').click()"><i class="ti ti-upload"></i> Load data from a saved copy</button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(this)">
@@ -1255,6 +1291,13 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
 function getName(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.name||'').trim();}catch(e){return '';}}
 function saveName(v){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.name=v;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.name=v;applyName();}
 function applyName(){var l=document.getElementById('eMeLbl');if(l)l.textContent=getName()||'You';}
+function getBookLink(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.bookLink||'').trim();}catch(e){return '';}}
+function saveBookLink(v){v=(v||'').trim();try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.bookLink=v;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}var a=document.getElementById('bookLinkActions');if(a)a.style.display=v?'block':'none';}
+function initBookLink(){var i=document.getElementById('cfgBookLink');if(i)i.value=getBookLink();var a=document.getElementById('bookLinkActions');if(a)a.style.display=getBookLink()?'block':'none';}
+function _bkUrl(){var l=getBookLink();if(!l){alert('Add your booking link first.');return '';}if(!/^https?:\/\//i.test(l))l='https://'+l;return l;}
+function shareBookLink(){var l=_bkUrl();if(!l)return;if(navigator.share){navigator.share({title:'Book an appointment',text:'Book your appointment here:',url:l}).catch(function(){});}else{copyBookLink();}}
+function copyBookLink(){var l=_bkUrl();if(!l)return;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(l).then(function(){alert('Booking link copied');},function(){window.prompt('Copy your booking link:',l);});}else{window.prompt('Copy your booking link:',l);}}
+function openBookLink(){var l=_bkUrl();if(!l)return;window.open(l,'_blank');}
 let data=[],paidMonths={},activeFilter='all',editingId=null;
 var APPTS_KEY='cp_appts',PAID_KEY='cp_paid';
 function loadAppts(){try{var a=JSON.parse(localStorage.getItem(APPTS_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return[];}}
@@ -1676,8 +1719,20 @@ function exportData(){
     var a=document.createElement('a');
     a.href=url;a.download='commissionpro-backup-'+new Date().toISOString().slice(0,10)+'.json';
     document.body.appendChild(a);a.click();
+    try{localStorage.setItem('cp_lastBackup',String(Date.now()));}catch(_e){} try{renderBackupStatus();}catch(_e){}
     setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},100);
   }catch(e){alert('Could not create the backup file.');console.error(e);}
+}
+function renderBackupStatus(){
+  var el=document.getElementById('backupStatus'); if(!el)return;
+  var t=0; try{t=parseInt(localStorage.getItem('cp_lastBackup')||'0',10)||0;}catch(e){}
+  var has=loadAppts().length>0;
+  if(!t){ el.className='backup-status'+(has?' due':''); el.innerHTML=has?'<i class="ti ti-alert-circle"></i> No backup saved yet — tap &ldquo;Save a copy&rdquo; above.':'<i class="ti ti-cloud"></i> Nothing to back up yet.'; return; }
+  var days=Math.floor((Date.now()-t)/86400000);
+  var when=days<=0?'today':(days===1?'yesterday':days+' days ago');
+  var due=days>=7;
+  el.className='backup-status'+(due?' due':'');
+  el.innerHTML=(due?'<i class="ti ti-alert-circle"></i> ':'<i class="ti ti-circle-check"></i> ')+'Last backup: '+when+(due?' &mdash; worth a fresh copy.':'.');
 }
 function importData(input){
   var file=input.files&&input.files[0];if(!file)return;
@@ -2257,7 +2312,7 @@ function openSettings(){
   if(si) si.value = prefs.salon||'';
   if(ri) ri.value = prefs.rate||60;
   const panel = document.getElementById('settingsPanel');
-  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); }
+  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); renderBackupStatus(); initBookLink(); }
 }
 
 function closeSettings(){
@@ -2535,7 +2590,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.21 · tax year';
+var VERSION='app v1.23 · booking link';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
