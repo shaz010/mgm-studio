@@ -1,0 +1,13 @@
+{
+  "name": "AppointmentPro",
+  "short_name": "AppointmentPro",
+  "start_url": "appt.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#FFB800",
+  "icons": [
+    { "src": "appt-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "appt-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
