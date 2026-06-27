@@ -1160,17 +1160,7 @@ function renderTradeLabel(){var k=getMode();var a=$('svcTradeLabel');if(a)a.inne
 function renderTradePicker(){var g=$('tradeGrid');if(!g)return;g.innerHTML=TRADES.map(function(t){return '<button type="button" class="trade-tile" onclick="pickTrade(\''+t.k+'\')"><i class="ti '+t.icon+'"></i><span>'+t.label+'</span></button>';}).join('');}
 function openTradePicker(){renderTradePicker();var sc=$('tradeScreen');if(sc)sc.style.display='flex';}
 function closeTradePicker(){var sc=$('tradeScreen');if(sc)sc.style.display='none';}
-function pickTrade(k){
-  try{
-    svcMode=k;saveMode(k);try{localStorage.setItem('combo_trade',k);}catch(e){}
-    buildChips();renderTradeLabel();
-    var el=$('svcTradeLabel');var dom=el?el.textContent.trim():'no-el';
-    if(typeof toast==='function')toast(k+' → mode:'+getMode()+' grp:'+groupsForMode(k).length+' dom:['+dom+']');
-  }catch(err){
-    if(typeof toast==='function')toast('ERR '+k+': '+((err&&err.message)||err),1);
-  }
-  var sc=$('tradeScreen');if(sc)sc.style.display='none';
-}
+function pickTrade(k){svcMode=k;saveMode(k);try{localStorage.setItem('combo_trade',k);}catch(e){}buildChips();renderTradeLabel();var sc=$('tradeScreen');if(sc)sc.style.display='none';}
 function maybeShowTradePicker(){
   var cur=getPrefs().svcMode||'';
   var combo='';try{combo=localStorage.getItem('combo_trade')||'';}catch(e){}
@@ -1890,7 +1880,7 @@ function getActiveTradeKeys(){var p=getPrefs();return (Array.isArray(p.activeTra
 function isTradeActive(k){var a=getActiveTradeKeys();return !a||a.indexOf(k)>=0;}
 function activeTrades(){var a=getActiveTradeKeys();var all=allTrades();return a?all.filter(function(t){return a.indexOf(t.k)>=0;}):all;}
 function catsFor(trade){var base=(INV_CATS[trade]||['Other']).slice();getCustomCats(trade).forEach(function(c){if(base.indexOf(c)<0)base.splice(Math.max(base.length-1,0),0,c);});return base;}
-function tradeLabel(k){var all=allTrades();for(var i=0;i<all.length;i++){if(all[i].k===k)return all[i].label;}return 'Hair';}
+function invTradeLabel(k){var all=allTrades();for(var i=0;i<all.length;i++){if(all[i].k===k)return all[i].label;}return 'Hair';}
 function invIcon(c,trade){return INV_ICON[c]||['ti-package',TRADE_IC[trade]||'ic-gray'];}
 function addCustomTrade(label){
   label=(label||'').trim();if(!label){toast('Type a trade name',1);return;}
@@ -2012,7 +2002,7 @@ function renderReorderList(){
   order.forEach(function(k){
     var items=groups[k];if(!items||!items.length)return;
     items.sort(function(a,b){return (a.cat||'').localeCompare(b.cat||'')||(a.name||'').localeCompare(b.name||'');});
-    html+='<div class="ro-trade"><i class="ti ti-tag"></i> '+esc(tradeLabel(k))+' · '+items.length+'</div>';
+    html+='<div class="ro-trade"><i class="ti ti-tag"></i> '+esc(invTradeLabel(k))+' · '+items.length+'</div>';
     html+=items.map(function(s){
       var qty=+s.qty||0,min=+s.min||0,need=Math.max(min*2-qty,1),done=!!reorderChecked[s.id];
       return '<div class="ro-item'+(done?' done':'')+'" onclick="toggleReorderCheck(\''+s.id+'\')">'+
@@ -2062,7 +2052,7 @@ function renderStock(){
     return '<div class="inv-cat'+(invCat===c?' on':'')+'" onclick="setInvCat(\''+c+'\')">'+(c==='all'?'All':esc(c))+'</div>';
   }).join(''):'');
   if(!items.length){
-    $('stockList').innerHTML='<div class="empty"><i class="ti ti-package"></i><div class="empty-t">No '+esc(tradeLabel(invTrade))+' inventory yet</div><div class="empty-s">Add the supplies you use and tick them down as you go — the app flags what to reorder.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openStockSheet()"><i class="ti ti-plus"></i> Add item</button></div>';
+    $('stockList').innerHTML='<div class="empty"><i class="ti ti-package"></i><div class="empty-t">No '+esc(invTradeLabel(invTrade))+' inventory yet</div><div class="empty-s">Add the supplies you use and tick them down as you go — the app flags what to reorder.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openStockSheet()"><i class="ti ti-plus"></i> Add item</button></div>';
     return;
   }
   var shown=items.filter(function(s){return invCat==='all'||(s.cat||'Other')===invCat;});
@@ -2208,7 +2198,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.21 · trade diagnostic';
+var VERSION='v4.22 · trade label fix';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
