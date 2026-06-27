@@ -234,8 +234,8 @@ textarea{min-height:64px;resize:vertical}
 /* MONTH VIEW */
 .monthbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
 .monthbar-label{font-size:17px;font-weight:700;color:var(--text);text-align:center;flex:1}
-.month-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:6px}
-.month-dow span{text-align:center;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.month-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:8px}
+.month-dow span{text-align:center;font-size:11px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.4px;background:var(--gold-dim);border:1px solid var(--gold-border);border-radius:8px;padding:5px 0}
 .month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .mcell{aspect-ratio:1/1;border-radius:9px;border:1.5px solid var(--border-bright);background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:transform .12s,border-color .15s;min-height:0}
 .mcell:active{transform:scale(.93)}
@@ -302,8 +302,11 @@ textarea{min-height:64px;resize:vertical}
 .wcell.sel .wcell-n{color:var(--gold)}
 .wcell-mo{font-size:9px;color:var(--muted);margin-top:1px;text-transform:uppercase;letter-spacing:.2px}
 .wcell.sel .wcell-mo{color:var(--gold)}
-.wcell-dot{height:7px;margin-top:3px;display:flex;justify-content:center;align-items:center;gap:2px}
-.wcell-dot span{width:5px;height:5px;border-radius:50%;background:var(--gold);display:block}
+.wcell-dot{height:auto;min-height:16px;margin-top:3px;display:flex;justify-content:center;align-items:center;gap:2px}
+.wcell-cnt{font-size:9.5px;font-weight:800;color:var(--gold);background:var(--gold-dim);border:1px solid var(--gold-border);border-radius:9px;padding:1px 6px;line-height:1.35;letter-spacing:.2px;font-variant-numeric:tabular-nums}
+.wcell-cnt.mid{background:rgba(255,184,0,.22);border-color:rgba(255,184,0,.6)}
+.wcell-cnt.hi{color:#ffd9a0;background:rgba(255,120,40,.26);border-color:rgba(255,140,60,.7)}
+.wcell-dot span:not(.wcell-cnt){width:5px;height:5px;border-radius:50%;background:var(--gold);display:block}
 /* iPad/tablet only: bigger, livelier day strip — iPhone keeps its original size */
 @media(min-width:700px){
   .wcells{gap:5px}
@@ -317,8 +320,8 @@ textarea{min-height:64px;resize:vertical}
   .wcell.today .wcell-d{color:var(--gold)}
   .wcell-n{font-size:21px;font-weight:800;margin-top:2px}
   .wcell-mo{font-size:9.5px;color:var(--text2);margin-top:2px;letter-spacing:.3px}
-  .wcell-dot{height:9px;margin-top:5px;gap:3px}
-  .wcell-dot span{width:6px;height:6px;box-shadow:0 0 7px rgba(255,184,0,.7)}
+  .wcell-dot{min-height:19px;margin-top:5px;gap:3px}
+  .wcell-cnt{font-size:11px;padding:2px 8px;border-radius:10px}
   .wtoday{width:54px;border-radius:11px;font-size:11px}
 }
 .daybar-nav:active{border-color:var(--gold)}
@@ -624,6 +627,7 @@ body.theme-noir .tabs{background:#000}
 @media(min-width:700px){
   #monthPane{max-width:none;margin:0}
   .month-grid{gap:8px}
+  .month-dow span{font-size:12.5px;padding:7px 0;border-radius:9px}
   .mcell{aspect-ratio:auto;min-height:92px}
 }
 .mcell-c{font-size:11px}
@@ -1156,8 +1160,17 @@ function renderTradeLabel(){var k=getMode();var a=$('svcTradeLabel');if(a)a.inne
 function renderTradePicker(){var g=$('tradeGrid');if(!g)return;g.innerHTML=TRADES.map(function(t){return '<button type="button" class="trade-tile" onclick="pickTrade(\''+t.k+'\')"><i class="ti '+t.icon+'"></i><span>'+t.label+'</span></button>';}).join('');}
 function openTradePicker(){renderTradePicker();var sc=$('tradeScreen');if(sc)sc.style.display='flex';}
 function closeTradePicker(){var sc=$('tradeScreen');if(sc)sc.style.display='none';}
-function pickTrade(k){svcMode=k;saveMode(k);buildChips();renderTradeLabel();var sc=$('tradeScreen');if(sc)sc.style.display='none';}
-function maybeShowTradePicker(){if(!getPrefs().svcMode)openTradePicker();}
+function pickTrade(k){svcMode=k;saveMode(k);try{localStorage.setItem('combo_trade',k);}catch(e){}buildChips();renderTradeLabel();var sc=$('tradeScreen');if(sc)sc.style.display='none';}
+function maybeShowTradePicker(){
+  var cur=getPrefs().svcMode||'';
+  var combo='';try{combo=localStorage.getItem('combo_trade')||'';}catch(e){}
+  if(combo&&combo!==cur&&TRADES.some(function(x){return x.k===combo;})){
+    svcMode=combo;saveMode(combo);buildChips();renderTradeLabel();
+    if(typeof toast==='function')toast('Trade synced from CommissionPro: '+tradeLabel(combo));
+    return;
+  }
+  if(!getPrefs().svcMode)openTradePicker();
+}
 
 /* ===== date helpers ===== */
 var viewDate=new Date();viewDate.setHours(12,0,0,0);
@@ -1345,7 +1358,7 @@ function renderWeekStrip(){
       '<div class="wcell-d">'+L[d.getDay()]+'</div>'+
       '<div class="wcell-n">'+d.getDate()+'</div>'+
       '<div class="wcell-mo">'+d.toLocaleDateString('en-US',{month:'short'})+'</div>'+
-      '<div class="wcell-dot">'+(cnt?Array(Math.min(cnt,3)).fill('<span></span>').join(''):'')+'</div></div>';
+      '<div class="wcell-dot">'+(cnt?('<span class="wcell-cnt'+(cnt>=5?' hi':(cnt>=3?' mid':''))+'">'+cnt+'</span>'):'')+'</div></div>';
     d.setDate(d.getDate()+1);
   }
   el.innerHTML='<div class="wtoday" onclick="goToday()">Today</div>'+html;
@@ -2185,7 +2198,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.18 · clean approve';
+var VERSION='v4.20 · trade bridge';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},

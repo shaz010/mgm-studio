@@ -1711,13 +1711,13 @@ var TRADES=[
 function tradeLabel(k){for(var i=0;i<TRADES.length;i++){if(TRADES[i].k===k)return TRADES[i].label;}return 'Hair';}
 function tradeIcon(k){for(var i=0;i<TRADES.length;i++){if(TRADES[i].k===k)return TRADES[i].icon;}return 'ti-scissors';}
 function getTrade(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return p.trade||p.svcMode||'';}catch(e){return '';}}
-function setTrade(k){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.trade=k;p.svcMode=k;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs){prefs.trade=k;prefs.svcMode=k;}}
+function setTrade(k){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.trade=k;p.svcMode=k;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}try{localStorage.setItem('combo_trade',k);}catch(e){}if(typeof prefs==='object'&&prefs){prefs.trade=k;prefs.svcMode=k;}}
 function renderTradeLabel(){var k=getMode();var a=document.getElementById('svcTradeLabel');if(a)a.innerHTML='<i class="ti '+tradeIcon(k)+'"></i> '+tradeLabel(k)+' services';var b=document.getElementById('priceTradeLabel');if(b)b.innerHTML='<i class="ti '+tradeIcon(k)+'"></i> '+tradeLabel(k)+' price list';}
 function renderTradePicker(){var g=document.getElementById('tradeGrid');if(!g)return;g.innerHTML=TRADES.map(function(t){return '<button type="button" class="trade-tile" onclick="pickTrade(\''+t.k+'\')"><i class="ti '+t.icon+'"></i><span>'+t.label+'</span></button>';}).join('');}
 function openTradePicker(){renderTradePicker();var sc=document.getElementById('tradeScreen');if(sc)sc.style.display='flex';}
 function closeTradePicker(){var sc=document.getElementById('tradeScreen');if(sc)sc.style.display='none';}
 function pickTrade(k){setTrade(k);var sc=document.getElementById('tradeScreen');if(sc)sc.style.display='none';if(typeof buildServiceChips==='function')buildServiceChips();renderTradeLabel();maybeShowTour();}
-function maybeShowTradePicker(){var t='';try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');t=p.trade;}catch(e){}if(!t){openTradePicker();}else{maybeShowTour();}}
+function maybeShowTradePicker(){var t='';try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');t=p.trade;}catch(e){}var combo='';try{combo=localStorage.getItem('combo_trade')||'';}catch(e){}if(combo&&combo!==t&&TRADES.some(function(x){return x.k===combo;})){setTrade(combo);t=combo;if(typeof buildServiceChips==='function')buildServiceChips();if(typeof renderTradeLabel==='function')renderTradeLabel();}if(!t){openTradePicker();}else{maybeShowTour();}}
 var TOUR=[
  {ic:'ti-briefcase',t:'Your trade',x:'You\'re all set. Tap <b>Change</b> on the booking screen anytime to switch trades — it never locks you in.'},
  {ic:'ti-calendar-plus',t:'Book & track',x:'Add a client and pick the service. Your commission split is worked out for you automatically.'},
@@ -2628,7 +2628,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.25 · safe erase';
+var VERSION='app v1.26 · trade bridge';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
