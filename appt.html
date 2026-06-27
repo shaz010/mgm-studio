@@ -1160,7 +1160,17 @@ function renderTradeLabel(){var k=getMode();var a=$('svcTradeLabel');if(a)a.inne
 function renderTradePicker(){var g=$('tradeGrid');if(!g)return;g.innerHTML=TRADES.map(function(t){return '<button type="button" class="trade-tile" onclick="pickTrade(\''+t.k+'\')"><i class="ti '+t.icon+'"></i><span>'+t.label+'</span></button>';}).join('');}
 function openTradePicker(){renderTradePicker();var sc=$('tradeScreen');if(sc)sc.style.display='flex';}
 function closeTradePicker(){var sc=$('tradeScreen');if(sc)sc.style.display='none';}
-function pickTrade(k){svcMode=k;saveMode(k);try{localStorage.setItem('combo_trade',k);}catch(e){}buildChips();renderTradeLabel();var sc=$('tradeScreen');if(sc)sc.style.display='none';}
+function pickTrade(k){
+  try{
+    svcMode=k;saveMode(k);try{localStorage.setItem('combo_trade',k);}catch(e){}
+    buildChips();renderTradeLabel();
+    var el=$('svcTradeLabel');var dom=el?el.textContent.trim():'no-el';
+    if(typeof toast==='function')toast(k+' → mode:'+getMode()+' grp:'+groupsForMode(k).length+' dom:['+dom+']');
+  }catch(err){
+    if(typeof toast==='function')toast('ERR '+k+': '+((err&&err.message)||err),1);
+  }
+  var sc=$('tradeScreen');if(sc)sc.style.display='none';
+}
 function maybeShowTradePicker(){
   var cur=getPrefs().svcMode||'';
   var combo='';try{combo=localStorage.getItem('combo_trade')||'';}catch(e){}
@@ -2198,7 +2208,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.20 · trade bridge';
+var VERSION='v4.21 · trade diagnostic';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
