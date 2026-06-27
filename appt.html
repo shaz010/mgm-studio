@@ -961,10 +961,30 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
     </div>
     <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">“Start fresh” wipes all appointments, clients and your custom services on this device. Quick Picks reset to default. This can’t be undone.</div>
 
+    <div class="set-sec">Diagnostics</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Runs self-checks on trades, IDs and data. Tap <b>Copy report</b> in there to send an exact diagnostic instead of a screenshot.</div>
+    <div class="btn-row" style="margin-top:0">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('settingsModal');openDebug()"><i class="ti ti-stethoscope"></i> Run diagnostics</button>
+    </div>
+
     <div class="set-version" id="setVersion">AppointmentPro · v1.0</div>
 
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-sm" style="flex:1" onclick="closeSheet('settingsModal')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIAGNOSTICS -->
+<div class="modal" id="debugModal" onclick="if(event.target===this)closeSheet('debugModal')">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title">🔧 Diagnostics</div>
+    <div class="sheet-sub">Self-checks &amp; live state. Copy the report and paste it to support.</div>
+    <div id="debugBody" style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.55;white-space:pre-wrap;word-break:break-word;background:#0a0a0e;border:1px solid #23232e;border-radius:12px;padding:14px;margin-top:10px;max-height:52vh;overflow:auto;color:#cbd5ff"></div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-sm" style="flex:1" onclick="copyDebugReport()"><i class="ti ti-copy"></i> Copy report</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('debugModal')">Close</button>
     </div>
   </div>
 </div>
@@ -1747,6 +1767,51 @@ function editFromSheet(){
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
 }
 function closeSheet(id){$(id).classList.remove('show')}
+var _dbgReport='';
+function openDebug(){
+  var L=[];
+  L.push('=== AppointmentPro Diagnostics ===');
+  L.push('Build: '+(typeof VERSION!=='undefined'?VERSION:'?'));
+  L.push('When: '+new Date().toLocaleString());
+  L.push('');
+  L.push('-- Trade state --');
+  var gm=getMode();
+  L.push('svcMode:'+svcMode+'  getMode:'+gm+'  label:'+tradeLabel(gm));
+  var combo='';try{combo=localStorage.getItem('combo_trade')||'(none)';}catch(e){combo='(err)';}
+  L.push('combo_trade (CP sync): '+combo);
+  L.push('');
+  L.push('-- Trade integrity ('+TRADES.length+') --');
+  var bad=0;
+  TRADES.forEach(function(t){
+    var lbl=tradeLabel(t.k), grp=groupsForMode(t.k).length;
+    var ok=(lbl===t.label)&&grp>0; if(!ok)bad++;
+    L.push((ok?'OK  ':'BAD ')+t.k+' -> label:'+lbl+(lbl===t.label?'':' (expected '+t.label+')')+' groups:'+grp);
+  });
+  L.push(bad?('** '+bad+' trade(s) FAILING **'):'all trades OK');
+  L.push('');
+  L.push('-- Duplicate element IDs --');
+  var seen={},dupes=[];
+  document.querySelectorAll('[id]').forEach(function(el){if(seen[el.id])dupes.push(el.id);else seen[el.id]=1;});
+  L.push(dupes.length?('** '+dupes.join(', ')+' **'):'none');
+  L.push('');
+  L.push('-- Data counts --');
+  L.push('appointments:'+load(APPTS,[]).length+'  clients:'+load(CLIENTS,[]).length);
+  L.push('prices:'+Object.keys(getPrefs().prices||{}).length+'  favorites:'+getFavorites().length);
+  L.push('custom svc:'+customSvc.length+'  inventory:'+load(STOCK,[]).length);
+  L.push('');
+  L.push('-- Self-booking --');
+  var p=getPrefs();
+  L.push('bookingOpen: '+(p.bookingOpen?'ON':'OFF')+'   salon: '+SALON_ID);
+  L.push('firebase: '+(typeof firebase!=='undefined'?'loaded':'MISSING')+'   db: '+(typeof db!=='undefined'&&db?'ready':'no')+'   fbReady: '+(typeof fbReady!=='undefined'?fbReady:'?'));
+  _dbgReport=L.join('\n');
+  var b=$('debugBody'); if(b)b.textContent=_dbgReport;
+  $('debugModal').classList.add('show');
+}
+function copyDebugReport(){
+  var t=_dbgReport||'';
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){if(typeof toast==='function')toast('Report copied — paste it to support');},function(){window.prompt('Copy this report:',t);});}
+  else{window.prompt('Copy this report:',t);}
+}
 
 /* ===== CLIENTS ===== */
 function reconcileClients(){
@@ -2198,7 +2263,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.22 · trade label fix';
+var VERSION='v4.23 · debug panel';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
