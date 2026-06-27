@@ -399,6 +399,8 @@ textarea{min-height:64px;resize:vertical}
 
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
 .modal.show{display:flex}
+#approvePriceModal{z-index:1200}
+#confirmModal{z-index:1300}
 .ap-price-wrap{display:flex;align-items:center;gap:8px;background:#111;border:1.5px solid var(--border-bright);border-radius:12px;padding:12px 16px;margin-top:8px}
 .ap-price-cur{font-size:24px;font-weight:800;color:var(--gold)}
 .ap-price-in{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:26px;font-weight:800;width:100%;min-width:0}
@@ -2183,7 +2185,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.17 · saved client price';
+var VERSION='v4.18 · clean approve';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -2754,6 +2756,7 @@ function clientForReq(r){
 }
 function openApprovePrice(r){
   _apR=r;
+  closeSheet('requestsModal');
   var c=clientForReq(r);
   var saved=(c&&+c.savedPrice>0)?+c.savedPrice:0;
   var hp=combinedHairPrice(r.service,r.hairData);
