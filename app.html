@@ -315,6 +315,11 @@ body.theme-noir .ck-cond input:checked + .ck-box{background:#ff8585!important;bo
 .cf-cond input{width:18px;height:18px;accent-color:#ff8585;flex-shrink:0}
 .cf-disc{background:#141414;border:1px solid #333;border-radius:9px;padding:12px;font-size:12px;color:#bbb;line-height:1.65;max-height:150px;overflow-y:auto;white-space:pre-wrap}
 .cf-disc-edit{margin-top:8px;background:none;border:none;color:var(--gold);font-size:12px;cursor:pointer;padding:4px 0;display:inline-flex;align-items:center;gap:5px}
+.bk-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;margin-top:9px;border-radius:12px;border:1.5px solid rgba(255,184,0,.4);background:rgba(255,184,0,.13);color:var(--gold);font-size:15px;font-weight:700;cursor:pointer;transition:transform .12s,background .15s,border-color .15s}
+.bk-btn i{font-size:17px}
+.bk-btn:active{transform:scale(.97);background:rgba(255,184,0,.30);border-color:#FFB800}
+.bk-btn.primary{background:var(--gold);color:#1a1208;border-color:var(--gold);font-weight:800}
+.bk-btn.primary:active{background:#ffca3a;border-color:#ffca3a}
 .data-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:9px;padding:13px 12px;border-radius:12px;border:1.5px solid var(--gold);background:transparent;color:var(--gold);font-size:14px;font-weight:700;cursor:pointer;transition:background .15s}
 .data-btn .ti{font-size:18px}
 .data-btn:active{background:rgba(255,184,0,.12)}
@@ -706,6 +711,9 @@ body.theme-noir .settings-sheet{background:#0a0a0c;border-color:#1d1d22}
 .settings-close:hover{color:#aaa}
 .gear-btn{background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;color:#666;font-size:20px;transition:color .2s}
 .gear-btn:hover{color:var(--gold)}
+body.theme-noir .gear-btn{color:#ff5cf0}
+body.theme-noir .gear-btn:not(.er-btn){-webkit-filter:drop-shadow(0 0 5px rgba(255,92,240,.5));filter:drop-shadow(0 0 5px rgba(255,92,240,.5))}
+body.theme-noir .gear-btn.er-btn{color:#e2483c}
 
 
 /* ── EYE REST: deep 670nm-red starburst + 20-20-20 cue ── */
@@ -1040,9 +1048,9 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       <input class="setup-input" type="url" id="cfgBookLink" placeholder="https://… your booking page link" autocomplete="off" inputmode="url" oninput="saveBookLink(this.value)">
       <div class="reset-qp-hint" style="margin-top:7px">Paste your AppointmentPro booking link here. Clients book through it — you approve requests inside AppointmentPro. Your CommissionPro data stays on this device.</div>
       <div id="bookLinkActions" style="display:none;margin-top:11px">
-        <button class="cf-disc-edit" onclick="shareBookLink()" style="display:block"><i class="ti ti-share" style="font-size:13px"></i> Share booking link</button>
-        <button class="cf-disc-edit" onclick="copyBookLink()" style="display:block;margin-top:6px"><i class="ti ti-copy" style="font-size:13px"></i> Copy link</button>
-        <button class="cf-disc-edit" onclick="openBookLink()" style="display:block;margin-top:6px"><i class="ti ti-external-link" style="font-size:13px"></i> Open to preview</button>
+        <button class="bk-btn primary" onclick="shareBookLink()"><i class="ti ti-share"></i> Share booking link</button>
+        <button class="bk-btn" onclick="copyBookLink()"><i class="ti ti-copy"></i> Copy link</button>
+        <button class="bk-btn" onclick="openBookLink()"><i class="ti ti-external-link"></i> Open to preview</button>
       </div>
     </div>
 
@@ -2628,7 +2636,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.26 · trade bridge';
+var VERSION='app v1.27 · booking buttons + lilac gear';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
