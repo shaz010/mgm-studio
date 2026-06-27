@@ -101,6 +101,7 @@ textarea{resize:vertical;min-height:60px}
   <div class="cs-ic muted"><i class="ti ti-calendar-off"></i></div>
   <div class="cs-title">Booking is closed right now</div>
   <div class="cs-sub">Online booking isn't open at the moment. Please reach out directly to book your appointment.</div>
+  <button class="book-btn" style="max-width:240px;margin-top:22px" onclick="retry()"><i class="ti ti-refresh"></i> Try again</button>
 </div>
 
 <!-- ERROR -->
@@ -108,6 +109,7 @@ textarea{resize:vertical;min-height:60px}
   <div class="cs-ic muted"><i class="ti ti-wifi-off"></i></div>
   <div class="cs-title">Couldn't load</div>
   <div class="cs-sub">Please check your connection and try again.</div>
+  <button class="book-btn" style="max-width:240px;margin-top:22px" onclick="retry()"><i class="ti ti-refresh"></i> Try again</button>
 </div>
 
 <!-- SUCCESS -->
@@ -229,6 +231,7 @@ var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', cus
 function $(id){return document.getElementById(id);}
 var VERSION='book v1.2 · month+dividers';
 function show(id){['loadingView','closedView','errorView','doneView','formView'].forEach(function(v){$(v).classList.toggle('hidden',v!==id);});}
+function retry(){show('loadingView');setTimeout(init,250);}
 function mins(t){if(!t)return 0;var p=(''+t).split(':');return (+p[0])*60+(+p[1]||0);}
 function fromMins(m){var h=Math.floor(m/60),mm=m%60;return (h<10?'0':'')+h+':'+(mm<10?'0':'')+mm;}
 function to12(t){if(!t)return '';var p=(''+t).split(':'),h=+p[0],m=p[1],ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+m+' '+ap;}
