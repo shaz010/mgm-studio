@@ -121,7 +121,7 @@
 
   <div class="stage">
     <iframe id="room" src="app.html" title="room"></iframe>
-    <div class="ver">salon v0.2</div>
+    <div class="ver">salon v0.3</div>
   </div>
 
 <script>
@@ -148,8 +148,20 @@
       frame.src=ROOMS[room];
     },120);
   }
+  var pendingView=null;
+  window.addEventListener('message', function(ev){
+    var d=ev.data||{};
+    if(d&&d.salon==='goRoom'&&d.room&&ROOMS[d.room]){
+      pendingView=d.view||null;
+      goRoom(d.room);
+    }
+  });
   frame.addEventListener('load', function(){
     frame.classList.remove('swapping');
+    if(pendingView){
+      try{frame.contentWindow.postMessage({salon:'openView',view:pendingView},'*');}catch(e){}
+      pendingView=null;
+    }
   });
 
   // restore the room you were last in

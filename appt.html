@@ -2267,7 +2267,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.28 · shell polish';
+var VERSION='v4.30 · Stage 2 one desk';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -2311,7 +2311,9 @@ function saveSplit(){
   if(typeof dayMode!=='undefined'&&dayMode==='day')renderDay();
 }
 function applyTheme(){
-  var on=!!getPrefs().noir;
+  var p=getPrefs();
+  if(p.noir===undefined){p.noir=true;setPrefs(p);}  // default to Noir, matching Earnings
+  var on=!!p.noir;
   document.body.classList.toggle('theme-noir',on);
   var sw=$('noirSwitch'); var row=sw?sw.closest('.sb-toggle-row'):null;
   if(row)row.classList.toggle('on',on);
@@ -2942,6 +2944,10 @@ renderDay();
 syncBookingToggle();
 renderTradeLabel();
 maybeShowTradePicker();
+window.addEventListener('message',function(ev){
+  var d=ev.data||{};
+  if(d&&d.salon==='openView'&&d.view==='add'){try{if(typeof openAdd==='function')openAdd();}catch(e){}}
+});
 initFB();
 
 /* live status — refresh the Day view each minute so 'In progress' flips on its own */

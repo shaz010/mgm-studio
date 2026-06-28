@@ -1450,7 +1450,13 @@ function resetForm(){
   $('editBanner').style.display='none';$('btnCancel').style.display='none';
   $('btnLbl').textContent='Save appointment';calc();syncServiceChips();
 }
-function newBooking(){resetForm();showTab('book');}
+function newBooking(){
+  if(document.documentElement.classList.contains('in-shell')){
+    try{window.parent.postMessage({salon:'goRoom',room:'appt',view:'add'},'*');}catch(e){}
+    return;
+  }
+  resetForm();showTab('book');
+}
 let searchQuery='';
 function getFiltered(){
   const now=new Date(),ts=now.toISOString().split('T')[0];
@@ -2199,7 +2205,7 @@ function deleteClientConfirm(){
 applyFx(getFx());
 buildServiceChips();
 initFavDrag();
-calc();loadAll();
+calc();loadAll();if(document.documentElement.classList.contains('in-shell')){try{showTab('hist');}catch(e){}}
 
 /* ── Pay to Unlock ── */
 var UNLOCK={codeHash:4159026715,trialDays:3,stripeUrl:'https://buy.stripe.com/3cIdR97x4gdA4z9dCEfw401'};
@@ -2659,7 +2665,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.33 · Stage 1 bridge';
+var VERSION='app v1.34 · Stage 2 one desk';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
