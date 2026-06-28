@@ -1186,7 +1186,7 @@ function maybeShowTradePicker(){
   var combo='';try{combo=localStorage.getItem('combo_trade')||'';}catch(e){}
   if(combo&&combo!==cur&&TRADES.some(function(x){return x.k===combo;})){
     svcMode=combo;saveMode(combo);buildChips();renderTradeLabel();
-    if(typeof toast==='function')toast('Trade synced from CommissionPro: '+tradeLabel(combo));
+    if(typeof toast==='function')toast('Trade synced from CommissionPro: '+tradeLabel(combo),false,4800,true);
     return;
   }
   if(!getPrefs().svcMode)openTradePicker();
@@ -2263,7 +2263,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.23 · debug panel';
+var VERSION='v4.25 · brighter sync toast';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -2649,14 +2649,17 @@ function closePrices(){$('priceModal').classList.remove('show');applyAutoPrice()
 
 /* ===== toast ===== */
 var toastT;
-function toast(msg,warn){
+function toast(msg,warn,dur,bright){
   $('toastMsg').textContent=msg;
   var t=$('toast');t.classList.add('show');
-  t.style.borderColor=warn?'var(--red)':'var(--gold)';
+  var col=warn?'var(--red)':(bright?'#FFD23F':'var(--gold)');
+  t.style.borderColor=col;
+  t.style.borderWidth=bright?'2.5px':'1.5px';
+  t.style.boxShadow=bright?'0 0 26px rgba(255,200,40,.65),0 8px 30px rgba(0,0,0,.5)':'0 8px 30px rgba(0,0,0,.5)';
   var ic=t.querySelector('i');
-  ic.style.color=warn?'var(--red)':'var(--gold)';
+  ic.style.color=col;
   ic.className=warn?'ti ti-alert-circle':'ti ti-check';
-  clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},1900);
+  clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},dur||3200);
 }
 
 /* ===== SELF-BOOKING (Firebase Firestore) ===== */
