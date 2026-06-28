@@ -1394,6 +1394,13 @@ function loadAll(){
     data=appts.map(function(a){return Object.assign({},a,{myTotal:+(((+a.me)||0)+((+a.tip)||0)).toFixed(2)});});
     paidMonths=loadPaid();
     setSyncBadge('ok','Saved');renderTable();
+    try{
+      var _own=JSON.parse(localStorage.getItem('cp_appts')||'[]');
+      var _sh=JSON.parse(localStorage.getItem('ap_appts')||'[]');
+      var dg=document.getElementById('bridgeDiag');
+      if(!dg){dg=document.createElement('div');dg.id='bridgeDiag';dg.style.cssText='margin:8px 0;padding:9px 12px;border:1px solid var(--gold);border-radius:9px;color:var(--gold);font-size:12px;font-weight:800;text-align:center';var tv=document.getElementById('tableView');if(tv&&tv.parentNode)tv.parentNode.insertBefore(dg,tv);}
+      if(dg)dg.textContent='🔧 Earnings sees → own:'+(Array.isArray(_own)?_own.length:'?')+'  shared(ap_appts):'+(Array.isArray(_sh)?_sh.length:'?');
+    }catch(e){}
   }catch(err){setSyncBadge('err','Error');console.error(err);}
 }
 function calc(){
@@ -2659,7 +2666,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.31 · reads shared bookings';
+var VERSION='app v1.32 · bridge diagnostic';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
