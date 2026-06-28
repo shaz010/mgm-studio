@@ -923,6 +923,9 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Your booking &amp; price screens show only this trade's services. Pick a different one to switch.</div>
     <button class="btn btn-ghost btn-sm" style="width:100%" onclick="closeSheet('settingsModal');openTradePicker()"><i class="ti ti-arrows-exchange"></i> Change my trade</button>
 
+    <div class="set-sec">App</div>
+    <button class="btn btn-ghost btn-sm" style="width:100%" onclick="forceUpdate()"><i class="ti ti-refresh"></i> Force update to latest version</button>
+
     <div class="set-sec">Working hours</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Sets your open hours. The client booking page (coming soon) will only offer slots inside these.</div>
     <div id="hoursList"></div>
@@ -2268,7 +2271,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.31 · tidy Add form on iPad';
+var VERSION='v4.32 · force refresh + tidy form';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -2319,6 +2322,17 @@ function applyTheme(){
   var sw=$('noirSwitch'); var row=sw?sw.closest('.sb-toggle-row'):null;
   if(row)row.classList.toggle('on',on);
   var st=$('noirStatus'); if(st)st.textContent=on?'On — holographic noir':'Off — classic dark';
+}
+function forceUpdate(){
+  if(!confirm('Refresh the app to the latest version? This clears the local app cache (your saved data stays).'))return;
+  var done=function(){location.reload();};
+  try{
+    var jobs=[];
+    if('caches' in window){jobs.push(caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k);}));}));}
+    if(navigator.serviceWorker){jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister();}));}));}
+    Promise.all(jobs).then(done).catch(done);
+    setTimeout(done,1500);
+  }catch(e){done();}
 }
 function toggleNoir(){
   var p=getPrefs();p.noir=!p.noir;setPrefs(p);applyTheme();
