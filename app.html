@@ -1350,8 +1350,24 @@ function copyBookLink(){var l=_bkUrl();if(!l)return;if(navigator.clipboard&&navi
 function openBookLink(){var l=_bkUrl();if(!l)return;window.open(l,'_blank');}
 let data=[],paidMonths={},activeFilter='all',editingId=null;
 var APPTS_KEY='cp_appts',PAID_KEY='cp_paid';
-function loadAppts(){try{var a=JSON.parse(localStorage.getItem(APPTS_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return[];}}
-function saveAppts(arr){try{localStorage.setItem(APPTS_KEY,JSON.stringify(arr));}catch(e){alert('Could not save — storage may be full.');}}
+function loadAppts(){
+  var own=[];
+  try{var a=JSON.parse(localStorage.getItem(APPTS_KEY)||'[]');if(Array.isArray(a))own=a;}catch(e){}
+  var shared=[];
+  try{
+    var b=JSON.parse(localStorage.getItem('ap_appts')||'[]');
+    if(Array.isArray(b)){shared=b.map(function(r){
+      var charge=+r.price||0,tip=+r.tip||0;
+      var salon=+(charge*0.4).toFixed(2),me=+(charge*0.6).toFixed(2);
+      return {id:r.id,name:r.name||'',date:r.date||'',time:r.time||'',charge:charge,tip:tip,salon:salon,me:me,mytotal:+(me+tip).toFixed(2),cat:r.service||'',_src:'appt'};
+    });}
+  }catch(e){}
+  var seen={},out=[];
+  own.forEach(function(x){if(x&&x.id!=null)seen[x.id]=1;out.push(x);});
+  shared.forEach(function(x){if(x&&x.id!=null&&!seen[x.id])out.push(x);});
+  return out;
+}
+function saveAppts(arr){try{var own=(arr||[]).filter(function(x){return !(x&&x._src);});localStorage.setItem(APPTS_KEY,JSON.stringify(own));}catch(e){alert('Could not save — storage may be full.');}}
 function loadPaid(){try{var o=JSON.parse(localStorage.getItem(PAID_KEY)||'{}');return (o&&typeof o==='object')?o:{};}catch(e){return{};}}
 function savePaid(o){try{localStorage.setItem(PAID_KEY,JSON.stringify(o));}catch(e){}}
 const todayDate=new Date();
@@ -1408,6 +1424,8 @@ async function save(){
   }catch(err){setSyncBadge('err','Save failed');alert('Could not save — storage may be full.');console.error(err);}
 }
 function delAppt(id){
+  var _r=(typeof data!=='undefined'&&data)?data.find(function(x){return x.id===id;}):null;
+  if(_r&&_r._src==='appt'){alert('This booking lives in Appointments — delete it there.');return;}
   if(!confirm('Delete this appointment?'))return;
   try{
     var arr=loadAppts().filter(function(x){return x.id!==id;});
@@ -1418,6 +1436,7 @@ function delAppt(id){
 }
 function editAppt(id){
   const a=data.find(x=>x.id===id);if(!a)return;
+  if(a._src==='appt'){alert('This booking lives in Appointments — edit it there. (Earnings shows it read-only for now.)');return;}
   editingId=id;
   $('cName').value=a.name;$('cDate').value=a.date;$('cTime').value=a.time;
   $('cCharge').value=a.charge;$('cTip').value=a.tip;$('cCat').value=a.cat||'';
@@ -2640,7 +2659,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.30 · shell polish';
+var VERSION='app v1.31 · reads shared bookings';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
