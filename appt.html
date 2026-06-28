@@ -31,6 +31,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 }
 .app-shell{width:100%;max-width:540px;margin:0 auto;padding:16px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));overflow-x:hidden;overflow-x:clip}
 @media(min-width:700px){.app-shell{max-width:100%;padding-left:max(28px,env(safe-area-inset-left));padding-right:max(28px,env(safe-area-inset-right))}#monthPane{max-width:none}}
+@media(min-width:700px){#view-add{max-width:600px;margin-left:auto;margin-right:auto}}
 
 .topbar{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:10px;margin-bottom:14px}
 .topbar-brand{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
@@ -2267,7 +2268,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.30 · Stage 2 one desk';
+var VERSION='v4.31 · tidy Add form on iPad';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
