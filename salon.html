@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Your Salon">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<title>Your Salon</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#000;overflow:hidden}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    color:#f0f0f0;
+    display:flex;flex-direction:column;
+    /* respect the notch / rounded corners so nothing clips */
+    padding-top:env(safe-area-inset-top);
+    padding-left:env(safe-area-inset-left);
+    padding-right:env(safe-area-inset-right);
+  }
+
+  /* ===== Shell bar ===== */
+  .shell-bar{
+    flex:0 0 auto;
+    padding:10px 14px 12px;
+    background:#000;
+    border-bottom:1px solid #15151c;
+  }
+  .brand{
+    display:flex;align-items:center;gap:9px;
+    margin-bottom:11px;
+  }
+  .brand-mark{
+    width:30px;height:30px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#FFB800,#ff8a00);
+    color:#1a1208;font-size:16px;flex-shrink:0;
+    box-shadow:0 0 12px rgba(255,184,0,.25);
+  }
+  .brand-name{font-size:15px;font-weight:800;letter-spacing:.2px;color:#FFB800}
+  .brand-sub{font-size:10.5px;color:#6a6a78;font-weight:600;margin-top:1px;letter-spacing:.3px}
+
+  /* ===== The two-room toggle (the signature piece) ===== */
+  .rooms{
+    display:flex;gap:6px;
+    background:#0a0a0e;
+    border:1px solid #1a1a22;
+    border-radius:13px;
+    padding:5px;
+  }
+  .room-btn{
+    flex:1;
+    display:flex;align-items:center;justify-content:center;gap:7px;
+    padding:12px 8px;
+    border:1px solid transparent;
+    border-radius:9px;
+    background:transparent;
+    color:#7a7a88;
+    font-size:14px;font-weight:700;letter-spacing:.2px;
+    font-family:inherit;
+    cursor:pointer;
+    transition:color .2s, transform .12s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .room-btn i{font-size:17px}
+  .room-btn:active{transform:scale(.97)}
+  .room-btn.active{
+    color:#fff;
+    border:1px solid transparent;
+    background:
+      linear-gradient(#050507,#050507) padding-box,
+      linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;
+    box-shadow:0 0 12px rgba(167,139,250,.32);
+    text-shadow:0 0 7px rgba(103,232,249,.3);
+  }
+
+  /* ===== The room itself ===== */
+  .stage{flex:1 1 auto;position:relative;background:#000}
+  #room{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    border:0;
+    background:#000;
+    opacity:1;
+    transition:opacity .18s ease;
+  }
+  #room.swapping{opacity:0}
+
+  .ver{
+    position:absolute;bottom:4px;right:8px;
+    font-size:9px;color:#33333c;font-weight:700;
+    pointer-events:none;z-index:2;
+  }
+</style>
+</head>
+<body>
+
+  <div class="shell-bar">
+    <div class="brand">
+      <div class="brand-mark"><i class="ti ti-scissors"></i></div>
+      <div>
+        <div class="brand-name">Your Salon</div>
+        <div class="brand-sub">ONE APP · EARNINGS + APPOINTMENTS</div>
+      </div>
+    </div>
+
+    <div class="rooms" role="tablist">
+      <button class="room-btn active" id="btnEarn" onclick="goRoom('earn')">
+        <i class="ti ti-cash"></i> Earnings
+      </button>
+      <button class="room-btn" id="btnAppt" onclick="goRoom('appt')">
+        <i class="ti ti-calendar-event"></i> Appointments
+      </button>
+    </div>
+  </div>
+
+  <div class="stage">
+    <iframe id="room" src="app.html" title="room"></iframe>
+    <div class="ver">salon v0.1</div>
+  </div>
+
+<script>
+  var ROOMS={ earn:'app.html', appt:'appt.html' };
+  var KEY='salon_last_room';
+  var frame=document.getElementById('room');
+  var btnEarn=document.getElementById('btnEarn');
+  var btnAppt=document.getElementById('btnAppt');
+  var current='earn';
+
+  function setActive(room){
+    btnEarn.classList.toggle('active', room==='earn');
+    btnAppt.classList.toggle('active', room==='appt');
+  }
+
+  function goRoom(room){
+    if(room===current) return;            // already here, do nothing
+    current=room;
+    setActive(room);
+    try{ localStorage.setItem(KEY, room); }catch(e){}
+    // gentle fade while the room swaps in
+    frame.classList.add('swapping');
+    setTimeout(function(){
+      frame.src=ROOMS[room];
+    },120);
+  }
+  frame.addEventListener('load', function(){
+    frame.classList.remove('swapping');
+  });
+
+  // restore the room you were last in
+  (function(){
+    var last='earn';
+    try{ last=localStorage.getItem(KEY)||'earn'; }catch(e){}
+    if(last==='appt'){
+      current='appt';
+      setActive('appt');
+      frame.src=ROOMS.appt;
+    }
+  })();
+</script>
+</body>
+</html>
