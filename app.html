@@ -44,7 +44,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .topbar{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
 .topbar-brand{display:flex;align-items:center;gap:12px}
 html.in-shell .topbar-brand{display:none}
-html.in-shell .topbar{justify-content:flex-start;padding-top:10px}
+html.in-shell .topbar{justify-content:flex-start;background:transparent;border:none;border-radius:0;padding:6px 2px;margin-bottom:8px}
+html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 .topbar-icon{width:38px;height:38px;background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px}
 .topbar-name{font-size:18px;font-weight:600;color:var(--text)}.topbar-name span{color:var(--gold)}
 .topbar-sub{font-size:12px;color:var(--muted);margin-top:2px;font-weight:400}
@@ -2639,7 +2640,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.29 · shell-aware';
+var VERSION='app v1.30 · shell polish';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
