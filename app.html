@@ -39,6 +39,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   --purple:#cc99ff;
 }
 .app-shell{max-width:980px;margin:0 auto;padding:16px;width:100%;overflow-x:hidden;overflow-x:clip}
+@media(min-width:700px){.app-shell{max-width:100%}.form-wrap{max-width:1000px;margin-left:auto;margin-right:auto}}
 
 /* TOPBAR */
 .topbar{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
@@ -1570,11 +1571,11 @@ function renderMgm(){
     byMonth[ym].appts++;byMonth[ym].totMe+=a.me;byMonth[ym].totTip+=a.tip;byMonth[ym].totCharge+=a.charge;
   });
   let totalOwed=0;
-  Object.entries(byMonth).forEach(([ym,mo])=>{if(!paidMonths[ym])totalOwed+=mo.totMe;});
+  Object.entries(byMonth).forEach(([ym,mo])=>{if(!paidMonths[ym])totalOwed+=mo.totMe+mo.totTip;});
   $('mgmOwed').textContent=fmtR(totalOwed);
   const now=new Date();
   $('mgmNextDue').textContent=new Date(now.getFullYear(),now.getMonth()+1,0).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  $('mgmSubtext').textContent=totalOwed>0?'Unpaid 60% commission accumulating':'All commissions paid — you\'re square!';
+  $('mgmSubtext').textContent=totalOwed>0?'Unpaid commission + tips accumulating':'All paid — you\'re square!';
   const sorted=Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0]));
   if(!sorted.length){$('monthRows').innerHTML='<div class="empty"><i class="ti ti-building-store"></i>Start booking clients to track what the Salon owes you.</div>';return;}
   $('monthRows').innerHTML=sorted.map(([ym,mo])=>{
@@ -1583,11 +1584,11 @@ function renderMgm(){
     return`<div class="month-item ${paid?'paid':'unpaid'}">
       <div>
         <div class="mi-month">${fmtMonth(ym)}</div>
-        <div class="mi-appts">${mo.appts} appointment${mo.appts!==1?'s':''} &nbsp;·&nbsp; Commission $${mo.totMe.toFixed(2)} &nbsp;·&nbsp; Tips $${mo.totTip.toFixed(2)} (direct)</div>
+        <div class="mi-appts">${mo.appts} appointment${mo.appts!==1?'s':''} &nbsp;·&nbsp; Commission $${mo.totMe.toFixed(2)} &nbsp;·&nbsp; Tips $${mo.totTip.toFixed(2)}</div>
         <div class="mi-date-lbl ${paid?'sp':'su'}">${paid?'Paid on '+paidDate:'Awaiting payment from the Salon'}</div>
       </div>
       <div style="text-align:right">
-        <div class="mi-amt ${paid?'pa':'ua'}">$${mo.totMe.toFixed(2)}</div>
+        <div class="mi-amt ${paid?'pa':'ua'}">$${(mo.totMe+mo.totTip).toFixed(2)}</div>
         <div class="mi-status ${paid?'sp':'su'}" style="margin-bottom:8px">${paid?'✓ Paid':'Unpaid'}</div>
         <div class="mi-actions" style="justify-content:flex-end">
           ${!paid?`<button class="btn-invoice" onclick="openExport('${ym}')"><i class="ti ti-file-invoice" style="font-size:12px;vertical-align:-1px;margin-right:4px"></i>Invoice</button>`:''}
@@ -1653,7 +1654,7 @@ function renderInvoice(){
       <div class="inv-meta-item"><div class="inv-meta-lbl">Appointments</div><div class="inv-meta-val">${appts.length}</div></div>
       <div class="inv-meta-item"><div class="inv-meta-lbl">Revenue generated</div><div class="inv-meta-val">$${totCharge.toFixed(2)}</div></div>
       <div class="inv-meta-item"><div class="inv-meta-lbl">Salon share (40%)</div><div class="inv-meta-val" style="color:#1e40af">$${totSalon.toFixed(2)}</div></div>
-      <div class="inv-meta-item"><div class="inv-meta-lbl">Amount owed (60%)</div><div class="inv-meta-val" style="color:#166534">$${totMe.toFixed(2)}</div></div>
+      <div class="inv-meta-item"><div class="inv-meta-lbl">Amount owed</div><div class="inv-meta-val" style="color:#166534">$${(totMe+totTip).toFixed(2)}</div></div>
     </div>
     <table class="inv-tbl">
       <thead><tr><th>#</th><th>Client</th><th>Date</th><th>Service</th><th class="r">Charged</th><th class="r">Salon 40%</th><th class="r">My 60%</th></tr></thead>
@@ -1662,9 +1663,11 @@ function renderInvoice(){
     <div class="inv-totals">
       <div class="inv-total-row"><span>Total revenue generated</span><span>$${totCharge.toFixed(2)}</span></div>
       <div class="inv-total-row"><span>Salon share (40%)</span><span style="color:#1e40af">– $${totSalon.toFixed(2)}</span></div>
-      <div class="inv-total-row final"><span>Amount owed to ${getName()||'Your name'}</span><span style="color:#166534">$${totMe.toFixed(2)}</span></div>
+      <div class="inv-total-row"><span>Your commission (60%)</span><span style="color:#166534">$${totMe.toFixed(2)}</span></div>
+      <div class="inv-total-row"><span>Tips collected by salon</span><span style="color:#166534">+ $${totTip.toFixed(2)}</span></div>
+      <div class="inv-total-row final"><span>Amount owed to ${getName()||'Your name'}</span><span style="color:#166534">$${(totMe+totTip).toFixed(2)}</span></div>
     </div>
-    <div class="inv-note"><strong>Note:</strong> Tips totalling $${totTip.toFixed(2)} were paid directly by clients and are not included in this commission statement.</div>
+    <div class="inv-note"><strong>Note:</strong> Tips totalling $${totTip.toFixed(2)} were collected by the salon and are included in the amount owed above.</div>
     <div class="inv-taxbox">
       <div class="inv-taxbox-h">For your own records — income summary (not part of the request above)</div>
       <div class="inv-tax-row"><span>Service commission (taxable)</span><span>$${totMe.toFixed(2)}</span></div>
@@ -2665,7 +2668,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.34 · Stage 2 one desk';
+var VERSION='app v1.35 · salon owes commission + tips';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
