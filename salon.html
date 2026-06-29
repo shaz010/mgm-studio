@@ -120,8 +120,8 @@
   </div>
 
   <div class="stage">
-    <iframe id="room" src="app.html" title="room"></iframe>
-    <div class="ver">salon v0.3</div>
+    <iframe id="room" title="room"></iframe>
+    <div class="ver">salon v0.4</div>
   </div>
 
 <script>
@@ -131,6 +131,8 @@
   var btnEarn=document.getElementById('btnEarn');
   var btnAppt=document.getElementById('btnAppt');
   var current='earn';
+  var BUST=Date.now();
+  function roomSrc(r){return ROOMS[r]+(ROOMS[r].indexOf('?')<0?'?':'&')+'v='+BUST;}
 
   function setActive(room){
     btnEarn.classList.toggle('active', room==='earn');
@@ -145,7 +147,7 @@
     // gentle fade while the room swaps in
     frame.classList.add('swapping');
     setTimeout(function(){
-      frame.src=ROOMS[room];
+      frame.src=roomSrc(room);
     },120);
   }
   var pendingView=null;
@@ -168,11 +170,9 @@
   (function(){
     var last='earn';
     try{ last=localStorage.getItem(KEY)||'earn'; }catch(e){}
-    if(last==='appt'){
-      current='appt';
-      setActive('appt');
-      frame.src=ROOMS.appt;
-    }
+    current=(last==='appt')?'appt':'earn';
+    setActive(current);
+    frame.src=roomSrc(current);
   })();
 </script>
 </body>
