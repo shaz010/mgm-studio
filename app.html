@@ -1434,18 +1434,18 @@ async function save(){
   }catch(err){setSyncBadge('err','Save failed');alert('Could not save — storage may be full.');console.error(err);}
 }
 function delAppt(id){
-  var _r=(typeof data!=='undefined'&&data)?data.find(function(x){return x.id===id;}):null;
+  var _r=(typeof data!=='undefined'&&data)?data.find(function(x){return String(x.id)===String(id);}):null;
   if(_r&&_r._src==='appt'){alert('This booking lives in Appointments — delete it there.');return;}
   if(!confirm('Delete this appointment?'))return;
   try{
-    var arr=loadAppts().filter(function(x){return x.id!==id;});
+    var arr=loadAppts().filter(function(x){return String(x.id)!==String(id);});
     saveAppts(arr);
-    if(editingId===id)resetForm();
+    if(String(editingId)===String(id))resetForm();
     setSyncBadge('ok','Saved');loadAll();
   }catch(err){setSyncBadge('err','Error');console.error(err);}
 }
 function editAppt(id){
-  const a=data.find(x=>x.id===id);if(!a)return;
+  const a=data.find(x=>String(x.id)===String(id));if(!a)return;
   if(a._src==='appt'){alert('This booking lives in Appointments — edit it there. (Earnings shows it read-only for now.)');return;}
   editingId=id;
   $('cName').value=a.name;$('cDate').value=a.date;$('cTime').value=a.time;
@@ -1534,8 +1534,8 @@ function renderTable(){
       <td class="td-gr r" data-label="Tip">${fmt(a.tip)}</td>
       <td class="td-g r" data-label="My total">${fmt(a.me+a.tip)}</td>
       <td class="actions-cell" style="white-space:nowrap">
-        <button class="act-btn ed" onclick="editAppt(${a.id})" title="Edit"><i class="ti ti-pencil"></i></button>
-        <button class="act-btn dl" onclick="delAppt(${a.id})" title="Delete"><i class="ti ti-trash"></i></button>
+        <button class="act-btn ed" onclick="editAppt('${a.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
+        <button class="act-btn dl" onclick="delAppt('${a.id}')" title="Delete"><i class="ti ti-trash"></i></button>
       </td></tr>`;
   }).join('');
 }
@@ -2690,7 +2690,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.39 · erase-all wipes everything';
+var VERSION='app v1.40 · fix edit/delete on bookings';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
