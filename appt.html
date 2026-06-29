@@ -482,6 +482,27 @@ datalist{display:none}
 .req-empty i{font-size:32px;display:block;margin-bottom:8px;color:#444}
 .cb-tap{cursor:pointer;transition:transform .12s,box-shadow .12s}
 .cb-tap:active{transform:scale(.92)}
+.lrow-edit{margin-left:8px;width:34px;height:34px;flex-shrink:0;border-radius:9px;border:1px solid var(--border-bright);background:transparent;color:var(--muted);font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.lrow-edit:active{border-color:var(--gold);color:var(--gold);transform:scale(.92)}
+.clients-cols{display:block}
+#clientDetail{display:none;margin-top:14px}
+@media(min-width:820px){
+  .clients-cols{display:flex;gap:16px;align-items:flex-start}
+  #clientsList{flex:0 0 340px;max-width:340px}
+  #clientDetail{display:block;flex:1;min-width:0;margin-top:0;position:sticky;top:118px}
+}
+.cd-empty{color:var(--muted);text-align:center;padding:34px 16px;font-size:14px;border:1px dashed var(--border-bright);border-radius:12px}
+.cd-history{margin-top:16px}
+.cd-hist-head{font-size:13px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.cd-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.cd-tbl th{text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px;padding:6px 8px;border-bottom:1px solid var(--border-bright);white-space:nowrap}
+.cd-tbl th.r,.cd-tbl td.r{text-align:right}
+.cd-tbl td{padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.05)}
+.cd-tbl .td-take{color:var(--gold);font-weight:700;white-space:nowrap}
+.cd-tbl .td-tip{color:#5ddb7c;white-space:nowrap}
+.cd-more{margin-top:12px;width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-bright);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer}
+.cd-more:active{border-color:var(--gold);color:var(--gold)}
+.lrow.sel{box-shadow:0 0 0 1.5px var(--gold)}
 .cb-top{display:flex;align-items:center;gap:12px;margin-bottom:8px}
 .cb-top .sheet-title{font-size:22px!important}
 .cb-topsub{font-size:15px;color:var(--muted);margin-top:3px}
@@ -806,7 +827,21 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
       <div class="section-title">Clients <span id="clientCount" style="color:var(--muted);font-weight:600;font-size:14px"></span></div>
       <button class="btn btn-ghost btn-sm" onclick="openClientSheet()"><i class="ti ti-user-plus"></i> Add</button>
     </div>
-    <div id="clientsList"></div>
+    <div class="clients-cols">
+      <div id="clientsList"></div>
+      <div id="clientDetail">
+        <div class="ap-breakdown" style="margin-top:0">
+          <div class="ap-bk-title"><i class="ti ti-calculator"></i> Salon earnings — all clients</div>
+          <div class="ap-split">
+            <div class="ap-sc ap-sc-salon"><div class="ap-sc-lbl">Salon</div><div class="ap-sc-pct" id="csSalonPct">40% of charge</div><div class="ap-sc-amt" id="csSalon">$0</div></div>
+            <div class="ap-sc ap-sc-you"><div class="ap-sc-lbl">You</div><div class="ap-sc-pct" id="csYouPct">60% of charge</div><div class="ap-sc-amt" id="csYou">$0</div></div>
+          </div>
+          <div class="ap-rb ap-tip"><span><i class="ti ti-heart" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Tips — 100% mine</span><span id="csTipV">$0.00</span></div>
+          <div class="ap-rb ap-total"><span>Total take-home</span><span id="csTotal">$0.00</span></div>
+        </div>
+        <div id="cdHistory" class="cd-history"><div class="cd-empty">Tap a client to see their visit history.</div></div>
+      </div>
+    </div>
   </div>
 
   <!-- STOCK VIEW -->
@@ -1884,11 +1919,55 @@ function renderClients(){
   var sorted=clients.slice().sort(function(a,b){return (a.name||'').localeCompare(b.name||'')});
   $('clientsList').innerHTML=sorted.map(function(c){
     var count=allBk.filter(function(a){return a.name&&c.name&&a.name.toLowerCase()===c.name.toLowerCase()&&a.status!=='cancelled'}).length;
-    return '<div class="lrow" onclick="openClientSheet(\''+c.id+'\')">'+
+    return '<div class="lrow" data-cid="'+c.id+'" onclick="selectClient(\''+c.id+'\')">'+
       '<div class="lrow-av cb-tap" onclick="event.stopPropagation();openClientBookings(\''+c.id+'\')">'+esc((c.name[0]||'?').toUpperCase())+'<span class="lrow-av-badge"><i class="ti ti-calendar"></i></span></div>'+
       '<div class="lrow-body"><div class="lrow-name">'+esc(c.name)+'</div><div class="lrow-sub">'+(c.phone?esc(c.phone):'No phone')+'</div></div>'+
-      '<div class="lrow-right"><div class="lrow-rv">'+count+'</div><div class="lrow-rl">visit'+(count===1?'':'s')+'</div></div></div>';
+      '<div class="lrow-right"><div class="lrow-rv">'+count+'</div><div class="lrow-rl">visit'+(count===1?'':'s')+'</div></div>'+
+      '<button class="lrow-edit" onclick="event.stopPropagation();openClientSheet(\''+c.id+'\')" title="Edit client"><i class="ti ti-pencil"></i></button></div>';
   }).join('');
+  renderSalonBreakdown();
+  if(_cdClientId){var _sr=document.querySelector('#clientsList .lrow[data-cid="'+_cdClientId+'"]');if(_sr)_sr.classList.add('sel');}
+  renderClientDetail();
+}
+var _cdClientId=null,_cdShowAll=false;
+function _bkCharge(a){return (+a.price||+a.charge||0);}
+function _bkSvc(a){return a.service||a.cat||'—';}
+function renderSalonBreakdown(){
+  if(!document.getElementById('csTotal'))return;
+  var all=appts.concat(_cpBookings());
+  var youPct=getSplit(),salonPct=100-youPct;
+  var charge=0,tip=0;
+  all.forEach(function(a){ if(a.status==='cancelled'||a.status==='noshow')return; charge+=_bkCharge(a); tip+=(+a.tip||0); });
+  var you=charge*youPct/100, salon=charge*salonPct/100;
+  $('csSalonPct').textContent=salonPct+'% of charge';
+  $('csYouPct').textContent=youPct+'% of charge';
+  $('csSalon').textContent='$'+Math.round(salon);
+  $('csYou').textContent='$'+Math.round(you);
+  $('csTipV').textContent='$'+tip.toFixed(2);
+  $('csTotal').textContent='$'+(you+tip).toFixed(2);
+}
+function selectClient(id){
+  if(window.matchMedia&&!window.matchMedia('(min-width:820px)').matches){ openClientBookings(id); return; }
+  _cdClientId=id; _cdShowAll=false;
+  var rows=document.querySelectorAll('#clientsList .lrow'); rows.forEach(function(r){r.classList.toggle('sel', r.getAttribute('data-cid')===id);});
+  renderClientDetail();
+}
+function cdShowAll(){_cdShowAll=true;renderClientDetail();}
+function renderClientDetail(){
+  var box=document.getElementById('cdHistory'); if(!box)return;
+  var c=_cdClientId?clients.find(function(x){return x.id===_cdClientId;}):null;
+  if(!c){box.innerHTML='<div class="cd-empty">Tap a client to see their visit history.</div>';return;}
+  var all=appts.concat(_cpBookings()).filter(function(a){return a.name&&c.name&&a.name.toLowerCase()===c.name.toLowerCase()&&a.status!=='cancelled';});
+  all.sort(function(a,b){return ((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||''));});
+  var head='<div class="cd-hist-head"><i class="ti ti-history"></i> '+esc(c.name)+' — visit history'+(all.length?' ('+all.length+')':'')+'</div>';
+  if(!all.length){box.innerHTML=head+'<div class="cd-empty">No visits recorded yet.</div>';return;}
+  var lim=_cdShowAll?all.length:12;
+  var rows=all.slice(0,lim).map(function(a){
+    var ch=_bkCharge(a),tp=(+a.tip||0),th=takeHome(ch)+tp;
+    return '<tr><td>'+fmtReqDate(a.date)+'</td><td>'+esc(_bkSvc(a))+'</td><td class="r">$'+ch.toFixed(2)+'</td><td class="r td-tip">$'+tp.toFixed(2)+'</td><td class="r td-take">$'+th.toFixed(2)+'</td></tr>';
+  }).join('');
+  var more=(!_cdShowAll&&all.length>12)?'<button class="cd-more" onclick="cdShowAll()">Show '+(all.length-12)+' more</button>':'';
+  box.innerHTML=head+'<table class="cd-tbl"><thead><tr><th>Date</th><th>Service</th><th class="r">Charge</th><th class="r">Tip</th><th class="r">Take-home</th></tr></thead><tbody>'+rows+'</tbody></table>'+more;
 }
 var clientId=null;
 function openClientSheet(id){
@@ -2306,7 +2385,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.38 · clients from both rooms';
+var VERSION='v4.39 · client history panel';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
