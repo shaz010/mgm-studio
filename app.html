@@ -42,10 +42,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 @media(min-width:700px){.app-shell{max-width:100%}.form-wrap{max-width:1000px;margin-left:auto;margin-right:auto}}
 
 /* TOPBAR */
-.topbar{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.topbar{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;position:sticky;top:0;z-index:50}
 .topbar-brand{display:flex;align-items:center;gap:12px}
 html.in-shell .topbar-brand{display:none}
-html.in-shell .topbar{justify-content:flex-start;background:transparent;border:none;border-radius:0;padding:6px 2px;margin-bottom:8px}
+html.in-shell .topbar{justify-content:flex-start;background:var(--bg);border:none;border-radius:0;padding:8px 2px 10px;margin-bottom:8px;box-shadow:0 8px 18px -14px rgba(0,0,0,.75)}
 html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 .topbar-icon{width:38px;height:38px;background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px}
 .topbar-name{font-size:18px;font-weight:600;color:var(--text)}.topbar-name span{color:var(--gold)}
@@ -1066,7 +1066,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       <button class="data-btn data-btn-primary" onclick="exportData()"><i class="ti ti-download"></i> Save a copy of my data</button>
       <button class="data-btn" onclick="document.getElementById('importFile').click()"><i class="ti ti-upload"></i> Load data from a saved copy</button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(this)">
-      <div class="data-howto"><b>Moving to another device?</b> Tap <b>Save a copy</b> here → send the file to your other device (AirDrop or email) → open the app there and tap <b>Load data</b>.</div>
+      <div class="data-howto"><b>Moving to another device?</b> Tap <b>Save a copy</b> → in the share sheet pick <b>AirDrop</b> (or Save to Files / Mail) → on the other device open the app, tap <b>Load data</b>, and choose that file.</div>
     </div>
 
     <div class="setup-section">
@@ -1331,6 +1331,15 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
           <button class="btn-paid-main" onclick="markThisMonthPaid()"><i class="ti ti-check" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Mark this month paid</button>
         </div>
       </div>
+      <div class="card" id="owedCard" style="margin-bottom:14px">
+        <div class="ctitle"><i class="ti ti-calculator"></i>Earnings breakdown — what's owed</div>
+        <div class="split-grid">
+          <div class="sc sc-s"><div class="sc-lbl">Salon</div><div class="sc-pct">their 40%</div><div class="sc-amt" id="oSalon">$0</div></div>
+          <div class="sc sc-m"><div class="sc-lbl">You</div><div class="sc-pct">your 60%</div><div class="sc-amt" id="oMe">$0</div></div>
+        </div>
+        <div class="row-box tip-rb"><span class="box-lbl"><i class="ti ti-heart" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Tips — 100% mine</span><span class="tip-v" id="oTip">$0.00</span></div>
+        <div class="row-box total-rb" style="margin-top:7px"><span class="box-lbl" style="font-size:14px;color:var(--gold);font-weight:600">Total the salon owes me</span><span class="total-v" id="oTotal">$0.00</span></div>
+      </div>
       <div class="month-rows" id="monthRows"></div>
     </div>
     </div>
@@ -1570,9 +1579,10 @@ function renderMgm(){
     if(!byMonth[ym])byMonth[ym]={ym,appts:0,totMe:0,totTip:0,totCharge:0};
     byMonth[ym].appts++;byMonth[ym].totMe+=a.me;byMonth[ym].totTip+=a.tip;byMonth[ym].totCharge+=a.charge;
   });
-  let totalOwed=0;
-  Object.entries(byMonth).forEach(([ym,mo])=>{if(!paidMonths[ym])totalOwed+=mo.totMe+mo.totTip;});
+  let totalOwed=0,uMe=0,uTip=0,uCharge=0;
+  Object.entries(byMonth).forEach(([ym,mo])=>{if(!paidMonths[ym]){totalOwed+=mo.totMe+mo.totTip;uMe+=mo.totMe;uTip+=mo.totTip;uCharge+=mo.totCharge;}});
   $('mgmOwed').textContent=fmtR(totalOwed);
+  if(document.getElementById('oTotal')){$('oSalon').textContent=fmtR(uCharge-uMe);$('oMe').textContent=fmtR(uMe);$('oTip').textContent=fmt(uTip);$('oTotal').textContent=fmt(totalOwed);}
   const now=new Date();
   $('mgmNextDue').textContent=new Date(now.getFullYear(),now.getMonth()+1,0).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   $('mgmSubtext').textContent=totalOwed>0?'Unpaid commission + tips accumulating':'All paid — you\'re square!';
@@ -1788,19 +1798,28 @@ function confirmErase(){
 function resetQuickPicks(){if(!confirm('Reset Quick Picks to the default starter set?'))return;saveFavorites(DEFAULT_FAVES.slice());buildServiceChips();}
 function exportData(){
   try{
-    var payload={app:'CommissionPro',version:1,exportedAt:new Date().toISOString(),
-      appts:loadAppts(),paid:loadPaid(),
-      prefs:JSON.parse(localStorage.getItem('cp_prefs')||'{}'),
-      clients:JSON.parse(localStorage.getItem('cp_clients')||'[]')};
-    var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-    var url=URL.createObjectURL(blob);
-    var a=document.createElement('a');
-    a.href=url;a.download='commissionpro-backup-'+new Date().toISOString().slice(0,10)+'.json';
-    document.body.appendChild(a);a.click();
-    try{localStorage.setItem('cp_lastBackup',String(Date.now()));}catch(_e){} try{renderBackupStatus();}catch(_e){}
-    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+    var all={};
+    for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);all[k]=localStorage.getItem(k);}
+    var payload={app:'YourSalon',kind:'full',version:2,exportedAt:new Date().toISOString(),store:all};
+    var json=JSON.stringify(payload,null,2);
+    var fname='yoursalon-backup-'+new Date().toISOString().slice(0,10)+'.json';
+    try{
+      var file=new File([json],fname,{type:'application/json'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        navigator.share({files:[file],title:'Your Salon backup'}).then(_markBackup).catch(function(err){if(err&&err.name!=='AbortError'){_downloadBackup(json,fname);_markBackup();}});
+        return;
+      }
+    }catch(_e){}
+    _downloadBackup(json,fname);_markBackup();
   }catch(e){alert('Could not create the backup file.');console.error(e);}
 }
+function _downloadBackup(json,fname){
+  var blob=new Blob([json],{type:'application/json'});var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download=fname;
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+}
+function _markBackup(){try{localStorage.setItem('cp_lastBackup',String(Date.now()));}catch(_e){} try{renderBackupStatus();}catch(_e){}}
 function renderBackupStatus(){
   var el=document.getElementById('backupStatus'); if(!el)return;
   var t=0; try{t=parseInt(localStorage.getItem('cp_lastBackup')||'0',10)||0;}catch(e){}
@@ -1818,15 +1837,22 @@ function importData(input){
   reader.onload=function(){
     try{
       var d=JSON.parse(reader.result);
-      if(!d||d.app!=='CommissionPro')throw new Error('not a CommissionPro backup');
-      if(!confirm('Restore this backup? It will replace the bookings, prices and client cards currently on this device.'))return;
-      if(Array.isArray(d.appts))localStorage.setItem(APPTS_KEY,JSON.stringify(d.appts));
-      if(d.paid&&typeof d.paid==='object')localStorage.setItem(PAID_KEY,JSON.stringify(d.paid));
-      if(d.prefs&&typeof d.prefs==='object')localStorage.setItem('cp_prefs',JSON.stringify(d.prefs));
-      if(Array.isArray(d.clients))localStorage.setItem('cp_clients',JSON.stringify(d.clients));
-      alert('Backup restored. The app will now reload.');
-      location.reload();
-    }catch(e){alert('That file does not look like a CommissionPro backup.');console.error(e);}
+      if(d&&d.kind==='full'&&d.store&&typeof d.store==='object'){
+        if(!confirm('Restore this backup? It will replace ALL bookings, prices, clients and settings on this device.'))return;
+        try{localStorage.clear();}catch(_e){}
+        Object.keys(d.store).forEach(function(k){try{localStorage.setItem(k,d.store[k]);}catch(_e){}});
+        alert('Backup restored. The app will now reload.');location.reload();return;
+      }
+      if(d&&d.app==='CommissionPro'){
+        if(!confirm('Restore this backup? It will replace the bookings, prices and client cards currently on this device.'))return;
+        if(Array.isArray(d.appts))localStorage.setItem(APPTS_KEY,JSON.stringify(d.appts));
+        if(d.paid&&typeof d.paid==='object')localStorage.setItem(PAID_KEY,JSON.stringify(d.paid));
+        if(d.prefs&&typeof d.prefs==='object')localStorage.setItem('cp_prefs',JSON.stringify(d.prefs));
+        if(Array.isArray(d.clients))localStorage.setItem('cp_clients',JSON.stringify(d.clients));
+        alert('Backup restored. The app will now reload.');location.reload();return;
+      }
+      throw new Error('unrecognised backup');
+    }catch(e){alert('That file does not look like a Your Salon backup.');console.error(e);}
     finally{input.value='';}
   };
   reader.readAsText(file);
@@ -2668,7 +2694,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.35 · salon owes commission + tips';
+var VERSION='app v1.37 · sticky toolbar + owed breakdown';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
