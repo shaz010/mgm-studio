@@ -1121,12 +1121,12 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       <button class="gear-btn" onclick="openPrices()" title="Price book"><i class="ti ti-currency-dollar"></i></button>
       <button class="gear-btn" onclick="openSettings()" title="Settings"><i class="ti ti-settings"></i></button>
       <div class="sync-badge sync-loading" id="syncBadge"><span class="spinner"></span> Connecting...</div>
-      <div class="tabs">
-        <button class="tab active" onclick="newBooking()"><i class="ti ti-calendar-plus" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>New booking</button>
-        <button class="tab" onclick="showTab('hist')"><i class="ti ti-list" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Appointments</button>
-        <button class="tab" onclick="showTab('mgm')"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Salon owes me</button>
-      </div>
     </div>
+  </div>
+  <div class="tabs" style="margin-bottom:14px">
+    <button class="tab active" onclick="newBooking()"><i class="ti ti-calendar-plus" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>New booking</button>
+    <button class="tab" onclick="showTab('hist')"><i class="ti ti-list" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Appointments</button>
+    <button class="tab" onclick="showTab('mgm')"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Salon owes me</button>
   </div>
 
   <!-- MODAL -->
@@ -2694,7 +2694,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.37 · sticky toolbar + owed breakdown';
+var VERSION='app v1.38 · only icons sticky';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
