@@ -1852,20 +1852,24 @@ function copyDebugReport(){
 }
 
 /* ===== CLIENTS ===== */
+function _cpBookings(){try{var cp=JSON.parse(localStorage.getItem('cp_appts')||'[]');return Array.isArray(cp)?cp:[];}catch(e){return [];}}
 function reconcileClients(){
   var changed=false;
-  appts.forEach(function(a){
-    if(!a.name)return;
-    var an=a.name.toLowerCase(), ap=(''+(a.phone||'')).replace(/\D/g,'');
+  function ensure(name,phone){
+    if(!name)return;
+    var an=name.toLowerCase(), ap=(''+(phone||'')).replace(/\D/g,'');
     var exists=clients.find(function(c){
       if(!c.name||c.name.toLowerCase()!==an)return false;
       var cp=(''+(c.phone||'')).replace(/\D/g,'');
       // same name: same person only if phones match, or one side has no phone
       return (!ap||!cp||ap===cp);
     });
-    if(!exists){clients.push({id:'c'+Date.now()+Math.floor(Math.random()*99999),name:a.name,phone:a.phone||'',email:'',notes:''});changed=true;}
-    else if(a.phone&&!exists.phone){exists.phone=a.phone;changed=true;}
-  });
+    if(!exists){clients.push({id:'c'+Date.now()+Math.floor(Math.random()*99999),name:name,phone:phone||'',email:'',notes:''});changed=true;}
+    else if(phone&&!exists.phone){exists.phone=phone;changed=true;}
+  }
+  appts.forEach(function(a){ensure(a.name,a.phone);});
+  _cpBookings().forEach(function(a){ensure(a.name,a.phone);});
+  try{var cc=JSON.parse(localStorage.getItem('cp_clients')||'[]');if(Array.isArray(cc))cc.forEach(function(c){ensure(c.name,c.phone);});}catch(e){}
   if(changed)save(CLIENTS,clients);
 }
 function renderClients(){
@@ -1876,9 +1880,10 @@ function renderClients(){
     $('clientsList').innerHTML='<div class="empty"><i class="ti ti-user-question"></i><div class="empty-t">No clients yet</div><div class="empty-s">Clients are added automatically when you book them — or add one now.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openClientSheet()"><i class="ti ti-user-plus"></i> Add client</button></div>';
     return;
   }
+  var allBk=appts.concat(_cpBookings());
   var sorted=clients.slice().sort(function(a,b){return (a.name||'').localeCompare(b.name||'')});
   $('clientsList').innerHTML=sorted.map(function(c){
-    var count=appts.filter(function(a){return a.name&&c.name&&a.name.toLowerCase()===c.name.toLowerCase()&&a.status!=='cancelled'}).length;
+    var count=allBk.filter(function(a){return a.name&&c.name&&a.name.toLowerCase()===c.name.toLowerCase()&&a.status!=='cancelled'}).length;
     return '<div class="lrow" onclick="openClientSheet(\''+c.id+'\')">'+
       '<div class="lrow-av cb-tap" onclick="event.stopPropagation();openClientBookings(\''+c.id+'\')">'+esc((c.name[0]||'?').toUpperCase())+'<span class="lrow-av-badge"><i class="ti ti-calendar"></i></span></div>'+
       '<div class="lrow-body"><div class="lrow-name">'+esc(c.name)+'</div><div class="lrow-sub">'+(c.phone?esc(c.phone):'No phone')+'</div></div>'+
@@ -2301,7 +2306,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.37 · only icons sticky';
+var VERSION='v4.38 · clients from both rooms';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},

@@ -1787,12 +1787,8 @@ function saveFavorites(arr){try{var p=JSON.parse(localStorage.getItem('cp_prefs'
 function resetApp(){ var m=document.getElementById('eraseModal'); if(m)m.classList.add('open'); }
 function closeEraseModal(){ var m=document.getElementById('eraseModal'); if(m)m.classList.remove('open'); }
 function confirmErase(){
-  try{
-    localStorage.removeItem('cp_appts');
-    localStorage.removeItem('cp_paid');
-    localStorage.removeItem('cp_clients');
-    localStorage.removeItem('cp_prefs');
-  }catch(e){}
+  try{ localStorage.clear(); }
+  catch(e){ try{['cp_appts','cp_paid','cp_clients','cp_prefs','ap_appts','ap_clients','ap_custom','ap_prefs','ap_stock'].forEach(function(k){localStorage.removeItem(k);});}catch(_e){} }
   location.reload();
 }
 function resetQuickPicks(){if(!confirm('Reset Quick Picks to the default starter set?'))return;saveFavorites(DEFAULT_FAVES.slice());buildServiceChips();}
@@ -2694,7 +2690,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.38 · only icons sticky';
+var VERSION='app v1.39 · erase-all wipes everything';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
