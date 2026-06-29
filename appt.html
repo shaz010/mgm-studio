@@ -1455,7 +1455,7 @@ function renderMonth(){
     var ds=ymd(d);
     var dayActive=appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'});
     var cnt=dayActive.length;
-    dayActive.forEach(function(a){mg+=(+a.price||0);mn+=takeHome(a.price);mc++;});
+    dayActive.forEach(function(a){mg+=(+a.price||0);mn+=takeHome(a.price)+(+a.tip||0);mc++;});
     var dcls=densityClass(cnt);
     var cls='mcell'+(dcls?' '+dcls:'')+(ds===today?' today':'')+(ds===sel?' sel':'')+(ds<today?' past':'');
     html+='<div class="'+cls+'" onclick="pickMonthDay(\''+ds+'\')">'+
@@ -1626,7 +1626,7 @@ function renderDay(){
   $('statCount').textContent=active.length;
   $('statHours').textContent=(mins/60).toFixed(mins%60?1:0)+'h';
   $('statRev').textContent=fmt$(rev);
-  $('statNet').textContent=fmt$(active.reduce(function(s,a){return s+takeHome(a.price)},0));
+  $('statNet').textContent=fmt$(active.reduce(function(s,a){return s+takeHome(a.price)+(+a.tip||0)},0));
 
   if(!list.length){
     $('dayList').innerHTML='<div class="empty"><i class="ti ti-calendar-off"></i><div class="empty-t">No appointments '+(isToday?'today':'this day')+'</div><div class="empty-s">A clear chair. Tap Add to book someone in.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openAdd()"><i class="ti ti-plus"></i> Add appointment</button></div>';
@@ -1743,7 +1743,7 @@ function openSheet(id){
   var a=appts.find(function(x){return x.id===id});if(!a)return;
   sheetId=id;
   $('dName').textContent=a.name;
-  $('dSub').textContent=to12(a.time)+' · '+(a.service||'')+' · '+fmt$(a.price)+((getSplit()<100&&(+a.price)>0)?' · '+fmt$(takeHome(a.price))+' take-home':'')+(a.phone?' · '+a.phone:'');
+  $('dSub').textContent=to12(a.time)+' · '+(a.service||'')+' · '+fmt$(a.price)+((getSplit()<100&&(+a.price)>0)?' · '+fmt$(takeHome(a.price)+(+a.tip||0))+' take-home':'')+(a.phone?' · '+a.phone:'');
   if(a.notes){$('dNotes').textContent=a.notes;$('dNotes').style.display='block'}else{$('dNotes').style.display='none'}
   document.querySelectorAll('#statusGrid .status-opt').forEach(function(o){o.classList.toggle('sel',o.dataset.s===(a.status||'confirmed'))});
   $('apptModal').classList.add('show');
@@ -2301,7 +2301,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.34 · wider Add form';
+var VERSION='v4.35 · take-home includes tip';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -2384,7 +2384,7 @@ function toggleNoir(){
 function weekTotals(sow){
   var g=0,n=0,c=0;
   for(var i=0;i<7;i++){var d=new Date(sow);d.setDate(sow.getDate()+i);var ds=ymd(d);
-    appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'}).forEach(function(a){g+=(+a.price||0);n+=takeHome(a.price);c++;});}
+    appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'}).forEach(function(a){g+=(+a.price||0);n+=takeHome(a.price)+(+a.tip||0);c++;});}
   return {g:g,n:n,c:c};
 }
 function weekRangeHTML(sow,end){
