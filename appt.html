@@ -178,7 +178,8 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 .ap-sc-salon .ap-sc-amt{color:#7db8ff}
 .ap-sc-you .ap-sc-amt{color:#5ddb7c}
 .ap-rb{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:11px;margin-top:9px;font-size:14px;font-weight:600}
-.ap-tip{background:rgba(93,219,124,.07);border:1px solid rgba(93,219,124,.24);color:#cfe8d4}
+.ap-tip{background:rgba(245,158,214,.08);border:1px solid rgba(245,158,214,.30);color:#f3c8e4}
+.ap-tip span:last-child{color:#f59ed6;font-weight:700}
 .ap-tip span:last-child{color:#5ddb7c;font-weight:800}
 .ap-total{background:rgba(255,184,0,.08);border:1px solid rgba(255,184,0,.38)}
 .ap-total span:first-child{color:var(--gold);font-weight:700}
@@ -499,7 +500,7 @@ datalist{display:none}
 .cd-tbl th.r,.cd-tbl td.r{text-align:right}
 .cd-tbl td{padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.05)}
 .cd-tbl .td-take{color:var(--gold);font-weight:700;white-space:nowrap}
-.cd-tbl .td-tip{color:#5ddb7c;white-space:nowrap}
+.cd-tbl .td-tip{color:#f59ed6;white-space:nowrap}
 .cd-more{margin-top:12px;width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-bright);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer}
 .cd-more:active{border-color:var(--gold);color:var(--gold)}
 .lrow.sel{box-shadow:0 0 0 1.5px var(--gold)}
@@ -2385,7 +2386,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.39 · client history panel';
+var VERSION='v4.40 · tips own colour';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
