@@ -165,6 +165,24 @@ textarea{min-height:64px;resize:vertical}
 .svc-cat-body{padding:9px 0 4px}
 .qp-hint{font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:0}
 .svc-row{display:flex;flex-wrap:wrap;gap:7px}
+.ap-breakdown{margin-top:14px;padding:14px 14px 12px;border:1px solid var(--border-bright);border-radius:12px;background:#0c0c10}
+body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
+.ap-bk-title{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:6px;margin-bottom:11px}
+.ap-split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ap-sc{border-radius:11px;padding:13px 10px;text-align:center;border:1px solid #1c1c26}
+.ap-sc-salon{background:rgba(96,165,250,.09);border-color:rgba(96,165,250,.32)}
+.ap-sc-you{background:rgba(93,219,124,.09);border-color:rgba(93,219,124,.32)}
+.ap-sc-lbl{font-size:12.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:#cfcfe0}
+.ap-sc-pct{font-size:10.5px;color:var(--muted);margin:3px 0 7px}
+.ap-sc-amt{font-size:25px;font-weight:800;line-height:1}
+.ap-sc-salon .ap-sc-amt{color:#7db8ff}
+.ap-sc-you .ap-sc-amt{color:#5ddb7c}
+.ap-rb{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:11px;margin-top:9px;font-size:14px;font-weight:600}
+.ap-tip{background:rgba(93,219,124,.07);border:1px solid rgba(93,219,124,.24);color:#cfe8d4}
+.ap-tip span:last-child{color:#5ddb7c;font-weight:800}
+.ap-total{background:rgba(255,184,0,.08);border:1px solid rgba(255,184,0,.38)}
+.ap-total span:first-child{color:var(--gold);font-weight:700}
+.ap-total span:last-child{color:var(--gold);font-size:19px;font-weight:800}
 .svc-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;min-height:33px;border-radius:20px;border:1.5px solid #444;background:#1a1a1a;color:#ccc;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
 .svc-chip>i:first-child{font-size:14px;color:var(--gold);width:15px;text-align:center;flex-shrink:0}
 .svc-chip:active{border-color:#666}
@@ -753,7 +771,18 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
       </div>
       <div class="row2">
         <div><label>Duration (min)</label><input id="fDur" type="number" inputmode="numeric" placeholder="60" oninput="checkConflict()"></div>
-        <div><label>Price ($)</label><input id="fPrice" type="number" inputmode="decimal" placeholder="0" oninput="priceManual=true"></div>
+        <div><label>Price ($)</label><input id="fPrice" type="number" inputmode="decimal" placeholder="0" oninput="priceManual=true;apCalc()"></div>
+      </div>
+      <div><label>Tip received ($)</label><input id="fTip" type="number" inputmode="decimal" placeholder="0" oninput="apCalc()"></div>
+
+      <div class="ap-breakdown">
+        <div class="ap-bk-title"><i class="ti ti-calculator"></i> Earnings breakdown</div>
+        <div class="ap-split">
+          <div class="ap-sc ap-sc-salon"><div class="ap-sc-lbl">Salon</div><div class="ap-sc-pct" id="apSalonPct">40% of charge</div><div class="ap-sc-amt" id="apSalon">$0</div></div>
+          <div class="ap-sc ap-sc-you"><div class="ap-sc-lbl">You</div><div class="ap-sc-pct" id="apYouPct">60% of charge</div><div class="ap-sc-amt" id="apYou">$0</div></div>
+        </div>
+        <div class="ap-rb ap-tip"><span><i class="ti ti-heart" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Tip — 100% mine</span><span id="apTipV">$0.00</span></div>
+        <div class="ap-rb ap-total"><span>My total take-home</span><span id="apTotal">$0.00</span></div>
       </div>
 
       <label>Notes <span style="color:#666;font-weight:400">(optional)</span></label>
@@ -1625,7 +1654,8 @@ function openAdd(){
   $('addTitle').textContent='New appointment';
   $('editExtra').style.display='none';
   $('fName').value='';$('fPhone').value='';$('fService').value='';$('fCustom').value='';
-  $('fDate').value=ymd(viewDate);$('fTime').value='';$('fDur').value='';$('fPrice').value='';$('fNotes').value='';
+  $('fDate').value=ymd(viewDate);$('fTime').value='';$('fDur').value='';$('fPrice').value='';$('fTip').value='';$('fNotes').value='';
+  if(typeof apCalc==='function')apCalc();
   $('conflictWarn').classList.remove('show');
   $('svcMore').style.display='none';$('svcMoreBtn').innerHTML='<i class="ti ti-chevron-down"></i> More services';
   fillClientList();svcMode=getMode();buildChips();
@@ -1681,7 +1711,7 @@ function commitSave(){
     id:editingId||uid(),
     name:name,phone:$('fPhone').value.trim(),
     service:service,
-    date:date,time:time,dur:+$('fDur').value||0,price:+$('fPrice').value||0,
+    date:date,time:time,dur:+$('fDur').value||0,price:+$('fPrice').value||0,tip:+$('fTip').value||0,
     notes:$('fNotes').value.trim(),status:prevStatus
   };
   var wasEdit=!!editingId;
@@ -1766,7 +1796,7 @@ function editFromSheet(){
   fillClientList();
   $('fName').value=a.name;$('fPhone').value=a.phone||'';
   $('fService').value=a.service||'';
-  $('fDate').value=a.date;$('fTime').value=a.time;$('fDur').value=a.dur||'';$('fPrice').value=a.price||'';
+  $('fDate').value=a.date;$('fTime').value=a.time;$('fDur').value=a.dur||'';$('fPrice').value=a.price||'';$('fTip').value=a.tip||'';if(typeof apCalc==='function')apCalc();
   $('fNotes').value=a.notes||'';$('fCustom').value='';
   $('conflictWarn').classList.remove('show');
   $('svcMore').style.display='none';$('svcMoreBtn').innerHTML='<i class="ti ti-chevron-down"></i> More services';
@@ -2271,7 +2301,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.32 · force refresh + tidy form';
+var VERSION='v4.33 · tip + earnings preview';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -2307,6 +2337,19 @@ function saveBusiness(){
 /* ----- take-home: booked price × your split % (renters set 100) ----- */
 function getSplit(){var p=getPrefs();var s=parseFloat(p.splitPct);return isNaN(s)?60:Math.max(0,Math.min(100,s));}
 function takeHome(price){return Math.round((+price||0)*getSplit())/100;}
+function apCalc(){
+  var charge=parseFloat($('fPrice').value)||0;
+  var tip=parseFloat($('fTip').value)||0;
+  var youPct=getSplit(),salonPct=100-youPct;
+  var you=charge*youPct/100,salon=charge*salonPct/100;
+  var sp=$('apSalonPct'),yp=$('apYouPct'),s=$('apSalon'),y=$('apYou'),tv=$('apTipV'),tt=$('apTotal');
+  if(sp)sp.textContent=salonPct+'% of charge';
+  if(yp)yp.textContent=youPct+'% of charge';
+  if(s)s.textContent='$'+Math.round(salon);
+  if(y)y.textContent='$'+Math.round(you);
+  if(tv)tv.textContent='$'+tip.toFixed(2);
+  if(tt)tt.textContent='$'+(you+tip).toFixed(2);
+}
 function saveSplit(){
   var p=getPrefs();var v=parseFloat($('setSplit').value);
   if(isNaN(v))v=60; v=Math.max(0,Math.min(100,v));
