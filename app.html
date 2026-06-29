@@ -109,10 +109,10 @@ body.theme-light input:-webkit-autofill,body.theme-light textarea:-webkit-autofi
 
 /* ROW BOXES */
 .row-box{margin-top:10px;border-radius:9px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
-.tip-rb{background:var(--bggreen);border:1.5px solid var(--bgreen)}
+.tip-rb{background:rgba(245,158,214,.10);border:1.5px solid rgba(245,158,214,.34)}
 .total-rb{background:var(--gold-dim);border:1.5px solid var(--gold-border)}
 .box-lbl{font-size:13px;color:#ccc;font-weight:500}
-.tip-v{font-size:20px;font-weight:700;color:#5ddb7c}
+.tip-v{font-size:20px;font-weight:700;color:#f59ed6}
 .total-v{font-size:22px;font-weight:700;color:var(--gold)}
 
 /* EDIT BANNER */
@@ -425,7 +425,7 @@ body.theme-light .ins-sub{color:#666}
 .sum-c{background:#111;border:1px solid #333;border-radius:9px;padding:12px;text-align:center}
 .sum-lbl{font-size:10px;color:#777;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;font-weight:600}
 .sum-val{font-size:19px;font-weight:700}
-.sv-g{color:var(--gold)}.sv-b{color:var(--blue)}.sv-gr{color:var(--green)}
+.sv-g{color:var(--gold)}.sv-b{color:var(--blue)}.sv-gr{color:var(--green)}.sv-tip{color:#f59ed6}
 
 /* WEEKLY */
 .week-section{margin-bottom:20px}
@@ -445,7 +445,7 @@ td{padding:12px 10px;vertical-align:middle}
 .td-m{color:#888;font-size:12px}
 .td-g{color:var(--gold);font-weight:700}
 .td-b{color:var(--blue);font-weight:600}
-.td-gr{color:var(--green);font-weight:600}
+.td-gr{color:var(--green);font-weight:600}.td-tip{color:#f59ed6;font-weight:600}.th-tip{color:#f59ed6}
 .td-cat{color:var(--purple);font-size:12px;font-weight:500}
 .act-btn{background:none;border:none;cursor:pointer;padding:5px 6px;border-radius:6px;font-size:15px;color:#555;transition:color .2s}
 .act-btn.ed:hover{color:var(--gold)}.act-btn.dl:hover{color:#ff5555}
@@ -572,8 +572,8 @@ body.theme-light .sc-s .sc-amt{color:#3355bb}
 body.theme-light .sc-m{background:#e8fff0;border-color:#aaeebb}
 body.theme-light .sc-m .sc-lbl{color:#227744}
 body.theme-light .sc-m .sc-amt{color:#227744}
-body.theme-light .tip-rb{background:#e8fff0;border-color:#aaeebb}
-body.theme-light .tip-v{color:#227744}
+body.theme-light .tip-rb{background:#ffeef7;border-color:#f3b8da}
+body.theme-light .tip-v{color:#c2418f}
 body.theme-light .total-rb{background:#fff8e0;border-color:#ddcc66}
 body.theme-light .total-v{color:#aa7700}
 body.theme-light .topbar{background:#fff;border-color:#ddd}
@@ -772,6 +772,7 @@ body.theme-noir .sum-c:has(.sv-gr){background:linear-gradient(#000,#000) padding
 body.theme-noir .sum-c:has(#sTotal){background:linear-gradient(#000,#000) padding-box,linear-gradient(120deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 16px rgba(167,139,250,.24)!important}
 body.theme-noir .sv-b{text-shadow:0 0 9px rgba(126,184,255,.4)}
 body.theme-noir .sv-gr{text-shadow:0 0 9px rgba(93,219,124,.4)}
+body.theme-noir .sv-tip{text-shadow:0 0 9px rgba(245,158,214,.45)}
 body.theme-noir .sv-g{text-shadow:0 0 9px rgba(255,184,0,.35)}
 body.theme-noir #sTotal{background:linear-gradient(110deg,#a78bfa,#f5a8ff,#67e8f9,#a78bfa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent!important;text-shadow:none}
 body.theme-noir .mgm-hero{border:1px solid transparent!important;background:linear-gradient(#000,#000) padding-box,linear-gradient(120deg,#67e8f9,#7eb8ff,#a78bfa,#67e8f9) border-box!important;box-shadow:0 0 20px rgba(126,184,255,.16)!important}
@@ -1294,7 +1295,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
         <div class="sum-c"><div class="sum-lbl">Total charged</div><div class="sum-val sv-g" id="sCharge">$0</div></div>
         <div class="sum-c"><div class="sum-lbl">Salon 40%</div><div class="sum-val sv-b" id="sSalon">$0</div></div>
         <div class="sum-c"><div class="sum-lbl">My 60%</div><div class="sum-val sv-gr" id="sMe">$0</div></div>
-        <div class="sum-c"><div class="sum-lbl">Tips</div><div class="sum-val sv-gr" id="sTips">$0</div></div>
+        <div class="sum-c"><div class="sum-lbl">Tips</div><div class="sum-val sv-tip" id="sTips">$0</div></div>
         <div class="sum-c"><div class="sum-lbl">Take-home</div><div class="sum-val sv-g" id="sTotal">$0</div></div>
       </div>
       <div id="tableView">
@@ -1303,7 +1304,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
             <thead><tr>
               <th>Client</th><th>Date</th><th>Wk</th><th>Category</th>
               <th class="r">Charge</th><th class="r th-b">Salon 40%</th>
-              <th class="r th-gr">Me 60%</th><th class="r th-gr">Tip</th>
+              <th class="r th-gr">Me 60%</th><th class="r th-tip">Tip</th>
               <th class="r th-g">My total</th><th></th>
             </tr></thead>
             <tbody id="tBody"></tbody>
@@ -1531,7 +1532,7 @@ function renderTable(){
       <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td>
       <td class="td-b r" data-label="Salon 40%">${fmt(a.salon)}</td>
       <td class="td-gr r" data-label="Me 60%">${fmt(a.me)}</td>
-      <td class="td-gr r" data-label="Tip">${fmt(a.tip)}</td>
+      <td class="td-tip r" data-label="Tip">${fmt(a.tip)}</td>
       <td class="td-g r" data-label="My total">${fmt(a.me+a.tip)}</td>
       <td class="actions-cell" style="white-space:nowrap">
         <button class="act-btn ed" onclick="editAppt('${a.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
@@ -1556,7 +1557,7 @@ function renderWeekly(){
       return`<tr><td class="td-c" data-label="Client">${a.name}</td><td class="td-m" data-label="Date">${ds}</td>
         <td class="td-cat" data-label="Category">${a.cat||'—'}</td>
         <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td><td class="td-b r" data-label="Salon 40%">${fmt(a.salon)}</td>
-        <td class="td-gr r" data-label="Me 60%">${fmt(a.me)}</td><td class="td-gr r" data-label="Tip">${fmt(a.tip)}</td>
+        <td class="td-gr r" data-label="Me 60%">${fmt(a.me)}</td><td class="td-tip r" data-label="Tip">${fmt(a.tip)}</td>
         <td class="td-g r" data-label="My total">${fmt(a.me+a.tip)}</td></tr>`;
     }).join('');
     return`<div class="week-section">
@@ -1567,7 +1568,7 @@ function renderWeekly(){
       <div class="tbl-wrap"><table>
         <thead><tr><th>Client</th><th>Date</th><th>Category</th>
           <th class="r">Charge</th><th class="r th-b">Salon 40%</th>
-          <th class="r th-gr">Me 60%</th><th class="r th-gr">Tip</th><th class="r th-g">My total</th>
+          <th class="r th-gr">Me 60%</th><th class="r th-tip">Tip</th><th class="r th-g">My total</th>
         </tr></thead><tbody>${rows}</tbody>
       </table></div></div>`;
   }).join('');
@@ -2690,7 +2691,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.40 · fix edit/delete on bookings';
+var VERSION='app v1.41 · tips own colour';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
