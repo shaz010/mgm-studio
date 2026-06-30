@@ -487,6 +487,23 @@ datalist{display:none}
 .lrow-edit:active{border-color:var(--gold);color:var(--gold);transform:scale(.92)}
 .clients-cols{display:block}
 #clientDetail{display:none;margin-top:14px}
+/* ── client profile (Clients tab detail pane) ── */
+.cdp-name{font-size:17px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.cdp-contact{font-size:12px;color:#8a8a96;margin-bottom:12px}
+.cdp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.cdp-tile{background:#0c0c11;border:1px solid #1c1c24;border-radius:12px;padding:10px 11px;min-width:0}
+.cdp-tile .l{font-size:9.5px;color:#7a7a88;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+.cdp-tile .v{font-size:16px;font-weight:800;color:#e8e8ef;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cdp-tile.gold .v{color:#FFB800}
+.cdp-sec{margin:0 0 12px}
+.cdp-sec-h{font-size:10.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px}
+.cdp-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cdp-chip{font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;background:#16161c;color:#cfcfe0;border:1px solid #26262f}
+.cdp-chip.warn{background:rgba(255,90,90,.14);color:#ff8585;border-color:rgba(255,90,90,.4)}
+.cdp-chip.ok{background:rgba(95,219,124,.14);color:#5ddb7c;border-color:rgba(95,219,124,.35)}
+.cdp-chip.muted{background:#161616;color:#888;border-color:#2a2a2a}
+.cdp-note{font-size:12.5px;color:#c8c8d2;line-height:1.5;background:#0c0c11;border:1px solid #1c1c24;border-radius:10px;padding:9px 11px}
+.cdp-hint{font-size:11.5px;color:#7a7a88;font-style:italic;margin-top:2px;line-height:1.45}
 @media(min-width:820px){
   .clients-cols{display:flex;gap:16px;align-items:flex-start}
   #clientsList{flex:0 0 340px;max-width:340px}
@@ -831,16 +848,8 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
     <div class="clients-cols">
       <div id="clientsList"></div>
       <div id="clientDetail">
-        <div class="ap-breakdown" style="margin-top:0">
-          <div class="ap-bk-title"><i class="ti ti-calculator"></i> Salon earnings — all clients</div>
-          <div class="ap-split">
-            <div class="ap-sc ap-sc-salon"><div class="ap-sc-lbl">Salon</div><div class="ap-sc-pct" id="csSalonPct">40% of charge</div><div class="ap-sc-amt" id="csSalon">$0</div></div>
-            <div class="ap-sc ap-sc-you"><div class="ap-sc-lbl">You</div><div class="ap-sc-pct" id="csYouPct">60% of charge</div><div class="ap-sc-amt" id="csYou">$0</div></div>
-          </div>
-          <div class="ap-rb ap-tip"><span><i class="ti ti-heart" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Tips — 100% mine</span><span id="csTipV">$0.00</span></div>
-          <div class="ap-rb ap-total"><span>Total take-home</span><span id="csTotal">$0.00</span></div>
-        </div>
-        <div id="cdHistory" class="cd-history"><div class="cd-empty">Tap a client to see their visit history.</div></div>
+        <div id="cdProfile"><div class="cd-empty">Tap a client to see their full profile.</div></div>
+        <div id="cdHistory" class="cd-history"></div>
       </div>
     </div>
   </div>
@@ -1954,13 +1963,70 @@ function selectClient(id){
   renderClientDetail();
 }
 function cdShowAll(){_cdShowAll=true;renderClientDetail();}
+function _cpClients(){try{var c=JSON.parse(localStorage.getItem('cp_clients')||'[]');return Array.isArray(c)?c:[];}catch(e){return [];}}
+function _findCard(name){if(!name)return null;var n=name.toLowerCase();return _cpClients().filter(function(c){return c.name&&c.name.toLowerCase()===n;})[0]||null;}
+function _ageFromDob(dob){if(!dob)return null;try{var d=new Date(dob);if(isNaN(d.getTime()))return null;var t=new Date();var a=t.getFullYear()-d.getFullYear();var m=t.getMonth()-d.getMonth();if(m<0||(m===0&&t.getDate()<d.getDate()))a--;return (a>=0&&a<130)?a:null;}catch(e){return null;}}
+function _clientStats(name){
+  var n=(name||'').toLowerCase();
+  var all=appts.concat(_cpBookings()).filter(function(a){return a.name&&a.name.toLowerCase()===n&&a.status!=='cancelled';});
+  var tc=0,tk=0,tp=0,first='',last='';
+  all.forEach(function(a){var ch=_bkCharge(a),tip=(+a.tip||0);tc+=ch;tk+=takeHome(ch)+tip;tp+=tip;var ds=a.date||'';if(ds){if(!first||ds<first)first=ds;if(!last||ds>last)last=ds;}});
+  return {visits:all.length,charge:tc,take:tk,tip:tp,first:first,last:last,avg:all.length?tc/all.length:0};
+}
+function buildClientProfileHTML(c){
+  var card=_findCard(c.name), s=_clientStats(c.name);
+  var age=card?_ageFromDob(card.dob):null;
+  var phone=c.phone||(card&&card.phone)||'', email=c.email||(card&&card.email)||'', dob=(card&&card.dob)||'';
+  var contact=[phone||'No phone', email, dob?('DOB '+fmtReqDate(dob)+(age!=null?' · '+age+' yrs':'')):''].filter(Boolean).join('  ·  ');
+  var H='<div class="cdp-name"><i class="ti ti-user-circle" style="color:#a78bfa"></i>'+esc(c.name)+'</div>';
+  H+='<div class="cdp-contact">'+esc(contact)+'</div>';
+  H+='<div class="cdp-grid">'
+    +'<div class="cdp-tile"><div class="l">Visits</div><div class="v">'+s.visits+'</div></div>'
+    +'<div class="cdp-tile"><div class="l">Last visit</div><div class="v" style="font-size:13px">'+(s.last?fmtReqDate(s.last):'—')+'</div></div>'
+    +'<div class="cdp-tile gold"><div class="l">Take-home</div><div class="v">$'+Math.round(s.take)+'</div></div>'
+    +'<div class="cdp-tile"><div class="l">Avg ticket</div><div class="v">$'+Math.round(s.avg)+'</div></div>'
+    +'<div class="cdp-tile"><div class="l">Tips total</div><div class="v">$'+Math.round(s.tip)+'</div></div>'
+    +'<div class="cdp-tile"><div class="l">Since</div><div class="v" style="font-size:13px">'+(s.first?fmtReqDate(s.first):'—')+'</div></div>'
+    +'</div>';
+  if(card){
+    H+='<div class="cdp-sec"><div class="cdp-sec-h" style="color:#5fd6c6">Sensitivity / patch test</div><div class="cdp-chips">';
+    if(card.patchDone){var rx=card.patchRes==='reaction';H+='<span class="cdp-chip '+(rx?'warn':'ok')+'">'+(rx?'⚠ Reaction':'No reaction')+(card.patchDate?' · '+fmtReqDate(card.patchDate):'')+'</span>';}
+    else{H+='<span class="cdp-chip muted">No patch test on file</span>';}
+    H+='</div></div>';
+    var conds=(card.conditions||[]);
+    if(conds.length||card.meds){
+      H+='<div class="cdp-sec"><div class="cdp-sec-h" style="color:#ff93a6">Medical / conditions</div><div class="cdp-chips">';
+      conds.forEach(function(x){H+='<span class="cdp-chip warn">'+esc(x)+'</span>';});
+      H+='</div>';
+      if(card.meds)H+='<div class="cdp-note" style="margin-top:7px">'+esc(card.meds)+'</div>';
+      H+='</div>';
+    }
+    if(card.notes)H+='<div class="cdp-sec"><div class="cdp-sec-h" style="color:#b79cff">Notes / hair</div><div class="cdp-note">'+esc(card.notes)+'</div></div>';
+    if(card.tfShow&&card.tfShow.length){
+      H+='<div class="cdp-sec"><div class="cdp-sec-h" style="color:#67e8f9">Service details</div>';
+      card.tfShow.forEach(function(f){
+        if(f.chips){H+='<div style="margin-bottom:7px"><div style="font-size:10px;color:#7a7a88;font-weight:700;text-transform:uppercase;margin-bottom:4px">'+esc(f.l)+'</div><div class="cdp-chips">'+f.chips.map(function(x){return '<span class="cdp-chip">'+esc(x)+'</span>';}).join('')+'</div></div>';}
+        else{H+='<div style="margin-bottom:6px"><span style="font-size:10px;color:#7a7a88;font-weight:700;text-transform:uppercase">'+esc(f.l)+':</span> <span style="font-size:12.5px;color:#cfcfe0">'+esc(f.v)+'</span></div>';}
+      });
+      H+='</div>';
+    }
+    H+='<div class="cdp-sec"><div class="cdp-sec-h" style="color:#ffc04d">Consent</div><div class="cdp-chips">';
+    H+=card.signature?'<span class="cdp-chip ok">✓ Signed'+(card.signedDate?' · '+fmtReqDate(card.signedDate):'')+'</span>':'<span class="cdp-chip muted">No consent on file</span>';
+    H+='</div></div>';
+  }else{
+    H+='<div class="cdp-hint">No client card yet — add DOB, hair notes, patch test &amp; consent for this client in the Earnings room (📇 Client cards).</div>';
+  }
+  return H;
+}
 function renderClientDetail(){
+  var prof=document.getElementById('cdProfile');
   var box=document.getElementById('cdHistory'); if(!box)return;
   var c=_cdClientId?clients.find(function(x){return x.id===_cdClientId;}):null;
-  if(!c){box.innerHTML='<div class="cd-empty">Tap a client to see their visit history.</div>';return;}
+  if(!c){ if(prof)prof.innerHTML='<div class="cd-empty">Tap a client to see their full profile.</div>'; box.innerHTML=''; return; }
+  if(prof)prof.innerHTML=buildClientProfileHTML(c);
   var all=appts.concat(_cpBookings()).filter(function(a){return a.name&&c.name&&a.name.toLowerCase()===c.name.toLowerCase()&&a.status!=='cancelled';});
   all.sort(function(a,b){return ((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||''));});
-  var head='<div class="cd-hist-head"><i class="ti ti-history"></i> '+esc(c.name)+' — visit history'+(all.length?' ('+all.length+')':'')+'</div>';
+  var head='<div class="cd-hist-head"><i class="ti ti-history"></i> Visit history'+(all.length?' ('+all.length+')':'')+'</div>';
   if(!all.length){box.innerHTML=head+'<div class="cd-empty">No visits recorded yet.</div>';return;}
   var lim=_cdShowAll?all.length:12;
   var rows=all.slice(0,lim).map(function(a){
@@ -2025,7 +2091,7 @@ function openClientBookings(id){
   if(upcoming.length){html+='<div class="cb-head">Upcoming</div>'+upcoming.map(row).join('');}
   if(past.length){html+='<div class="cb-head" style="margin-top:14px">History</div>'+past.slice(0,8).map(row).join('');}
   if(!html){html='<div class="empty" style="padding:24px 0"><i class="ti ti-calendar-off"></i><div class="empty-t">No bookings yet</div><div class="empty-s">When you book '+esc(c.name)+', their appointments show here.</div></div>';}
-  $('cbList').innerHTML=html;
+  $('cbList').innerHTML=buildClientProfileHTML(c)+html;
   $('clientBookingsModal').classList.add('show');
 }
 
@@ -2386,7 +2452,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.41 · tap-outside close + keyboard-aware fields';
+var VERSION='v4.43 · trade details in profile';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},

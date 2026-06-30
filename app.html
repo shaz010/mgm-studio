@@ -295,6 +295,9 @@ body.theme-light .legal-body{color:#777}
 .cf-in:focus{border-color:var(--gold);background:#1e1e1e}
 .cf-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .cf-section{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:20px 0 4px;padding-bottom:6px;border-bottom:1.5px solid #2c2c2c}
+.tf-chips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px}
+.tf-chip{font-size:12px;font-weight:600;padding:7px 12px;border-radius:20px;background:#161616;color:#bbb;border:1px solid #333;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.tf-chip.on{background:rgba(103,232,249,.14);color:#67e8f9;border-color:#67e8f988}
 .cf-chk{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#ddd;cursor:pointer;margin-top:10px}
 .cf-chk input{width:19px;height:19px;accent-color:var(--gold);flex-shrink:0}
 /* Big custom checkbox (reliable tap target on iOS) */
@@ -1219,6 +1222,8 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
         </div>
         <label class="cf-label">Email</label>
         <input class="cf-in" id="clEmail" type="email" placeholder="name@email.com">
+
+        <div id="tradeFields"></div>
 
         <div class="cf-section" style="color:#5fd6c6;border-color:#5fd6c655">Sensitivity / patch test</div>
         <label class="ck"><input type="checkbox" id="clPatchDone"><span class="ck-box"></span><span class="ck-txt">Patch test performed</span></label>
@@ -2226,6 +2231,111 @@ function initSigPad(){
 }
 function clearSig(){if(!sigCtx){return;}var c=$('sigPad');sigCtx.clearRect(0,0,c.width,c.height);sigHasInk=false;}
 function drawSavedSig(dataURL){if(!dataURL||!sigCtx)return;var img=new Image();img.onload=function(){var c=$('sigPad');var r=c.getBoundingClientRect();sigCtx.drawImage(img,0,0,r.width,r.height);sigHasInk=true;};img.src=dataURL;}
+/* ===== Trade-specific client fields (research-backed per trade) ===== */
+var TRADE_FIELDS={
+ hair:[
+  {id:'hair_type',label:'Hair type',type:'select',options:['Fine','Medium','Coarse','Mixed']},
+  {id:'hair_texture',label:'Texture',type:'select',options:['Straight','Wavy','Curly','Coily']},
+  {id:'hair_cond',label:'Hair condition',type:'chips',options:['Dry','Oily','Damaged','Color-treated','Chemically straightened','Thinning','Dandruff']},
+  {id:'hair_hist',label:'Colour / chemical history',type:'text',ph:'e.g. boxed dye 2mo ago, balayage'},
+  {id:'hair_goal',label:'Desired look',type:'text',ph:'What they want today / long-term'}
+ ],
+ barber:[
+  {id:'barber_type',label:'Hair type',type:'select',options:['Straight','Wavy','Curly','Coily']},
+  {id:'barber_style',label:'Usual cut / fade',type:'text',ph:'e.g. skin fade, scissor on top'},
+  {id:'barber_beard',label:'Beard',type:'select',options:['No beard','Light','Full']},
+  {id:'barber_scalp',label:'Scalp / skin',type:'chips',options:['Dry scalp','Dandruff','Ingrown hairs','Razor bumps','Sensitive']},
+  {id:'barber_notes',label:'Notes',type:'text',ph:'Cowlicks, partings, preferences'}
+ ],
+ nail:[
+  {id:'nail_service',label:'Service type',type:'select',options:['Manicure','Gel','Acrylic','Dip powder','Pedicure']},
+  {id:'nail_cond',label:'Nail condition',type:'chips',options:['Brittle','Peeling','Ridged','Bitten','Discoloured','Fungal concern']},
+  {id:'nail_allergy',label:'Allergies / sensitivities',type:'chips',options:['Acetone','Acrylic / MMA','Gel / UV resin','Latex gloves','Adhesives']},
+  {id:'nail_shape',label:'Preferred shape / length',type:'text',ph:'e.g. almond, medium'},
+  {id:'nail_life',label:'Lifestyle',type:'text',ph:'Hands in water? manual work?'}
+ ],
+ lash:[
+  {id:'lash_style',label:'Lash style',type:'select',options:['Classic','Hybrid','Volume','Mega volume']},
+  {id:'lash_spec',label:'Curl / length',type:'text',ph:'e.g. C-curl, 12mm'},
+  {id:'lash_allergy',label:'Allergies',type:'chips',options:['Adhesive (cyanoacrylate)','Medical tape','Latex','Seasonal / eye allergies']},
+  {id:'lash_eyes',label:'Eye notes',type:'chips',options:['Sensitive eyes','Wears contacts','Dry eye','Recent eye surgery']},
+  {id:'lash_hist',label:'Previous lash experience',type:'text',ph:'Prior sets / any reactions'}
+ ],
+ brow:[
+  {id:'brow_service',label:'Service',type:'select',options:['Shaping / wax','Tint','Henna','Lamination','Microblading']},
+  {id:'brow_allergy',label:'Allergies',type:'chips',options:['Tint / PPD','Wax','Henna','Threading']},
+  {id:'brow_hist',label:'Previous brow work',type:'text',ph:'Lamination, tint, microblading…'},
+  {id:'brow_goal',label:'Desired shape',type:'text',ph:'Natural, defined, bushy…'}
+ ],
+ esth:[
+  {id:'skin_type',label:'Skin type',type:'select',options:['Normal','Dry','Oily','Combination','Sensitive']},
+  {id:'skin_concern',label:'Skin concerns',type:'chips',options:['Acne','Aging / fine lines','Hyperpigmentation','Rosacea / redness','Dehydration','Sun damage']},
+  {id:'skin_actives',label:'Current actives',type:'chips',options:['Retinol / Tretinoin','AHA / BHA acids','Vitamin C','Benzoyl peroxide']},
+  {id:'skin_contra',label:'Contraindications',type:'chips',options:['Accutane (past 6mo)','Recent peel / laser','Botox / filler (2wk)','Active cold sore','Pregnant']},
+  {id:'skin_notes',label:'Notes',type:'text',ph:'Products used, goals'}
+ ],
+ makeup:[
+  {id:'mua_skin',label:'Skin type',type:'select',options:['Normal','Dry','Oily','Combination','Sensitive']},
+  {id:'mua_finish',label:'Desired finish',type:'select',options:['Natural','Dewy','Matte','Full glam']},
+  {id:'mua_event',label:'Occasion',type:'text',ph:'Bridal, photoshoot, event…'},
+  {id:'mua_allergy',label:'Allergies / sensitivities',type:'chips',options:['Latex','Fragrance','Specific brands','Lash glue']},
+  {id:'mua_notes',label:'Shade / notes',type:'text',ph:'Undertone, lashes, preferences'}
+ ],
+ massage:[
+  {id:'mt_focus',label:'Focus areas / complaint',type:'text',ph:'e.g. lower back, neck tension'},
+  {id:'mt_pressure',label:'Pressure',type:'select',options:['Light','Medium','Firm','Deep']},
+  {id:'mt_avoid',label:'Areas to avoid',type:'text',ph:'Injuries, sensitive spots'},
+  {id:'mt_contra',label:'Health flags',type:'chips',options:['Pregnant','High blood pressure','Blood clots / DVT','Diabetes','Osteoporosis','Recent surgery / injury']},
+  {id:'mt_oil',label:'Oil / fragrance allergies',type:'text',ph:'e.g. nut oils, scented'}
+ ],
+ hairext:[
+  {id:'ext_method',label:'Method',type:'select',options:['Tape-in','Wefts','Keratin / fusion','Micro-link','Clip-in']},
+  {id:'ext_natural',label:'Natural hair type',type:'select',options:['Fine','Medium','Coarse']},
+  {id:'ext_color',label:'Colour / length match',type:'text',ph:'Target colour & length'},
+  {id:'ext_scalp',label:'Scalp / hair flags',type:'chips',options:['Thinning','Sensitive scalp','Previous damage','Oily roots']},
+  {id:'ext_notes',label:'Notes',type:'text',ph:'Maintenance, lifestyle'}
+ ]
+};
+function renderTradeFields(){
+  var wrap=$('tradeFields'); if(!wrap)return;
+  var mode=getMode(), defs=TRADE_FIELDS[mode]||[];
+  if(!defs.length){wrap.innerHTML='';return;}
+  var h='<div class="cf-section" style="color:#67e8f9;border-color:#67e8f955">'+escHtml(tradeLabel(mode))+' details</div>';
+  defs.forEach(function(f){
+    h+='<label class="cf-label">'+escHtml(f.label)+'</label>';
+    if(f.type==='select'){
+      h+='<select class="cf-in" data-tf="'+f.id+'"><option value="">—</option>'+f.options.map(function(o){return '<option>'+escHtml(o)+'</option>';}).join('')+'</select>';
+    }else if(f.type==='chips'){
+      h+='<div class="tf-chips" data-tf="'+f.id+'">'+f.options.map(function(o){return '<button type="button" class="tf-chip" data-v="'+escHtml(o)+'" onclick="this.classList.toggle(\'on\')">'+escHtml(o)+'</button>';}).join('')+'</div>';
+    }else{
+      h+='<input class="cf-in" type="text" data-tf="'+f.id+'" placeholder="'+escHtml(f.ph||'')+'">';
+    }
+  });
+  wrap.innerHTML=h;
+}
+function applyTradeFieldValues(tf){
+  tf=tf||{};
+  document.querySelectorAll('#tradeFields [data-tf]').forEach(function(el){
+    var id=el.getAttribute('data-tf'), v=tf[id];
+    if(el.classList.contains('tf-chips')){
+      var arr=Array.isArray(v)?v:(v?[v]:[]);
+      el.querySelectorAll('.tf-chip').forEach(function(b){b.classList.toggle('on',arr.indexOf(b.getAttribute('data-v'))>-1);});
+    }else{ el.value=v||''; }
+  });
+}
+function gatherTradeFields(){
+  var mode=getMode(), defs=TRADE_FIELDS[mode]||[], tf={}, show=[];
+  defs.forEach(function(f){
+    var el=document.querySelector('#tradeFields [data-tf="'+f.id+'"]'); if(!el)return;
+    if(f.type==='chips'){
+      var arr=[].slice.call(el.querySelectorAll('.tf-chip.on')).map(function(b){return b.getAttribute('data-v');});
+      if(arr.length){tf[f.id]=arr;show.push({l:f.label,chips:arr});}
+    }else{
+      var val=(el.value||'').trim(); if(val){tf[f.id]=val;show.push({l:f.label,v:val});}
+    }
+  });
+  return {tf:tf,show:show,trade:mode};
+}
 function fillClientForm(c){
   $('clId').value=c.id||'';
   $('clName').value=c.name||'';$('clPhone').value=c.phone||'';$('clEmail').value=c.email||'';$('clDob').value=c.dob||'';
@@ -2233,6 +2343,7 @@ function fillClientForm(c){
   buildConditionChecks(c.conditions||[]);
   $('clMeds').value=c.meds||'';$('clNotes').value=c.notes||'';$('clAgree').checked=!!c.agreed;
   _editingSig=c.signature||'';
+  renderTradeFields();applyTradeFieldValues(c.tf);
 }
 function showClientForm(){$('clientFormModal').classList.add('open');document.body.classList.add('modal-open');discEditing=false;renderDisclaimer();$('discEditBtn').innerHTML='<i class="ti ti-pencil" style="font-size:13px"></i> Edit disclaimer text';setTimeout(function(){initSigPad();if(_editingSig)drawSavedSig(_editingSig);},90);}
 function newClient(){
@@ -2254,10 +2365,15 @@ function saveClient(){
   var prev=i>-1?clients[i]:null;
   var sig=sigHasInk?$('sigPad').toDataURL('image/png'):(_editingSig||'');
   var today=new Date().toISOString().slice(0,10);
+  var tg=gatherTradeFields();
+  var mergedTf=Object.assign({},(prev&&prev.tf)||{});
+  (TRADE_FIELDS[tg.trade]||[]).forEach(function(f){delete mergedTf[f.id];});
+  mergedTf=Object.assign(mergedTf,tg.tf);
   var obj={id:id,name:name,phone:$('clPhone').value.trim(),email:$('clEmail').value.trim(),dob:$('clDob').value,
     patchDone:$('clPatchDone').checked,patchDate:$('clPatchDate').value,patchRes:clPatchRes,
     conditions:gatherConditions(),meds:$('clMeds').value.trim(),notes:$('clNotes').value.trim(),
     agreed:$('clAgree').checked,signature:sig,
+    tf:mergedTf,tfShow:tg.show,tfTrade:tg.trade,
     signedDate:sig?((prev&&prev.signedDate)?prev.signedDate:today):'',
     created:prev?(prev.created||Date.now()):Date.now(),updated:Date.now()};
   if(i>-1)clients[i]=obj;else clients.push(obj);
@@ -2734,7 +2850,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.43 · tap-outside close + keyboard-aware fields';
+var VERSION='app v1.44 · trade-specific client cards';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
