@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <title>Your Salon</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -147,7 +148,7 @@
 
   <div class="stage">
     <iframe id="room" title="room" allow="web-share; clipboard-write"></iframe>
-    <div class="ver">salon v0.7</div>
+    <div class="ver">salon v0.8</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -233,13 +234,17 @@
     messagingSenderId:"216199298094",
     appId:"1:216199298094:web:665c061ebe07d3c23373bf"
   };
-  var fa=null;
+  var fa=null, fdb=null;
   function initAuth(){
     try{
       if(typeof firebase==='undefined'||!firebase.initializeApp){return;}
       if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(FB_CONFIG);
       fa=firebase.auth();
-      fa.onAuthStateChanged(function(u){ renderAuth(u); });
+      try{ fdb=firebase.firestore(); }catch(e){ console.warn('firestore init',e); }
+      fa.onAuthStateChanged(function(u){
+        renderAuth(u);
+        if(u){ startUserSync(u.uid); } else { stopUserSync(); }
+      });
     }catch(e){console.warn('auth init failed',e);}
   }
   function renderAuth(u){
@@ -279,6 +284,88 @@
     if(c.indexOf('network')>=0)return 'No connection — check your internet.';
     return (e&&e.message)||'Something went wrong — try again.';
   }
+
+  /* ===== SYNC ENGINE (Step 2) — mirrors shared localStorage <-> Firestore, merge-safe ===== */
+  var SYNC_KEYS=['ap_appts','ap_clients','ap_custom','ap_stock','ap_prefs','cp_appts','cp_clients','cp_prefs','cp_paid','combo_trade'];
+  var META_KEY='salon_sync_meta';
+  var _uid=null, _userUnsub=null, _pushTimer=null, _reloadTimer=null, _snap={};
+
+  function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+  function lsSet(k,v){try{ if(v==null)localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){}}
+  function getMeta(){try{return JSON.parse(localStorage.getItem(META_KEY)||'{}');}catch(e){return {};}}
+  function setMeta(m){try{localStorage.setItem(META_KEY,JSON.stringify(m));}catch(e){}}
+  function snapshotLocal(){var s={};SYNC_KEYS.forEach(function(k){s[k]=lsGet(k);});return s;}
+  function detectChanges(){var ch=[];SYNC_KEYS.forEach(function(k){if(lsGet(k)!==_snap[k])ch.push(k);});return ch;}
+
+  function isRecArray(val){try{var a=JSON.parse(val);return Array.isArray(a)&&a.length>0&&a[0]&&typeof a[0]==='object'&&('id' in a[0]);}catch(e){return false;}}
+  // Union two record arrays by id. The "winner" side overrides conflicting ids; non-conflicts from both survive (never lose a record).
+  function mergeRecArrays(localStr,cloudStr,localNewer){
+    var L=[],C=[];try{L=JSON.parse(localStr)||[];}catch(e){L=[];}try{C=JSON.parse(cloudStr)||[];}catch(e){C=[];}
+    var winner=localNewer?L:C, loser=localNewer?C:L;
+    var byId={}, order=[], n=0;
+    function ingest(list){list.forEach(function(r){var id=(r&&r.id!=null)?('id:'+r.id):('x:'+(n++));if(!(id in byId)){byId[id]=r;order.push(id);}else{byId[id]=r;}});}
+    ingest(loser); ingest(winner); // winner ingested last => overrides conflicts
+    return JSON.stringify(order.map(function(id){return byId[id];}));
+  }
+  // Merge the cloud's keys into local. Returns true if local changed (so we can refresh the room).
+  function mergeFromCloud(cloudKeys){
+    cloudKeys=cloudKeys||{}; var meta=getMeta(), changed=false;
+    SYNC_KEYS.forEach(function(k){
+      var lv=lsGet(k), lt=meta[k]||0;
+      var c=cloudKeys[k], cv=c?c.v:null, ct=c?(c.t||0):0;
+      if(cv==null) return;                    // nothing in cloud for this key -> keep local
+      if(lv==null){ lsSet(k,cv); meta[k]=ct; changed=true; return; }
+      if(lv===cv){ if(ct>lt)meta[k]=ct; return; }
+      if(isRecArray(lv)||isRecArray(cv)){      // record arrays -> union (no record ever lost)
+        var merged=mergeRecArrays(lv,cv, lt>=ct);
+        if(merged!==lv){ lsSet(k,merged); changed=true; }
+        meta[k]=Math.max(lt,ct);
+      }else{                                   // scalar/object -> newer timestamp wins
+        if(ct>lt){ lsSet(k,cv); meta[k]=ct; changed=true; }
+      }
+    });
+    setMeta(meta); return changed;
+  }
+  function pushKeys(keys){
+    if(!fdb||!_uid||!keys||!keys.length)return;
+    var meta=getMeta(), now=Date.now(), keysObj={};
+    keys.forEach(function(k){ keysObj[k]={v:lsGet(k), t:now}; meta[k]=now; });
+    setMeta(meta);
+    fdb.collection('users').doc(_uid).set({keys:keysObj,updatedAt:now},{merge:true})
+      .then(function(){ _snap=snapshotLocal(); })
+      .catch(function(e){ console.warn('sync push failed',e); });
+  }
+  function scheduleScan(){ clearTimeout(_pushTimer); _pushTimer=setTimeout(function(){ if(!_uid)return; var ch=detectChanges(); if(ch.length)pushKeys(ch); },1500); }
+  function reloadRoomSoon(){ clearTimeout(_reloadTimer); _reloadTimer=setTimeout(function(){ try{ frame.src=roomSrc(current); }catch(e){} },450); }
+
+  function startUserSync(uid){
+    if(!fdb){ return; }
+    _uid=uid; _snap=snapshotLocal();
+    if(_userUnsub){ _userUnsub(); _userUnsub=null; }
+    var ref=fdb.collection('users').doc(uid);
+    ref.get().then(function(doc){
+      var data=doc.exists?(doc.data()||{}):{};
+      var ck=data.keys||{};
+      var changed=mergeFromCloud(ck);                 // pull cloud down, merge-safe
+      var toPush=[];                                  // seed/refresh cloud with anything local that differs
+      SYNC_KEYS.forEach(function(k){ var lv=lsGet(k); if(lv!=null){ var cv=ck[k]?ck[k].v:null; if(cv!==lv)toPush.push(k); } });
+      if(toPush.length)pushKeys(toPush);
+      _snap=snapshotLocal();
+      if(changed)reloadRoomSoon();
+      _userUnsub=ref.onSnapshot(function(snap){
+        if(snap.metadata&&snap.metadata.hasPendingWrites)return;  // ignore our own writes
+        var d=snap.data()||{};
+        if(mergeFromCloud(d.keys||{})){ _snap=snapshotLocal(); reloadRoomSoon(); }
+      });
+    }).catch(function(e){ console.warn('sync start failed',e); });
+  }
+  function stopUserSync(){ if(_userUnsub){ _userUnsub(); _userUnsub=null; } _uid=null; clearTimeout(_pushTimer); }
+
+  // a room (iframe) write to shared localStorage fires 'storage' here in the shell -> scan & push
+  window.addEventListener('storage',function(e){ if(_uid)scheduleScan(); });
+  // safety net in case a storage event is missed
+  setInterval(function(){ if(_uid)scheduleScan(); },5000);
+
   initAuth();
 </script>
 </body>
