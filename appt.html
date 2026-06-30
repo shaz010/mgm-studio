@@ -2386,7 +2386,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.40 · tips own colour';
+var VERSION='v4.41 · tap-outside close + keyboard-aware fields';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -3118,6 +3118,28 @@ setInterval(checkForUpdate,60000);
 /* also check the instant the app is reopened / brought back to the foreground */
 document.addEventListener('visibilitychange',function(){if(!document.hidden)checkForUpdate();});
 window.addEventListener('focus',checkForUpdate);
+</script>
+<script>
+/* QoL: tap outside any overlay to dismiss + keep focused fields above the keyboard */
+(function(){
+  function vis(el){try{return getComputedStyle(el).display!=='none';}catch(e){return true;}}
+  document.addEventListener('click',function(e){
+    var t=e.target; if(!t||!t.matches) return;
+    if(t.matches('.trade-screen')){ if(!vis(t))return; if(typeof closeTradePicker==='function')closeTradePicker(); else t.style.display='none'; return; }
+    if(t.matches('.modal')){
+      if(!vis(t))return;
+      t.classList.remove('show'); t.classList.remove('open');
+      try{document.body.classList.remove('modal-open');}catch(_){}
+    }
+  });
+  document.addEventListener('focusin',function(e){
+    var el=e.target; if(!el)return; var g=el.tagName; if(g!=='INPUT'&&g!=='TEXTAREA'&&g!=='SELECT')return;
+    setTimeout(function(){ try{
+      var r=el.getBoundingClientRect(), vh=window.innerHeight||document.documentElement.clientHeight;
+      if(r.bottom>vh*0.55||r.top<8){ el.scrollIntoView({block:'center',behavior:'smooth'}); }
+    }catch(_){} },300);
+  });
+})();
 </script>
 </body>
 </html>
