@@ -10,6 +10,8 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <title>Your Salon</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -33,8 +35,28 @@
   }
   .brand{
     display:flex;align-items:center;gap:9px;
-    margin-bottom:11px;
   }
+  .toprow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+  .acct-pill{display:flex;align-items:center;gap:6px;border:1px solid #23232c;background:#0c0c11;color:#9a9aa6;font-family:inherit;font-size:11.5px;font-weight:700;padding:7px 11px;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:.15s;flex-shrink:0}
+  .acct-pill i{font-size:15px}
+  .acct-pill:active{transform:scale(.97)}
+  .acct-pill.on{color:#7ee0b8;border-color:#1f5a44;background:#08130e}
+
+  /* ===== Auth overlay ===== */
+  .auth-ov{position:fixed;inset:0;background:rgba(0,0,0,.72);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:50;padding:22px}
+  .auth-ov.open{display:flex}
+  .auth-card{width:100%;max-width:340px;background:#0b0b10;border:1px solid #1c1c24;border-radius:18px;padding:24px 22px 20px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .auth-x{position:absolute;top:12px;right:14px;background:none;border:0;color:#6a6a78;font-size:24px;line-height:1;cursor:pointer;font-family:inherit}
+  .auth-mark{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:22px;color:#050507;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff)}
+  .auth-title{text-align:center;font-size:18px;font-weight:800;color:#fff;margin-bottom:5px}
+  .auth-sub{text-align:center;font-size:12.5px;color:#8a8a96;line-height:1.45;margin-bottom:16px}
+  .auth-in{width:100%;background:#08080c;border:1px solid #23232c;border-radius:11px;color:#f0f0f0;font-family:inherit;font-size:15px;padding:13px 14px;margin-bottom:10px;outline:none}
+  .auth-in:focus{border-color:#a78bfa}
+  .auth-err{min-height:16px;font-size:12px;color:#f59ed6;text-align:center;margin:2px 0 8px}
+  .auth-btn{width:100%;border:1px solid #2a2a34;background:#13131a;color:#e8e8ef;font-family:inherit;font-size:14.5px;font-weight:700;padding:13px;border-radius:11px;cursor:pointer;margin-bottom:9px;-webkit-tap-highlight-color:transparent}
+  .auth-btn:active{transform:scale(.99)}
+  .auth-btn.primary{border:1px solid transparent;color:#fff;background:linear-gradient(#0b0b10,#0b0b10) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 14px rgba(167,139,250,.3)}
+  .auth-link{display:block;margin:2px auto 0;background:none;border:0;color:#7a7a88;font-family:inherit;font-size:12.5px;cursor:pointer;text-decoration:underline}
   .brand-mark{
     width:30px;height:30px;border-radius:8px;
     display:flex;align-items:center;justify-content:center;
@@ -102,12 +124,15 @@
 <body>
 
   <div class="shell-bar">
-    <div class="brand">
-      <div class="brand-mark"><i class="ti ti-sparkles"></i></div>
-      <div>
-        <div class="brand-name">Your Salon</div>
-        <div class="brand-sub">ONE APP · EARNINGS + APPOINTMENTS</div>
+    <div class="toprow">
+      <div class="brand">
+        <div class="brand-mark"><i class="ti ti-sparkles"></i></div>
+        <div>
+          <div class="brand-name">Your Salon</div>
+          <div class="brand-sub">ONE APP · EARNINGS + APPOINTMENTS</div>
+        </div>
       </div>
+      <button class="acct-pill" id="acctPill" onclick="openAuth()"><i class="ti ti-cloud-off"></i><span id="acctTxt">Sign in to sync</span></button>
     </div>
 
     <div class="rooms" role="tablist">
@@ -122,7 +147,30 @@
 
   <div class="stage">
     <iframe id="room" title="room" allow="web-share; clipboard-write"></iframe>
-    <div class="ver">salon v0.6</div>
+    <div class="ver">salon v0.7</div>
+  </div>
+
+  <!-- ===== Auth overlay (Step 1: login only) ===== -->
+  <div class="auth-ov" id="authOv">
+    <div class="auth-card">
+      <button class="auth-x" onclick="closeAuth()">&times;</button>
+      <div class="auth-mark"><i class="ti ti-cloud-lock"></i></div>
+      <div id="authForm">
+        <div class="auth-title">Sync your data</div>
+        <div class="auth-sub">Sign in so your numbers are safely backed up — and on every device.</div>
+        <input id="authEmail" class="auth-in" type="email" placeholder="Email" autocomplete="email" autocapitalize="off" spellcheck="false">
+        <input id="authPass" class="auth-in" type="password" placeholder="Password" autocomplete="current-password">
+        <div class="auth-err" id="authErr"></div>
+        <button class="auth-btn primary" onclick="doSignIn()">Sign in</button>
+        <button class="auth-btn" onclick="doSignUp()">Create account</button>
+        <button class="auth-link" onclick="doReset()">Forgot password?</button>
+      </div>
+      <div id="authMe" style="display:none">
+        <div class="auth-title">You're synced</div>
+        <div class="auth-sub">Signed in as <b id="meEmail" style="color:#cfcfe0"></b></div>
+        <button class="auth-btn" onclick="doSignOut()">Sign out</button>
+      </div>
+    </div>
   </div>
 
 <script>
@@ -175,6 +223,63 @@
     setActive(current);
     frame.src=roomSrc(current);
   })();
+
+  /* ===== Account / sync auth (Step 1: login only — data sync comes next) ===== */
+  var FB_CONFIG={
+    apiKey:"AIzaSyCxPNPOcu-ShSRXDJtwdNBZJ6kFaxQ8apM",
+    authDomain:"telemetry-eagle.firebaseapp.com",
+    projectId:"telemetry-eagle",
+    storageBucket:"telemetry-eagle.firebasestorage.app",
+    messagingSenderId:"216199298094",
+    appId:"1:216199298094:web:665c061ebe07d3c23373bf"
+  };
+  var fa=null;
+  function initAuth(){
+    try{
+      if(typeof firebase==='undefined'||!firebase.initializeApp){return;}
+      if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(FB_CONFIG);
+      fa=firebase.auth();
+      fa.onAuthStateChanged(function(u){ renderAuth(u); });
+    }catch(e){console.warn('auth init failed',e);}
+  }
+  function renderAuth(u){
+    var pill=document.getElementById('acctPill');
+    var txt=document.getElementById('acctTxt');
+    var ic=pill?pill.querySelector('i'):null;
+    if(u){
+      if(txt)txt.textContent=u.email?u.email.split('@')[0]:'Synced';
+      if(ic)ic.className='ti ti-cloud-check';
+      if(pill)pill.classList.add('on');
+    }else{
+      if(txt)txt.textContent='Sign in to sync';
+      if(ic)ic.className='ti ti-cloud-off';
+      if(pill)pill.classList.remove('on');
+    }
+    var f=document.getElementById('authForm'), me=document.getElementById('authMe');
+    if(u){ if(f)f.style.display='none'; if(me)me.style.display='block'; var em=document.getElementById('meEmail'); if(em)em.textContent=u.email||''; }
+    else{ if(f)f.style.display='block'; if(me)me.style.display='none'; }
+  }
+  function openAuth(){var o=document.getElementById('authOv');if(o)o.classList.add('open');}
+  function closeAuth(){var o=document.getElementById('authOv');if(o)o.classList.remove('open');authErr('');}
+  function authErr(m){var e=document.getElementById('authErr');if(e)e.textContent=m||'';}
+  function _em(){return ((document.getElementById('authEmail')||{}).value||'').trim();}
+  function _pw(){return (document.getElementById('authPass')||{}).value||'';}
+  function _guard(){ if(!fa){authErr('Connecting… give it a second and retry.');return false;} return true; }
+  function doSignIn(){authErr('');if(!_guard())return;fa.signInWithEmailAndPassword(_em(),_pw()).then(function(){closeAuth();}).catch(function(e){authErr(prettyAuthErr(e));});}
+  function doSignUp(){authErr('');if(!_guard())return;if(_pw().length<6){authErr('Password needs 6+ characters.');return;}fa.createUserWithEmailAndPassword(_em(),_pw()).then(function(){closeAuth();}).catch(function(e){authErr(prettyAuthErr(e));});}
+  function doReset(){authErr('');if(!_guard())return;var em=_em();if(!em){authErr('Type your email above first, then tap reset.');return;}fa.sendPasswordResetEmail(em).then(function(){authErr('Reset email sent — check your inbox.');}).catch(function(e){authErr(prettyAuthErr(e));});}
+  function doSignOut(){if(fa)fa.signOut();closeAuth();}
+  function prettyAuthErr(e){var c=(e&&e.code)||'';
+    if(c.indexOf('wrong-password')>=0||c.indexOf('invalid-credential')>=0)return 'Wrong email or password.';
+    if(c.indexOf('user-not-found')>=0)return 'No account yet — tap Create account.';
+    if(c.indexOf('email-already-in-use')>=0)return 'That email already has an account — tap Sign in.';
+    if(c.indexOf('invalid-email')>=0)return 'That email doesn’t look right.';
+    if(c.indexOf('weak-password')>=0)return 'Password needs 6+ characters.';
+    if(c.indexOf('operation-not-allowed')>=0)return 'Email sign-in isn’t switched on yet (Firebase console).';
+    if(c.indexOf('network')>=0)return 'No connection — check your internet.';
+    return (e&&e.message)||'Something went wrong — try again.';
+  }
+  initAuth();
 </script>
 </body>
 </html>
