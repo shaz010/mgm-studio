@@ -1146,6 +1146,11 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
     </details>
 
     <details class="legal-foot">
+      <summary><i class="ti ti-lock" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Your privacy &amp; support</summary>
+      <div class="legal-body"><strong>Your data is yours.</strong> Everything you enter — clients, bookings, notes, consent — stays on your device and, if you turn on cloud backup, in your own private account. It is <strong>never sold, shared, or used for advertising</strong>.<br><br>Questions, bugs, or help? Email <a href="mailto:shahbazmirshahi@mac.com" style="color:var(--gold);text-decoration:none">shahbazmirshahi@mac.com ↗</a> — every message reaches me directly.</div>
+    </details>
+
+    <details class="legal-foot">
       <summary><i class="ti ti-shield-check" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Legal &amp; disclaimers</summary>
       <div class="legal-body">CommissionPro is a personal tracking tool. All figures are estimates based on the information you enter and are for your own reference only — not official payroll, tax, or accounting records. Commission splits and pay vary; the app reflects only the values you input and does not guarantee any amount. CommissionPro does not provide financial, legal, or tax advice. Always verify your earnings against your salon's official records.<br><br>Eye Rest is a relaxing visual and a reminder to rest your eyes. It is not a medical device or treatment, is not a substitute for professional eye care, and makes no health or therapeutic claims.<br><br><a href="privacy.html" target="_blank" style="color:var(--gold);text-decoration:none">Privacy Policy ↗</a> &nbsp;·&nbsp; <a href="terms.html" target="_blank" style="color:var(--gold);text-decoration:none">Terms of Service ↗</a></div>
     </details>
@@ -2947,7 +2952,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.46 · global search (Earnings)';
+var VERSION='app v1.47 · privacy + support line';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
