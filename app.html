@@ -1681,6 +1681,19 @@ function _retentionData(){
   keys.forEach(function(k){var o=by[k];visits+=o.past;if(o.past>=2)repeat++;if(o.future>0)ahead++;});
   return {total:total,repeat:repeat,oneTime:total-repeat,visits:visits,ahead:ahead,rate:total?Math.round(repeat/total*100):0,avg:total?(visits/total):0};
 }
+function _reviewData(){
+  var all=loadAppts().filter(function(a){return a.date;});
+  var today=new Date();today.setHours(0,0,0,0);
+  var cut=today.getTime()-14*86400000;
+  var byName={};
+  all.forEach(function(a){var k=(a.name||'').trim().toLowerCase();if(!k)return;var d=_inDate(a.date);if(!d||d.getTime()>today.getTime())return;
+    if(!byName[k]||d>byName[k].last)byName[k]={name:a.name,last:d,svc:a.cat||''};});
+  var cardBy={};(typeof getClients==='function'?getClients():[]).forEach(function(c){if(c.name)cardBy[c.name.trim().toLowerCase()]={id:c.id,phone:c.phone||''};});
+  var out=[];
+  Object.keys(byName).forEach(function(k){var o=byName[k];if(o.last.getTime()<cut)return;var cd=cardBy[k]||{};out.push({name:o.name,last:o.last,svc:o.svc,phone:cd.phone||'',id:cd.id||''});});
+  out.sort(function(a,b){return b.last-a.last;});
+  return out;
+}
 function _inFilter(bks){
   var now=new Date();
   if(_inPeriod==='month'){var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');return bks.filter(function(a){return String(a.date||'').slice(0,7)===ym;});}
@@ -1739,7 +1752,9 @@ function renderInsightsBoard(){
       '<div class="in-bar-row"><div class="in-bar-lbl">Repeat</div><div class="in-bar-track"><div class="in-bar-fill" style="width:'+Math.round(rt.repeat/maxR*100)+'%;background:linear-gradient(90deg,#3a9e6f,#67e8a0)"></div></div><div class="in-bar-val">'+rt.repeat+'</div></div>'+
       '<div class="in-bar-row"><div class="in-bar-lbl">One-time</div><div class="in-bar-track"><div class="in-bar-fill" style="width:'+Math.round(rt.oneTime/maxR*100)+'%;background:linear-gradient(90deg,#7a5a2a,#c99a4a)"></div></div><div class="in-bar-val">'+rt.oneTime+'</div></div>';
   }
-  body.innerHTML=seg+cards+wbSec+bdSec+svcSec+monthSec+daySec+timeSec+retSec+'<div class="in-hint">Revenue = full service price. Income = your commission + tips. Win-back = 90+ days since last visit with nothing booked. Retention is all-time.</div>';
+  var rv=_reviewData();
+  var rvSec=rv.length?('<div class="in-sec">⭐ Ask for a review — seen in last 14 days ('+rv.length+')</div>'+rv.slice(0,20).map(function(o){var msg='<button class="wb-msg" onclick="event.stopPropagation();openMsg(\''+_js(o.name)+'\',\''+_js(o.phone||'')+'\',\'review\')">Ask</button>';return '<div class="wb-row"'+(o.id?(' onclick="wbOpen(\''+o.id+'\')"'):'')+'><div class="wb-main"><div class="wb-nm">'+escHtml(o.name)+'</div><div class="wb-sub">Seen '+_inDayLbl(o.last)+(o.svc?(' · '+escHtml(o.svc)):'')+'</div></div>'+msg+'</div>';}).join('')):'';
+  body.innerHTML=seg+cards+wbSec+bdSec+rvSec+svcSec+monthSec+daySec+timeSec+retSec+'<div class="in-hint">Revenue = full service price. Income = your commission + tips. Win-back = 90+ days since last visit with nothing booked. Retention is all-time.</div>';
 }
 /* ===== Global search (Earnings — clients + bookings) ===== */
 function openEarnSearch(){var o=$('esOv');if(!o)return;o.classList.add('open');document.body.classList.add('modal-open');var i=$('esIn');if(i){i.value='';setTimeout(function(){i.focus();},80);}runEarnSearch('');}
@@ -3351,7 +3366,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.58 · aftercare + consent PDF';
+var VERSION='app v1.59 · review nudge';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
