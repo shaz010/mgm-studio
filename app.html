@@ -356,6 +356,12 @@ body.theme-light .legal-body{color:#777}
 .in-list-row .amt{font-size:13px;color:var(--gold,#e8c37a);font-weight:700;flex-shrink:0}
 .in-empty{text-align:center;color:#666;padding:44px 16px;font-size:14px;line-height:1.6}
 .in-hint{font-size:11px;color:#666;margin:20px 0 8px;line-height:1.5}
+.wb-row{display:flex;align-items:center;gap:9px;padding:11px 0;border-bottom:1px solid #17171d;cursor:pointer}
+.wb-main{flex:1;min-width:0}
+.wb-nm{font-size:14px;font-weight:700;color:#e8e8ef;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wb-sub{font-size:11.5px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wb-gap{font-size:11px;font-weight:700;color:#ff8a80;background:rgba(226,72,60,.14);padding:4px 9px;border-radius:20px;flex-shrink:0}
+.wb-msg{font-size:11.5px;font-weight:700;color:#5fd6c6;background:rgba(95,214,198,.14);padding:6px 12px;border-radius:20px;text-decoration:none;flex-shrink:0}
 .cf-chk{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#ddd;cursor:pointer;margin-top:10px}
 .cf-chk input{width:19px;height:19px;accent-color:var(--gold);flex-shrink:0}
 /* Big custom checkbox (reliable tap target on iOS) */
@@ -1530,6 +1536,27 @@ function _inMoney(n){return '$'+Math.round(+n||0).toLocaleString('en-US');}
 function _inDate(ds){if(!ds)return null;var p=String(ds).split('-');if(p.length<3)return null;return new Date(+p[0],+p[1]-1,+p[2]);}
 function _inMonLbl(m){var p=String(m).split('-');var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mo[(+p[1])-1]+" '"+String(p[0]).slice(2);}
 function _inHour(h){h=((h%24)+24)%24;var ap=h<12?'AM':'PM';var hh=h%12;if(hh===0)hh=12;return hh+' '+ap;}
+function _daysBetween(a,b){return Math.floor((b-a)/86400000);}
+function _inDayLbl(d){var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mo[d.getMonth()]+' '+d.getDate()+", '"+String(d.getFullYear()).slice(2);}
+function _gapLabel(g){if(g>=365)return Math.floor(g/365)+'y';if(g>=60)return Math.round(g/30)+' mo';return g+' days';}
+function _winbackData(){
+  var all=loadAppts().filter(function(a){return a.date;});
+  var today=new Date();today.setHours(0,0,0,0);
+  var byName={};
+  all.forEach(function(a){
+    var key=(a.name||'').trim().toLowerCase();if(!key)return;
+    var d=_inDate(a.date);if(!d)return;
+    if(!byName[key])byName[key]={name:a.name,last:null,svc:'',upcoming:false};
+    if(d.getTime()>today.getTime())byName[key].upcoming=true;                       // has a future booking → not lost
+    else if(!byName[key].last||d>byName[key].last){byName[key].last=d;byName[key].svc=a.cat||'';}
+  });
+  var cardBy={};(typeof getClients==='function'?getClients():[]).forEach(function(c){if(c.name)cardBy[c.name.trim().toLowerCase()]={id:c.id,phone:c.phone||''};});
+  var out=[];
+  Object.keys(byName).forEach(function(k){var o=byName[k];if(o.upcoming||!o.last)return;var gap=_daysBetween(o.last,today);if(gap<90)return;var cd=cardBy[k]||{};out.push({name:o.name,gap:gap,last:o.last,svc:o.svc,phone:cd.phone||'',id:cd.id||''});});
+  out.sort(function(a,b){return b.gap-a.gap;});
+  return out;
+}
+function wbOpen(id){closeInsights();if(typeof editClient==='function')editClient(id);}
 function _inFilter(bks){
   var now=new Date();
   if(_inPeriod==='month'){var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');return bks.filter(function(a){return String(a.date||'').slice(0,7)===ym;});}
@@ -1570,7 +1597,9 @@ function renderInsightsBoard(){
   bks.forEach(function(a){var h=parseInt(String(a.time||'').slice(0,2),10);if(!isNaN(h))byH[h]=(byH[h]||0)+1;});
   Object.keys(byH).forEach(function(h){if(byH[h]>bhc){bhc=byH[h];busiestHour=+h;}});
   var timeSec=busiestHour!==null?('<div class="in-sec">Busiest time</div><div class="in-list-row"><div class="nm">'+_inHour(busiestHour)+' – '+_inHour(busiestHour+1)+'</div><div class="amt">'+bhc+' visit'+(bhc===1?'':'s')+'</div></div>'):'';
-  body.innerHTML=seg+cards+svcSec+monthSec+daySec+timeSec+'<div class="in-hint">Revenue = full service price. Income = your commission + tips.</div>';
+  var wb=_winbackData();
+  var wbSec=wb.length?('<div class="in-sec">💔 Win-back — 90+ days away ('+wb.length+')</div>'+wb.slice(0,30).map(function(o){var msg=o.phone?('<a class="wb-msg" href="sms:'+o.phone.replace(/[^0-9+]/g,'')+'" onclick="event.stopPropagation()">Message</a>'):'';return '<div class="wb-row"'+(o.id?(' onclick="wbOpen(\''+o.id+'\')"'):'')+'><div class="wb-main"><div class="wb-nm">'+escHtml(o.name)+'</div><div class="wb-sub">Last: '+_inDayLbl(o.last)+(o.svc?(' · '+escHtml(o.svc)):'')+'</div></div><div class="wb-gap">'+_gapLabel(o.gap)+'</div>'+msg+'</div>';}).join('')):'';
+  body.innerHTML=seg+cards+wbSec+svcSec+monthSec+daySec+timeSec+'<div class="in-hint">Revenue = full service price. Income = your commission + tips. Win-back = clients 90+ days since last visit with nothing booked.</div>';
 }
 /* ===== Global search (Earnings — clients + bookings) ===== */
 function openEarnSearch(){var o=$('esOv');if(!o)return;o.classList.add('open');document.body.classList.add('modal-open');var i=$('esIn');if(i){i.value='';setTimeout(function(){i.focus();},80);}runEarnSearch('');}
@@ -3081,7 +3110,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.50 · collapsible client card';
+var VERSION='app v1.51 · win-back list';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
