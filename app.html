@@ -298,6 +298,9 @@ body.theme-light .legal-body{color:#777}
 .tf-chips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px}
 .tf-chip{font-size:12px;font-weight:600;padding:7px 12px;border-radius:20px;background:#161616;color:#bbb;border:1px solid #333;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
 .tf-chip.on{background:rgba(103,232,249,.14);color:#67e8f9;border-color:#67e8f988}
+.ty-exp-row{display:flex;gap:8px;margin:12px 0 4px}
+.ty-exp-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:10px;border:1px solid #2f6f5a;background:#0c1a15;color:#7ee0b8;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ty-exp-btn:active{transform:scale(.98)}
 .cf-chk{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#ddd;cursor:pointer;margin-top:10px}
 .cf-chk input{width:19px;height:19px;accent-color:var(--gold);flex-shrink:0}
 /* Big custom checkbox (reliable tap target on iOS) */
@@ -1117,6 +1120,10 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       <div class="ty-body">
         <div class="ty-controls"><label>Year</label><select id="taxYearSel" onchange="renderTaxYear()"></select></div>
         <div id="taxYearOut"></div>
+        <div class="ty-exp-row">
+          <button class="ty-exp-btn" onclick="taxExportCSV()"><i class="ti ti-file-spreadsheet" style="font-size:15px"></i> Export CSV</button>
+          <button class="ty-exp-btn" onclick="taxExportPDF()"><i class="ti ti-printer" style="font-size:15px"></i> Export PDF</button>
+        </div>
         <div class="ty-note"><strong>Income only.</strong> This does <strong>not</strong> include your business expenses or deductions — those are totalled separately and are usually a bigger part of the picture. For an accurate return, work with a tax professional. Tips still owe Social Security &amp; Medicare; the federal tip deduction has eligibility and income limits.</div>
       </div>
     </details>
@@ -1418,6 +1425,49 @@ function _tyYears(){var ys={},cy=new Date().getFullYear();ys[cy]=1;loadAppts().f
 function _tyFmt(n){return '$'+(Math.round((+n||0)*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function renderTaxYear(){var sel=document.getElementById('taxYearSel'),out=document.getElementById('taxYearOut');if(!sel||!out)return;var y=sel.value||String(new Date().getFullYear()),me=0,tip=0,n=0;loadAppts().forEach(function(a){if(a&&a.date&&String(a.date).slice(0,4)===y){me+=(+a.me||0);tip+=(+a.tip||0);n++;}});out.innerHTML='<div class="ty-row"><span>Appointments</span><span>'+n+'</span></div><div class="ty-row"><span>Service commission (taxable)</span><span>'+_tyFmt(me)+'</span></div><div class="ty-row"><span>Tips received</span><span>'+_tyFmt(tip)+'</span></div><div class="ty-row ty-total"><span>Total income '+y+'</span><span>'+_tyFmt(me+tip)+'</span></div>';}
 function buildTaxYear(){var sel=document.getElementById('taxYearSel');if(!sel)return;var ys=_tyYears(),cur=sel.value;sel.innerHTML=ys.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');if(cur&&ys.indexOf(cur)>=0)sel.value=cur;else sel.value=String(new Date().getFullYear());renderTaxYear();}
+function _tyData(){
+  var by={}; loadAppts().forEach(function(a){
+    if(!a||!a.date)return; var y=String(a.date).slice(0,4); if(!/^\d{4}$/.test(y))return;
+    if(!by[y])by[y]={y:y,n:0,me:0,tip:0}; by[y].n++; by[y].me+=(+a.me||0); by[y].tip+=(+a.tip||0);
+  });
+  return Object.keys(by).sort().map(function(y){var r=by[y];r.total=r.me+r.tip;return r;});
+}
+function _dlFile(text,fname,mime){
+  try{
+    var blob=new Blob([text],{type:mime+';charset=utf-8'});
+    if(navigator.share&&navigator.canShare){
+      var file=new File([blob],fname,{type:mime});
+      if(navigator.canShare({files:[file]})){navigator.share({files:[file],title:fname}).catch(function(){__dl(blob,fname);});return;}
+    }
+    __dl(blob,fname);
+  }catch(e){__dl(new Blob([text],{type:mime}),fname);}
+}
+function __dl(blob,fname){var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=fname;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(url);a.remove();},1000);}
+function taxExportCSV(){
+  var rows=_tyData(); if(!rows.length){alert('No income recorded yet.');return;}
+  var nm=(typeof getName==='function'?getName():'')||'';
+  var lines=['Year,Appointments,Service commission (taxable),Tips received,Total income'];
+  var tN=0,tMe=0,tTip=0,tTot=0;
+  rows.forEach(function(r){lines.push([r.y,r.n,r.me.toFixed(2),r.tip.toFixed(2),r.total.toFixed(2)].join(','));tN+=r.n;tMe+=r.me;tTip+=r.tip;tTot+=r.total;});
+  lines.push(['All years',tN,tMe.toFixed(2),tTip.toFixed(2),tTot.toFixed(2)].join(','));
+  _dlFile(lines.join('\r\n'),(nm?nm.replace(/\s+/g,'_')+'_':'')+'income_by_year.csv','text/csv');
+}
+function taxExportPDF(){
+  var rows=_tyData(); if(!rows.length){alert('No income recorded yet.');return;}
+  var nm=(typeof getName==='function'?getName():'')||'Your name';
+  var tN=0,tMe=0,tTip=0,tTot=0;
+  var body=rows.map(function(r){tN+=r.n;tMe+=r.me;tTip+=r.tip;tTot+=r.total;
+    return '<tr><td>'+r.y+'</td><td class="r">'+r.n+'</td><td class="r">'+_tyFmt(r.me)+'</td><td class="r">'+_tyFmt(r.tip)+'</td><td class="r">'+_tyFmt(r.total)+'</td></tr>';}).join('');
+  var gen=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  var w=window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><title>Income by Tax Year — '+nm+'</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:32px;color:#1a1a1a;max-width:720px;margin:0 auto}h1{font-size:22px;margin-bottom:4px}.sub{font-size:12px;color:#666;margin-bottom:20px}table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px}th{background:#111;color:#fff;padding:10px 12px;text-align:left;font-size:11px}th.r,td.r{text-align:right}td{padding:9px 12px;border-bottom:.5px solid #eee}tfoot td{font-weight:700;border-top:2px solid #111;background:#f7f7f7}.note{margin-top:14px;padding:12px 15px;background:#f0f9f4;border:.5px solid #bfe3cd;border-radius:8px;font-size:11px;color:#356b4d;line-height:1.6}@media print{body{padding:18px}}</style></head><body>'
+    +'<h1>Income by Tax Year</h1><div class="sub">'+nm+' &middot; generated '+gen+'</div>'
+    +'<table><thead><tr><th>Year</th><th class="r">Appointments</th><th class="r">Service commission (taxable)</th><th class="r">Tips received</th><th class="r">Total income</th></tr></thead><tbody>'+body+'</tbody>'
+    +'<tfoot><tr><td>All years</td><td class="r">'+tN+'</td><td class="r">'+_tyFmt(tMe)+'</td><td class="r">'+_tyFmt(tTip)+'</td><td class="r">'+_tyFmt(tTot)+'</td></tr></tfoot></table>'
+    +'<div class="note"><strong>Income only.</strong> Does not include business expenses or deductions &mdash; usually a bigger part of the picture. Tips still owe Social Security &amp; Medicare. For an accurate return, work with a tax professional.</div>'
+    +'</body></html>');
+  w.document.close();setTimeout(function(){w.print();},500);
+}
 function fmtMonth(ym){const[y,m]=ym.split('-');return new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'})}
 function toYM(d){return d.slice(0,7)}
 function weekNum(ds){const d=new Date(ds+'T12:00:00'),j=new Date(d.getFullYear(),0,1);return Math.ceil(((d-j)/86400000+j.getDay()+1)/7)}
@@ -2850,7 +2900,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.44 · trade-specific client cards';
+var VERSION='app v1.45 · tax-year export (CSV + PDF)';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
