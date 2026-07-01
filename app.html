@@ -2913,6 +2913,23 @@ function updateCommissionRate(rate){
   if(pcts[1]) pcts[1].textContent = r+'% of charge';
 }
 
+var _rateUnlocked=false;
+function toggleRateLock(){
+  _rateUnlocked=!_rateUnlocked;
+  var inp=document.getElementById('settingRate'),btn=document.getElementById('rateLockBtn'),hint=document.getElementById('rateLockHint');
+  if(_rateUnlocked){
+    if(inp){inp.removeAttribute('readonly');try{inp.focus();inp.select();}catch(e){}}
+    if(btn){btn.classList.add('unlocked');btn.innerHTML='<i class="ti ti-lock-open"></i>';}
+    if(hint)hint.innerHTML='🔓 Unlocked — change carefully; it recalculates all commission. Re-locks when you close Settings.';
+  }else{_lockRate();}
+}
+function _lockRate(){
+  _rateUnlocked=false;
+  var inp=document.getElementById('settingRate'),btn=document.getElementById('rateLockBtn'),hint=document.getElementById('rateLockHint');
+  if(inp)inp.setAttribute('readonly','readonly');
+  if(btn){btn.classList.remove('unlocked');btn.innerHTML='<i class="ti ti-lock"></i>';}
+  if(hint)hint.innerHTML="🔒 Locked so it can't change by accident. Tap the lock to edit.";
+}
 function openSettings(){
   loadPrefs();
   const ni = document.getElementById('settingName');
@@ -2921,6 +2938,7 @@ function openSettings(){
   if(ni) ni.value = prefs.name||'';
   if(si) si.value = prefs.salon||'';
   if(ri) ri.value = prefs.rate||60;
+  _lockRate();
   const panel = document.getElementById('settingsPanel');
   if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); renderBackupStatus(); initBookLink(); }
 }
@@ -2938,7 +2956,12 @@ function saveSettings(){
   const r = document.getElementById('settingRate').value;
   if(n) prefs.name = n;
   if(s) prefs.salon = s;
-  if(r) prefs.rate = parseInt(r)||60;
+  var _newRate=parseInt(r)||60,_oldRate=prefs.rate||60;
+  if(r && _newRate!==_oldRate){
+    if(confirm('Change your commission rate from '+_oldRate+'% to '+_newRate+'%?\n\nThis recalculates all your take-home and commission figures.')){
+      prefs.rate=_newRate;
+    }else{ var _ri=document.getElementById('settingRate'); if(_ri)_ri.value=_oldRate; }
+  }
   try{var _ap=JSON.parse(localStorage.getItem('ap_prefs')||'{}');_ap.splitPct=prefs.rate;localStorage.setItem('ap_prefs',JSON.stringify(_ap));}catch(e){}
   prefs.setup = true;
   savePrefsToStorage();
@@ -3201,7 +3224,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.55 · per-client data export';
+var VERSION='app v1.56 · lockable commission rate';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
