@@ -318,6 +318,34 @@ body.theme-light .legal-body{color:#777}
 .srch-t{font-size:14px;font-weight:700;color:#e8e8ef;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .srch-s{font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .srch-empty{padding:26px 16px;text-align:center;color:#666;font-size:13px}
+.in-ov{position:fixed;inset:0;background:#07070b;z-index:1250;display:none;flex-direction:column}
+.in-ov.open{display:flex}
+.in-top{display:flex;align-items:center;gap:10px;padding:16px;border-bottom:1px solid #1c1c24;position:sticky;top:0;background:#07070b;z-index:2}
+.in-top h2{flex:1;font-size:17px;font-weight:800;color:#f0f0f5;margin:0}
+.in-x{background:#26262f;color:#ccc;border:none;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.in-body{overflow-y:auto;padding:16px;flex:1;-webkit-overflow-scrolling:touch}
+.in-seg{display:flex;gap:6px;background:#131318;border:1px solid #23232c;border-radius:11px;padding:4px;margin-bottom:16px}
+.in-seg button{flex:1;padding:9px;border:none;background:transparent;color:#9a9aa6;font-family:inherit;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer}
+.in-seg button.on{background:var(--gold,#e8c37a);color:#141414}
+.in-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.in-card{background:#101015;border:1px solid #20202a;border-radius:13px;padding:13px 14px}
+.in-card .k{font-size:10.5px;color:#7a7a88;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.in-card .v{font-size:21px;font-weight:800;color:#f0f0f5;margin-top:3px}
+.in-card.gold .v{color:var(--gold,#e8c37a)}
+.in-card.pink .v{color:#f59ed6}
+.in-sec{margin:22px 0 11px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#67e8f9}
+.in-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.in-bar-lbl{width:54px;font-size:11.5px;color:#aaa;font-weight:600;flex-shrink:0}
+.in-bar-track{flex:1;height:22px;background:#131318;border-radius:6px;overflow:hidden}
+.in-bar-fill{height:100%;background:linear-gradient(90deg,#3a5f9e,#67a0e8);border-radius:6px;min-width:2px}
+.in-bar-val{font-size:11.5px;color:#ddd;font-weight:700;width:66px;text-align:right;flex-shrink:0}
+.in-list-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #17171d}
+.in-list-row .rank{width:20px;color:#67e8f9;font-weight:800;font-size:13px;flex-shrink:0}
+.in-list-row .nm{flex:1;font-size:13.5px;color:#e0e0e8;font-weight:600}
+.in-list-row .ct{font-size:11px;color:#888;margin-right:8px;flex-shrink:0}
+.in-list-row .amt{font-size:13px;color:var(--gold,#e8c37a);font-weight:700;flex-shrink:0}
+.in-empty{text-align:center;color:#666;padding:44px 16px;font-size:14px;line-height:1.6}
+.in-hint{font-size:11px;color:#666;margin:20px 0 8px;line-height:1.5}
 .cf-chk{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#ddd;cursor:pointer;margin-top:10px}
 .cf-chk input{width:19px;height:19px;accent-color:var(--gold);flex-shrink:0}
 /* Big custom checkbox (reliable tap target on iOS) */
@@ -1174,6 +1202,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <button class="gear-btn er-btn" onclick="eyeRestFull()" title="Eye rest"><i class="ti ti-eye"></i></button>
       <button class="gear-btn" onclick="openEarnSearch()" title="Search"><i class="ti ti-search"></i></button>
+      <button class="gear-btn" onclick="openInsights()" title="Insights"><i class="ti ti-chart-bar"></i></button>
       <button class="gear-btn" onclick="openClients()" title="Client cards"><i class="ti ti-address-book"></i></button>
       <button class="gear-btn" onclick="openPrices()" title="Price book"><i class="ti ti-currency-dollar"></i></button>
       <button class="gear-btn" onclick="openSettings()" title="Settings"><i class="ti ti-settings"></i></button>
@@ -1196,6 +1225,12 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       </div>
       <div class="srch-res" id="esRes"></div>
     </div>
+  </div>
+
+  <!-- INSIGHTS OVERLAY -->
+  <div class="in-ov" id="inOv">
+    <div class="in-top"><h2>📊 Insights</h2><button class="in-x" onclick="closeInsights()"><i class="ti ti-x"></i></button></div>
+    <div class="in-body" id="inBody"></div>
   </div>
 
   <!-- MODAL -->
@@ -1460,6 +1495,57 @@ function _tyYears(){var ys={},cy=new Date().getFullYear();ys[cy]=1;loadAppts().f
 function _tyFmt(n){return '$'+(Math.round((+n||0)*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function renderTaxYear(){var sel=document.getElementById('taxYearSel'),out=document.getElementById('taxYearOut');if(!sel||!out)return;var y=sel.value||String(new Date().getFullYear()),me=0,tip=0,n=0;loadAppts().forEach(function(a){if(a&&a.date&&String(a.date).slice(0,4)===y){me+=(+a.me||0);tip+=(+a.tip||0);n++;}});out.innerHTML='<div class="ty-row"><span>Appointments</span><span>'+n+'</span></div><div class="ty-row"><span>Service commission (taxable)</span><span>'+_tyFmt(me)+'</span></div><div class="ty-row"><span>Tips received</span><span>'+_tyFmt(tip)+'</span></div><div class="ty-row ty-total"><span>Total income '+y+'</span><span>'+_tyFmt(me+tip)+'</span></div>';}
 function buildTaxYear(){var sel=document.getElementById('taxYearSel');if(!sel)return;var ys=_tyYears(),cur=sel.value;sel.innerHTML=ys.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');if(cur&&ys.indexOf(cur)>=0)sel.value=cur;else sel.value=String(new Date().getFullYear());renderTaxYear();}
+/* ===== Insights dashboard (income analytics) ===== */
+var _inPeriod='month';
+function openInsights(){var o=$('inOv');if(!o)return;o.classList.add('open');document.body.classList.add('modal-open');renderInsightsBoard();}
+function closeInsights(){var o=$('inOv');if(o)o.classList.remove('open');document.body.classList.remove('modal-open');}
+function insSetPeriod(p){_inPeriod=p;renderInsightsBoard();}
+function _inMoney(n){return '$'+Math.round(+n||0).toLocaleString('en-US');}
+function _inDate(ds){if(!ds)return null;var p=String(ds).split('-');if(p.length<3)return null;return new Date(+p[0],+p[1]-1,+p[2]);}
+function _inMonLbl(m){var p=String(m).split('-');var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mo[(+p[1])-1]+" '"+String(p[0]).slice(2);}
+function _inHour(h){h=((h%24)+24)%24;var ap=h<12?'AM':'PM';var hh=h%12;if(hh===0)hh=12;return hh+' '+ap;}
+function _inFilter(bks){
+  var now=new Date();
+  if(_inPeriod==='month'){var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');return bks.filter(function(a){return String(a.date||'').slice(0,7)===ym;});}
+  if(_inPeriod==='year'){var y=String(now.getFullYear());return bks.filter(function(a){return String(a.date||'').slice(0,4)===y;});}
+  return bks;
+}
+function renderInsightsBoard(){
+  var body=$('inBody');if(!body)return;
+  var all=loadAppts().filter(function(a){return a.date;});
+  var bks=_inFilter(all);
+  var seg='<div class="in-seg">'+[['month','This month'],['year','This year'],['all','All time']].map(function(p){return '<button class="'+(p[0]===_inPeriod?'on':'')+'" onclick="insSetPeriod(\''+p[0]+'\')">'+p[1]+'</button>';}).join('')+'</div>';
+  if(!bks.length){body.innerHTML=seg+'<div class="in-empty">No bookings in this period yet.<br>Once you log some, your numbers show up here.</div>';return;}
+  var com=0,tip=0,charge=0,n=bks.length;
+  bks.forEach(function(a){com+=(+a.me||0);tip+=(+a.tip||0);charge+=(+a.charge||0);});
+  var inc=com+tip, avg=n?charge/n:0;
+  var cards='<div class="in-cards">'+
+    '<div class="in-card gold"><div class="k">Income</div><div class="v">'+_inMoney(inc)+'</div></div>'+
+    '<div class="in-card"><div class="k">Visits</div><div class="v">'+n+'</div></div>'+
+    '<div class="in-card"><div class="k">Avg ticket</div><div class="v">'+_inMoney(avg)+'</div></div>'+
+    '<div class="in-card pink"><div class="k">Tips</div><div class="v">'+_inMoney(tip)+'</div></div>'+
+  '</div>';
+  // Income by month (last 6, from all data) — bars carry the tips trend too via total
+  var byM={};all.forEach(function(a){var m=String(a.date||'').slice(0,7);if(m.length!==7)return;byM[m]=(byM[m]||0)+(+a.me||0)+(+a.tip||0);});
+  var months=Object.keys(byM).sort().slice(-6);
+  var maxM=Math.max.apply(null,months.map(function(m){return byM[m];}).concat([1]));
+  var monthSec=months.length?('<div class="in-sec">Income — last '+months.length+' month'+(months.length===1?'':'s')+'</div>'+months.map(function(m){var v=byM[m];return '<div class="in-bar-row"><div class="in-bar-lbl">'+_inMonLbl(m)+'</div><div class="in-bar-track"><div class="in-bar-fill" style="width:'+Math.round(v/maxM*100)+'%"></div></div><div class="in-bar-val">'+_inMoney(v)+'</div></div>';}).join('')):'';
+  // Top services by revenue
+  var byS={};bks.forEach(function(a){var s=(String(a.cat||'').trim())||'Other';if(!byS[s])byS[s]={ch:0,n:0};byS[s].ch+=(+a.charge||0);byS[s].n++;});
+  var svc=Object.keys(byS).map(function(s){return {s:s,ch:byS[s].ch,n:byS[s].n};}).sort(function(a,b){return b.ch-a.ch;}).slice(0,6);
+  var svcSec='<div class="in-sec">Top services by revenue</div>'+svc.map(function(o,i){return '<div class="in-list-row"><div class="rank">'+(i+1)+'</div><div class="nm">'+escHtml(o.s)+'</div><div class="ct">'+o.n+'×</div><div class="amt">'+_inMoney(o.ch)+'</div></div>';}).join('');
+  // Busiest days of week
+  var dows=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],byD=[0,0,0,0,0,0,0];
+  bks.forEach(function(a){var d=_inDate(a.date);if(d)byD[d.getDay()]++;});
+  var maxD=Math.max.apply(null,byD.concat([1]));
+  var daySec='<div class="in-sec">Busiest days</div>'+dows.map(function(lbl,i){return '<div class="in-bar-row"><div class="in-bar-lbl">'+lbl+'</div><div class="in-bar-track"><div class="in-bar-fill" style="width:'+Math.round(byD[i]/maxD*100)+'%;background:linear-gradient(90deg,#8a6bd8,#b79cff)"></div></div><div class="in-bar-val">'+byD[i]+'</div></div>';}).join('');
+  // Busiest time block
+  var byH={},busiestHour=null,bhc=0;
+  bks.forEach(function(a){var h=parseInt(String(a.time||'').slice(0,2),10);if(!isNaN(h))byH[h]=(byH[h]||0)+1;});
+  Object.keys(byH).forEach(function(h){if(byH[h]>bhc){bhc=byH[h];busiestHour=+h;}});
+  var timeSec=busiestHour!==null?('<div class="in-sec">Busiest time</div><div class="in-list-row"><div class="nm">'+_inHour(busiestHour)+' – '+_inHour(busiestHour+1)+'</div><div class="amt">'+bhc+' visit'+(bhc===1?'':'s')+'</div></div>'):'';
+  body.innerHTML=seg+cards+svcSec+monthSec+daySec+timeSec+'<div class="in-hint">Revenue = full service price. Income = your commission + tips.</div>';
+}
 /* ===== Global search (Earnings — clients + bookings) ===== */
 function openEarnSearch(){var o=$('esOv');if(!o)return;o.classList.add('open');document.body.classList.add('modal-open');var i=$('esIn');if(i){i.value='';setTimeout(function(){i.focus();},80);}runEarnSearch('');}
 function closeEarnSearch(){var o=$('esOv');if(o)o.classList.remove('open');document.body.classList.remove('modal-open');}
@@ -2959,7 +3045,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.48 · bulletproof signature redraw';
+var VERSION='app v1.49 · insights dashboard';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
