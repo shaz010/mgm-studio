@@ -1571,6 +1571,18 @@ function _birthdayData(){
   out.sort(function(a,b){return a.day-b.day;});
   return out;
 }
+function _retentionData(){
+  var all=loadAppts().filter(function(a){return a.date;});
+  var today=new Date();today.setHours(0,0,0,0);
+  var by={};
+  all.forEach(function(a){var k=(a.name||'').trim().toLowerCase();if(!k)return;var d=_inDate(a.date);if(!d)return;
+    if(!by[k])by[k]={past:0,future:0};
+    if(d.getTime()>today.getTime())by[k].future++;else by[k].past++;});
+  var keys=Object.keys(by).filter(function(k){return by[k].past>0;});
+  var total=keys.length,repeat=0,visits=0,ahead=0;
+  keys.forEach(function(k){var o=by[k];visits+=o.past;if(o.past>=2)repeat++;if(o.future>0)ahead++;});
+  return {total:total,repeat:repeat,oneTime:total-repeat,visits:visits,ahead:ahead,rate:total?Math.round(repeat/total*100):0,avg:total?(visits/total):0};
+}
 function _inFilter(bks){
   var now=new Date();
   if(_inPeriod==='month'){var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');return bks.filter(function(a){return String(a.date||'').slice(0,7)===ym;});}
@@ -1616,7 +1628,20 @@ function renderInsightsBoard(){
   var _bnow=new Date();var _bmn=['January','February','March','April','May','June','July','August','September','October','November','December'][_bnow.getMonth()];
   var bd=_birthdayData();
   var bdSec=bd.length?('<div class="in-sec">🎂 Birthdays in '+_bmn+' ('+bd.length+')</div>'+bd.map(function(o){var msg=o.phone?('<a class="wb-msg" href="sms:'+o.phone.replace(/[^0-9+]/g,'')+'" onclick="event.stopPropagation()">Message</a>'):'';var sub=(o.age?('Turns '+o.age+' · '):'')+_ord(o.day);return '<div class="wb-row"'+(o.id?(' onclick="wbOpen(\''+o.id+'\')"'):'')+'><div class="wb-main"><div class="wb-nm">'+escHtml(o.name)+'</div><div class="wb-sub">'+sub+'</div></div>'+(o.today?'<div class="bd-today">Today 🎉</div>':'')+msg+'</div>';}).join('')):'';
-  body.innerHTML=seg+cards+wbSec+bdSec+svcSec+monthSec+daySec+timeSec+'<div class="in-hint">Revenue = full service price. Income = your commission + tips. Win-back = 90+ days since last visit with nothing booked.</div>';
+  var rt=_retentionData();
+  var retSec='';
+  if(rt.total){var maxR=Math.max(rt.repeat,rt.oneTime,1);
+    retSec='<div class="in-sec">🔁 Retention (all-time)</div>'+
+      '<div class="in-cards">'+
+        '<div class="in-card gold"><div class="k">Return rate</div><div class="v">'+rt.rate+'%</div></div>'+
+        '<div class="in-card"><div class="k">Avg visits</div><div class="v">'+rt.avg.toFixed(1)+'</div></div>'+
+        '<div class="in-card"><div class="k">Repeat clients</div><div class="v">'+rt.repeat+'</div></div>'+
+        '<div class="in-card"><div class="k">Booked ahead</div><div class="v">'+rt.ahead+'</div></div>'+
+      '</div>'+
+      '<div class="in-bar-row"><div class="in-bar-lbl">Repeat</div><div class="in-bar-track"><div class="in-bar-fill" style="width:'+Math.round(rt.repeat/maxR*100)+'%;background:linear-gradient(90deg,#3a9e6f,#67e8a0)"></div></div><div class="in-bar-val">'+rt.repeat+'</div></div>'+
+      '<div class="in-bar-row"><div class="in-bar-lbl">One-time</div><div class="in-bar-track"><div class="in-bar-fill" style="width:'+Math.round(rt.oneTime/maxR*100)+'%;background:linear-gradient(90deg,#7a5a2a,#c99a4a)"></div></div><div class="in-bar-val">'+rt.oneTime+'</div></div>';
+  }
+  body.innerHTML=seg+cards+wbSec+bdSec+svcSec+monthSec+daySec+timeSec+retSec+'<div class="in-hint">Revenue = full service price. Income = your commission + tips. Win-back = 90+ days since last visit with nothing booked. Retention is all-time.</div>';
 }
 /* ===== Global search (Earnings — clients + bookings) ===== */
 function openEarnSearch(){var o=$('esOv');if(!o)return;o.classList.add('open');document.body.classList.add('modal-open');var i=$('esIn');if(i){i.value='';setTimeout(function(){i.focus();},80);}runEarnSearch('');}
@@ -3127,7 +3152,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.52 · birthdays this month';
+var VERSION='app v1.53 · retention';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
