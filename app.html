@@ -407,6 +407,13 @@ body.theme-light .data-howto{background:rgba(0,0,0,.03);color:#777}
 .sig-line{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#bbb;font-size:11px;pointer-events:none;letter-spacing:.5px}
 .cf-save{width:100%;margin-top:20px}
 .cf-del{width:100%;margin-top:9px;display:none;color:#ff8585;border-color:rgba(255,90,90,.4)}
+.cf-export{width:100%;margin-top:9px;display:none;color:#7fd6c6;border-color:rgba(127,214,198,.4)}
+.rate-lock-row{display:flex;gap:8px;align-items:stretch}
+.rate-lock-row .setup-input{flex:1}
+.setup-input[readonly]{opacity:.65;cursor:default}
+.rate-lock-btn{width:48px;border:1px solid #444;border-radius:9px;background:#1a1a1a;color:var(--gold,#e8c37a);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.rate-lock-btn.unlocked{color:#5ddb7c;border-color:rgba(93,219,124,.5);background:rgba(93,219,124,.08)}
+.rate-lock-hint{font-size:11px;color:#888;margin-top:6px;line-height:1.5}
 .cc-sig-thumb{height:30px;background:#fff;border-radius:5px;padding:2px 6px;vertical-align:middle}
 
 /* ── PICKER ANIMATIONS ── */
@@ -1062,7 +1069,11 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
         </div>
         <div>
           <label class="setup-label">Commission %</label>
-          <input class="setup-input" type="number" id="settingRate" placeholder="60" min="1" max="99">
+          <div class="rate-lock-row">
+            <input class="setup-input" type="number" id="settingRate" placeholder="60" min="1" max="99" readonly>
+            <button type="button" class="rate-lock-btn" id="rateLockBtn" onclick="toggleRateLock()"><i class="ti ti-lock"></i></button>
+          </div>
+          <div class="rate-lock-hint" id="rateLockHint">🔒 Locked so it can't change by accident. Tap the lock to edit.</div>
         </div>
       </div>
     </div>
@@ -1367,6 +1378,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
         </details>
 
         <button class="btn-save cf-save" onclick="saveClient()"><i class="ti ti-device-floppy" style="font-size:16px;vertical-align:-3px;margin-right:5px"></i>Save client card</button>
+        <button class="btn-cancel cf-export" id="clExportBtn" onclick="exportClient()"><i class="ti ti-download" style="font-size:15px;vertical-align:-2px;margin-right:5px"></i>Export this client's data</button>
         <button class="btn-cancel cf-del" id="clDelBtn" onclick="deleteClientConfirm()"><i class="ti ti-trash" style="font-size:15px;vertical-align:-2px;margin-right:5px"></i>Delete card</button>
       </div>
     </div>
@@ -2661,12 +2673,12 @@ function fillClientForm(c){
 }
 function showClientForm(){$('clientFormModal').classList.add('open');document.body.classList.add('modal-open');discEditing=false;renderDisclaimer();$('discEditBtn').innerHTML='<i class="ti ti-pencil" style="font-size:13px"></i> Edit disclaimer text';setTimeout(function(){initSigPad();},50);}
 function newClient(){
-  fillClientForm({});$('clientFormTitle').textContent='New client';$('clDelBtn').style.display='none';
+  fillClientForm({});$('clientFormTitle').textContent='New client';$('clDelBtn').style.display='none';$('clExportBtn').style.display='none';
   showClientForm();
 }
 function editClient(id){
   var c=getClients().filter(function(x){return x.id===id;})[0];if(!c)return;
-  fillClientForm(c);$('clientFormTitle').textContent=c.name||'Client';$('clDelBtn').style.display='block';
+  fillClientForm(c);$('clientFormTitle').textContent=c.name||'Client';$('clDelBtn').style.display='block';$('clExportBtn').style.display='block';
   showClientForm();
 }
 function closeClientForm(){$('clientFormModal').classList.remove('open');}
@@ -2693,6 +2705,30 @@ function saveClient(){
   if(i>-1)clients[i]=obj;else clients.push(obj);
   saveClients(clients);
   closeClientForm();renderClientList();
+}
+function exportClient(){
+  var id=$('clId').value; if(!id){alert('Save the card first, then export.');return;}
+  var c=getClients().filter(function(x){return String(x.id)===String(id);})[0];
+  if(!c){alert('Client not found.');return;}
+  var nn=(c.name||'').trim().toLowerCase();
+  var visits=loadAppts().filter(function(a){return (a.name||'').trim().toLowerCase()===nn;})
+    .map(function(a){return {date:a.date||'',service:a.cat||'',charge:+a.charge||0,tip:+a.tip||0,takeHome:+(((+a.me||0)+(+a.tip||0))).toFixed(2)};})
+    .sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
+  var data={
+    exported:new Date().toISOString(),
+    note:'Full record held for this client, exported from Your Salon.',
+    client:{
+      name:c.name||'', phone:c.phone||'', email:c.email||'', dateOfBirth:c.dob||'',
+      patchTest:{performed:!!c.patchDone, date:c.patchDate||'', result:c.patchRes||''},
+      conditions:c.conditions||[], allergiesMedications:c.meds||'', notes:c.notes||'',
+      consent:{agreed:!!c.agreed, signedDate:c.signedDate||'', signatureOnFile:!!c.signature},
+      serviceDetails:c.tfShow||[]
+    },
+    visitHistory:visits,
+    totalVisits:visits.length
+  };
+  var fname=((c.name||'client').replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,'')||'client')+'_data.json';
+  _dlFile(JSON.stringify(data,null,2),fname,'application/json');
 }
 function deleteClientConfirm(){
   var id=$('clId').value;if(!id)return;
@@ -3165,7 +3201,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.54 · commission % wired everywhere';
+var VERSION='app v1.55 · per-client data export';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
