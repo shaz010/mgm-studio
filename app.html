@@ -2319,20 +2319,27 @@ function editDisclaimer(){
 }
 function initSigPad(){
   var c=$('sigPad');if(!c)return;
-  var r=c.getBoundingClientRect();var dpr=window.devicePixelRatio||1;
-  c.width=Math.max(1,r.width*dpr);c.height=Math.max(1,r.height*dpr);
-  sigCtx=c.getContext('2d');sigCtx.scale(dpr,dpr);
-  sigCtx.lineWidth=2.4;sigCtx.lineCap='round';sigCtx.lineJoin='round';sigCtx.strokeStyle='#111';
-  sigHasInk=false;
+  var dpr=window.devicePixelRatio||1,tries=0;
   function pos(e){var rr=c.getBoundingClientRect();var t=(e.touches&&e.touches[0])||e;return {x:t.clientX-rr.left,y:t.clientY-rr.top};}
-  function start(e){e.preventDefault();sigDrawing=true;var p=pos(e);sigCtx.beginPath();sigCtx.moveTo(p.x,p.y);}
-  function move(e){if(!sigDrawing)return;e.preventDefault();var p=pos(e);sigCtx.lineTo(p.x,p.y);sigCtx.stroke();sigHasInk=true;}
+  function start(e){if(!sigCtx)return;e.preventDefault();sigDrawing=true;var p=pos(e);sigCtx.beginPath();sigCtx.moveTo(p.x,p.y);}
+  function move(e){if(!sigDrawing||!sigCtx)return;e.preventDefault();var p=pos(e);sigCtx.lineTo(p.x,p.y);sigCtx.stroke();sigHasInk=true;}
   function end(){sigDrawing=false;}
-  c.onpointerdown=start;c.onpointermove=move;c.onpointerup=end;c.onpointerleave=end;
-  c.ontouchstart=start;c.ontouchmove=move;c.ontouchend=end;
+  (function ready(){
+    var r=c.getBoundingClientRect();
+    if(r.width>=2&&r.height>=2){            // only size once the pad is actually laid out
+      c.width=Math.round(r.width*dpr);c.height=Math.round(r.height*dpr);
+      sigCtx=c.getContext('2d');sigCtx.setTransform(dpr,0,0,dpr,0,0);
+      sigCtx.lineWidth=2.4;sigCtx.lineCap='round';sigCtx.lineJoin='round';sigCtx.strokeStyle='#111';
+      sigHasInk=false;
+      c.onpointerdown=start;c.onpointermove=move;c.onpointerup=end;c.onpointerleave=end;
+      c.ontouchstart=start;c.ontouchmove=move;c.ontouchend=end;
+      if(_editingSig)drawSavedSig(_editingSig);   // redraw saved signature only after real sizing
+    }else if(tries++<30){requestAnimationFrame(ready);}  // wait for the modal to finish opening
+  })();
 }
-function clearSig(){if(!sigCtx){return;}var c=$('sigPad');sigCtx.clearRect(0,0,c.width,c.height);sigHasInk=false;}
-function drawSavedSig(dataURL){if(!dataURL||!sigCtx)return;var img=new Image();img.onload=function(){var c=$('sigPad');var r=c.getBoundingClientRect();sigCtx.drawImage(img,0,0,r.width,r.height);sigHasInk=true;};img.src=dataURL;}
+function clearSig(){if(sigCtx){var c=$('sigPad');sigCtx.clearRect(0,0,c.width,c.height);}sigHasInk=false;_editingSig='';}
+// Redraw is display-only — it never sets sigHasInk, so a flaky redraw can't overwrite the stored signature.
+function drawSavedSig(dataURL){if(!dataURL||!sigCtx)return;var img=new Image();img.onload=function(){if(!sigCtx)return;var c=$('sigPad');var r=c.getBoundingClientRect();sigCtx.drawImage(img,0,0,r.width,r.height);};img.src=dataURL;}
 /* ===== Trade-specific client fields (research-backed per trade) ===== */
 var TRADE_FIELDS={
  hair:[
@@ -2447,7 +2454,7 @@ function fillClientForm(c){
   _editingSig=c.signature||'';
   renderTradeFields();applyTradeFieldValues(c.tf);
 }
-function showClientForm(){$('clientFormModal').classList.add('open');document.body.classList.add('modal-open');discEditing=false;renderDisclaimer();$('discEditBtn').innerHTML='<i class="ti ti-pencil" style="font-size:13px"></i> Edit disclaimer text';setTimeout(function(){initSigPad();if(_editingSig)drawSavedSig(_editingSig);},90);}
+function showClientForm(){$('clientFormModal').classList.add('open');document.body.classList.add('modal-open');discEditing=false;renderDisclaimer();$('discEditBtn').innerHTML='<i class="ti ti-pencil" style="font-size:13px"></i> Edit disclaimer text';setTimeout(function(){initSigPad();},50);}
 function newClient(){
   fillClientForm({});$('clientFormTitle').textContent='New client';$('clDelBtn').style.display='none';
   showClientForm();
@@ -2952,7 +2959,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.47 · privacy + support line';
+var VERSION='app v1.48 · bulletproof signature redraw';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
