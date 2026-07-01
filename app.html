@@ -362,6 +362,7 @@ body.theme-light .legal-body{color:#777}
 .wb-sub{font-size:11.5px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wb-gap{font-size:11px;font-weight:700;color:#ff8a80;background:rgba(226,72,60,.14);padding:4px 9px;border-radius:20px;flex-shrink:0}
 .wb-msg{font-size:11.5px;font-weight:700;color:#5fd6c6;background:rgba(95,214,198,.14);padding:6px 12px;border-radius:20px;text-decoration:none;flex-shrink:0}
+.bd-today{font-size:11px;font-weight:700;color:#141414;background:var(--gold,#e8c37a);padding:4px 9px;border-radius:20px;flex-shrink:0}
 .cf-chk{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#ddd;cursor:pointer;margin-top:10px}
 .cf-chk input{width:19px;height:19px;accent-color:var(--gold);flex-shrink:0}
 /* Big custom checkbox (reliable tap target on iOS) */
@@ -1557,6 +1558,19 @@ function _winbackData(){
   return out;
 }
 function wbOpen(id){closeInsights();if(typeof editClient==='function')editClient(id);}
+function _ord(n){var s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
+function _birthdayData(){
+  var now=new Date(),mo=now.getMonth(),td=now.getDate();
+  var out=[];
+  (typeof getClients==='function'?getClients():[]).forEach(function(c){
+    if(!c.dob)return;var p=String(c.dob).split('-');if(p.length<3)return;
+    if((+p[1]-1)!==mo)return;
+    var by=+p[0],age=(by>1900)?(now.getFullYear()-by):null;
+    out.push({name:c.name,day:+p[2],phone:c.phone||'',id:c.id,age:age,today:(+p[2]===td)});
+  });
+  out.sort(function(a,b){return a.day-b.day;});
+  return out;
+}
 function _inFilter(bks){
   var now=new Date();
   if(_inPeriod==='month'){var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');return bks.filter(function(a){return String(a.date||'').slice(0,7)===ym;});}
@@ -1599,7 +1613,10 @@ function renderInsightsBoard(){
   var timeSec=busiestHour!==null?('<div class="in-sec">Busiest time</div><div class="in-list-row"><div class="nm">'+_inHour(busiestHour)+' – '+_inHour(busiestHour+1)+'</div><div class="amt">'+bhc+' visit'+(bhc===1?'':'s')+'</div></div>'):'';
   var wb=_winbackData();
   var wbSec=wb.length?('<div class="in-sec">💔 Win-back — 90+ days away ('+wb.length+')</div>'+wb.slice(0,30).map(function(o){var msg=o.phone?('<a class="wb-msg" href="sms:'+o.phone.replace(/[^0-9+]/g,'')+'" onclick="event.stopPropagation()">Message</a>'):'';return '<div class="wb-row"'+(o.id?(' onclick="wbOpen(\''+o.id+'\')"'):'')+'><div class="wb-main"><div class="wb-nm">'+escHtml(o.name)+'</div><div class="wb-sub">Last: '+_inDayLbl(o.last)+(o.svc?(' · '+escHtml(o.svc)):'')+'</div></div><div class="wb-gap">'+_gapLabel(o.gap)+'</div>'+msg+'</div>';}).join('')):'';
-  body.innerHTML=seg+cards+wbSec+svcSec+monthSec+daySec+timeSec+'<div class="in-hint">Revenue = full service price. Income = your commission + tips. Win-back = clients 90+ days since last visit with nothing booked.</div>';
+  var _bnow=new Date();var _bmn=['January','February','March','April','May','June','July','August','September','October','November','December'][_bnow.getMonth()];
+  var bd=_birthdayData();
+  var bdSec=bd.length?('<div class="in-sec">🎂 Birthdays in '+_bmn+' ('+bd.length+')</div>'+bd.map(function(o){var msg=o.phone?('<a class="wb-msg" href="sms:'+o.phone.replace(/[^0-9+]/g,'')+'" onclick="event.stopPropagation()">Message</a>'):'';var sub=(o.age?('Turns '+o.age+' · '):'')+_ord(o.day);return '<div class="wb-row"'+(o.id?(' onclick="wbOpen(\''+o.id+'\')"'):'')+'><div class="wb-main"><div class="wb-nm">'+escHtml(o.name)+'</div><div class="wb-sub">'+sub+'</div></div>'+(o.today?'<div class="bd-today">Today 🎉</div>':'')+msg+'</div>';}).join('')):'';
+  body.innerHTML=seg+cards+wbSec+bdSec+svcSec+monthSec+daySec+timeSec+'<div class="in-hint">Revenue = full service price. Income = your commission + tips. Win-back = 90+ days since last visit with nothing booked.</div>';
 }
 /* ===== Global search (Earnings — clients + bookings) ===== */
 function openEarnSearch(){var o=$('esOv');if(!o)return;o.classList.add('open');document.body.classList.add('modal-open');var i=$('esIn');if(i){i.value='';setTimeout(function(){i.focus();},80);}runEarnSearch('');}
@@ -3110,7 +3127,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.51 · win-back list';
+var VERSION='app v1.52 · birthdays this month';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
