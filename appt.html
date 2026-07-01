@@ -1790,12 +1790,14 @@ function commitSave(){
     notes:$('fNotes').value.trim(),status:prevStatus
   };
   var wasEdit=!!editingId;
+  // link this booking to a stable client id (rename-safe) — create the client if new
+  var _cn=normName(name);
+  var _cli=clients.find(function(c){return normName(c.name)===_cn;});
+  if(!_cli){_cli={id:uid(),name:name,phone:rec.phone,email:''};clients.push(_cli);save(CLIENTS,clients);}
+  rec.cid=_cli.id;
   if(editingId){appts=appts.map(function(a){return a.id===editingId?rec:a})}
   else{appts.push(rec)}
   save(APPTS,appts);
-  if(name && !clients.find(function(c){return c.name&&c.name.toLowerCase()===name.toLowerCase()})){
-    clients.push({id:uid(),name:name,phone:rec.phone,email:''});save(CLIENTS,clients);
-  }
   viewDate=parseDate(date);
   editingId=null;
   toast(wasEdit?'Updated':'Booked in');
@@ -1928,6 +1930,19 @@ function copyDebugReport(){
 
 /* ===== CLIENTS ===== */
 function _cpBookings(){try{var cp=JSON.parse(localStorage.getItem('cp_appts')||'[]');return Array.isArray(cp)?cp:[];}catch(e){return [];}}
+/* ===== Stable client-ID linking (rename-safe; name is the fallback) ===== */
+var _cidDone=false;
+function normName(s){return (s||'').toString().trim().toLowerCase().replace(/\s+/g,' ');}
+function sameClient(a,c){ if(!a||!c)return false; if(a.cid&&(a.cid===c.id||a.cid===c.cid))return true; var an=normName(a.name); return !!an&&an===normName(c.name); }
+function _backfillCids(){
+  if(_cidDone)return; _cidDone=true; var changed=false;
+  appts.forEach(function(a){
+    if(a.cid)return; var an=normName(a.name); if(!an)return;
+    var m=clients.filter(function(c){return normName(c.name)===an;});
+    if(m.length===1){a.cid=m[0].id;changed=true;}   // only link when unambiguous
+  });
+  if(changed)save(APPTS,appts);
+}
 function reconcileClients(){
   var changed=false;
   function ensure(name,phone){
@@ -1949,7 +1964,7 @@ function reconcileClients(){
 }
 function renderClients(){
   reload();
-  reconcileClients();
+  reconcileClients();_backfillCids();
   var _cc=$('clientCount'); if(_cc)_cc.textContent=clients.length?('· '+clients.length):'';
   if(!clients.length){
     $('clientsList').innerHTML='<div class="empty"><i class="ti ti-user-question"></i><div class="empty-t">No clients yet</div><div class="empty-s">Clients are added automatically when you book them — or add one now.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openClientSheet()"><i class="ti ti-user-plus"></i> Add client</button></div>';
@@ -1958,7 +1973,7 @@ function renderClients(){
   var allBk=appts.concat(_cpBookings());
   var sorted=clients.slice().sort(function(a,b){return (a.name||'').localeCompare(b.name||'')});
   $('clientsList').innerHTML=sorted.map(function(c){
-    var count=allBk.filter(function(a){return a.name&&c.name&&a.name.toLowerCase()===c.name.toLowerCase()&&a.status!=='cancelled'}).length;
+    var count=allBk.filter(function(a){return sameClient(a,c)&&a.status!=='cancelled'}).length;
     return '<div class="lrow" data-cid="'+c.id+'" onclick="selectClient(\''+c.id+'\')">'+
       '<div class="lrow-av cb-tap" onclick="event.stopPropagation();openClientBookings(\''+c.id+'\')">'+esc((c.name[0]||'?').toUpperCase())+'<span class="lrow-av-badge"><i class="ti ti-calendar"></i></span></div>'+
       '<div class="lrow-body"><div class="lrow-name">'+esc(c.name)+'</div><div class="lrow-sub">'+(c.phone?esc(c.phone):'No phone')+'</div></div>'+
@@ -1996,15 +2011,14 @@ function cdShowAll(){_cdShowAll=true;renderClientDetail();}
 function _cpClients(){try{var c=JSON.parse(localStorage.getItem('cp_clients')||'[]');return Array.isArray(c)?c:[];}catch(e){return [];}}
 function _findCard(name){if(!name)return null;var n=name.toLowerCase();return _cpClients().filter(function(c){return c.name&&c.name.toLowerCase()===n;})[0]||null;}
 function _ageFromDob(dob){if(!dob)return null;try{var d=new Date(dob);if(isNaN(d.getTime()))return null;var t=new Date();var a=t.getFullYear()-d.getFullYear();var m=t.getMonth()-d.getMonth();if(m<0||(m===0&&t.getDate()<d.getDate()))a--;return (a>=0&&a<130)?a:null;}catch(e){return null;}}
-function _clientStats(name){
-  var n=(name||'').toLowerCase();
-  var all=appts.concat(_cpBookings()).filter(function(a){return a.name&&a.name.toLowerCase()===n&&a.status!=='cancelled';});
+function _clientStats(c){
+  var all=appts.concat(_cpBookings()).filter(function(a){return sameClient(a,c)&&a.status!=='cancelled';});
   var tc=0,tk=0,tp=0,first='',last='';
   all.forEach(function(a){var ch=_bkCharge(a),tip=(+a.tip||0);tc+=ch;tk+=takeHome(ch)+tip;tp+=tip;var ds=a.date||'';if(ds){if(!first||ds<first)first=ds;if(!last||ds>last)last=ds;}});
   return {visits:all.length,charge:tc,take:tk,tip:tp,first:first,last:last,avg:all.length?tc/all.length:0};
 }
 function buildClientProfileHTML(c){
-  var card=_findCard(c.name), s=_clientStats(c.name);
+  var card=_findCard(c.name), s=_clientStats(c);
   var age=card?_ageFromDob(card.dob):null;
   var phone=c.phone||(card&&card.phone)||'', email=c.email||(card&&card.email)||'', dob=(card&&card.dob)||'';
   var contact=[phone||'No phone', email, dob?('DOB '+fmtReqDate(dob)+(age!=null?' · '+age+' yrs':'')):''].filter(Boolean).join('  ·  ');
@@ -2054,7 +2068,7 @@ function renderClientDetail(){
   var c=_cdClientId?clients.find(function(x){return x.id===_cdClientId;}):null;
   if(!c){ if(prof)prof.innerHTML='<div class="cd-empty">Tap a client to see their full profile.</div>'; box.innerHTML=''; return; }
   if(prof)prof.innerHTML=buildClientProfileHTML(c);
-  var all=appts.concat(_cpBookings()).filter(function(a){return a.name&&c.name&&a.name.toLowerCase()===c.name.toLowerCase()&&a.status!=='cancelled';});
+  var all=appts.concat(_cpBookings()).filter(function(a){return sameClient(a,c)&&a.status!=='cancelled';});
   all.sort(function(a,b){return ((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||''));});
   var head='<div class="cd-hist-head"><i class="ti ti-history"></i> Visit history'+(all.length?' ('+all.length+')':'')+'</div>';
   if(!all.length){box.innerHTML=head+'<div class="cd-empty">No visits recorded yet.</div>';return;}
@@ -2105,7 +2119,7 @@ function openClientBookings(id){
   $('cbTitle').textContent=c.name;
   $('cbSub').textContent=c.phone?c.phone:'No phone';
   var today=todayStr();
-  var mine=appts.filter(function(a){return a.name&&c.name&&a.name.toLowerCase()===c.name.toLowerCase()&&a.status!=='cancelled';});
+  var mine=appts.filter(function(a){return sameClient(a,c)&&a.status!=='cancelled';});
   var upcoming=mine.filter(function(a){return a.date>=today&&a.status!=='done'&&a.status!=='noshow';})
                    .sort(function(a,b){return ((a.date||'')+(a.time||'')).localeCompare((b.date||'')+(b.time||''));});
   var past=mine.filter(function(a){return !(a.date>=today&&a.status!=='done'&&a.status!=='noshow');})
@@ -2482,7 +2496,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.44 · global search';
+var VERSION='v4.45 · client-ID linking (rename-safe)';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
