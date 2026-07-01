@@ -1461,7 +1461,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
         <div>
           <div class="mgm-owed-lbl"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Salon owes me</div>
           <div class="mgm-owed-val" id="mgmOwed">$0</div>
-          <div class="mgm-sub" id="mgmSubtext">Unpaid 60% commission accumulating</div>
+          <div class="mgm-sub" id="mgmSubtext">Unpaid commission accumulating</div>
         </div>
         <div class="mgm-right">
           <div class="mgm-month-lbl">Next payment due</div>
@@ -1488,6 +1488,15 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
 
 <script>
 function getName(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.name||'').trim();}catch(e){return '';}}
+// Single source of truth for the commission split (0–1). Prefers the Appointments split (supports booth-renter 100%),
+// falls back to the Earnings rate, then 60%. Both rooms stay in sync via saveSettings mirroring.
+function myRate(){
+  var s=NaN;
+  try{var ap=JSON.parse(localStorage.getItem('ap_prefs')||'{}');s=parseFloat(ap.splitPct);}catch(e){}
+  if(isNaN(s)){try{var cp=JSON.parse(localStorage.getItem('cp_prefs')||'{}');s=parseFloat(cp.rate);}catch(e){}}
+  if(isNaN(s))s=60;
+  return Math.max(0,Math.min(100,s))/100;
+}
 function saveName(v){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.name=v;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.name=v;applyName();}
 function applyName(){var l=document.getElementById('eMeLbl');if(l)l.textContent=getName()||'You';}
 function getBookLink(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.bookLink||'').trim();}catch(e){return '';}}
@@ -1507,7 +1516,8 @@ function loadAppts(){
     var b=JSON.parse(localStorage.getItem('ap_appts')||'[]');
     if(Array.isArray(b)){shared=b.map(function(r){
       var charge=+r.price||0,tip=+r.tip||0;
-      var salon=+(charge*0.4).toFixed(2),me=+(charge*0.6).toFixed(2);
+      var mr=myRate();
+      var salon=+(charge*(1-mr)).toFixed(2),me=+(charge*mr).toFixed(2);
       return {id:r.id,name:r.name||'',date:r.date||'',time:r.time||'',charge:charge,tip:tip,salon:salon,me:me,mytotal:+(me+tip).toFixed(2),cat:r.service||'',_src:'appt'};
     });}
   }catch(e){}
@@ -1722,13 +1732,14 @@ function loadAll(){
 }
 function calc(){
   const charge=parseFloat($('cCharge').value)||0,tip=parseFloat($('cTip').value)||0;
-  const me=charge*0.6;
-  $('eSalon').textContent=fmtR(charge*0.4);
+  const mr=myRate(),pct=Math.round(mr*100);
+  const me=charge*mr;
+  $('eSalon').textContent=fmtR(charge*(1-mr));
   $('eMe').textContent=fmtR(me);
   $('eTip').textContent=fmt(tip);
   $('eTotal').textContent=fmt(me+tip);
   $('calcHint').innerHTML=(charge||tip)?
-    `Charge <strong style="color:var(--text)">$${charge.toFixed(2)}</strong> &times; 60% = <span style="color:#5ddb7c;font-weight:700">$${me.toFixed(2)}</span><br>+ Tip <span style="color:#5ddb7c;font-weight:700">$${tip.toFixed(2)}</span> <span style="color:#888">(100% yours)</span><br>= Your take-home <span style="color:var(--gold);font-weight:700">$${(me+tip).toFixed(2)}</span>`
+    `Charge <strong style="color:var(--text)">$${charge.toFixed(2)}</strong> &times; ${pct}% = <span style="color:#5ddb7c;font-weight:700">$${me.toFixed(2)}</span><br>+ Tip <span style="color:#5ddb7c;font-weight:700">$${tip.toFixed(2)}</span> <span style="color:#888">(100% yours)</span><br>= Your take-home <span style="color:var(--gold);font-weight:700">$${(me+tip).toFixed(2)}</span>`
     :'Enter a charge and tip above to see the breakdown';
 }
 async function save(){
@@ -1736,7 +1747,8 @@ async function save(){
   const charge=parseFloat($('cCharge').value)||0,tip=parseFloat($('cTip').value)||0;
   const cat=$('cCat').value.trim();
   if(!name||!date||!charge){alert('Please fill in client name, date and charge.');return;}
-  const salon=+(charge*0.4).toFixed(2),me=+(charge*0.6).toFixed(2);
+  const mr=myRate();
+  const salon=+(charge*(1-mr)).toFixed(2),me=+(charge*mr).toFixed(2);
   const id=editingId||Date.now();
   const rec={id,name,date,time,charge,tip,salon,me,mytotal:+(me+tip).toFixed(2),cat};
   try{
@@ -1989,7 +2001,7 @@ function renderInvoice(){
   $('invoicePreview').innerHTML=`
     <div class="inv-header">
       <div><div class="inv-from-name">${getName()||'Your name'}</div>
-        <div class="inv-from-detail">Hair Stylist &nbsp;·&nbsp; Salon<br>${fmtMonth(ym)} &nbsp;·&nbsp; Commission rate: 60%<br>Invoice #: ${invNum}</div></div>
+        <div class="inv-from-detail">Hair Stylist &nbsp;·&nbsp; Salon<br>${fmtMonth(ym)} &nbsp;·&nbsp; Commission rate: ${Math.round(myRate()*100)}%<br>Invoice #: ${invNum}</div></div>
       <div class="inv-to"><div class="inv-to-label">Payment request to</div>
         <div class="inv-to-salon">Salon</div>
         <div style="font-size:11px;color:#888;margin-top:4px;line-height:1.6">Issued: ${issued}<br>Due by: ${dueDate}</div></div>
@@ -2891,11 +2903,12 @@ function saveSettings(){
   if(n) prefs.name = n;
   if(s) prefs.salon = s;
   if(r) prefs.rate = parseInt(r)||60;
+  try{var _ap=JSON.parse(localStorage.getItem('ap_prefs')||'{}');_ap.splitPct=prefs.rate;localStorage.setItem('ap_prefs',JSON.stringify(_ap));}catch(e){}
   prefs.setup = true;
   savePrefsToStorage();
   applyWallpaper(prefs.wallpaper||'none');
   updateBranding(prefs.name, prefs.salon);
-  updateCommissionRate(prefs.rate);
+  updateCommissionRate(Math.round(myRate()*100));
   closeSettings();
 }
 
@@ -3143,7 +3156,7 @@ function initPrefs(){
   applyLightComfort();
   applyTheme(prefs.theme||'noir', prefs.accent||'gold');
   updateBranding(prefs.name, prefs.salon);
-  updateCommissionRate(prefs.rate||60);
+  updateCommissionRate(Math.round(myRate()*100));
   applyWallpaper(prefs.wallpaper||'none');
 }
 
@@ -3152,7 +3165,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.53 · retention';
+var VERSION='app v1.54 · commission % wired everywhere';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
