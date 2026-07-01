@@ -298,6 +298,16 @@ body.theme-light .legal-body{color:#777}
 .tf-chips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px}
 .tf-chip{font-size:12px;font-weight:600;padding:7px 12px;border-radius:20px;background:#161616;color:#bbb;border:1px solid #333;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
 .tf-chip.on{background:rgba(103,232,249,.14);color:#67e8f9;border-color:#67e8f988}
+.cf-acc{border-bottom:1.5px solid #2c2c2c;margin:4px 0}
+.cf-acc>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:14px 0 11px;-webkit-tap-highlight-color:transparent}
+.cf-acc>summary::-webkit-details-marker{display:none}
+.cf-sum-label{flex:1;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.cf-acc>summary::after{content:'›';font-size:22px;line-height:1;color:#666;transform:rotate(90deg);transition:transform .2s}
+.cf-acc[open]>summary::after{transform:rotate(-90deg)}
+.cf-pill{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;background:#222;color:#999}
+.cf-pill.ok{background:rgba(95,214,198,.16);color:#5fd6c6}
+.cf-pill.warn{background:rgba(226,72,60,.18);color:#ff8a80}
+.cf-acc-body{padding-bottom:14px}
 .ty-exp-row{display:flex;gap:8px;margin:12px 0 4px}
 .ty-exp-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:10px;border:1px solid #2f6f5a;background:#0c1a15;color:#7ee0b8;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .ty-exp-btn:active{transform:scale(.98)}
@@ -1302,36 +1312,52 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
 
         <div id="tradeFields"></div>
 
-        <div class="cf-section" style="color:#5fd6c6;border-color:#5fd6c655">Sensitivity / patch test</div>
-        <label class="ck"><input type="checkbox" id="clPatchDone"><span class="ck-box"></span><span class="ck-txt">Patch test performed</span></label>
-        <div class="cf-2col" style="margin-top:8px">
-          <div><label class="cf-label">Test date</label><input class="cf-in" id="clPatchDate" type="date"></div>
-          <div><label class="cf-label">Result</label>
-            <div class="cf-seg" id="clPatchResult">
-              <button type="button" class="cf-seg-btn on" data-res="none" onclick="setPatchRes('none')">No reaction</button>
-              <button type="button" class="cf-seg-btn" data-res="reaction" onclick="setPatchRes('reaction')">Reaction</button>
+        <details class="cf-acc" id="acc_patch">
+          <summary><span class="cf-sum-label" style="color:#5fd6c6">Sensitivity / patch test</span><span class="cf-pill" id="pill_patch">—</span></summary>
+          <div class="cf-acc-body">
+            <label class="ck"><input type="checkbox" id="clPatchDone" onchange="_pillPatch()"><span class="ck-box"></span><span class="ck-txt">Patch test performed</span></label>
+            <div class="cf-2col" style="margin-top:8px">
+              <div><label class="cf-label">Test date</label><input class="cf-in" id="clPatchDate" type="date"></div>
+              <div><label class="cf-label">Result</label>
+                <div class="cf-seg" id="clPatchResult">
+                  <button type="button" class="cf-seg-btn on" data-res="none" onclick="setPatchRes('none')">No reaction</button>
+                  <button type="button" class="cf-seg-btn" data-res="reaction" onclick="setPatchRes('reaction')">Reaction</button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </details>
 
-        <div class="cf-section" style="color:#ff93a6;border-color:#ff93a655">Medical / conditions to know</div>
-        <div class="cf-checks" id="clConditions"></div>
-        <label class="cf-label">Allergies / medications</label>
-        <textarea class="cf-in" id="clMeds" rows="2" placeholder="e.g. PPD allergy, latex, Accutane…"></textarea>
-        <label class="cf-label">Other notes</label>
-        <textarea class="cf-in" id="clNotes" rows="2" placeholder="Anything else the stylist should know"></textarea>
+        <details class="cf-acc" id="acc_med">
+          <summary><span class="cf-sum-label" style="color:#ff93a6">Medical / conditions to know</span><span class="cf-pill" id="pill_med">—</span></summary>
+          <div class="cf-acc-body">
+            <div class="cf-checks" id="clConditions"></div>
+            <label class="cf-label">Allergies / medications</label>
+            <textarea class="cf-in" id="clMeds" rows="2" placeholder="e.g. PPD allergy, latex, Accutane…"></textarea>
+            <label class="cf-label">Other notes</label>
+            <textarea class="cf-in" id="clNotes" rows="2" placeholder="Anything else the stylist should know"></textarea>
+          </div>
+        </details>
 
-        <div class="cf-section" style="color:#ffc04d;border-color:#ffc04d55">Consent &amp; liability</div>
-        <div class="cf-disc" id="clDisc"></div>
-        <button type="button" class="cf-disc-edit" id="discEditBtn" onclick="editDisclaimer()"><i class="ti ti-pencil" style="font-size:13px"></i> Edit disclaimer text</button>
-        <label class="ck ck-agree"><input type="checkbox" id="clAgree"><span class="ck-box"></span><span class="ck-txt">The client has read and agrees to the above.</span></label>
+        <details class="cf-acc" id="acc_consent">
+          <summary><span class="cf-sum-label" style="color:#ffc04d">Consent &amp; liability</span><span class="cf-pill" id="pill_consent">—</span></summary>
+          <div class="cf-acc-body">
+            <div class="cf-disc" id="clDisc"></div>
+            <button type="button" class="cf-disc-edit" id="discEditBtn" onclick="editDisclaimer()"><i class="ti ti-pencil" style="font-size:13px"></i> Edit disclaimer text</button>
+            <label class="ck ck-agree"><input type="checkbox" id="clAgree" onchange="_pillConsent()"><span class="ck-box"></span><span class="ck-txt">The client has read and agrees to the above.</span></label>
+          </div>
+        </details>
 
-        <div class="cf-section" style="color:#b79cff;border-color:#b79cff55">Client signature</div>
-        <div class="sig-wrap">
-          <canvas id="sigPad" class="sig-pad"></canvas>
-          <button type="button" class="sig-clear" onclick="clearSig()"><i class="ti ti-eraser" style="font-size:13px"></i> Clear</button>
-          <div class="sig-line">Sign above</div>
-        </div>
+        <details class="cf-acc" id="acc_sig" ontoggle="if(this.open)setTimeout(initSigPad,30)">
+          <summary><span class="cf-sum-label" style="color:#b79cff">Client signature</span><span class="cf-pill" id="pill_sig">—</span></summary>
+          <div class="cf-acc-body">
+            <div class="sig-wrap">
+              <canvas id="sigPad" class="sig-pad"></canvas>
+              <button type="button" class="sig-clear" onclick="clearSig()"><i class="ti ti-eraser" style="font-size:13px"></i> Clear</button>
+              <div class="sig-line">Sign above</div>
+            </div>
+          </div>
+        </details>
 
         <button class="btn-save cf-save" onclick="saveClient()"><i class="ti ti-device-floppy" style="font-size:16px;vertical-align:-3px;margin-right:5px"></i>Save client card</button>
         <button class="btn-cancel cf-del" id="clDelBtn" onclick="deleteClientConfirm()"><i class="ti ti-trash" style="font-size:15px;vertical-align:-2px;margin-right:5px"></i>Delete card</button>
@@ -2409,7 +2435,7 @@ function initSigPad(){
   function pos(e){var rr=c.getBoundingClientRect();var t=(e.touches&&e.touches[0])||e;return {x:t.clientX-rr.left,y:t.clientY-rr.top};}
   function start(e){if(!sigCtx)return;e.preventDefault();sigDrawing=true;var p=pos(e);sigCtx.beginPath();sigCtx.moveTo(p.x,p.y);}
   function move(e){if(!sigDrawing||!sigCtx)return;e.preventDefault();var p=pos(e);sigCtx.lineTo(p.x,p.y);sigCtx.stroke();sigHasInk=true;}
-  function end(){sigDrawing=false;}
+  function end(){sigDrawing=false;_pillSig();}
   (function ready(){
     var r=c.getBoundingClientRect();
     if(r.width>=2&&r.height>=2){            // only size once the pad is actually laid out
@@ -2423,7 +2449,7 @@ function initSigPad(){
     }else if(tries++<30){requestAnimationFrame(ready);}  // wait for the modal to finish opening
   })();
 }
-function clearSig(){if(sigCtx){var c=$('sigPad');sigCtx.clearRect(0,0,c.width,c.height);}sigHasInk=false;_editingSig='';}
+function clearSig(){if(sigCtx){var c=$('sigPad');sigCtx.clearRect(0,0,c.width,c.height);}sigHasInk=false;_editingSig='';_pillSig();}
 // Redraw is display-only — it never sets sigHasInk, so a flaky redraw can't overwrite the stored signature.
 function drawSavedSig(dataURL){if(!dataURL||!sigCtx)return;var img=new Image();img.onload=function(){if(!sigCtx)return;var c=$('sigPad');var r=c.getBoundingClientRect();sigCtx.drawImage(img,0,0,r.width,r.height);};img.src=dataURL;}
 /* ===== Trade-specific client fields (research-backed per trade) ===== */
@@ -2495,7 +2521,7 @@ function renderTradeFields(){
   var wrap=$('tradeFields'); if(!wrap)return;
   var mode=getMode(), defs=TRADE_FIELDS[mode]||[];
   if(!defs.length){wrap.innerHTML='';return;}
-  var h='<div class="cf-section" style="color:#67e8f9;border-color:#67e8f955">'+escHtml(tradeLabel(mode))+' details</div>';
+  var h='<details class="cf-acc" id="acc_trade" open><summary><span class="cf-sum-label" style="color:#67e8f9">'+escHtml(tradeLabel(mode))+' details</span><span class="cf-pill" id="pill_trade"></span></summary><div class="cf-acc-body">';
   defs.forEach(function(f){
     h+='<label class="cf-label">'+escHtml(f.label)+'</label>';
     if(f.type==='select'){
@@ -2506,6 +2532,7 @@ function renderTradeFields(){
       h+='<input class="cf-in" type="text" data-tf="'+f.id+'" placeholder="'+escHtml(f.ph||'')+'">';
     }
   });
+  h+='</div></details>';
   wrap.innerHTML=h;
 }
 function applyTradeFieldValues(tf){
@@ -2531,6 +2558,12 @@ function gatherTradeFields(){
   });
   return {tf:tf,show:show,trade:mode};
 }
+function _setPill(id,txt,cls){var p=$(id);if(p){p.textContent=txt;p.className='cf-pill'+(cls?(' '+cls):'');}}
+function _pillPatch(){var d=$('clPatchDone');var on=d&&d.checked;_setPill('pill_patch',on?'Done':'—',on?'ok':'');}
+function _pillConsent(){var d=$('clAgree');var on=d&&d.checked;_setPill('pill_consent',on?'Agreed':'Not set',on?'ok':'warn');}
+function _pillSig(){var on=sigHasInk||!!_editingSig;_setPill('pill_sig',on?'Signed':'Not set',on?'ok':'warn');}
+function _pillMed(){var n=(typeof gatherConditions==='function'?gatherConditions().length:0);_setPill('pill_med',n?(n+' flag'+(n>1?'s':'')):'None',n?'ok':'');}
+function _setAcc(id,open){var d=$(id);if(d)d.open=!!open;}
 function fillClientForm(c){
   $('clId').value=c.id||'';
   $('clName').value=c.name||'';$('clPhone').value=c.phone||'';$('clEmail').value=c.email||'';$('clDob').value=c.dob||'';
@@ -2539,6 +2572,9 @@ function fillClientForm(c){
   $('clMeds').value=c.meds||'';$('clNotes').value=c.notes||'';$('clAgree').checked=!!c.agreed;
   _editingSig=c.signature||'';
   renderTradeFields();applyTradeFieldValues(c.tf);
+  _pillPatch();_pillConsent();_pillSig();_pillMed();
+  _setAcc('acc_consent',!c.agreed);   // open if consent not yet given
+  _setAcc('acc_sig',!c.signature);    // open if not yet signed
 }
 function showClientForm(){$('clientFormModal').classList.add('open');document.body.classList.add('modal-open');discEditing=false;renderDisclaimer();$('discEditBtn').innerHTML='<i class="ti ti-pencil" style="font-size:13px"></i> Edit disclaimer text';setTimeout(function(){initSigPad();},50);}
 function newClient(){
@@ -3045,7 +3081,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.49 · insights dashboard';
+var VERSION='app v1.50 · collapsible client card';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
