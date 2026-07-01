@@ -1,71 +1,63 @@
-# 🎨 Your Salon — Polish Board
+# Your Salon — POLISH-BOARD 🎯
 
-*Our shared, never-forget list. Last updated: Jun 28, 2026*
+Living roadmap. **Tackle in exact tier order.** Payments/banking are deliberately OUT (PCI/processor licensing — track money, never move it).
 
----
-
-## 📋 How this works
-- **You** dump points anytime — rough is fine, just get them out of your head.
-- **I** organize them here + re-paste the board at the top of each reply.
-- **Together** we tackle in agreed order, checking each off ✅.
-- This file is yours to keep — the source of truth across days & devices.
+_Current builds: 💰 app v1.44 · 📅 appt v4.43 · 🚪 salon v0.8_
 
 ---
 
-## 🟢 QUICK POLISH — small, safe, independent
-*(can do these now, in any order)*
+## 🥇 TIER 1 — Quick wins, big trust (DO FIRST)
+- [ ] **Tax-year export** — one tap → clean CSV/PDF of income by year for the accountant
+- [ ] **Global search** — find any client or booking instantly
+- [ ] **Privacy line + support contact** — "your data's yours, never sold" + support email _(NEED Shaz's email)_
+- [ ] **Bulletproof signature redraw** — consent record must never flash blank (timing/canvas-size fix)
 
-- [ ] **P1 — Appointments looks messy.** Earnings lands neatly; switching to Appointments looks untidy. → tidy the layout. `appt.html`
-- [ ] **P4 — Charge doesn't clear on untap.** Tapping a service drops its charge into the field ✅, but *untapping* leaves the charge stuck until a new service is picked. Want: untap → charge clears cleanly. `app.html (confirm)`
-- [ ] **P3a — Bring the "services dance" to Appointments.** Love how services animate onto the Service field in Earnings — want that on the Appointments side too. `appt.html`
-- [ ] **P3b — Bring the lit/un-lit selection feedback to Appointments.** The chosen service lights up, untapping un-lights it — clear "here's exactly what you picked." Want this in Appointments too. `appt.html`
+## 🥈 TIER 2 — Smart queries / reports
+- [ ] **Insights dashboard** — income by month/quarter · top services by revenue · busiest days & times · tips trend · avg ticket
+- [ ] **Win-back list** — clients with no visit in 60/90 days
+- [ ] **Birthdays this month** — from DOB → personal text → rebookings
+- [ ] **Retention** — new vs returning, rebooking rate
 
----
+## 🥉 TIER 3 — Engine health / reliability
+- [ ] **Trade-switch freeze** — _NEED repro detail: does the background animation stutter when it freezes?_ (suspect: WARP starfield pegging CPU during rebuild)
+- [ ] **Wire commission % everywhere** — kill leftover hardcoded 60/40 so any split works
+- [ ] **Link clients by ID, not name** — stops dupes/mismatches across rooms
 
-## 🔴 THE BIG ONE — Unified Data
+## 🛡️ TIER 4 — Handling sensitive data like a pro (now storing consent, health flags, DOB)
+- [ ] **Per-client export / delete data** — privacy best practice + trust
+- [ ] **Short privacy statement** surfaced in-app
+- [ ] **Tighten Firestore rules** + store only what's needed
 
-### 🧭 BLUEPRINT (P5 — DECIDED ✅)
-The spine: **two lenses on one shared set of bookings.**
+## 🎨 TIER 5 — Look & feel polish
+- [ ] **Consistency pass** — spacing, type scale, colour tokens (eye-safe, no heavy animation)
+- [ ] **Teaching empty states** + smooth transitions
+- [ ] **Refresh book.html** to match the new brand
 
-- 📅 **Appointments = "the chair"** (the source record): client card/consent · price (set once) · new booking · inventory (product used per appt) · forward-looking preview stats (Booked/Chair/Expected/Take-home)
-- 💰 **Earnings = "the books"** (the money lens): the *actual banked* ledger + money stats — reads from bookings, does the math
-- 📦 **ONE shared box** feeds both. *Room-to-room sharing needs NO Firebase* — the rooms already share storage (one installed app). Firebase is only for cross-device (later).
-
-### 🔨 HOW WE BUILD (evolve, don't big-bang)
-1. **Design the shared record** — one "booking" shape both rooms agree on
-2. **Wire both rooms to it** — Appointments writes, Earnings reads
-3. **Remove duplicates** — strip the redundant copy from the wrong room
-*Done in safe stages, each tested on phone before the next.*
-
-### Moves to make (per blueprint)
-- [ ] Client card/consent → Appointments (strip from Earnings)
-- [ ] Price field → one place (Appointments sets it; Earnings reads)
-- [ ] New Booking → Appointments (carry the nice Earnings format over)
-- [ ] Inventory (product per appt) → stays/lives in Appointments
-- [ ] Keep preview stats in Appointments + actual ledger in Earnings (same shared data, never disagree)
-- [x] **P2 — bookings flow Appointments → Earnings** ✅ DONE (Stage 1, v1.33) — book in Appointments, shows in Earnings with split math
-
-### Stage progress
-- [x] **Stage 1** — Earnings reads the shared booking list ✅ (v1.33)
-- [ ] **Stage 2** — One booking desk: Earnings' "New booking" jumps to Appointments
-- [ ] **Stage 3** — Add tip + products to the record (settle-to-banked flow)
-- [ ] **Stage 4** — Retire old separate list, remove duplicates, tidy
+## 🌱 TIER 6 — Growth (no payments)
+- [ ] **Aftercare / consent PDF** to hand the client
+- [ ] **Copy-a-message generator** — win-back / reminder text (no SMS infra)
+- [ ] **Review-request nudge**
 
 ---
 
-## ✅ DONE
-- One App shell (salon.html) — Earnings ⇄ Appointments toggle
-- Single clean "Your Salon" header, sparkles mark
-- Double-decker removed, gear row slimmed
-- Update banners hushed inside shell
-- Trade syncs across rooms
-- Installed to home screen
-- Noir default for **both** rooms — v4.29
+## ⏳ Parked / backlog
+- [ ] "Salon owes me" → tap Tips → drill-down of every tip (who/when/how much)
+- [ ] "Salon earnings" breakdown duplicated in spots — rethink/replace
+- [ ] Legacy cp_appts editing (pencil/trash removed from Earnings ledger)
+
+## ✅ Recently shipped
+- Cloud sync (email login, merge-safe) — salon v0.7 → v0.8
+- Tap-outside-to-close + keyboard-aware fields — app v1.43 / appt v4.41
+- Client profile pane (replaced salon-earnings aggregate) — appt v4.42
+- Trade-specific client cards, all 9 trades, research-backed — app v1.44 / appt v4.43
+- Hair type/condition now structured (part of trade fields)
+- New "Your Salon" home-screen icon (gold tile + dark sparkle)
 
 ---
 
-## 🗒️ Parking lot (raised, not yet scheduled)
-- Home-screen icon: still the gold scissors — design a neutral "all trades" icon later
-- Paywall model: currently gates only Earnings — rethink as ONE unlock for the whole app
-- Cross-device sync (book from any device) — Firebase, the "Wall 2" job
-- *"more points to cover"* — Shaz has additional items to add
+## 📌 Need from Shaz
+1. **Support email** (for Tier 1 privacy/trust line)
+2. **Freeze repro detail** — next time it happens, does the background animation stutter?
+
+## 🚫 Out of scope (by decision)
+- Banking / payment processing / direct deposits (PCI, licensing, liability). Link out to Stripe/Square if ever needed; the app only *tracks*.
