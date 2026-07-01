@@ -361,8 +361,24 @@ body.theme-light .legal-body{color:#777}
 .wb-nm{font-size:14px;font-weight:700;color:#e8e8ef;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wb-sub{font-size:11.5px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wb-gap{font-size:11px;font-weight:700;color:#ff8a80;background:rgba(226,72,60,.14);padding:4px 9px;border-radius:20px;flex-shrink:0}
-.wb-msg{font-size:11.5px;font-weight:700;color:#5fd6c6;background:rgba(95,214,198,.14);padding:6px 12px;border-radius:20px;text-decoration:none;flex-shrink:0}
+.wb-msg{font-size:11.5px;font-weight:700;color:#5fd6c6;background:rgba(95,214,198,.14);padding:6px 12px;border-radius:20px;text-decoration:none;flex-shrink:0;border:none;cursor:pointer;font-family:inherit}
 .bd-today{font-size:11px;font-weight:700;color:#141414;background:var(--gold,#e8c37a);padding:4px 9px;border-radius:20px;flex-shrink:0}
+.msg-ov{position:fixed;inset:0;background:rgba(0,0,0,.72);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);z-index:1300;display:none;justify-content:center;align-items:flex-end}
+.msg-ov.open{display:flex}
+.msg-box{width:100%;max-width:560px;background:#0d0d12;border:1px solid #23232c;border-radius:18px 18px 0 0;padding:16px;max-height:88vh;overflow-y:auto}
+@media(min-width:600px){.msg-ov{align-items:center}.msg-box{border-radius:18px}}
+.msg-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.msg-top span{font-size:16px;font-weight:800;color:#f0f0f5}
+.msg-x{background:#26262f;color:#ccc;border:none;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.msg-purposes{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.msg-chip{font-size:12.5px;font-weight:700;padding:8px 13px;border-radius:20px;background:#161616;color:#bbb;border:1px solid #333;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.msg-chip.on{background:rgba(232,195,122,.16);color:var(--gold,#e8c37a);border-color:rgba(232,195,122,.5)}
+.msg-text{width:100%;background:#161616;border:1.5px solid #333;border-radius:11px;color:#fff;font-size:15px;font-family:inherit;padding:13px;line-height:1.5;resize:vertical;outline:none;box-sizing:border-box}
+.msg-text:focus{border-color:var(--gold,#e8c37a)}
+.msg-actions{display:flex;gap:8px;margin-top:12px}
+.msg-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:11px;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;border:1px solid #3a3a3a;background:#1a1a1a;color:#ddd;-webkit-tap-highlight-color:transparent}
+.msg-btn.gold{background:var(--gold,#e8c37a);color:#141414;border-color:transparent}
+.msg-hint{font-size:11.5px;color:#888;margin-top:10px;line-height:1.5;min-height:16px}
 .cf-chk{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#ddd;cursor:pointer;margin-top:10px}
 .cf-chk input{width:19px;height:19px;accent-color:var(--gold);flex-shrink:0}
 /* Big custom checkbox (reliable tap target on iOS) */
@@ -1255,6 +1271,21 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
     </div>
   </div>
 
+  <!-- MESSAGE COMPOSER -->
+  <div class="msg-ov" id="msgOv" onclick="if(event.target===this)closeMsg()">
+    <div class="msg-box">
+      <div class="msg-top"><span id="msgTitle">Message</span><button class="msg-x" onclick="closeMsg()"><i class="ti ti-x"></i></button></div>
+      <div class="msg-purposes" id="msgPurposes"></div>
+      <textarea class="msg-text" id="msgText" rows="5"></textarea>
+      <div class="msg-actions">
+        <button class="msg-btn" onclick="rewordMsg()"><i class="ti ti-refresh" style="font-size:15px"></i> Reword</button>
+        <button class="msg-btn" onclick="copyMsg()"><i class="ti ti-copy" style="font-size:15px"></i> Copy</button>
+        <button class="msg-btn gold" id="msgSend" onclick="sendMsg()"><i class="ti ti-send" style="font-size:15px"></i> Send</button>
+      </div>
+      <div class="msg-hint" id="msgHint"></div>
+    </div>
+  </div>
+
   <!-- INSIGHTS OVERLAY -->
   <div class="in-ov" id="inOv">
     <div class="in-top"><h2>📊 Insights</h2><button class="in-x" onclick="closeInsights()"><i class="ti ti-x"></i></button></div>
@@ -1550,6 +1581,49 @@ function _tyYears(){var ys={},cy=new Date().getFullYear();ys[cy]=1;loadAppts().f
 function _tyFmt(n){return '$'+(Math.round((+n||0)*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function renderTaxYear(){var sel=document.getElementById('taxYearSel'),out=document.getElementById('taxYearOut');if(!sel||!out)return;var y=sel.value||String(new Date().getFullYear()),me=0,tip=0,n=0;loadAppts().forEach(function(a){if(a&&a.date&&String(a.date).slice(0,4)===y){me+=(+a.me||0);tip+=(+a.tip||0);n++;}});out.innerHTML='<div class="ty-row"><span>Appointments</span><span>'+n+'</span></div><div class="ty-row"><span>Service commission (taxable)</span><span>'+_tyFmt(me)+'</span></div><div class="ty-row"><span>Tips received</span><span>'+_tyFmt(tip)+'</span></div><div class="ty-row ty-total"><span>Total income '+y+'</span><span>'+_tyFmt(me+tip)+'</span></div>';}
 function buildTaxYear(){var sel=document.getElementById('taxYearSel');if(!sel)return;var ys=_tyYears(),cur=sel.value;sel.innerHTML=ys.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');if(cur&&ys.indexOf(cur)>=0)sel.value=cur;else sel.value=String(new Date().getFullYear());renderTaxYear();}
+/* ===== Message composer (personalised, copy/send — no SMS infra) ===== */
+var MSG_TPL={
+  winback:["Hi {n}! It's {me} — it's been a little while and I'd love to get you back in the chair. Want me to find you a spot this week? 💛","Hey {n}! Missing you at the salon 💛 I've got some openings coming up — shall I save one for you?"],
+  birthday:["Happy birthday, {n}! 🎉 Treat yourself — come see me, {me}, and let's make you feel amazing. 💛","Happiest birthday, {n}! 🥳 You deserve some pampering — let's book you in for a birthday treat."],
+  reminder:["Hi {n}, friendly reminder about your upcoming appointment with {me}. See you soon! Reply if you need to reschedule.","Hi {n}! Just confirming your appointment with {me}. Looking forward to it — let me know if anything changes."],
+  review:["Hi {n}! So lovely seeing you 💛 If you have a moment, a quick review would mean the world and really helps me. Thank you! — {me}","Hey {n}! Hope you're loving your hair. A quick review would make my day and helps me so much 🙏 — {me}"],
+  thanks:["Thank you so much for coming in, {n}! It was a pleasure. Can't wait to see you next time 💛 — {me}","Thanks for visiting, {n}! Always a joy. See you again soon 💛 — {me}"]
+};
+var MSG_LABELS={winback:'Win-back',birthday:'Birthday',reminder:'Reminder',review:'Review',thanks:'Thank you'};
+var _msgName='',_msgPhone='',_msgPurpose='winback',_msgVariant=0;
+function _js(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+function openMsg(name,phone,purpose){
+  _msgName=name||'there';_msgPhone=phone||'';_msgPurpose=(purpose&&MSG_TPL[purpose])?purpose:'winback';_msgVariant=0;
+  var t=$('msgTitle');if(t)t.textContent='Message '+String(_msgName).split(' ')[0];
+  renderMsgPurposes();renderMsgText();
+  var o=$('msgOv');if(o)o.classList.add('open');document.body.classList.add('modal-open');
+}
+function closeMsg(){var o=$('msgOv');if(o)o.classList.remove('open');document.body.classList.remove('modal-open');}
+function renderMsgPurposes(){var box=$('msgPurposes');if(!box)return;box.innerHTML=Object.keys(MSG_LABELS).map(function(p){return '<button class="msg-chip'+(p===_msgPurpose?' on':'')+'" onclick="setMsgPurpose(\''+p+'\')">'+MSG_LABELS[p]+'</button>';}).join('');}
+function setMsgPurpose(p){_msgPurpose=p;_msgVariant=0;renderMsgPurposes();renderMsgText();}
+function rewordMsg(){var arr=MSG_TPL[_msgPurpose]||[];_msgVariant=(_msgVariant+1)%(arr.length||1);renderMsgText();}
+function renderMsgText(){
+  var arr=MSG_TPL[_msgPurpose]||[''];var t=arr[_msgVariant%arr.length]||'';
+  var me=((typeof getName==='function'?getName():'')||'').split(' ')[0]||'me';
+  var first=String(_msgName||'there').split(' ')[0];
+  t=t.replace(/\{n\}/g,first).replace(/\{me\}/g,me);
+  var ta=$('msgText');if(ta)ta.value=t;
+  var send=$('msgSend');if(send)send.style.display=_msgPhone?'flex':'none';
+  var hint=$('msgHint');if(hint)hint.textContent=_msgPhone?'':'No phone on file — tap Copy, then paste into your messaging app.';
+}
+function copyMsg(){
+  var ta=$('msgText');if(!ta)return;var t=ta.value;
+  var done=function(){var h=$('msgHint');if(h)h.textContent='Copied ✓ — paste into Messages, WhatsApp, anywhere.';};
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){_fallbackCopy(done);});return;}}catch(e){}
+  _fallbackCopy(done);
+}
+function _fallbackCopy(done){var ta=$('msgText');if(!ta)return;ta.focus();ta.select();try{document.execCommand('copy');done&&done();}catch(e){}}
+function sendMsg(){
+  if(!_msgPhone){copyMsg();return;}
+  var num=_msgPhone.replace(/[^0-9+]/g,'');
+  var body=encodeURIComponent(($('msgText')||{}).value||'');
+  window.location.href='sms:'+num+'&body='+body;
+}
 /* ===== Insights dashboard (income analytics) ===== */
 var _inPeriod='month';
 function openInsights(){var o=$('inOv');if(!o)return;o.classList.add('open');document.body.classList.add('modal-open');renderInsightsBoard();}
@@ -1646,10 +1720,10 @@ function renderInsightsBoard(){
   Object.keys(byH).forEach(function(h){if(byH[h]>bhc){bhc=byH[h];busiestHour=+h;}});
   var timeSec=busiestHour!==null?('<div class="in-sec">Busiest time</div><div class="in-list-row"><div class="nm">'+_inHour(busiestHour)+' – '+_inHour(busiestHour+1)+'</div><div class="amt">'+bhc+' visit'+(bhc===1?'':'s')+'</div></div>'):'';
   var wb=_winbackData();
-  var wbSec=wb.length?('<div class="in-sec">💔 Win-back — 90+ days away ('+wb.length+')</div>'+wb.slice(0,30).map(function(o){var msg=o.phone?('<a class="wb-msg" href="sms:'+o.phone.replace(/[^0-9+]/g,'')+'" onclick="event.stopPropagation()">Message</a>'):'';return '<div class="wb-row"'+(o.id?(' onclick="wbOpen(\''+o.id+'\')"'):'')+'><div class="wb-main"><div class="wb-nm">'+escHtml(o.name)+'</div><div class="wb-sub">Last: '+_inDayLbl(o.last)+(o.svc?(' · '+escHtml(o.svc)):'')+'</div></div><div class="wb-gap">'+_gapLabel(o.gap)+'</div>'+msg+'</div>';}).join('')):'';
+  var wbSec=wb.length?('<div class="in-sec">💔 Win-back — 90+ days away ('+wb.length+')</div>'+wb.slice(0,30).map(function(o){var msg='<button class="wb-msg" onclick="event.stopPropagation();openMsg(\''+_js(o.name)+'\',\''+_js(o.phone||'')+'\',\'winback\')">Message</button>';return '<div class="wb-row"'+(o.id?(' onclick="wbOpen(\''+o.id+'\')"'):'')+'><div class="wb-main"><div class="wb-nm">'+escHtml(o.name)+'</div><div class="wb-sub">Last: '+_inDayLbl(o.last)+(o.svc?(' · '+escHtml(o.svc)):'')+'</div></div><div class="wb-gap">'+_gapLabel(o.gap)+'</div>'+msg+'</div>';}).join('')):'';
   var _bnow=new Date();var _bmn=['January','February','March','April','May','June','July','August','September','October','November','December'][_bnow.getMonth()];
   var bd=_birthdayData();
-  var bdSec=bd.length?('<div class="in-sec">🎂 Birthdays in '+_bmn+' ('+bd.length+')</div>'+bd.map(function(o){var msg=o.phone?('<a class="wb-msg" href="sms:'+o.phone.replace(/[^0-9+]/g,'')+'" onclick="event.stopPropagation()">Message</a>'):'';var sub=(o.age?('Turns '+o.age+' · '):'')+_ord(o.day);return '<div class="wb-row"'+(o.id?(' onclick="wbOpen(\''+o.id+'\')"'):'')+'><div class="wb-main"><div class="wb-nm">'+escHtml(o.name)+'</div><div class="wb-sub">'+sub+'</div></div>'+(o.today?'<div class="bd-today">Today 🎉</div>':'')+msg+'</div>';}).join('')):'';
+  var bdSec=bd.length?('<div class="in-sec">🎂 Birthdays in '+_bmn+' ('+bd.length+')</div>'+bd.map(function(o){var msg='<button class="wb-msg" onclick="event.stopPropagation();openMsg(\''+_js(o.name)+'\',\''+_js(o.phone||'')+'\',\'birthday\')">Message</button>';var sub=(o.age?('Turns '+o.age+' · '):'')+_ord(o.day);return '<div class="wb-row"'+(o.id?(' onclick="wbOpen(\''+o.id+'\')"'):'')+'><div class="wb-main"><div class="wb-nm">'+escHtml(o.name)+'</div><div class="wb-sub">'+sub+'</div></div>'+(o.today?'<div class="bd-today">Today 🎉</div>':'')+msg+'</div>';}).join('')):'';
   var rt=_retentionData();
   var retSec='';
   if(rt.total){var maxR=Math.max(rt.repeat,rt.oneTime,1);
@@ -3224,7 +3298,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.56 · lockable commission rate';
+var VERSION='app v1.57 · message generator';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
