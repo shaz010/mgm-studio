@@ -697,6 +697,24 @@ body.theme-noir .mcell-c{color:#3dff88;text-shadow:0 0 6px rgba(61,255,136,.55)}
 body.theme-noir .mcell.d2 .mcell-c{color:#5dffa0}
 body.theme-noir .mcell.d3 .mcell-c{color:#8effc0}
 body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
+.srch-ov{position:fixed;inset:0;background:rgba(0,0,0,.72);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);z-index:1200;display:none;justify-content:center;align-items:flex-start;padding:56px 16px 16px}
+.srch-ov.open{display:flex}
+.srch-box{width:100%;max-width:560px;background:#0d0d12;border:1px solid #23232c;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);max-height:80vh;display:flex;flex-direction:column}
+.srch-in-row{display:flex;align-items:center;gap:9px;padding:14px 16px;border-bottom:1px solid #1c1c24}
+.srch-in-row>i{font-size:19px;color:#67e8f9}
+.srch-in-row input{flex:1;background:none;border:0;outline:none;color:#f0f0f0;font-family:inherit;font-size:16px}
+.srch-x{background:none;border:0;color:#777;font-size:20px;cursor:pointer;padding:0}
+.srch-res{overflow-y:auto;-webkit-overflow-scrolling:touch}
+.srch-grp{font-size:10.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#7a7a88;padding:12px 16px 5px}
+.srch-item{display:flex;align-items:center;gap:11px;padding:11px 16px;cursor:pointer;border-bottom:1px solid #14141a}
+.srch-item:active{background:#15151c}
+.srch-ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.srch-ic.cl{background:rgba(167,139,250,.16);color:#a78bfa}
+.srch-ic.bk{background:rgba(103,232,249,.14);color:#67e8f9}
+.srch-main{flex:1;min-width:0}
+.srch-t{font-size:14px;font-weight:700;color:#e8e8ef;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srch-s{font-size:11.5px;color:#8a8a96;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srch-empty{padding:26px 16px;text-align:center;color:#6a6a78;font-size:13px}
 </style>
 </head>
 <body>
@@ -713,9 +731,21 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
     </div>
     <div class="topbar-actions">
       <button class="gear-btn er-btn" onclick="eyeRest()" aria-label="Eye rest" title="Eye rest"><i class="ti ti-eye"></i></button>
+      <button class="gear-btn" onclick="openSearch()" aria-label="Search" title="Search"><i class="ti ti-search"></i></button>
       <button class="gear-btn" onclick="openPrices()" aria-label="Price book" title="Price book"><i class="ti ti-currency-dollar"></i></button>
       <button class="gear-btn" onclick="showView('clients')" aria-label="Clients" title="Clients"><i class="ti ti-users"></i></button>
       <button class="gear-btn" onclick="openSettings()" aria-label="Settings" title="Settings"><i class="ti ti-settings"></i></button>
+    </div>
+  </div>
+
+  <div class="srch-ov" id="srchOv" onclick="if(event.target===this)closeSearch()">
+    <div class="srch-box">
+      <div class="srch-in-row">
+        <i class="ti ti-search"></i>
+        <input id="srchIn" placeholder="Search clients, services, bookings…" oninput="runSearch(this.value)" autocomplete="off" autocapitalize="off">
+        <button class="srch-x" onclick="closeSearch()"><i class="ti ti-x"></i></button>
+      </div>
+      <div id="srchRes" class="srch-res"></div>
     </div>
   </div>
 
@@ -2452,7 +2482,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.43 · trade details in profile';
+var VERSION='v4.44 · global search';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -3112,6 +3142,28 @@ function renderRequests(){
   }).join('');
 }
 function fmtReqDate(ds){try{return parseDate(ds).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}catch(e){return ds;}}
+/* ===== Global search (clients + bookings) ===== */
+function openSearch(){var o=$('srchOv');if(!o)return;o.classList.add('open');var i=$('srchIn');if(i){i.value='';setTimeout(function(){i.focus();},80);}runSearch('');}
+function closeSearch(){var o=$('srchOv');if(o)o.classList.remove('open');}
+function runSearch(q){
+  var box=$('srchRes'); if(!box)return;
+  q=(q||'').trim().toLowerCase();
+  if(!q){box.innerHTML='<div class="srch-empty">Type a name, service, or date…</div>';return;}
+  var cl=clients.filter(function(c){return c.name&&((c.name+' '+(c.phone||'')+' '+(c.email||'')).toLowerCase().indexOf(q)>=0);}).slice(0,8);
+  var bk=appts.filter(function(a){return a.status!=='cancelled'&&(((a.name||'')+' '+_bkSvc(a)+' '+(a.date||'')).toLowerCase().indexOf(q)>=0);})
+    .sort(function(a,b){return ((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||''));}).slice(0,20);
+  var h='';
+  if(cl.length){h+='<div class="srch-grp">Clients ('+cl.length+')</div>'+cl.map(function(c){
+    return '<div class="srch-item" onclick="searchGoClient(\''+c.id+'\')"><div class="srch-ic cl"><i class="ti ti-user"></i></div><div class="srch-main"><div class="srch-t">'+esc(c.name)+'</div><div class="srch-s">'+esc(c.phone||c.email||'client')+'</div></div><i class="ti ti-chevron-right" style="color:#555"></i></div>';
+  }).join('');}
+  if(bk.length){h+='<div class="srch-grp">Bookings ('+bk.length+')</div>'+bk.map(function(a){
+    return '<div class="srch-item" onclick="searchGoBooking(\''+a.date+'\')"><div class="srch-ic bk"><i class="ti ti-calendar"></i></div><div class="srch-main"><div class="srch-t">'+esc(a.name||'—')+' · '+esc(_bkSvc(a))+'</div><div class="srch-s">'+fmtReqDate(a.date)+(a.time?' · '+a.time:'')+'</div></div><i class="ti ti-chevron-right" style="color:#555"></i></div>';
+  }).join('');}
+  if(!h)h='<div class="srch-empty">No matches for &ldquo;'+esc(q)+'&rdquo;</div>';
+  box.innerHTML=h;
+}
+function searchGoClient(id){closeSearch();showView('clients');setTimeout(function(){if(typeof selectClient==='function')selectClient(id);},60);}
+function searchGoBooking(ds){closeSearch();showView('day');if(typeof setDayMode==='function')setDayMode('day');if(typeof pickDay==='function')pickDay(ds);}
 
 /* ---- master toggle ---- */
 function toggleBookingOpen(){
