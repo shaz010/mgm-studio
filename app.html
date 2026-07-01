@@ -301,6 +301,23 @@ body.theme-light .legal-body{color:#777}
 .ty-exp-row{display:flex;gap:8px;margin:12px 0 4px}
 .ty-exp-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:10px;border:1px solid #2f6f5a;background:#0c1a15;color:#7ee0b8;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .ty-exp-btn:active{transform:scale(.98)}
+.srch-ov{position:fixed;inset:0;background:rgba(0,0,0,.72);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);z-index:1200;display:none;justify-content:center;align-items:flex-start;padding:56px 16px 16px}
+.srch-ov.open{display:flex}
+.srch-box{width:100%;max-width:560px;background:#0d0d12;border:1px solid #23232c;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);max-height:80vh;display:flex;flex-direction:column}
+.srch-top{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid #1c1c24}
+.srch-top .ti-search{color:#888;font-size:19px}
+.srch-top input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:16px;font-family:inherit}
+.srch-x{background:#26262f;color:#ccc;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.srch-res{overflow-y:auto}
+.srch-item{display:flex;align-items:center;gap:11px;padding:11px 16px;cursor:pointer;border-bottom:1px solid #14141a}
+.srch-item:active{background:#15151c}
+.srch-ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.srch-ic.cl{background:rgba(167,139,250,.16);color:#a78bfa}
+.srch-ic.bk{background:rgba(103,232,249,.14);color:#67e8f9}
+.srch-main{flex:1;min-width:0}
+.srch-t{font-size:14px;font-weight:700;color:#e8e8ef;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srch-s{font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srch-empty{padding:26px 16px;text-align:center;color:#666;font-size:13px}
 .cf-chk{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#ddd;cursor:pointer;margin-top:10px}
 .cf-chk input{width:19px;height:19px;accent-color:var(--gold);flex-shrink:0}
 /* Big custom checkbox (reliable tap target on iOS) */
@@ -1151,6 +1168,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <button class="gear-btn er-btn" onclick="eyeRestFull()" title="Eye rest"><i class="ti ti-eye"></i></button>
+      <button class="gear-btn" onclick="openEarnSearch()" title="Search"><i class="ti ti-search"></i></button>
       <button class="gear-btn" onclick="openClients()" title="Client cards"><i class="ti ti-address-book"></i></button>
       <button class="gear-btn" onclick="openPrices()" title="Price book"><i class="ti ti-currency-dollar"></i></button>
       <button class="gear-btn" onclick="openSettings()" title="Settings"><i class="ti ti-settings"></i></button>
@@ -1161,6 +1179,18 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
     <button class="tab active" onclick="newBooking()"><i class="ti ti-calendar-plus" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>New booking</button>
     <button class="tab" onclick="showTab('hist')"><i class="ti ti-list" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Appointments</button>
     <button class="tab" onclick="showTab('mgm')"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Salon owes me</button>
+  </div>
+
+  <!-- SEARCH OVERLAY -->
+  <div class="srch-ov" id="esOv" onclick="if(event.target===this)closeEarnSearch()">
+    <div class="srch-box">
+      <div class="srch-top">
+        <i class="ti ti-search"></i>
+        <input id="esIn" placeholder="Search clients, services, bookings…" oninput="runEarnSearch(this.value)" autocomplete="off" autocapitalize="off">
+        <button class="srch-x" onclick="closeEarnSearch()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="srch-res" id="esRes"></div>
+    </div>
   </div>
 
   <!-- MODAL -->
@@ -1425,6 +1455,23 @@ function _tyYears(){var ys={},cy=new Date().getFullYear();ys[cy]=1;loadAppts().f
 function _tyFmt(n){return '$'+(Math.round((+n||0)*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function renderTaxYear(){var sel=document.getElementById('taxYearSel'),out=document.getElementById('taxYearOut');if(!sel||!out)return;var y=sel.value||String(new Date().getFullYear()),me=0,tip=0,n=0;loadAppts().forEach(function(a){if(a&&a.date&&String(a.date).slice(0,4)===y){me+=(+a.me||0);tip+=(+a.tip||0);n++;}});out.innerHTML='<div class="ty-row"><span>Appointments</span><span>'+n+'</span></div><div class="ty-row"><span>Service commission (taxable)</span><span>'+_tyFmt(me)+'</span></div><div class="ty-row"><span>Tips received</span><span>'+_tyFmt(tip)+'</span></div><div class="ty-row ty-total"><span>Total income '+y+'</span><span>'+_tyFmt(me+tip)+'</span></div>';}
 function buildTaxYear(){var sel=document.getElementById('taxYearSel');if(!sel)return;var ys=_tyYears(),cur=sel.value;sel.innerHTML=ys.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');if(cur&&ys.indexOf(cur)>=0)sel.value=cur;else sel.value=String(new Date().getFullYear());renderTaxYear();}
+/* ===== Global search (Earnings — clients + bookings) ===== */
+function openEarnSearch(){var o=$('esOv');if(!o)return;o.classList.add('open');document.body.classList.add('modal-open');var i=$('esIn');if(i){i.value='';setTimeout(function(){i.focus();},80);}runEarnSearch('');}
+function closeEarnSearch(){var o=$('esOv');if(o)o.classList.remove('open');document.body.classList.remove('modal-open');}
+function runEarnSearch(q){
+  q=(q||'').trim().toLowerCase(); var res=$('esRes'); if(!res)return;
+  if(!q){res.innerHTML='<div class="srch-empty">Type a name, service or date…</div>';return;}
+  var cls=(typeof getClients==='function'?getClients():[]);
+  var bks=(typeof loadAppts==='function'?loadAppts():[]);
+  var mc=cls.filter(function(c){return c.name&&((c.name+' '+(c.phone||'')+' '+(c.email||'')).toLowerCase().indexOf(q)>=0);}).slice(0,8);
+  var mb=bks.filter(function(a){return ((a.name||'')+' '+(a.cat||a.category||'')+' '+(a.date||'')).toLowerCase().indexOf(q)>=0;}).slice(0,8);
+  var html='';
+  html+=mc.map(function(c){return '<div class="srch-item" onclick="esGoClient(\''+String(c.id)+'\')"><div class="srch-ic cl"><i class="ti ti-user"></i></div><div class="srch-main"><div class="srch-t">'+escHtml(c.name)+'</div><div class="srch-s">'+escHtml(c.phone||c.email||'client card')+'</div></div><i class="ti ti-chevron-right" style="color:#555"></i></div>';}).join('');
+  html+=mb.map(function(a){var nm=String(a.name||'').replace(/[\\']/g,' ');return '<div class="srch-item" onclick="esGoBooking(\''+nm+'\')"><div class="srch-ic bk"><i class="ti ti-calendar"></i></div><div class="srch-main"><div class="srch-t">'+escHtml(a.name||'—')+' · '+escHtml(a.cat||a.category||'service')+'</div><div class="srch-s">'+escHtml(a.date||'')+' · $'+(((+a.me||0)+(+a.tip||0)).toFixed(0))+'</div></div><i class="ti ti-chevron-right" style="color:#555"></i></div>';}).join('');
+  res.innerHTML=html||'<div class="srch-empty">No matches for "'+escHtml(q)+'"</div>';
+}
+function esGoClient(id){closeEarnSearch();if(typeof editClient==='function')editClient(id);}
+function esGoBooking(name){closeEarnSearch();if(typeof showTab==='function')showTab('hist');setTimeout(function(){var i=$('apptSearch');if(i)i.value=name;if(typeof onApptSearch==='function')onApptSearch(name);},90);}
 function _tyData(){
   var by={}; loadAppts().forEach(function(a){
     if(!a||!a.date)return; var y=String(a.date).slice(0,4); if(!/^\d{4}$/.test(y))return;
@@ -2900,7 +2947,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.45 · tax-year export (CSV + PDF)';
+var VERSION='app v1.46 · global search (Earnings)';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
