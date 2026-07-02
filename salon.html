@@ -148,7 +148,7 @@
 
   <div class="stage">
     <iframe id="room" title="room" allow="web-share; clipboard-write"></iframe>
-    <div class="ver">salon v0.13</div>
+    <div class="ver">salon v0.14</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -340,7 +340,12 @@
       .catch(function(e){ console.warn('sync push failed',e); });
   }
   function scheduleScan(){ clearTimeout(_pushTimer); _pushTimer=setTimeout(function(){ if(!_uid)return; var ch=detectChanges(); if(ch.length)pushKeys(ch); },1500); }
-  function reloadRoomSoon(){ clearTimeout(_reloadTimer); _reloadTimer=setTimeout(function(){ try{ frame.src=roomSrc(current); }catch(e){} },450); }
+  var _lastReload=0;
+  function reloadRoomSoon(){
+    clearTimeout(_reloadTimer);
+    var since=Date.now()-_lastReload, wait=since<20000?(20000-since):500;  // throttle: ≤1 room reload per ~20s (kills cross-device reload thrash)
+    _reloadTimer=setTimeout(function(){ _lastReload=Date.now(); try{ frame.src=roomSrc(current); }catch(e){} }, wait);
+  }
 
   function startUserSync(uid){
     if(!fdb){ return; }

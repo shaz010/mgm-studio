@@ -2947,7 +2947,7 @@ calc();loadAll();try{applyBigText();}catch(e){}try{maybeShowBackupNudge();}catch
 /* ── Pay to Unlock ── */
 var UNLOCK={codeHash:4159026715,trialDays:3,stripeUrl:'https://buy.stripe.com/3cIdR97x4gdA4z9dCEfw401'};
 function pgHash(s){var h=5381;for(var i=0;i<s.length;i++){h=((h<<5)+h+s.charCodeAt(i))>>>0;}return h;}
-function pgUnlocked(){try{return localStorage.getItem('cp_unlocked')==='1';}catch(e){return false;}}
+function pgUnlocked(){try{if(localStorage.getItem('cp_unlocked')==='1')return true;}catch(e){}try{if(sessionStorage.getItem('cp_unlocked')==='1')return true;}catch(e){}return false;}
 function pgTrialStart(){try{var t=localStorage.getItem('cp_trialStart');if(!t){t=String(Date.now());localStorage.setItem('cp_trialStart',t);}return +t;}catch(e){return Date.now();}}
 function pgDaysLeft(){var ms=UNLOCK.trialDays*86400000-(Date.now()-pgTrialStart());return Math.max(0,Math.ceil(ms/86400000));}
 function pgTrialOver(){return (Date.now()-pgTrialStart())>=UNLOCK.trialDays*86400000;}
@@ -2956,7 +2956,7 @@ function payClose(){var g=document.getElementById('payGate');if(g)g.classList.re
 function payBuy(){if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){alert('Payment link is not set up yet — coming soon!');return;}window.location.href=UNLOCK.stripeUrl;}
 function payUnlock(){
   var v=(document.getElementById('payCode').value||'').trim().toUpperCase();
-  if(v&&pgHash(v)===UNLOCK.codeHash){try{localStorage.setItem('cp_unlocked','1');}catch(e){}payClose();}
+  if(v&&pgHash(v)===UNLOCK.codeHash){try{localStorage.setItem('cp_unlocked','1');}catch(e){}try{sessionStorage.setItem('cp_unlocked','1');}catch(e){}payClose();}
   else{document.getElementById('payErr').style.display='block';}
 }
 function applyAccessGate(){
@@ -3432,7 +3432,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.62 · bigger-text toggle';
+var VERSION='app v1.63 · unlock + sync stability';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
