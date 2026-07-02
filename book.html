@@ -124,7 +124,7 @@ textarea{resize:vertical;min-height:60px}
 <!-- MAIN FORM -->
 <div class="wrap hidden" id="formView">
   <div class="brand">
-    <div class="brand-ic"><i class="ti ti-sparkles"></i></div>
+    <div class="brand-ic"><svg viewBox="0 0 100 100" width="74%" height="74%" style="display:block"><g fill="#1a1208"><polygon points="50,30.5 55.2,52 50,73.5 44.8,52"/><polygon points="28.5,52 50,46.8 71.5,52 50,57.2"/><polygon points="70,25.5 72.2,34 70,42.5 67.8,34"/><polygon points="61.5,34 70,31.8 78.5,34 70,36.2"/><polygon points="33,61.4 34.8,68 33,74.6 31.2,68"/><polygon points="26.4,68 33,66.2 39.6,68 33,69.8"/></g></svg></div>
     <div>
       <div class="brand-name" id="salonName">Salon</div>
       <div class="brand-sub">Book an appointment</div>
@@ -211,6 +211,7 @@ textarea{resize:vertical;min-height:60px}
 
   <button class="book-btn" id="bookBtn" onclick="submitBooking()"><i class="ti ti-send"></i> Request booking</button>
   <div class="foot-note"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px"></i> You'll get a confirmation once the stylist approves. This just sends a request.</div>
+  <div class="foot-note" id="bkVer" style="opacity:.5;margin-top:14px;font-size:11px"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -230,7 +231,8 @@ var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 
 function $(id){return document.getElementById(id);}
-var VERSION='book v1.3 · brand refresh + add-to-calendar';
+var VERSION='book v1.4 · brand match + version tag';
+try{var _bv=document.getElementById('bkVer');if(_bv)_bv.textContent=VERSION;}catch(e){}
 function show(id){['loadingView','closedView','errorView','doneView','formView'].forEach(function(v){$(v).classList.toggle('hidden',v!==id);});}
 function retry(){show('loadingView');setTimeout(init,250);}
 function mins(t){if(!t)return 0;var p=(''+t).split(':');return (+p[0])*60+(+p[1]||0);}
