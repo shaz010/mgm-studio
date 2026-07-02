@@ -937,6 +937,13 @@ body.theme-noir .btn-paid-main,body.theme-noir .btn-mark-paid{background:#04140b
 .svc-trade-change:active{transform:scale(.95)}
 .svc-trade-change i{font-size:14px}
 body.theme-noir .svc-trade-change{color:#cbd5ff;border-color:#23232e;background:#0a0a0e}
+.set-trade-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+.set-trade-tile{min-height:64px;background:#161616;border:1.5px solid #2a2a2a;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:10px 4px;-webkit-tap-highlight-color:transparent;transition:transform .12s ease;font-family:inherit}
+.set-trade-tile:active{transform:scale(.94)}
+.set-trade-tile i{font-size:22px;color:#cbd5ff}
+.set-trade-tile span{font-size:12px;font-weight:700;color:#e8e8f2}
+body.theme-noir .set-trade-tile{background:#0a0a0e;border-color:#23232e}
+.set-trade-tile.on{border-color:transparent;background:linear-gradient(#101016,#101016) padding-box,linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 14px rgba(167,139,250,.25)}
 body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!important;background:linear-gradient(#000,#000) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 10px rgba(167,139,250,.25)}
 .trade-screen{position:fixed;inset:0;z-index:7000;background:#000;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
 .tour-screen{position:fixed;inset:0;z-index:7100;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:24px}
@@ -1210,9 +1217,9 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
 
     <div class="setup-section">
       <div class="setup-section-title">Your trade</div>
-      <button class="cf-disc-edit" onclick="closeSettings();openTradePicker()" style="display:block"><i class="ti ti-arrows-exchange" style="font-size:13px"></i> Change my trade</button>
-      <button class="cf-disc-edit" onclick="closeSettings();openTour()" style="display:block;margin-top:6px"><i class="ti ti-help-circle" style="font-size:13px"></i> Replay quick tour</button>
-      <div class="reset-qp-hint" style="margin-top:7px">Switches your booking screen and price list to a different trade. Your bookings and clients are kept.</div>
+      <div class="set-trade-grid" id="setTradeGridCP"></div>
+      <button class="cf-disc-edit" onclick="closeSettings();openTour()" style="display:block;margin-top:10px"><i class="ti ti-help-circle" style="font-size:13px"></i> Replay quick tour</button>
+      <div class="reset-qp-hint" style="margin-top:7px">Tap a trade to switch instantly — your booking screen and price list follow. Your bookings and clients are kept.</div>
     </div>
 
     <div class="setup-section">
@@ -2272,6 +2279,8 @@ function renderTradePicker(){var g=document.getElementById('tradeGrid');if(!g)re
 function openTradePicker(){renderTradePicker();var sc=document.getElementById('tradeScreen');if(sc)sc.style.display='flex';}
 function closeTradePicker(){var sc=document.getElementById('tradeScreen');if(sc)sc.style.display='none';}
 function pickTrade(k){setTrade(k);var sc=document.getElementById('tradeScreen');if(sc)sc.style.display='none';if(typeof buildServiceChips==='function')buildServiceChips();renderTradeLabel();maybeShowTour();}
+function renderSetTradeGrid(){var g=document.getElementById('setTradeGridCP');if(!g)return;var cur=getMode();g.innerHTML=TRADES.map(function(t){return '<button type="button" class="set-trade-tile'+(t.k===cur?' on':'')+'" onclick="pickTradeInline(\''+t.k+'\')"><i class="ti '+t.icon+'"></i><span>'+t.label+'</span></button>';}).join('');}
+function pickTradeInline(k){setTrade(k);if(typeof buildServiceChips==='function')buildServiceChips();renderTradeLabel();renderSetTradeGrid();}
 function maybeShowTradePicker(){var t='';try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');t=p.trade;}catch(e){}var combo='';try{combo=localStorage.getItem('combo_trade')||'';}catch(e){}if(combo&&combo!==t&&TRADES.some(function(x){return x.k===combo;})){setTrade(combo);t=combo;if(typeof buildServiceChips==='function')buildServiceChips();if(typeof renderTradeLabel==='function')renderTradeLabel();}if(!t){openTradePicker();}else{maybeShowTour();}}
 var TOUR=[
  {ic:'ti-briefcase',t:'Your trade',x:'You\'re all set. Tap <b>Change</b> on the booking screen anytime to switch trades — it never locks you in.'},
@@ -3168,7 +3177,7 @@ function openSettings(){
   if(ri) ri.value = prefs.rate||60;
   _lockRate();
   const panel = document.getElementById('settingsPanel');
-  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); markBigText(); renderBackupStatus(); initBookLink(); try{document.querySelectorAll('#settingsPanel .setup-section').forEach(function(s){s.classList.add('collapsed');});var _sp=document.getElementById('settingsPanel');if(_sp)_sp.classList.remove('show-adv');var _at=document.getElementById('advToggle');if(_at)_at.innerHTML='Show advanced settings ▾';}catch(e){} }
+  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); markBigText(); renderBackupStatus(); initBookLink(); try{renderSetTradeGrid();}catch(e){} try{document.querySelectorAll('#settingsPanel .setup-section').forEach(function(s){s.classList.add('collapsed');});var _sp=document.getElementById('settingsPanel');if(_sp)_sp.classList.remove('show-adv');var _at=document.getElementById('advToggle');if(_at)_at.innerHTML='Show advanced settings ▾';}catch(e){} }
 }
 
 function closeSettings(){
@@ -3452,7 +3461,20 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.67 · basic/advanced settings';
+var VERSION='app v1.69 · trades live inside Settings';
+
+/* ---- tap-away keyboard dismiss (iOS) ---- */
+document.addEventListener('touchstart',function(e){
+  var a=document.activeElement;
+  if(!a)return;
+  var tag=(a.tagName||'').toLowerCase();
+  if(tag!=='input'&&tag!=='textarea'&&tag!=='select')return;
+  var t=e.target;
+  if(t===a)return;
+  var tt=(t.tagName||'').toLowerCase();
+  if(tt==='input'||tt==='textarea'||tt==='select'||tt==='label')return;
+  a.blur();
+},{passive:true});
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
