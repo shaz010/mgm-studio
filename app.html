@@ -204,6 +204,9 @@ body.theme-light .svc-more::after{background:#fff}
 .price-in-wrap::before{content:'$';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#888;font-size:14px;pointer-events:none}
 .price-in{width:104px;padding:8px 10px 8px 22px;background:#1a1a1a;border:1.5px solid #444;border-radius:8px;color:#fff;font-size:16px;font-weight:600;outline:none;text-align:right}
 .price-in:focus{border-color:var(--gold);background:#1e1e1e}
+.price-tools{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.hair-toggle{padding:8px 11px;border-radius:8px;border:1.5px solid #555;background:#1a1a1a;color:#999;cursor:pointer;font-size:12px;font-weight:800;white-space:nowrap;flex-shrink:0;transition:all .12s;-webkit-tap-highlight-color:transparent}
+.hair-toggle.on{border-color:var(--gold);color:#1a1208;background:var(--gold)}
 .reset-qp-btn{width:100%;padding:11px;background:#1a1a1a;border:1.5px solid #444;border-radius:9px;color:#ddd;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .reset-qp-btn:active{border-color:var(--gold);color:var(--gold)}
 .reset-qp-hint{font-size:11.5px;color:#888;line-height:1.5;margin-top:8px}
@@ -1360,7 +1363,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
         <button class="modal-close" onclick="closePrices()"><i class="ti ti-x"></i></button>
       </div>
       <div class="modal-body">
-        <p class="price-hint">Set what you charge for each service. Leave blank for ones you don't offer. When you combine services in a booking, the Charge auto-fills with the total — you can still adjust it.</p>
+        <p class="price-hint">Set what you charge for each service. Leave blank for ones you don't offer. When you combine services in a booking, the Charge auto-fills with the total — you can still adjust it.<br><br>Tap <b style="color:var(--gold)">By hair</b> next to a service to <b style="color:var(--gold)">auto-price by the client's hair</b> — the price you set becomes the baseline (short, fine hair) and scales up for length, thickness, grey &amp; prior chemical work. Best for colour &amp; highlight services.</p>
         <div class="svc-trade-label" id="priceTradeLabel" style="margin-bottom:12px"></div>
         <div id="priceList"></div>
         <button class="btn-print" onclick="closePrices()"><i class="ti ti-check" style="font-size:16px"></i>Done</button>
@@ -2575,6 +2578,9 @@ function markLightComfort(){var bg=prefs.lcbg||'soft',tx=prefs.lctx||'normal';do
 var priceMode='hair';
 function getPrices(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.prices&&typeof p.prices==='object')?p.prices:{};}catch(e){return {};}}
 function savePrices(obj){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.prices=obj;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.prices=obj;}
+function getHairPriced(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.hairPriced&&typeof p.hairPriced==='object')?p.hairPriced:{};}catch(e){return {};}}
+function isHairPriced(name){return getHairPriced()[name]===true;}
+function toggleHairPriced(name,btn){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');var hp=p.hairPriced||{};hp[name]=!hp[name];if(!hp[name])delete hp[name];p.hairPriced=hp;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}var on=isHairPriced(name);if(btn){btn.classList.toggle('on',on);btn.innerHTML=on?'✓ By hair':'By hair';}}
 function setPrice(name,val){
   var prices=getPrices();
   var v=parseFloat(val);
@@ -2598,7 +2604,9 @@ function buildPriceList(){
     var rows=items.map(function(it){
       var n=it[0];
       var val=(prices[n]!==undefined&&prices[n]!==null)?prices[n]:'';
-      return '<div class="price-row"><span class="price-name">'+n+'</span><span class="price-in-wrap"><input class="price-in" type="number" inputmode="decimal" placeholder="0" value="'+val+'" oninput="setPrice(\''+n.replace(/'/g,"\\'")+'\',this.value)"></span></div>';
+      var e2=n.replace(/'/g,"\\'");
+      var hpOn=isHairPriced(n);
+      return '<div class="price-row"><span class="price-name">'+n+'</span><span class="price-tools"><button class="hair-toggle'+(hpOn?' on':'')+'" onclick="event.stopPropagation();toggleHairPriced(\''+e2+'\',this)">'+(hpOn?'✓ By hair':'By hair')+'</button><span class="price-in-wrap"><input class="price-in" type="number" inputmode="decimal" placeholder="0" value="'+val+'" onclick="event.stopPropagation()" oninput="setPrice(\''+e2+'\',this.value)"></span></span></div>';
     }).join('');
     var col=catColorOf(g.c);
     var badge=priced?'<span class="pc-count">'+priced+'</span>':'';
@@ -3432,7 +3440,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.63 · unlock + sync stability';
+var VERSION='app v1.65 · By-hair price book (unified)';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
@@ -3453,6 +3461,7 @@ setInterval(checkForUpdate,60000);
 <script>
 /* QoL: tap outside any overlay to dismiss (no save) + keep focused fields above the keyboard */
 (function(){
+  var _lastFieldFocus=0;
   function vis(el){try{return getComputedStyle(el).display!=='none';}catch(e){return true;}}
   document.addEventListener('click',function(e){
     var t=e.target; if(!t||!t.matches) return;
@@ -3461,6 +3470,7 @@ setInterval(checkForUpdate,60000);
     if(t.matches('.trade-screen')){ if(!vis(t))return; if(typeof closeTradePicker==='function')closeTradePicker(); else t.style.display='none'; return; }
     if(t.matches('.modal-overlay, .tour-screen, .erase-modal')){
       if(!vis(t))return;
+      if(Date.now()-_lastFieldFocus<700) return;   // this tap is dismissing the keyboard after typing — don't close the modal
       t.classList.remove('open'); t.style.display='none';
       try{document.body.classList.remove('modal-open');}catch(_){}
       if(window.WARP&&WARP.resume){try{WARP.resume();}catch(_){}}
@@ -3468,6 +3478,7 @@ setInterval(checkForUpdate,60000);
   });
   document.addEventListener('focusin',function(e){
     var el=e.target; if(!el)return; var g=el.tagName; if(g!=='INPUT'&&g!=='TEXTAREA'&&g!=='SELECT')return;
+    _lastFieldFocus=Date.now();
     setTimeout(function(){ try{
       var r=el.getBoundingClientRect(), vh=window.innerHeight||document.documentElement.clientHeight;
       if(r.bottom>vh*0.55||r.top<8){ el.scrollIntoView({block:'center',behavior:'smooth'}); }
