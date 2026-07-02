@@ -15,7 +15,7 @@
 body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.5;padding:0 0 40px}
 .wrap{width:100%;box-sizing:border-box;margin:0;padding:16px max(16px,env(safe-area-inset-left)) 16px max(16px,env(safe-area-inset-right))}
 .brand{display:flex;align-items:center;gap:12px;margin:8px 0 18px}
-.brand-ic{width:40px;height:40px;background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:21px;flex-shrink:0}
+.brand-ic{width:40px;height:40px;background:linear-gradient(135deg,#ffcf4d,#e8a91a);border:none;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#1a1208;font-size:20px;flex-shrink:0;box-shadow:0 3px 10px rgba(232,169,26,.28)}
 .brand-name{font-size:18px;font-weight:700}
 .brand-sub{font-size:12.5px;color:var(--muted);margin-top:1px}
 .sec{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin:22px 0 10px}
@@ -117,13 +117,14 @@ textarea{resize:vertical;min-height:60px}
   <div class="cs-ic green"><i class="ti ti-check"></i></div>
   <div class="cs-title">Request sent!</div>
   <div class="cs-sub" id="doneSub">Your booking request has been sent. You'll get a confirmation once it's approved.</div>
-  <button class="book-btn" style="max-width:240px;margin-top:22px" onclick="resetForm()"><i class="ti ti-plus"></i> Book another</button>
+  <button class="book-btn" style="max-width:260px;margin-top:20px;background:var(--bg2);color:var(--gold);border:1.5px solid var(--gold)" onclick="addToCal()"><i class="ti ti-calendar-plus"></i> Add to my calendar</button>
+  <button class="book-btn" style="max-width:260px;margin-top:10px" onclick="resetForm()"><i class="ti ti-plus"></i> Book another</button>
 </div>
 
 <!-- MAIN FORM -->
 <div class="wrap hidden" id="formView">
   <div class="brand">
-    <div class="brand-ic"><i class="ti ti-calendar-week"></i></div>
+    <div class="brand-ic"><i class="ti ti-sparkles"></i></div>
     <div>
       <div class="brand-name" id="salonName">Salon</div>
       <div class="brand-sub">Book an appointment</div>
@@ -226,10 +227,10 @@ var FB_CONFIG={
 var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 
-var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false;
+var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 
 function $(id){return document.getElementById(id);}
-var VERSION='book v1.2 · month+dividers';
+var VERSION='book v1.3 · brand refresh + add-to-calendar';
 function show(id){['loadingView','closedView','errorView','doneView','formView'].forEach(function(v){$(v).classList.toggle('hidden',v!==id);});}
 function retry(){show('loadingView');setTimeout(init,250);}
 function mins(t){if(!t)return 0;var p=(''+t).split(':');return (+p[0])*60+(+p[1]||0);}
@@ -404,6 +405,27 @@ function toggleCustom(){
   if(customMode){selTime='';document.querySelectorAll('#slotGrid .slot').forEach(function(c){c.classList.remove('sel');});setTimeout(function(){var ct=$('customTime');if(ct)ct.focus();},120);}
   updateBtn();
 }
+/* ---- add to calendar (.ics) ---- */
+function addToCal(){
+  var b=_lastBooking; if(!b)return;
+  var pad=function(n){return (n<10?'0':'')+n;};
+  var fmt=function(x){return x.getFullYear()+pad(x.getMonth()+1)+pad(x.getDate())+'T'+pad(x.getHours())+pad(x.getMinutes())+'00';};
+  var startD=new Date(b.date+'T'+(b.time||'09:00')+':00');
+  if(isNaN(startD.getTime()))startD=new Date(b.date+'T09:00:00');
+  var endD=new Date(startD.getTime()+60*60000);
+  var ie=function(s){return String(s||'').replace(/([,;\\])/g,'\\$1').replace(/\n/g,'\\n');};
+  var desc='Booking request sent to '+b.salon+'. This is pending confirmation.'+(b.custom&&b.customTime?(' Requested time: '+b.customTime+'.'):'');
+  var ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Your Salon//Booking//EN','CALSCALE:GREGORIAN','BEGIN:VEVENT',
+    'UID:ys-'+Date.now()+'@yoursalon','DTSTAMP:'+fmt(new Date()),'DTSTART:'+fmt(startD),'DTEND:'+fmt(endD),
+    'SUMMARY:'+ie(b.svc+' — '+b.salon+' (requested)'),'DESCRIPTION:'+ie(desc),'STATUS:TENTATIVE','END:VEVENT','END:VCALENDAR'].join('\r\n');
+  var fn=(b.salon+'-appointment').replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,'')+'.ics';
+  try{
+    var blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+    if(navigator.share&&navigator.canShare){var file=new File([blob],fn,{type:'text/calendar'});if(navigator.canShare({files:[file]})){navigator.share({files:[file],title:'Add to calendar'}).catch(function(){_icsDl(blob,fn);});return;}}
+    _icsDl(blob,fn);
+  }catch(e){window.location.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);}
+}
+function _icsDl(blob,fn){var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=fn;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(url);a.remove();},1500);}
 function updateBtn(){
   var ok=allSvcs().length && selDate && (selTime || (customMode && $('customTime').value.trim()));
   $('bookBtn').disabled=!ok;
@@ -429,6 +451,7 @@ function submitBooking(){
     notes:notesFull,hair:collectHair(),hairData:collectHairData(),custom:!!isCustom,customSvc:!!(otherSvcMode && $('otherSvc').value.trim()),status:'pending',createdAt:Date.now()
   };
   db.collection('requests').add(rec).then(function(){
+    _lastBooking={date:selDate,time:(time||'09:00'),svc:svcStr,salon:(info&&info.salonName)||'Salon',custom:!!isCustom,customTime:isCustom?$('customTime').value.trim():''};
     var when=isCustom?$('customTime').value.trim():(to12(selTime)+' on '+new Date(selDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}));
     $('doneSub').innerHTML='Your request for <b>'+esc(svcStr)+'</b> ('+esc(when)+') has been sent. You\u2019ll get a confirmation once it\u2019s approved.';
     show('doneView');
