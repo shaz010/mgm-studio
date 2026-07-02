@@ -715,6 +715,11 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
 .srch-t{font-size:14px;font-weight:700;color:#e8e8ef;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .srch-s{font-size:11.5px;color:#8a8a96;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .srch-empty{padding:26px 16px;text-align:center;color:#6a6a78;font-size:13px}
+.split-lock-row{display:flex;gap:8px;align-items:stretch}
+.split-lock-row #setSplit{flex:1}
+.split-lock-row #setSplit[readonly]{opacity:.65}
+.split-lock-btn{width:48px;border:1px solid #3a3a44;border-radius:10px;background:#16161c;color:#e8c37a;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.split-lock-btn.unlocked{color:#5ddb7c;border-color:rgba(93,219,124,.5)}
 /* ===== Bigger text (accessibility) — mirrors Earnings toggle ===== */
 body.a11y-big label,body.a11y-big .cdp-hint,body.a11y-big .cd-hist-head{font-size:14.5px}
 body.a11y-big input,body.a11y-big textarea,body.a11y-big select{font-size:17.5px}
@@ -1021,7 +1026,10 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 
     <div class="set-sec">Your pay</div>
     <label>Your split % <span style="color:#666;font-weight:400">(renters: 100)</span></label>
-    <input id="setSplit" type="number" inputmode="numeric" min="0" max="100" placeholder="60">
+    <div class="split-lock-row">
+      <input id="setSplit" type="number" inputmode="numeric" min="0" max="100" placeholder="60" readonly>
+      <button type="button" class="split-lock-btn" id="splitLockBtn" onclick="toggleSplitLock()"><i class="ti ti-lock"></i></button>
+    </div>
     <div style="font-size:12px;color:var(--muted);margin:7px 0 0;line-height:1.5">Take-home = booked price × this %. Commission stylists enter their split; booth renters enter <b>100</b> to keep it all.</div>
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-sm" style="flex:1" onclick="saveSplit()"><i class="ti ti-check"></i> Save pay</button>
@@ -1268,6 +1276,7 @@ function isInProgress(a){
 /* ===== storage (ap_ namespace; client shape matches CommissionPro cp_clients) ===== */
 var APPTS='ap_appts', CLIENTS='ap_clients', CUSTOM='ap_custom', PREFS='ap_prefs', STOCK='ap_stock';
 try{if(localStorage.getItem('ys_bigtext')==='1'&&document.body)document.body.classList.add('a11y-big');}catch(e){}
+try{var _ap0=JSON.parse(localStorage.getItem('ap_prefs')||'{}');var _cp0=JSON.parse(localStorage.getItem('cp_prefs')||'{}');if(_ap0.prices&&Object.keys(_ap0.prices).length){_cp0.prices=Object.assign({},_ap0.prices,_cp0.prices||{});localStorage.setItem('cp_prefs',JSON.stringify(_cp0));}}catch(e){}
 function load(k,fb){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?fb:v;}catch(e){return fb;}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){alert('Could not save — storage may be full.');}}
 function $(i){return document.getElementById(i)}
@@ -2510,7 +2519,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.46 · bigger-text support';
+var VERSION='v4.47 · shared prices + split lock';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -2532,6 +2541,7 @@ function openSettings(){
   $('setBizName').value=p.bizName||'';
   $('setStylist').value=p.stylist||'';
   $('setSplit').value=(p.splitPct!=null?p.splitPct:60);
+  try{_lockSplit();}catch(e){}
   (function(){var parts=VERSION.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';$('setVersion').innerHTML='AppointmentPro · <span style="color:#f5f5fa;font-weight:800">'+ver+'</span>'+rest;})();
   renderHours(true);
   syncBookingToggle();renderReqBadge();applyTheme();
@@ -2559,10 +2569,14 @@ function apCalc(){
   if(tv)tv.textContent='$'+tip.toFixed(2);
   if(tt)tt.textContent='$'+(you+tip).toFixed(2);
 }
+var _splitUnlocked=false;
+function toggleSplitLock(){_splitUnlocked=!_splitUnlocked;var i=$('setSplit'),b=$('splitLockBtn');if(_splitUnlocked){if(i){i.removeAttribute('readonly');try{i.focus();i.select();}catch(e){}}if(b){b.classList.add('unlocked');b.innerHTML='<i class="ti ti-lock-open"></i>';}}else{_lockSplit();}}
+function _lockSplit(){_splitUnlocked=false;var i=$('setSplit'),b=$('splitLockBtn');if(i)i.setAttribute('readonly','readonly');if(b){b.classList.remove('unlocked');b.innerHTML='<i class="ti ti-lock"></i>';}}
 function saveSplit(){
-  var p=getPrefs();var v=parseFloat($('setSplit').value);
+  var p=getPrefs();var old=(p.splitPct!=null?p.splitPct:60);var v=parseFloat($('setSplit').value);
   if(isNaN(v))v=60; v=Math.max(0,Math.min(100,v));
-  p.splitPct=v;setPrefs(p);$('setSplit').value=v;
+  if(v!==old && !confirm('Change your split from '+old+'% to '+v+'%?\n\nThis recalculates all your take-home figures.')){$('setSplit').value=old;_lockSplit();return;}
+  p.splitPct=v;setPrefs(p);$('setSplit').value=v;_lockSplit();
   toast(v>=100?'Pay saved — you keep 100%':'Pay saved');
   if(typeof dayMode!=='undefined'&&dayMode==='day')renderDay();
 }
@@ -2836,8 +2850,8 @@ function eyeRest(){
 
 /* ===== PRICE BOOK (verbatim from CommissionPro, adapted to ap_prefs + fPrice) ===== */
 var priceMode='hair';
-function getPrices(){var p=getPrefs();return (p.prices&&typeof p.prices==='object')?p.prices:{};}
-function savePrices(obj){var p=getPrefs();p.prices=obj;setPrefs(p);}
+function getPrices(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.prices&&typeof p.prices==='object')?p.prices:{};}catch(e){return {};}}
+function savePrices(obj){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.prices=obj;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}}
 function setPrice(name,val){
   var prices=getPrices();
   var v=parseFloat(val);
