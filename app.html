@@ -1476,8 +1476,8 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       <div class="insights-row" id="insights"></div>
       <div class="sum-row">
         <div class="sum-c"><div class="sum-lbl">Total charged</div><div class="sum-val sv-g" id="sCharge">$0</div></div>
-        <div class="sum-c"><div class="sum-lbl">Salon 40%</div><div class="sum-val sv-b" id="sSalon">$0</div></div>
-        <div class="sum-c"><div class="sum-lbl">My 60%</div><div class="sum-val sv-gr" id="sMe">$0</div></div>
+        <div class="sum-c"><div class="sum-lbl lbl-salon">Salon 40%</div><div class="sum-val sv-b" id="sSalon">$0</div></div>
+        <div class="sum-c"><div class="sum-lbl lbl-me">My 60%</div><div class="sum-val sv-gr" id="sMe">$0</div></div>
         <div class="sum-c"><div class="sum-lbl">Tips</div><div class="sum-val sv-tip" id="sTips">$0</div></div>
         <div class="sum-c"><div class="sum-lbl">Take-home</div><div class="sum-val sv-g" id="sTotal">$0</div></div>
       </div>
@@ -1486,8 +1486,8 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
           <table>
             <thead><tr>
               <th>Client</th><th>Date</th><th>Wk</th><th>Category</th>
-              <th class="r">Charge</th><th class="r th-b">Salon 40%</th>
-              <th class="r th-gr">Me 60%</th><th class="r th-tip">Tip</th>
+              <th class="r">Charge</th><th class="r th-b lbl-salon">Salon 40%</th>
+              <th class="r th-gr lbl-me">Me 60%</th><th class="r th-tip">Tip</th>
               <th class="r th-g">My total</th><th></th>
             </tr></thead>
             <tbody id="tBody"></tbody>
@@ -1542,6 +1542,8 @@ function myRate(){
   if(isNaN(s))s=60;
   return Math.max(0,Math.min(100,s))/100;
 }
+function _mp(){return Math.round(myRate()*100);}
+function _sp(){return 100-_mp();}
 function saveName(v){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.name=v;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.name=v;applyName();}
 function applyName(){var l=document.getElementById('eMeLbl');if(l)l.textContent=getName()||'You';}
 function getBookLink(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.bookLink||'').trim();}catch(e){return '';}}
@@ -1946,7 +1948,7 @@ function renderTable(){
   $('weeklyView').style.display=activeFilter==='weekly'?'block':'none';
   if(activeFilter==='weekly'){renderWeekly();return;}
   const tbody=$('tBody'),empty=$('emptyMsg');
-  if(!filtered.length){tbody.innerHTML='';empty.style.display='block';return;}
+  if(!filtered.length){tbody.innerHTML='';empty.innerHTML=loadAppts().length?'<i class="ti ti-search-off"></i>No matches for this filter.':'<i class="ti ti-calendar-plus"></i>No bookings yet.<br><span style="font-size:12px;color:#888">Add one in the Appointments app to start tracking your earnings.</span>';empty.style.display='block';return;}
   empty.style.display='none';
   tbody.innerHTML=filtered.map(a=>{
     const d=new Date(a.date+'T12:00:00');
@@ -1959,8 +1961,8 @@ function renderTable(){
       <td class="td-m" style="color:#555" data-label="Week">Wk${weekNum(a.date)}</td>
       <td class="td-cat" data-label="Category">${a.cat||'—'}</td>
       <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td>
-      <td class="td-b r" data-label="Salon 40%">${fmt(a.salon)}</td>
-      <td class="td-gr r" data-label="Me 60%">${fmt(a.me)}</td>
+      <td class="td-b r" data-label="Salon ${_sp()}%">${fmt(a.salon)}</td>
+      <td class="td-gr r" data-label="Me ${_mp()}%">${fmt(a.me)}</td>
       <td class="td-tip r" data-label="Tip">${fmt(a.tip)}</td>
       <td class="td-g r" data-label="My total">${fmt(a.me+a.tip)}</td>
       <td class="lh-chev-cell"><i class="ti ti-chevron-${_op?'down':'right'} lh-chev"></i></td>
@@ -2004,8 +2006,8 @@ function renderWeekly(){
       const ds=new Date(a.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
       return`<tr><td class="td-c" data-label="Client">${a.name}</td><td class="td-m" data-label="Date">${ds}</td>
         <td class="td-cat" data-label="Category">${a.cat||'—'}</td>
-        <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td><td class="td-b r" data-label="Salon 40%">${fmt(a.salon)}</td>
-        <td class="td-gr r" data-label="Me 60%">${fmt(a.me)}</td><td class="td-tip r" data-label="Tip">${fmt(a.tip)}</td>
+        <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td><td class="td-b r" data-label="Salon ${_sp()}%">${fmt(a.salon)}</td>
+        <td class="td-gr r" data-label="Me ${_mp()}%">${fmt(a.me)}</td><td class="td-tip r" data-label="Tip">${fmt(a.tip)}</td>
         <td class="td-g r" data-label="My total">${fmt(a.me+a.tip)}</td></tr>`;
     }).join('');
     return`<div class="week-section">
@@ -2015,8 +2017,8 @@ function renderWeekly(){
       </div>
       <div class="tbl-wrap"><table>
         <thead><tr><th>Client</th><th>Date</th><th>Category</th>
-          <th class="r">Charge</th><th class="r th-b">Salon 40%</th>
-          <th class="r th-gr">Me 60%</th><th class="r th-tip">Tip</th><th class="r th-g">My total</th>
+          <th class="r">Charge</th><th class="r th-b">Salon ${_sp()}%</th>
+          <th class="r th-gr">Me ${_mp()}%</th><th class="r th-tip">Tip</th><th class="r th-g">My total</th>
         </tr></thead><tbody>${rows}</tbody>
       </table></div></div>`;
   }).join('');
@@ -2112,16 +2114,16 @@ function renderInvoice(){
     <div class="inv-meta">
       <div class="inv-meta-item"><div class="inv-meta-lbl">Appointments</div><div class="inv-meta-val">${appts.length}</div></div>
       <div class="inv-meta-item"><div class="inv-meta-lbl">Revenue generated</div><div class="inv-meta-val">$${totCharge.toFixed(2)}</div></div>
-      <div class="inv-meta-item"><div class="inv-meta-lbl">Salon share (40%)</div><div class="inv-meta-val" style="color:#1e40af">$${totSalon.toFixed(2)}</div></div>
+      <div class="inv-meta-item"><div class="inv-meta-lbl">Salon share (${_sp()}%)</div><div class="inv-meta-val" style="color:#1e40af">$${totSalon.toFixed(2)}</div></div>
       <div class="inv-meta-item"><div class="inv-meta-lbl">Amount owed</div><div class="inv-meta-val" style="color:#166534">$${(totMe+totTip).toFixed(2)}</div></div>
     </div>
     <table class="inv-tbl">
-      <thead><tr><th>#</th><th>Client</th><th>Date</th><th>Service</th><th class="r">Charged</th><th class="r">Salon 40%</th><th class="r">My 60%</th></tr></thead>
+      <thead><tr><th>#</th><th>Client</th><th>Date</th><th>Service</th><th class="r">Charged</th><th class="r">Salon ${_sp()}%</th><th class="r">My ${_mp()}%</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
     <div class="inv-totals">
       <div class="inv-total-row"><span>Total revenue generated</span><span>$${totCharge.toFixed(2)}</span></div>
-      <div class="inv-total-row"><span>Salon share (40%)</span><span style="color:#1e40af">– $${totSalon.toFixed(2)}</span></div>
+      <div class="inv-total-row"><span>Salon share (${_sp()}%)</span><span style="color:#1e40af">– $${totSalon.toFixed(2)}</span></div>
       <div class="inv-total-row"><span>Your commission (60%)</span><span style="color:#166534">$${totMe.toFixed(2)}</span></div>
       <div class="inv-total-row"><span>Tips collected by salon</span><span style="color:#166534">+ $${totTip.toFixed(2)}</span></div>
       <div class="inv-total-row final"><span>Amount owed to ${getName()||'Your name'}</span><span style="color:#166534">$${(totMe+totTip).toFixed(2)}</span></div>
@@ -2580,7 +2582,7 @@ function renderClientList(){
   var clients=getClients().slice().sort(function(a,b){return a.name.localeCompare(b.name);});
   if(q)clients=clients.filter(function(c){return (c.name+' '+(c.phone||'')+' '+(c.email||'')).toLowerCase().indexOf(q)>-1;});
   var el=$('clientList');if(!el)return;
-  if(!clients.length){el.innerHTML='<div class="client-empty">No client cards yet.<br>Tap “New client card” to create one.</div>';return;}
+  if(!clients.length){el.innerHTML='<div class="client-empty"><i class="ti ti-address-book" style="font-size:28px;color:#333;display:block;margin-bottom:8px"></i>No client cards yet.<br>Add your first to keep contact details, patch tests, consent and notes all in one place.</div>';return;}
   el.innerHTML=clients.map(function(c){
     var flags='';
     var hasMed=(c.conditions&&c.conditions.length)||c.meds;
@@ -3053,6 +3055,8 @@ function updateCommissionRate(rate){
   const pcts = document.querySelectorAll('.sc-pct');
   if(pcts[0]) pcts[0].textContent = sr+'% of charge';
   if(pcts[1]) pcts[1].textContent = r+'% of charge';
+  try{document.querySelectorAll('.lbl-me').forEach(function(e){e.textContent='Me '+r+'%';});
+      document.querySelectorAll('.lbl-salon').forEach(function(e){e.textContent='Salon '+sr+'%';});}catch(e){}
 }
 
 var _rateUnlocked=false;
@@ -3366,7 +3370,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.59 · review nudge';
+var VERSION='app v1.60 · dynamic split labels + empty states';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
