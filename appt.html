@@ -720,6 +720,8 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
 .split-lock-row #setSplit[readonly]{opacity:.65}
 .split-lock-btn{width:48px;border:1px solid #3a3a44;border-radius:10px;background:#16161c;color:#e8c37a;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .split-lock-btn.unlocked{color:#5ddb7c;border-color:rgba(93,219,124,.5)}
+.confirm-text{width:100%;background:#16161c;border:1.5px solid #33333c;border-radius:11px;color:#fff;font-size:15px;font-family:inherit;padding:12px;line-height:1.5;resize:vertical;outline:none;box-sizing:border-box}
+.confirm-text:focus{border-color:var(--gold)}
 /* ===== Bigger text (accessibility) — mirrors Earnings toggle ===== */
 body.a11y-big label,body.a11y-big .cdp-hint,body.a11y-big .cd-hist-head{font-size:14.5px}
 body.a11y-big input,body.a11y-big textarea,body.a11y-big select{font-size:17.5px}
@@ -1207,6 +1209,21 @@ body.a11y-big .cdp-chip{font-size:13.5px}
   </div>
 </div>
 
+<!-- BOOKING CONFIRMATION -->
+<div class="modal" id="confirmModal" onclick="if(event.target===this)closeConfirm()">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title"><i class="ti ti-circle-check" style="font-size:15px;vertical-align:-2px;margin-right:7px;color:#5ddb7c"></i>Approved — let <span id="confirmWho">your client</span> know</div>
+    <p class="sheet-sub">Send a quick confirmation so they know they're booked. Edit it if you like.</p>
+    <textarea id="confirmText" class="confirm-text" rows="4"></textarea>
+    <div class="btn-row" style="margin-top:14px;gap:8px">
+      <button class="btn btn-sm" style="flex:1" onclick="copyConfirm()"><i class="ti ti-copy"></i> Copy</button>
+      <button class="btn btn-sm" id="confirmSend" style="flex:1;background:#5ddb7c;color:#04140b;border-color:#5ddb7c" onclick="sendConfirm()"><i class="ti ti-send"></i> Send in Messages</button>
+    </div>
+    <button class="btn btn-sm" style="width:100%;margin-top:8px;background:transparent;color:var(--muted);border-color:#33333c" onclick="closeConfirm()">Skip</button>
+  </div>
+</div>
+
 <!-- EYE REST OVERLAY (verbatim from CommissionPro) -->
 <div id="eyeRest" aria-hidden="true">
   <div class="er-veil" id="erVeil"></div>
@@ -1276,7 +1293,7 @@ function isInProgress(a){
 /* ===== storage (ap_ namespace; client shape matches CommissionPro cp_clients) ===== */
 var APPTS='ap_appts', CLIENTS='ap_clients', CUSTOM='ap_custom', PREFS='ap_prefs', STOCK='ap_stock';
 try{if(localStorage.getItem('ys_bigtext')==='1'&&document.body)document.body.classList.add('a11y-big');}catch(e){}
-try{var _ap0=JSON.parse(localStorage.getItem('ap_prefs')||'{}');var _cp0=JSON.parse(localStorage.getItem('cp_prefs')||'{}');if(_ap0.prices&&Object.keys(_ap0.prices).length){_cp0.prices=Object.assign({},_ap0.prices,_cp0.prices||{});localStorage.setItem('cp_prefs',JSON.stringify(_cp0));}}catch(e){}
+try{var _ap0=JSON.parse(localStorage.getItem('ap_prefs')||'{}');var _cp0=JSON.parse(localStorage.getItem('cp_prefs')||'{}');var _ch=false;if(_ap0.prices&&Object.keys(_ap0.prices).length){_cp0.prices=Object.assign({},_ap0.prices,_cp0.prices||{});_ch=true;}if(_ap0.hairPriced&&Object.keys(_ap0.hairPriced).length){_cp0.hairPriced=Object.assign({},_ap0.hairPriced,_cp0.hairPriced||{});_ch=true;}if(_ch)localStorage.setItem('cp_prefs',JSON.stringify(_cp0));}catch(e){}
 function load(k,fb){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?fb:v;}catch(e){return fb;}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){alert('Could not save — storage may be full.');}}
 function $(i){return document.getElementById(i)}
@@ -2519,7 +2536,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.47 · shared prices + split lock';
+var VERSION='v4.50 · calendar link in approval';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -2866,9 +2883,9 @@ var HAIRMODS_DEFAULT={
   historyAdd:15
 };
 function getHairMods(){var p=getPrefs();return (p.hairMods&&typeof p.hairMods==='object')?{length:Object.assign({},HAIRMODS_DEFAULT.length,p.hairMods.length),thickness:Object.assign({},HAIRMODS_DEFAULT.thickness,p.hairMods.thickness),greyAdd:Object.assign({},HAIRMODS_DEFAULT.greyAdd,p.hairMods.greyAdd),historyAdd:(p.hairMods.historyAdd!=null?p.hairMods.historyAdd:HAIRMODS_DEFAULT.historyAdd)}:HAIRMODS_DEFAULT;}
-function getHairPriced(){var p=getPrefs();return (p.hairPriced&&typeof p.hairPriced==='object')?p.hairPriced:{};}
+function getHairPriced(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.hairPriced&&typeof p.hairPriced==='object')?p.hairPriced:{};}catch(e){return {};}}
 function isHairPriced(name){return getHairPriced()[name]===true;}
-function toggleHairPriced(name){var p=getPrefs();var hp=p.hairPriced||{};hp[name]=!hp[name];if(!hp[name])delete hp[name];p.hairPriced=hp;setPrefs(p);buildPriceList();}
+function toggleHairPriced(name,btn){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');var hp=p.hairPriced||{};hp[name]=!hp[name];if(!hp[name])delete hp[name];p.hairPriced=hp;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}var on=isHairPriced(name);if(btn){btn.classList.toggle('on',on);btn.innerHTML=on?'✓ By hair':'By hair';}}
 function hairPrice(service,hd){
   var prices=getPrices();
   var base=parseFloat(prices[service]);if(isNaN(base))base=0;
@@ -2915,8 +2932,8 @@ function buildPriceList(){
       var hpOn=isHairPriced(n);
       return '<div class="price-row"><span class="price-name">'+esc(n)+'</span>'+
         '<span class="price-tools">'+
-          '<button class="hair-toggle'+(hpOn?' on':'')+'" onclick="toggleHairPriced(\''+e2+'\')">'+(hpOn?'✓ By hair':'By hair')+'</button>'+
-          '<span class="price-in-wrap"><input class="price-in" type="number" inputmode="decimal" placeholder="0" value="'+val+'" oninput="setPrice(\''+e2+'\',this.value)"></span>'+
+          '<button class="hair-toggle'+(hpOn?' on':'')+'" onclick="event.stopPropagation();toggleHairPriced(\''+e2+'\',this)">'+(hpOn?'✓ By hair':'By hair')+'</button>'+
+          '<span class="price-in-wrap"><input class="price-in" type="number" inputmode="decimal" placeholder="0" value="'+val+'" onclick="event.stopPropagation()" oninput="setPrice(\''+e2+'\',this.value)"></span>'+
         '</span></div>';
     }).join('');
     var col=catColorOf(g.c);
@@ -3085,6 +3102,7 @@ function commitApproved(r,silent){
     document.querySelectorAll('#daySeg .seg-btn').forEach(function(b){b.classList.toggle('on',b.dataset.m==='day')});
     closeSheet('requestsModal');
     toast('Approved · added to '+fmtReqDate(r.date));
+    try{showBookingConfirm(r);}catch(e){}
   }
   publishAvailability();renderReqBadge();renderRequests();
   if(typeof renderClients==='function')renderClients();
@@ -3102,6 +3120,34 @@ function addClientFromBooking(r){
   save(CLIENTS,clients);
 }
 function autoApprove(r){commitApproved(r,true);}
+/* ---- client confirmation text on approve ---- */
+var _confirmPhone='';
+function showBookingConfirm(r){
+  if(!r)return;
+  var when=fmtReqDate(r.date)+(r.time?(' at '+to12(r.time)):'');
+  var who=(r.name||'there').split(' ')[0];
+  var salon='';try{var cp=JSON.parse(localStorage.getItem('cp_prefs')||'{}');salon=(cp.salon||cp.name||'');}catch(e){}
+  var msg='Hi '+who+'! Your '+(r.service||'appointment')+' on '+when+' is confirmed 🎉 See you then!'+(salon?(' — '+salon):'');
+  var cal=_gcalLink(r); if(cal)msg+='\n\n📅 Add to your calendar: '+cal;
+  _confirmPhone=(r.phone||'');
+  var ta=$('confirmText'); if(ta)ta.value=msg;
+  var nm=$('confirmWho'); if(nm)nm.textContent=r.name||'your client';
+  var sb=$('confirmSend'); if(sb)sb.style.display=_confirmPhone?'flex':'none';
+  var m=$('confirmModal'); if(m)m.classList.add('show');
+}
+function _gcalLink(r){
+  try{
+    var t=(r.time||'09:00');
+    var sd=new Date(r.date+'T'+t+':00'); if(isNaN(sd.getTime()))sd=new Date(r.date+'T09:00:00');
+    var ed=new Date(sd.getTime()+60*60000);
+    var pad=function(n){return (n<10?'0':'')+n;};
+    var fmt=function(x){return x.getFullYear()+pad(x.getMonth()+1)+pad(x.getDate())+'T'+pad(x.getHours())+pad(x.getMinutes())+'00';};
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(r.service||'Appointment')+'&dates='+fmt(sd)+'/'+fmt(ed);
+  }catch(e){return '';}
+}
+function closeConfirm(){var m=$('confirmModal');if(m)m.classList.remove('show');}
+function sendConfirm(){var num=(_confirmPhone||'').replace(/[^0-9+]/g,'');if(!num){copyConfirm();return;}var body=encodeURIComponent(($('confirmText')||{}).value||'');window.location.href='sms:'+num+'&body='+body;}
+function copyConfirm(){var ta=$('confirmText');if(!ta)return;ta.focus();ta.select();try{document.execCommand('copy');toast('Copied ✓');}catch(e){}}
 function approveRequest(id){
   var r=pendingReqs.find(function(x){return x._id===id;});if(!r)return;
   var go=function(){openApprovePrice(r);};

@@ -117,8 +117,7 @@ textarea{resize:vertical;min-height:60px}
   <div class="cs-ic green"><i class="ti ti-check"></i></div>
   <div class="cs-title">Request sent!</div>
   <div class="cs-sub" id="doneSub">Your booking request has been sent. You'll get a confirmation once it's approved.</div>
-  <button class="book-btn" style="max-width:260px;margin-top:20px;background:var(--bg2);color:var(--gold);border:1.5px solid var(--gold)" onclick="addToCal()"><i class="ti ti-calendar-plus"></i> Add to my calendar</button>
-  <button class="book-btn" style="max-width:260px;margin-top:10px" onclick="resetForm()"><i class="ti ti-plus"></i> Book another</button>
+  <button class="book-btn" style="max-width:260px;margin-top:20px" onclick="resetForm()"><i class="ti ti-plus"></i> Book another</button>
 </div>
 
 <!-- MAIN FORM -->
@@ -231,7 +230,7 @@ var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 
 function $(id){return document.getElementById(id);}
-var VERSION='book v1.7 · icon sparkle (option A)';
+var VERSION='book v1.8 · calendar moved to approval';
 try{var _bv=document.getElementById('bkVer');if(_bv)_bv.textContent=VERSION;}catch(e){}
 function show(id){['loadingView','closedView','errorView','doneView','formView'].forEach(function(v){$(v).classList.toggle('hidden',v!==id);});}
 function retry(){show('loadingView');setTimeout(init,250);}
