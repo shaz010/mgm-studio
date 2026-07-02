@@ -148,7 +148,7 @@
 
   <div class="stage">
     <iframe id="room" title="room" allow="web-share; clipboard-write"></iframe>
-    <div class="ver">salon v0.8</div>
+    <div class="ver">salon v0.9</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -252,7 +252,7 @@
     var txt=document.getElementById('acctTxt');
     var ic=pill?pill.querySelector('i'):null;
     if(u){
-      if(txt)txt.textContent=u.email?u.email.split('@')[0]:'Synced';
+      if(txt)txt.textContent=_lastSync?('Synced '+relTime(_lastSync)):'Syncing…';
       if(ic)ic.className='ti ti-cloud-check';
       if(pill)pill.classList.add('on');
     }else{
@@ -289,6 +289,10 @@
   var SYNC_KEYS=['ap_appts','ap_clients','ap_custom','ap_stock','ap_prefs','cp_appts','cp_clients','cp_prefs','cp_paid','combo_trade'];
   var META_KEY='salon_sync_meta';
   var _uid=null, _userUnsub=null, _pushTimer=null, _reloadTimer=null, _snap={};
+  var _lastSync=parseInt((function(){try{return localStorage.getItem('salon_lastSync');}catch(e){return '0';}})()||'0',10)||0;
+  function relTime(ts){if(!ts)return '';var s=Math.floor((Date.now()-ts)/1000);if(s<10)return 'just now';if(s<60)return s+'s ago';var m=Math.floor(s/60);if(m<60)return m+'m ago';var h=Math.floor(m/60);if(h<24)return h+'h ago';return Math.floor(h/24)+'d ago';}
+  function updateSyncPill(){var txt=document.getElementById('acctTxt');if(!txt||!_uid)return;txt.textContent=_lastSync?('Synced '+relTime(_lastSync)):'Synced';}
+  function markSynced(){_lastSync=Date.now();try{localStorage.setItem('salon_lastSync',String(_lastSync));}catch(e){}updateSyncPill();}
 
   function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
   function lsSet(k,v){try{ if(v==null)localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){}}
@@ -332,7 +336,7 @@
     keys.forEach(function(k){ keysObj[k]={v:lsGet(k), t:now}; meta[k]=now; });
     setMeta(meta);
     fdb.collection('users').doc(_uid).set({keys:keysObj,updatedAt:now},{merge:true})
-      .then(function(){ _snap=snapshotLocal(); })
+      .then(function(){ _snap=snapshotLocal(); markSynced(); })
       .catch(function(e){ console.warn('sync push failed',e); });
   }
   function scheduleScan(){ clearTimeout(_pushTimer); _pushTimer=setTimeout(function(){ if(!_uid)return; var ch=detectChanges(); if(ch.length)pushKeys(ch); },1500); }
@@ -352,9 +356,11 @@
       if(toPush.length)pushKeys(toPush);
       _snap=snapshotLocal();
       if(changed)reloadRoomSoon();
+      markSynced();
       _userUnsub=ref.onSnapshot(function(snap){
         if(snap.metadata&&snap.metadata.hasPendingWrites)return;  // ignore our own writes
         var d=snap.data()||{};
+        markSynced();
         if(mergeFromCloud(d.keys||{})){ _snap=snapshotLocal(); reloadRoomSoon(); }
       });
     }).catch(function(e){ console.warn('sync start failed',e); });
@@ -363,6 +369,7 @@
 
   // a room (iframe) write to shared localStorage fires 'storage' here in the shell -> scan & push
   window.addEventListener('storage',function(e){ if(_uid)scheduleScan(); });
+  setInterval(function(){ if(_uid)updateSyncPill(); },30000);
   // safety net in case a storage event is missed
   setInterval(function(){ if(_uid)scheduleScan(); },5000);
 
