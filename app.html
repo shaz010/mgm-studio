@@ -822,6 +822,11 @@ body.accent-gold{--gold:#FFB800;--gold2:#2a1f00;--gold3:#665522;--gold-light:#FF
 .setup-sub{font-size:13px;color:#666;text-align:center;margin-bottom:28px}
 .setup-section{margin-bottom:20px}
 .setup-section-title{font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+#settingsPanel .setup-section-title{cursor:pointer;display:flex;align-items:center;justify-content:space-between;-webkit-tap-highlight-color:transparent}
+#settingsPanel .setup-section-title::after{content:'›';font-size:18px;line-height:1;color:#888;transform:rotate(90deg);transition:transform .2s;font-weight:400;margin-left:8px}
+#settingsPanel .setup-section.collapsed .setup-section-title::after{transform:rotate(0deg)}
+#settingsPanel .setup-section.collapsed .setup-section-title{margin-bottom:0}
+#settingsPanel .setup-section.collapsed > *:not(.setup-section-title){display:none}
 .setup-input{width:100%;padding:10px 14px;background:#1e1e1e;border:1.5px solid #333;border-radius:9px;color:#f0f0f0;font-size:16px;outline:none;transition:border .2s;font-family:-apple-system,sans-serif}
 .setup-input:focus{border-color:#FFB800}
 .setup-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -3146,6 +3151,7 @@ function getBigText(){try{return localStorage.getItem('ys_bigtext')==='1';}catch
 function applyBigText(){document.body.classList.toggle('a11y-big',getBigText());}
 function markBigText(){var on=getBigText();document.querySelectorAll('.bigtext-btn').forEach(function(b){b.classList.toggle('sel',(b.dataset.v==='on')===on);});}
 function setBigText(on,btn){try{localStorage.setItem('ys_bigtext',on?'1':'0');}catch(e){}applyBigText();markBigText();}
+document.addEventListener('click',function(e){var t=e.target;if(t&&t.classList&&t.classList.contains('setup-section-title')&&t.closest&&t.closest('#settingsPanel')){var s=t.parentElement;if(s&&s.classList.contains('setup-section'))s.classList.toggle('collapsed');}});
 function openSettings(){
   loadPrefs();
   const ni = document.getElementById('settingName');
@@ -3440,7 +3446,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.65 · By-hair price book (unified)';
+var VERSION='app v1.66 · collapsible settings';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
