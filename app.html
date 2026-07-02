@@ -244,6 +244,12 @@ body.theme-light .reset-app-btn{border-color:#e0b4b4;color:#b14}
 .backup-status{font-size:12.5px;margin-top:12px;display:flex;align-items:center;gap:6px;line-height:1.45;color:#7fc89a}
 .backup-status .ti{font-size:15px;flex-shrink:0}
 .backup-status.due{color:#e3b341}
+.backup-nudge{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#2a2410,#1c1a12);border:1px solid rgba(227,179,65,.35);border-radius:12px;padding:11px 13px;margin:0 0 14px}
+.backup-nudge .bn-ic{color:#e3b341;font-size:20px;flex-shrink:0}
+.backup-nudge .bn-txt{flex:1;font-size:12.5px;color:#e8dcc0;line-height:1.4}
+.backup-nudge .bn-txt b{color:#f0e4c8}
+.backup-nudge .bn-go{background:var(--gold,#e8c37a);color:#141414;border:none;border-radius:9px;padding:9px 12px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.backup-nudge .bn-x{background:transparent;border:none;color:#8a8578;font-size:18px;cursor:pointer;flex-shrink:0;padding:2px 5px;line-height:1}
 body.theme-noir .setup-section-title{color:#a6a6a6;font-size:12px}
 body.theme-noir .reset-qp-hint{color:#acacac;font-size:12.5px}
 body.theme-noir .data-howto{color:#acacac;font-size:12px}
@@ -1254,6 +1260,13 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       <div class="sync-badge sync-loading" id="syncBadge"><span class="spinner"></span> Connecting...</div>
     </div>
   </div>
+  <div class="backup-nudge" id="backupNudge" style="display:none">
+    <i class="ti ti-shield-lock bn-ic"></i>
+    <div class="bn-txt"></div>
+    <button class="bn-go" onclick="backupNow()">Back up now</button>
+    <button class="bn-x" onclick="dismissBackupNudge()" aria-label="Dismiss">×</button>
+  </div>
+
   <div class="tabs" style="margin-bottom:14px">
     <button class="tab active" onclick="newBooking()"><i class="ti ti-calendar-plus" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>New booking</button>
     <button class="tab" onclick="showTab('hist')"><i class="ti ti-list" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Appointments</button>
@@ -2266,7 +2279,7 @@ function _downloadBackup(json,fname){
   document.body.appendChild(a);a.click();
   setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},100);
 }
-function _markBackup(){try{localStorage.setItem('cp_lastBackup',String(Date.now()));}catch(_e){} try{renderBackupStatus();}catch(_e){}}
+function _markBackup(){try{localStorage.setItem('cp_lastBackup',String(Date.now()));}catch(_e){} try{renderBackupStatus();}catch(_e){} try{maybeShowBackupNudge();}catch(_e){}}
 function renderBackupStatus(){
   var el=document.getElementById('backupStatus'); if(!el)return;
   var t=0; try{t=parseInt(localStorage.getItem('cp_lastBackup')||'0',10)||0;}catch(e){}
@@ -2278,6 +2291,23 @@ function renderBackupStatus(){
   el.className='backup-status'+(due?' due':'');
   el.innerHTML=(due?'<i class="ti ti-alert-circle"></i> ':'<i class="ti ti-circle-check"></i> ')+'Last backup: '+when+(due?' &mdash; worth a fresh copy.':'.');
 }
+function maybeShowBackupNudge(){
+  var el=document.getElementById('backupNudge'); if(!el)return;
+  var has=(loadAppts().length>0)||(typeof getClients==='function'&&getClients().length>0);
+  if(!has){el.style.display='none';return;}
+  var t=0;try{t=parseInt(localStorage.getItem('cp_lastBackup')||'0',10)||0;}catch(e){}
+  var days=t?Math.floor((Date.now()-t)/86400000):999;
+  var due=(!t)||days>=7;
+  var dis=0;try{dis=parseInt(localStorage.getItem('cp_backupNudgeDismissed')||'0',10)||0;}catch(e){}
+  var snoozed=dis&&((Date.now()-dis)<3*86400000);
+  if(due&&!snoozed){
+    var msg=t?("It's been "+days+" days since your last saved copy."):("You haven't saved a copy of your data yet.");
+    var txt=el.querySelector('.bn-txt'); if(txt)txt.innerHTML='<b>Keep your data safe.</b> '+msg+' Save a copy you control — clients, consent, everything.';
+    el.style.display='flex';
+  }else{el.style.display='none';}
+}
+function dismissBackupNudge(){try{localStorage.setItem('cp_backupNudgeDismissed',String(Date.now()));}catch(e){}var el=document.getElementById('backupNudge');if(el)el.style.display='none';}
+function backupNow(){if(typeof exportData==='function')exportData();}
 function importData(input){
   var file=input.files&&input.files[0];if(!file)return;
   var reader=new FileReader();
@@ -2884,7 +2914,7 @@ function deleteClientConfirm(){
 applyFx(getFx());
 buildServiceChips();
 initFavDrag();
-calc();loadAll();if(document.documentElement.classList.contains('in-shell')){try{showTab('hist');}catch(e){}}
+calc();loadAll();try{maybeShowBackupNudge();}catch(e){}if(document.documentElement.classList.contains('in-shell')){try{showTab('hist');}catch(e){}}
 
 /* ── Pay to Unlock ── */
 var UNLOCK={codeHash:4159026715,trialDays:3,stripeUrl:'https://buy.stripe.com/3cIdR97x4gdA4z9dCEfw401'};
@@ -3370,7 +3400,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.60 · dynamic split labels + empty states';
+var VERSION='app v1.61 · backup nudge';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
