@@ -827,6 +827,10 @@ body.accent-gold{--gold:#FFB800;--gold2:#2a1f00;--gold3:#665522;--gold-light:#FF
 #settingsPanel .setup-section.collapsed .setup-section-title::after{transform:rotate(0deg)}
 #settingsPanel .setup-section.collapsed .setup-section-title{margin-bottom:0}
 #settingsPanel .setup-section.collapsed > *:not(.setup-section-title){display:none}
+#settingsPanel .setup-section.adv-sec{display:none}
+#settingsPanel.show-adv .setup-section.adv-sec{display:block}
+.adv-toggle{width:100%;margin:0 0 16px;padding:11px;border-radius:10px;border:1px dashed #4a4a4a;background:transparent;color:#9a9aa6;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#settingsPanel.show-adv .adv-toggle{color:var(--gold,#e8c37a);border-color:var(--gold,#e8c37a);border-style:solid}
 .setup-input{width:100%;padding:10px 14px;background:#1e1e1e;border:1.5px solid #333;border-radius:9px;color:#f0f0f0;font-size:16px;outline:none;transition:border .2s;font-family:-apple-system,sans-serif}
 .setup-input:focus{border-color:#FFB800}
 .setup-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -1084,7 +1088,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       </div>
     </div>
 
-    <div class="setup-section">
+    <div class="setup-section adv-sec">
       <div class="setup-section-title">Accent colour</div>
       <div class="accent-grid">
         <div class="accent-swatch sel" style="background:#FFB800" onclick="selAccent('gold',this)" title="Gold"></div>
@@ -1106,6 +1110,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       <span class="settings-title">⚙️ Settings</span>
       <button class="settings-close" onclick="closeSettings()">×</button>
     </div>
+    <button class="adv-toggle" id="advToggle" onclick="toggleAdvSettings()">Show advanced settings ▾</button>
 
     <div class="setup-section">
       <div class="setup-section-title">Your details</div>
@@ -1159,7 +1164,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       <div style="font-size:12px;color:#a8a8a8;margin-top:8px;line-height:1.5">Enlarges labels, lists and numbers across the whole app — works in every theme. Easy on tired eyes.</div>
     </div>
 
-    <div class="setup-section">
+    <div class="setup-section adv-sec">
       <div class="setup-section-title">Light mode comfort ☀️</div>
       <label class="setup-label" style="margin-top:0">Background tone</label>
       <div class="theme-grid" style="grid-template-columns:repeat(3,1fr)">
@@ -1191,7 +1196,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       <div style="font-size:11px;color:#777;margin-top:8px;line-height:1.55;font-style:italic">Eye Rest is a relaxing visual and a reminder to rest your eyes. It is not a medical device or treatment, is not a substitute for professional eye care, and makes no health or therapeutic claims.</div>
     </div>
 
-    <div class="setup-section">
+    <div class="setup-section adv-sec">
       <div class="setup-section-title">Updates</div>
       <button class="cf-disc-edit" onclick="forceUpdate()" style="display:block"><i class="ti ti-refresh" style="font-size:13px"></i> Force update to latest version</button>
       <div class="reset-qp-hint" style="margin-top:7px">Pulls the newest version if you're not seeing recent changes.</div>
@@ -1231,7 +1236,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       <div class="data-howto"><b>Moving to another device?</b> Tap <b>Save a copy</b> → in the share sheet pick <b>AirDrop</b> (or Save to Files / Mail) → on the other device open the app, tap <b>Load data</b>, and choose that file.</div>
     </div>
 
-    <div class="setup-section">
+    <div class="setup-section adv-sec">
       <div class="setup-section-title">Quick Picks</div>
       <button class="reset-qp-btn" onclick="resetQuickPicks()"><i class="ti ti-rotate" style="font-size:15px;vertical-align:-2px;margin-right:6px"></i>Reset Quick Picks to defaults</button>
       <div class="reset-qp-hint">Restores the starting set of favourite services for both Hair and Nail. Your prices and client cards are not affected.</div>
@@ -3152,6 +3157,7 @@ function applyBigText(){document.body.classList.toggle('a11y-big',getBigText());
 function markBigText(){var on=getBigText();document.querySelectorAll('.bigtext-btn').forEach(function(b){b.classList.toggle('sel',(b.dataset.v==='on')===on);});}
 function setBigText(on,btn){try{localStorage.setItem('ys_bigtext',on?'1':'0');}catch(e){}applyBigText();markBigText();}
 document.addEventListener('click',function(e){var t=e.target;if(t&&t.classList&&t.classList.contains('setup-section-title')&&t.closest&&t.closest('#settingsPanel')){var s=t.parentElement;if(s&&s.classList.contains('setup-section'))s.classList.toggle('collapsed');}});
+function toggleAdvSettings(){var p=document.getElementById('settingsPanel');if(!p)return;var on=p.classList.toggle('show-adv');var b=document.getElementById('advToggle');if(b)b.innerHTML=on?'Hide advanced settings ▴':'Show advanced settings ▾';}
 function openSettings(){
   loadPrefs();
   const ni = document.getElementById('settingName');
@@ -3162,7 +3168,7 @@ function openSettings(){
   if(ri) ri.value = prefs.rate||60;
   _lockRate();
   const panel = document.getElementById('settingsPanel');
-  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); markBigText(); renderBackupStatus(); initBookLink(); }
+  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); markBigText(); renderBackupStatus(); initBookLink(); try{document.querySelectorAll('#settingsPanel .setup-section').forEach(function(s){s.classList.add('collapsed');});var _sp=document.getElementById('settingsPanel');if(_sp)_sp.classList.remove('show-adv');var _at=document.getElementById('advToggle');if(_at)_at.innerHTML='Show advanced settings ▾';}catch(e){} }
 }
 
 function closeSettings(){
@@ -3446,7 +3452,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.66 · collapsible settings';
+var VERSION='app v1.67 · basic/advanced settings';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){

@@ -85,6 +85,8 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 #settingsModal .set-sec::after{content:'›';font-size:18px;line-height:1;color:var(--muted);transform:rotate(90deg);transition:transform .2s;margin-left:8px}
 #settingsModal .set-sec.collapsed::after{transform:rotate(0deg)}
 .sec-hidden{display:none!important}
+#settingsModal .adv-toggle{width:100%;margin:18px 0 6px;padding:11px;border-radius:10px;border:1px dashed #4a4a4a;background:transparent;color:var(--muted);font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#settingsModal.show-adv .adv-toggle{color:var(--gold);border-color:var(--gold);border-style:solid}
 .set-version{text-align:center;font-size:11px;color:#666;margin-top:20px;letter-spacing:.3px}
 /* STOCK */
 .stk{display:flex;align-items:center;gap:12px;background:#111;border:1px solid var(--border-bright);border-radius:11px;padding:12px 13px;margin-bottom:9px}
@@ -1041,7 +1043,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <button class="btn btn-sm" style="flex:1" onclick="saveSplit()"><i class="ti ti-check"></i> Save pay</button>
     </div>
 
-    <div class="set-sec">Appearance</div>
+    <div class="set-sec adv-sec">Appearance</div>
     <div class="sb-toggle-row" onclick="toggleNoir()">
       <div>
         <div class="sb-tt">Holographic Noir</div>
@@ -1050,11 +1052,11 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <div class="sb-switch" id="noirSwitch"><span></span></div>
     </div>
 
-    <div class="set-sec">My trade</div>
+    <div class="set-sec adv-sec">My trade</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Your booking &amp; price screens show only this trade's services. Pick a different one to switch.</div>
     <button class="btn btn-ghost btn-sm" style="width:100%" onclick="closeSheet('settingsModal');openTradePicker()"><i class="ti ti-arrows-exchange"></i> Change my trade</button>
 
-    <div class="set-sec">App</div>
+    <div class="set-sec adv-sec">App</div>
     <button class="btn btn-ghost btn-sm" style="width:100%" onclick="forceUpdate()"><i class="ti ti-refresh"></i> Force update to latest version</button>
 
     <div class="set-sec">Working hours</div>
@@ -1091,7 +1093,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     </div>
     <input type="file" id="importFile" accept=".json,application/json,text/plain" style="display:none" onchange="importData(event)">
 
-    <div class="set-sec">Clear</div>
+    <div class="set-sec adv-sec">Clear</div>
     <div class="btn-row" style="margin-top:0">
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="clearDay()"><i class="ti ti-eraser"></i> Clear this day</button>
     </div>
@@ -1100,13 +1102,14 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     </div>
     <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">“Start fresh” wipes all appointments, clients and your custom services on this device. Quick Picks reset to default. This can’t be undone.</div>
 
-    <div class="set-sec">Diagnostics</div>
+    <div class="set-sec adv-sec">Diagnostics</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Runs self-checks on trades, IDs and data. Tap <b>Copy report</b> in there to send an exact diagnostic instead of a screenshot.</div>
     <div class="btn-row" style="margin-top:0">
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('settingsModal');openDebug()"><i class="ti ti-stethoscope"></i> Run diagnostics</button>
     </div>
 
     <div class="set-version" id="setVersion">AppointmentPro · v1.0</div>
+    <button class="adv-toggle" id="apptAdvToggle" onclick="toggleApptAdv()">Show advanced settings ▾</button>
 
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-sm" style="flex:1" onclick="closeSheet('settingsModal')">Done</button>
@@ -2540,7 +2543,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.51 · collapsible settings';
+var VERSION='v4.52 · basic/advanced settings';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},
@@ -2567,6 +2570,7 @@ function openSettings(){
   renderHours(true);
   syncBookingToggle();renderReqBadge();applyTheme();
   $('settingsModal').classList.add('show');
+  try{$('settingsModal').classList.remove('show-adv');_applyApptSettingsLayout();var _ab=document.getElementById('apptAdvToggle');if(_ab)_ab.innerHTML='Show advanced settings ▾';}catch(e){}
 }
 function saveBusiness(){
   var p=getPrefs();
@@ -3331,15 +3335,29 @@ window.addEventListener('focus',checkForUpdate);
 </script>
 <script>
 /* Collapsible settings sections (flat structure — hide siblings until next .set-sec) */
+function _apptSecBoundary(el){return el.classList&&(el.classList.contains('set-sec')||el.classList.contains('set-version')||el.classList.contains('adv-toggle'));}
+function _applyApptSettingsLayout(){
+  var m=document.getElementById('settingsModal'); var showAdv=m&&m.classList.contains('show-adv');
+  document.querySelectorAll('#settingsModal .set-sec').forEach(function(h){
+    h.classList.add('collapsed');
+    var adv=h.classList.contains('adv-sec');
+    h.classList.toggle('sec-hidden', !!(adv&&!showAdv));
+    var el=h.nextElementSibling;
+    while(el && !_apptSecBoundary(el)){ if(el.classList)el.classList.add('sec-hidden'); el=el.nextElementSibling; }
+  });
+}
+function toggleApptAdv(){
+  var m=document.getElementById('settingsModal'); if(!m)return;
+  var on=m.classList.toggle('show-adv');
+  document.querySelectorAll('#settingsModal .set-sec.adv-sec').forEach(function(h){ h.classList.toggle('sec-hidden', !on); });
+  var b=document.getElementById('apptAdvToggle'); if(b)b.innerHTML=on?'Hide advanced settings ▴':'Show advanced settings ▾';
+}
 document.addEventListener('click',function(e){
   var h=e.target;
   if(h&&h.classList&&h.classList.contains('set-sec')&&h.closest&&h.closest('#settingsModal')){
     var collapsed=h.classList.toggle('collapsed');
     var el=h.nextElementSibling;
-    while(el && !(el.classList&&el.classList.contains('set-sec'))){
-      if(el.classList) el.classList.toggle('sec-hidden', collapsed);
-      el=el.nextElementSibling;
-    }
+    while(el && !_apptSecBoundary(el)){ if(el.classList)el.classList.toggle('sec-hidden', collapsed); el=el.nextElementSibling; }
   }
 });
 /* QoL: tap outside any overlay to dismiss + keep focused fields above the keyboard */
