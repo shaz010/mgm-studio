@@ -715,6 +715,19 @@ body.theme-noir .mcell.d3 .mcell-n{color:#eaffd6}
 .srch-t{font-size:14px;font-weight:700;color:#e8e8ef;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .srch-s{font-size:11.5px;color:#8a8a96;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .srch-empty{padding:26px 16px;text-align:center;color:#6a6a78;font-size:13px}
+/* ===== Bigger text (accessibility) — mirrors Earnings toggle ===== */
+body.a11y-big label,body.a11y-big .cdp-hint,body.a11y-big .cd-hist-head{font-size:14.5px}
+body.a11y-big input,body.a11y-big textarea,body.a11y-big select{font-size:17.5px}
+body.a11y-big .appt-name,body.a11y-big .lrow-name{font-size:16.5px}
+body.a11y-big .appt-svc,body.a11y-big .appt-meta,body.a11y-big .lrow-sub{font-size:14px}
+body.a11y-big .appt-price,body.a11y-big .cb-price{font-size:16px}
+body.a11y-big .cdp-name{font-size:19px}
+body.a11y-big .cdp-sec-h{font-size:13px}
+body.a11y-big .cdp-tile,body.a11y-big .cdp-note,body.a11y-big .cdp-contact{font-size:14px}
+body.a11y-big .btn,body.a11y-big .btn-sm{font-size:15px}
+body.a11y-big table td,body.a11y-big table th{font-size:14.5px}
+body.a11y-big .cb-svc,body.a11y-big .cb-date,body.a11y-big .cb-time{font-size:15px}
+body.a11y-big .cdp-chip{font-size:13.5px}
 </style>
 </head>
 <body>
@@ -1254,6 +1267,7 @@ function isInProgress(a){
 
 /* ===== storage (ap_ namespace; client shape matches CommissionPro cp_clients) ===== */
 var APPTS='ap_appts', CLIENTS='ap_clients', CUSTOM='ap_custom', PREFS='ap_prefs', STOCK='ap_stock';
+try{if(localStorage.getItem('ys_bigtext')==='1'&&document.body)document.body.classList.add('a11y-big');}catch(e){}
 function load(k,fb){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?fb:v;}catch(e){return fb;}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){alert('Could not save — storage may be full.');}}
 function $(i){return document.getElementById(i)}
@@ -2496,7 +2510,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.45 · client-ID linking (rename-safe)';
+var VERSION='v4.46 · bigger-text support';
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function defaultHours(){return [
   {open:true,start:'09:00',end:'18:00'},

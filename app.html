@@ -106,6 +106,24 @@ body.theme-light input:-webkit-autofill,body.theme-light textarea:-webkit-autofi
 #earnCard.big-read .total-v{font-size:52px;width:100%;text-align:right;line-height:1.1}
 #earnCard .calc-hint{transition:font-size .28s ease}
 #earnCard.big-read .calc-hint{font-size:17px;line-height:2}
+/* ===== Bigger text (accessibility) — works in every theme ===== */
+body.a11y-big label,body.a11y-big .cf-label,body.a11y-big .setup-label{font-size:14.5px}
+body.a11y-big input,body.a11y-big textarea,body.a11y-big select,body.a11y-big .cf-in{font-size:17.5px}
+body.a11y-big .tab{font-size:15px}
+body.a11y-big table td,body.a11y-big table th{font-size:14.5px}
+body.a11y-big .sec,body.a11y-big .in-sec{font-size:13px}
+body.a11y-big .in-card .k{font-size:11.5px}
+body.a11y-big .in-card .v{font-size:25px}
+body.a11y-big .in-list-row .nm,body.a11y-big .wb-nm{font-size:16px}
+body.a11y-big .in-list-row .amt,body.a11y-big .wb-gap,body.a11y-big .wb-sub{font-size:13.5px}
+body.a11y-big .cf-sum-label{font-size:13.5px}
+body.a11y-big .btn-save,body.a11y-big .setup-btn{font-size:17.5px}
+body.a11y-big .calc-hint{font-size:16px;line-height:1.95}
+body.a11y-big .ty-row,body.a11y-big .backup-status,body.a11y-big .legal-body,body.a11y-big .bn-txt{font-size:14px}
+body.a11y-big .cf-pill,body.a11y-big .tf-chip,body.a11y-big .chip,body.a11y-big .msg-chip{font-size:13px}
+body.a11y-big .msg-text{font-size:16.5px}
+body.a11y-big .sum-val{font-size:20px}
+body.a11y-big .client-card{font-size:15px}
 
 /* ROW BOXES */
 .row-box{margin-top:10px;border-radius:9px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
@@ -1122,6 +1140,16 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       </div>
     </div>
 
+
+    <div class="setup-section">
+      <div class="setup-section-title">Readability 🔎</div>
+      <label class="setup-label" style="margin-top:0">Text size</label>
+      <div class="theme-grid" style="grid-template-columns:repeat(2,1fr)">
+        <button class="theme-btn bigtext-btn" data-v="off" onclick="setBigText(false,this)">Normal</button>
+        <button class="theme-btn bigtext-btn" data-v="on" onclick="setBigText(true,this)">Bigger text</button>
+      </div>
+      <div style="font-size:12px;color:#a8a8a8;margin-top:8px;line-height:1.5">Enlarges labels, lists and numbers across the whole app — works in every theme. Easy on tired eyes.</div>
+    </div>
 
     <div class="setup-section">
       <div class="setup-section-title">Light mode comfort ☀️</div>
@@ -2914,7 +2942,7 @@ function deleteClientConfirm(){
 applyFx(getFx());
 buildServiceChips();
 initFavDrag();
-calc();loadAll();try{maybeShowBackupNudge();}catch(e){}if(document.documentElement.classList.contains('in-shell')){try{showTab('hist');}catch(e){}}
+calc();loadAll();try{applyBigText();}catch(e){}try{maybeShowBackupNudge();}catch(e){}if(document.documentElement.classList.contains('in-shell')){try{showTab('hist');}catch(e){}}
 
 /* ── Pay to Unlock ── */
 var UNLOCK={codeHash:4159026715,trialDays:3,stripeUrl:'https://buy.stripe.com/3cIdR97x4gdA4z9dCEfw401'};
@@ -3106,6 +3134,10 @@ function _lockRate(){
   if(btn){btn.classList.remove('unlocked');btn.innerHTML='<i class="ti ti-lock"></i>';}
   if(hint)hint.innerHTML="🔒 Locked so it can't change by accident. Tap the lock to edit.";
 }
+function getBigText(){try{return localStorage.getItem('ys_bigtext')==='1';}catch(e){return false;}}
+function applyBigText(){document.body.classList.toggle('a11y-big',getBigText());}
+function markBigText(){var on=getBigText();document.querySelectorAll('.bigtext-btn').forEach(function(b){b.classList.toggle('sel',(b.dataset.v==='on')===on);});}
+function setBigText(on,btn){try{localStorage.setItem('ys_bigtext',on?'1':'0');}catch(e){}applyBigText();markBigText();}
 function openSettings(){
   loadPrefs();
   const ni = document.getElementById('settingName');
@@ -3116,7 +3148,7 @@ function openSettings(){
   if(ri) ri.value = prefs.rate||60;
   _lockRate();
   const panel = document.getElementById('settingsPanel');
-  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); renderBackupStatus(); initBookLink(); }
+  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); markBigText(); renderBackupStatus(); initBookLink(); }
 }
 
 function closeSettings(){
@@ -3400,7 +3432,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.61 · backup nudge';
+var VERSION='app v1.62 · bigger-text toggle';
 (function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
