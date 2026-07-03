@@ -2973,8 +2973,28 @@ buildServiceChips();
 initFavDrag();
 calc();loadAll();try{applyBigText();}catch(e){}try{maybeShowBackupNudge();}catch(e){}if(document.documentElement.classList.contains('in-shell')){try{showTab('hist');}catch(e){}}
 /* shell keeps this room alive in the background — re-read shared data + repaint when shown */
+var _audioCtx=null;
+function _unlockAudio(){try{if(!_audioCtx)_audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(_audioCtx.state==='suspended')_audioCtx.resume();}catch(e){}}
+document.addEventListener('touchend',_unlockAudio,{passive:true});
+document.addEventListener('click',_unlockAudio,{passive:true});
+function softChime(){
+  try{
+    if(!_audioCtx||_audioCtx.state!=='running')return;
+    var t=_audioCtx.currentTime;
+    [[880,0],[1174.66,0.16]].forEach(function(nf){
+      var o=_audioCtx.createOscillator(),g=_audioCtx.createGain();
+      o.type='sine';o.frequency.value=nf[0];
+      g.gain.setValueAtTime(0.0001,t+nf[1]);
+      g.gain.exponentialRampToValueAtTime(0.1,t+nf[1]+0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+nf[1]+0.9);
+      o.connect(g);g.connect(_audioCtx.destination);
+      o.start(t+nf[1]);o.stop(t+nf[1]+1);
+    });
+  }catch(e){}
+}
 window.addEventListener('message',function(ev){
   var d=ev.data||{};
+  if(d&&d.salon==='chime'){try{softChime();}catch(e){}}
   if(d&&d.salon==='roomShown'){
     try{loadPrefs();}catch(e){}
     try{loadAll();calc();}catch(e){}
@@ -3472,7 +3492,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.71 · live-room wake refresh';
+var VERSION='app v1.72 · chime relay';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

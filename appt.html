@@ -2575,7 +2575,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.58 · decline failures now speak up';
+var VERSION='v4.59 · request relay to shell';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3136,7 +3136,9 @@ function softChime(){
 }
 function renderReqBadge(){
   var n=pendingReqs.length;
-  if(_lastReqN>=0&&n>_lastReqN)softChime();
+  var inc=(_lastReqN>=0&&n>_lastReqN);
+  if(inc)softChime();
+  try{if(window.self!==window.top)window.parent.postMessage({salon:'newRequest',n:n,inc:inc},'*');}catch(e){}
   _lastReqN=n;
   var b=$('sbReqBadge');if(b){b.textContent=n;b.style.display=n?'inline-block':'none';}
   /* priority banner — new requests jump on top of everything */
@@ -3406,6 +3408,8 @@ maybeShowTradePicker();
 window.addEventListener('message',function(ev){
   var d=ev.data||{};
   if(d&&d.salon==='openView'&&d.view==='add'){try{if(typeof openAdd==='function')openAdd();}catch(e){}}
+  if(d&&d.salon==='openView'&&d.view==='requests'){try{openRequests();}catch(e){}}
+  if(d&&d.salon==='chime'){try{softChime();}catch(e){}}
   if(d&&d.salon==='roomShown'){ /* shell kept us alive in the background — re-read shared data + repaint */
     try{
       reload();

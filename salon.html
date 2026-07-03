@@ -140,6 +140,17 @@
   .upd-pill.show{display:flex}
   .upd-pill:active{transform:translateX(-50%) scale(.96)}
   .upd-pill i{font-size:16px}
+
+  /* ===== shell-level NEW BOOKING banner — visible over BOTH rooms ===== */
+  #shellReqBanner{position:fixed;top:0;left:0;right:0;z-index:80;display:none;
+    align-items:center;justify-content:center;gap:8px;padding:13px 14px;
+    padding-top:calc(13px + env(safe-area-inset-top));
+    background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9);
+    background-size:200% 100%;animation:reqShimmer 3s linear infinite;
+    color:#0a0a0a;font-weight:800;font-size:14px;letter-spacing:.3px;
+    cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.55)}
+  #shellReqBanner.show{display:flex}
+  @keyframes reqShimmer{to{background-position:200% 0}}
 </style>
 </head>
 <body>
@@ -169,8 +180,9 @@
   <div class="stage">
     <iframe id="roomEarn" class="room" title="Earnings" allow="web-share; clipboard-write"></iframe>
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
+    <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.19</div>
+    <div class="ver">salon v0.20</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -248,6 +260,7 @@
     FRAMES[otherRoom(room)].classList.add('hide');
     FRAMES[room].classList.remove('hide');
     notifyShown(room);                    // wake the room so its numbers are fresh
+    try{_syncReqBanner(room==='appt'?0:_shellReqN);}catch(e){}
   }
   function notifyShown(room){
     try{ FRAMES[room].contentWindow.postMessage({salon:'roomShown'},'*'); }catch(e){}
@@ -458,7 +471,7 @@
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.19';
+  var SHELL_V='v0.20';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{
@@ -473,6 +486,56 @@
   setTimeout(checkShellUpdate,8000);
   setInterval(checkShellUpdate,60000);
   document.addEventListener('visibilitychange',function(){if(!document.hidden)checkShellUpdate();});
+
+  /* ===== shell chime + booking-request relay (rooms live in iframes; iOS unlocks
+     audio per-frame, so the shell + BOTH rooms all try to ring — whoever's unlocked wins) ===== */
+  var _sAudio=null;
+  function _sUnlock(){try{if(!_sAudio)_sAudio=new (window.AudioContext||window.webkitAudioContext)();if(_sAudio.state==='suspended')_sAudio.resume();}catch(e){}}
+  document.addEventListener('touchend',_sUnlock,{passive:true});
+  document.addEventListener('click',_sUnlock,{passive:true});
+  function _sChime(){
+    try{
+      if(!_sAudio||_sAudio.state!=='running')return;
+      var t=_sAudio.currentTime;
+      [[880,0],[1174.66,0.16]].forEach(function(nf){
+        var o=_sAudio.createOscillator(),g=_sAudio.createGain();
+        o.type='sine';o.frequency.value=nf[0];
+        g.gain.setValueAtTime(0.0001,t+nf[1]);
+        g.gain.exponentialRampToValueAtTime(0.1,t+nf[1]+0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+nf[1]+0.9);
+        o.connect(g);g.connect(_sAudio.destination);
+        o.start(t+nf[1]);o.stop(t+nf[1]+1);
+      });
+    }catch(e){}
+  }
+  function _syncReqBanner(n){
+    var b=document.getElementById('shellReqBanner');if(!b)return;
+    if(n>0&&current!=='appt'){
+      var tx=document.getElementById('shellReqTxt');
+      if(tx)tx.textContent=(n===1?'New booking request — tap to review':n+' booking requests waiting — tap to review');
+      b.classList.add('show');
+    }else{ b.classList.remove('show'); }
+  }
+  var _shellReqN=0;
+  window.addEventListener('message',function(ev){
+    var d=ev.data||{};
+    if(d&&d.salon==='newRequest'){
+      _shellReqN=+d.n||0;
+      _syncReqBanner(_shellReqN);
+      if(d.inc){
+        _sChime();
+        try{if(navigator.vibrate)navigator.vibrate([80,60,80]);}catch(e){}
+        try{if(loaded.earn)FRAMES.earn.contentWindow.postMessage({salon:'chime'},'*');}catch(e){}
+      }
+    }
+  });
+  function openApptRequests(){
+    _syncReqBanner(0);
+    var wasLoaded=loaded.appt;
+    if(current!=='appt')goRoom('appt');
+    try{FRAMES.appt.contentWindow.postMessage({salon:'openView',view:'requests'},'*');}catch(e){}
+    if(!wasLoaded)pendingView='requests';
+  }
 
   initAuth();
 </script>
