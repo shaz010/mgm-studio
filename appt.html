@@ -1073,6 +1073,13 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       </div>
       <div class="sb-switch" id="noirSwitch"><span></span></div>
     </div>
+    <div class="sb-toggle-row" id="awakeRow" onclick="toggleAwake()">
+      <div>
+        <div class="sb-tt">Keep screen awake</div>
+        <div class="sb-ts" id="awakeStatus">Off — screen sleeps as normal</div>
+      </div>
+      <div class="sb-switch" id="awakeSwitch"><span></span></div>
+    </div>
 
     <div class="set-sec adv-sec">My trade</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Tap your trade — it switches instantly. Your booking &amp; price screens tailor themselves to it.</div>
@@ -2568,7 +2575,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.56 · confirm text starts at the top';
+var VERSION='v4.57 · keep-screen-awake toggle';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -2606,7 +2613,7 @@ function openSettings(){
   try{_lockSplit();}catch(e){}
   (function(){var parts=VERSION.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';$('setVersion').innerHTML='AppointmentPro · <span style="color:#f5f5fa;font-weight:800">'+ver+'</span>'+rest;})();
   renderHours(true);
-  syncBookingToggle();renderReqBadge();applyTheme();
+  syncBookingToggle();renderReqBadge();applyTheme();syncAwakeUI();
   try{renderSetTradeGrid();}catch(e){}
   $('settingsModal').classList.add('show');
   try{$('settingsModal').classList.remove('show-adv');_applyApptSettingsLayout();var _ab=document.getElementById('apptAdvToggle');if(_ab)_ab.innerHTML='Show advanced settings ▾';}catch(e){}
@@ -2668,6 +2675,23 @@ function toggleNoir(){
   var p=getPrefs();p.noir=!p.noir;setPrefs(p);applyTheme();
   toast(p.noir?'Holographic Noir on':'Classic dark');
 }
+/* ---- keep screen awake (so chimes always sound while the iPad sits in the salon) ---- */
+var _wakeLock=null;
+function _wakeSupported(){return !!(navigator.wakeLock&&navigator.wakeLock.request);}
+function _wakeOn(){try{if(_wakeSupported()){navigator.wakeLock.request('screen').then(function(s){_wakeLock=s;}).catch(function(){});}}catch(e){}}
+function _wakeOff(){try{if(_wakeLock){_wakeLock.release();_wakeLock=null;}}catch(e){}}
+function syncAwakeUI(){
+  var p=getPrefs(),on=!!p.keepAwake,sup=_wakeSupported();
+  var row=$('awakeRow');if(row)row.classList.toggle('on',on&&sup);
+  var st=$('awakeStatus');if(st)st.textContent=!sup?'Not supported on this device':(on?'On — stays lit so chimes always sound':'Off — screen sleeps as normal');
+}
+function applyAwake(){var p=getPrefs();if(p.keepAwake&&_wakeSupported())_wakeOn();else _wakeOff();syncAwakeUI();}
+function toggleAwake(){
+  if(!_wakeSupported()){toast('Not supported on this device',1);return;}
+  var p=getPrefs();p.keepAwake=!p.keepAwake;setPrefs(p);applyAwake();
+  toast(p.keepAwake?'Screen will stay awake here':'Screen can sleep again');
+}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){try{if(getPrefs().keepAwake)_wakeOn();}catch(e){}}});
 function weekTotals(sow){
   var g=0,n=0,c=0;
   for(var i=0;i<7;i++){var d=new Date(sow);d.setDate(sow.getDate()+i);var ds=ymd(d);
@@ -3360,6 +3384,7 @@ function promptLink(link){try{window.prompt('Your booking link — copy and shar
 /* ===== init ===== */
 applyBranding();
 applyTheme();
+try{applyAwake();}catch(e){}
 invTrade=getPrefs().invTrade||'stylist';
 $('cfYes').onclick=function(){
   $('confirmModal').classList.remove('show');

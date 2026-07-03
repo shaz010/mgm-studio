@@ -117,7 +117,7 @@ textarea{resize:vertical;min-height:60px}
   <div class="cs-ic green" id="doneIc"><i class="ti ti-check"></i></div>
   <div class="cs-title" id="doneTitle">Request sent!</div>
   <div class="cs-sub" id="doneSub">Your booking request has been sent. You'll get a confirmation once it's approved.</div>
-  <div class="cs-sub" id="doneWait" style="margin-top:10px;font-size:13px;opacity:.75"><i class="ti ti-bell"></i> Keep this page open — you'll hear a soft chime the moment it's approved.</div>
+  <div class="cs-sub" id="doneWait" style="margin-top:10px;font-size:13px;opacity:.75"><i class="ti ti-bell"></i> Keep this page open — we'll keep your screen on, and you'll hear a soft chime the moment it's approved.</div>
   <button class="book-btn hidden" id="calBtn" style="max-width:260px;margin-top:20px" onclick="addToCal()"><i class="ti ti-calendar-plus"></i> Add to my calendar</button>
   <a class="hidden" id="gcalLink" target="_blank" style="margin-top:12px;font-size:13px;color:inherit;opacity:.8;text-decoration:underline">or add to Google Calendar ↗</a>
   <button class="book-btn" id="bookAnotherBtn" style="max-width:260px;margin-top:20px" onclick="resetForm()"><i class="ti ti-plus"></i> Book another</button>
@@ -233,7 +233,7 @@ var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 
 function $(id){return document.getElementById(id);}
-var VERSION='book v2.3 · fresh-slot check + kinder decline';
+var VERSION='book v2.4 · screen stays awake while waiting';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -480,7 +480,7 @@ function submitBooking(){
   };
   db.collection('requests').add(rec).then(function(ref){
     _lastBooking={id:(ref&&ref.id)||'',date:selDate,time:(time||'09:00'),svc:svcStr,salon:(info&&info.salonName)||'Salon',custom:!!isCustom,customTime:isCustom?$('customTime').value.trim():''};
-    if(ref&&ref.id)watchRequest(ref.id);
+    if(ref&&ref.id){watchRequest(ref.id);_waiting=true;wakeOn();}
     var when=isCustom?$('customTime').value.trim():(to12(selTime)+' on '+new Date(selDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}));
     $('doneSub').innerHTML='Your request for <b>'+esc(svcStr)+'</b> ('+esc(when)+') has been sent. You\u2019ll get a confirmation once it\u2019s approved.';
     show('doneView');
@@ -508,6 +508,11 @@ function submitBooking(){
 }
 /* ===== approval watcher + soft chime + add-to-calendar ===== */
 var _watchUnsub=null,_approvedRec=null,_audioCtx=null;
+/* keep the client's screen awake while they wait, so the approval chime lands */
+var _wl=null,_waiting=false;
+function wakeOn(){try{if(navigator.wakeLock&&navigator.wakeLock.request){navigator.wakeLock.request('screen').then(function(s){_wl=s;}).catch(function(){});}}catch(e){}}
+function wakeOff(){try{if(_wl){_wl.release();_wl=null;}}catch(e){}}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&_waiting)wakeOn();});
 function _unlockAudio(){try{if(!_audioCtx)_audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(_audioCtx.state==='suspended')_audioCtx.resume();}catch(e){}}
 document.addEventListener('touchend',_unlockAudio,{passive:true});
 document.addEventListener('click',_unlockAudio,{passive:true});
@@ -538,6 +543,7 @@ function watchRequest(id){
 }
 function onApproved(r){
   _approvedRec=r;
+  _waiting=false;wakeOff();
   softChime();
   try{if(navigator.vibrate)navigator.vibrate([80,60,80]);}catch(e){}
   var when=(r.time?to12(r.time)+' on ':'')+new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
@@ -548,6 +554,7 @@ function onApproved(r){
   var g=$('gcalLink');if(g){g.href=_gcalUrl(r);g.classList.remove('hidden');g.style.display='block';}
 }
 function onDeclined(r){
+  _waiting=false;wakeOff();
   var ic=$('doneIc');if(ic){ic.className='cs-ic';ic.innerHTML='<i class="ti ti-calendar-x"></i>';}
   if($('doneTitle'))$('doneTitle').textContent="That time didn't work out";
   if($('doneSub'))$('doneSub').innerHTML='No worries at all — please tap below and pick another time that suits you. 💛';
@@ -566,6 +573,7 @@ function _gcalUrl(r){
   return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent((r.service||'Appointment')+' — '+(_lastBooking.salon||'Salon'))+'&dates='+d.start+'/'+d.end;
 }
 function resetForm(){
+  _waiting=false;wakeOff();
   if(_watchUnsub){try{_watchUnsub();}catch(e){}_watchUnsub=null;}
   _approvedRec=null;
   var ic=$('doneIc');if(ic){ic.className='cs-ic green';ic.innerHTML='<i class="ti ti-check"></i>';}
