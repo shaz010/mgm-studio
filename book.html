@@ -233,7 +233,7 @@ var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 
 function $(id){return document.getElementById(id);}
-var VERSION='book v2.2 · add-your-own now unmissable';
+var VERSION='book v2.3 · fresh-slot check + kinder decline';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -471,6 +471,8 @@ function submitBooking(){
   if(!time && !isCustom){alert('Please pick a time');return;}
   _unlockAudio();
   $('bookBtn').disabled=true;$('bookBtn').innerHTML='<i class="ti ti-loader"></i> Sending…';
+  /* last-second freshness check — the slot may have been booked while this page sat open */
+  var doSend=function(){
   var rec={
     salon:SALON_ID,name:name,phone:phone,service:svcStr,
     date:selDate,time:time||'09:00',dur:60,price:0,
@@ -487,6 +489,22 @@ function submitBooking(){
     $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Request booking';
     alert('Could not send — please try again.');
   });
+  };
+  if(isCustom){ doSend(); return; }  // custom times are the stylist's call anyway
+  db.collection('public').doc(SALON_ID).get().then(function(doc){
+    var fresh=doc.exists?(doc.data()||{}):{};
+    var t0=mins(time), t1=t0+60;
+    var clash=(fresh.taken||[]).some(function(b){ if(b.date!==selDate)return false; var bs=mins(b.time),be=bs+(+b.dur||60); return t0<be && t1>bs; });
+    if(clash){
+      info.taken=fresh.taken||info.taken;   // refresh what we know
+      selTime='';
+      renderSlots();updateBtn();
+      $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Request booking';
+      alert('Ah — that time was just snapped up! Please pick another that suits you.');
+      return;
+    }
+    doSend();
+  }).catch(function(){ doSend(); });  // if the check itself fails, send anyway — the stylist still sees clashes
 }
 /* ===== approval watcher + soft chime + add-to-calendar ===== */
 var _watchUnsub=null,_approvedRec=null,_audioCtx=null;
@@ -532,7 +550,7 @@ function onApproved(r){
 function onDeclined(r){
   var ic=$('doneIc');if(ic){ic.className='cs-ic';ic.innerHTML='<i class="ti ti-calendar-x"></i>';}
   if($('doneTitle'))$('doneTitle').textContent="That time didn't work out";
-  if($('doneSub'))$('doneSub').innerHTML='No worries — tap below to pick a different time.';
+  if($('doneSub'))$('doneSub').innerHTML='No worries at all — please tap below and pick another time that suits you. 💛';
   if($('doneWait'))$('doneWait').classList.add('hidden');
 }
 function _calDates(r){
