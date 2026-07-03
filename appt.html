@@ -1244,7 +1244,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="sheet-grip"></div>
     <div class="sheet-title"><i class="ti ti-circle-check" style="font-size:15px;vertical-align:-2px;margin-right:7px;color:#5ddb7c"></i>Approved — let <span id="confirmWho">your client</span> know</div>
     <p class="sheet-sub">Send a quick confirmation so they know they're booked. Edit it if you like.</p>
-    <textarea id="confirmText" class="confirm-text" rows="4"></textarea>
+    <textarea id="confirmText" class="confirm-text" rows="6"></textarea>
     <div class="btn-row" style="margin-top:14px;gap:8px">
       <button class="btn btn-sm" style="flex:1" onclick="copyConfirm()"><i class="ti ti-copy"></i> Copy</button>
       <button class="btn btn-sm" id="confirmSend" style="flex:1;background:#5ddb7c;color:#04140b;border-color:#5ddb7c" onclick="sendConfirm()"><i class="ti ti-send"></i> Send in Messages</button>
@@ -2568,7 +2568,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.55 · soft chime on new requests';
+var VERSION='v4.56 · confirm text starts at the top';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3212,7 +3212,7 @@ function showBookingConfirm(r){
   var msg='Hi '+who+'! Your '+(r.service||'appointment')+' on '+when+' is confirmed 🎉 See you then!'+(salon?(' — '+salon):'');
   var cal=_gcalLink(r); if(cal)msg+='\n\n📅 Add to your calendar: '+cal;
   _confirmPhone=(r.phone||'');
-  var ta=$('confirmText'); if(ta)ta.value=msg;
+  var ta=$('confirmText'); if(ta){ta.value=msg;setTimeout(function(){try{ta.scrollTop=0;ta.setSelectionRange(0,0);}catch(e){}},50);}
   var nm=$('confirmWho'); if(nm)nm.textContent=r.name||'your client';
   var sb=$('confirmSend'); if(sb)sb.style.display=_confirmPhone?'flex':'none';
   var m=$('bookConfirmModal'); if(m)m.classList.add('show');
