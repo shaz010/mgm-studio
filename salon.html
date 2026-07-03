@@ -66,7 +66,7 @@
     color:#1a1208;font-size:16px;flex-shrink:0;
     box-shadow:0 0 12px rgba(255,184,0,.25);
   }
-  .brand-name{font-size:15px;font-weight:800;letter-spacing:.2px;color:#FFB800}
+  .brand-name{font-size:15px;font-weight:800;letter-spacing:.2px;color:#FFB800;max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .brand-sub{font-size:10.5px;color:#6a6a78;font-weight:600;margin-top:1px;letter-spacing:.3px}
 
   /* ===== The two-room toggle (the signature piece) ===== */
@@ -130,8 +130,8 @@
       <div class="brand">
         <div class="brand-mark"><svg viewBox="0 0 100 100" width="78%" height="78%" style="display:block"><g fill="#1a1208"><polygon points="48,30.5 53.2,52 48,73.5 42.8,52"/><polygon points="26.5,52 48,46.8 69.5,52 48,57.2"/><polygon points="74,24.2 76.3,33 74,41.8 71.7,33"/><polygon points="65.2,33 74,30.7 82.8,33 74,35.3"/><polygon points="74,63.8 75.9,71 74,78.2 72.1,71"/><polygon points="66.8,71 74,69.1 81.2,71 74,72.9"/></g></svg></div>
         <div>
-          <div class="brand-name">Your Salon</div>
-          <div class="brand-sub">ONE APP · EARNINGS + APPOINTMENTS</div>
+          <div class="brand-name" id="brandName">Your Salon</div>
+          <div class="brand-sub" id="brandSub">ONE APP · EARNINGS + APPOINTMENTS</div>
         </div>
       </div>
       <button class="acct-pill" id="acctPill" onclick="openAuth()"><i class="ti ti-cloud-off"></i><span id="acctTxt">Sign in to sync</span></button>
@@ -150,7 +150,7 @@
   <div class="stage">
     <iframe id="roomEarn" class="room" title="Earnings" allow="web-share; clipboard-write"></iframe>
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
-    <div class="ver">salon v0.16</div>
+    <div class="ver">salon v0.17</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -187,6 +187,22 @@
   }
   var ROOMS={ earn:'app.html', appt:'appt.html' };
   var KEY='salon_last_room';
+  /* the door wears your business name (falls back to "Your Salon") */
+  function applyBrandName(){
+    var n='';
+    try{n=(JSON.parse(localStorage.getItem('ap_prefs')||'{}').bizName)||'';}catch(e){}
+    if(!n){try{n=(JSON.parse(localStorage.getItem('cp_prefs')||'{}').salon)||'';}catch(e){}}
+    n=(n||'').trim();
+    var el=document.getElementById('brandName');
+    if(el)el.textContent=n||'Your Salon';
+    var sub=document.getElementById('brandSub');
+    if(sub)sub.textContent=n?'YOUR SALON · EARNINGS + APPOINTMENTS':'ONE APP · EARNINGS + APPOINTMENTS';
+    try{document.title=n||'Your Salon';}catch(e){}
+  }
+  applyBrandName();
+  window.addEventListener('storage',function(){ applyBrandName(); });
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden)applyBrandName(); });
+  setInterval(applyBrandName,4000); /* safety net — Safari sometimes drops storage events */
   var FRAMES={ earn:document.getElementById('roomEarn'), appt:document.getElementById('roomAppt') };
   var loaded={ earn:false, appt:false };
   var btnEarn=document.getElementById('btnEarn');

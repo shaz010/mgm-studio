@@ -18,7 +18,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .brand-ic{width:40px;height:40px;background:linear-gradient(135deg,#ffcf4d,#e8a91a);border:none;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#1a1208;font-size:20px;flex-shrink:0;box-shadow:0 3px 10px rgba(232,169,26,.28)}
 .brand-name{font-size:18px;font-weight:700}
 .brand-sub{font-size:12.5px;color:var(--muted);margin-top:1px}
-.sec{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin:22px 0 10px}
+.sec{font-size:14px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin:26px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--gold-dim,rgba(212,175,55,.35))}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{font-size:13px;font-weight:600;padding:8px 13px;border-radius:20px;background:#1a1a1a;border:1.5px solid var(--border-bright);color:var(--text2);cursor:pointer;transition:all .15s}
 .chip.sel{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
@@ -44,13 +44,13 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .slot.pending{border-color:#7a5a1a;color:#e0a93c}
 .slot.pending::after{content:' ·';color:#e0a93c}
 .slot:active{transform:scale(.95)}
-.none-btn{margin-top:10px;width:100%;text-align:center;font-size:13px;font-weight:600;color:var(--muted);background:transparent;border:1.5px dashed var(--border-bright);border-radius:9px;padding:11px;cursor:pointer}
+.none-btn{margin-top:10px;width:100%;text-align:center;font-size:14px;font-weight:700;color:var(--gold);background:transparent;border:1.5px dashed var(--gold);border-radius:9px;padding:12px;cursor:pointer}
 .none-btn.on{color:var(--gold);border-color:var(--gold);border-style:solid}
 @keyframes iridShift{to{background-position:200% 50%}}
-#noneBtn{display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:800;color:#fff;border:1.5px solid transparent;border-radius:11px;padding:13px;background:linear-gradient(var(--bg2),var(--bg2)) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 16px rgba(167,139,250,.22);transition:transform .14s}
-#noneBtn:active{transform:scale(.97)}
-#noneBtn i{font-size:17px;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:iridShift 4.5s linear infinite}
-#noneBtn.on{box-shadow:0 0 22px rgba(167,139,250,.4)}
+#noneBtn,#otherSvcBtn{display:flex;align-items:center;justify-content:center;gap:8px;font-size:15.5px;font-weight:800;color:#fff;border:1.5px solid transparent;border-radius:11px;padding:15px;background:linear-gradient(var(--bg2),var(--bg2)) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 16px rgba(167,139,250,.22);transition:transform .14s}
+#noneBtn:active,#otherSvcBtn:active{transform:scale(.97)}
+#noneBtn i,#otherSvcBtn i{font-size:17px;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:iridShift 4.5s linear infinite}
+#noneBtn.on,#otherSvcBtn.on{box-shadow:0 0 22px rgba(167,139,250,.4)}
 .custom-wrap{margin-top:10px;display:none}
 .custom-wrap.on{display:block}
 label{display:block;font-size:12.5px;font-weight:600;color:var(--text2);margin:14px 0 6px}
@@ -70,7 +70,7 @@ textarea{resize:vertical;min-height:60px}
 .empty-slots{text-align:center;color:var(--muted);font-size:13px;padding:18px;font-style:italic}
 .hidden{display:none}
 /* My Hair */
-.returning-btn{font-size:11px;font-weight:600;color:var(--muted);background:transparent;border:1.5px solid var(--border-bright);border-radius:20px;padding:5px 11px;cursor:pointer;display:flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0}
+.returning-btn{font-size:13px;font-weight:700;color:var(--gold);background:transparent;border:1.5px solid var(--gold);border-radius:20px;padding:7px 13px;cursor:pointer;display:flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0}
 .returning-btn.on{color:var(--gold);border-color:var(--gold);background:var(--gold-dim)}
 #hairWrap.collapsed{display:none}
 .hair-hint{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 14px}
@@ -114,10 +114,13 @@ textarea{resize:vertical;min-height:60px}
 
 <!-- SUCCESS -->
 <div class="center-screen hidden" id="doneView">
-  <div class="cs-ic green"><i class="ti ti-check"></i></div>
-  <div class="cs-title">Request sent!</div>
+  <div class="cs-ic green" id="doneIc"><i class="ti ti-check"></i></div>
+  <div class="cs-title" id="doneTitle">Request sent!</div>
   <div class="cs-sub" id="doneSub">Your booking request has been sent. You'll get a confirmation once it's approved.</div>
-  <button class="book-btn" style="max-width:260px;margin-top:20px" onclick="resetForm()"><i class="ti ti-plus"></i> Book another</button>
+  <div class="cs-sub" id="doneWait" style="margin-top:10px;font-size:13px;opacity:.75"><i class="ti ti-bell"></i> Keep this page open — you'll hear a soft chime the moment it's approved.</div>
+  <button class="book-btn hidden" id="calBtn" style="max-width:260px;margin-top:20px" onclick="addToCal()"><i class="ti ti-calendar-plus"></i> Add to my calendar</button>
+  <a class="hidden" id="gcalLink" target="_blank" style="margin-top:12px;font-size:13px;color:inherit;opacity:.8;text-decoration:underline">or add to Google Calendar ↗</a>
+  <button class="book-btn" id="bookAnotherBtn" style="max-width:260px;margin-top:20px" onclick="resetForm()"><i class="ti ti-plus"></i> Book another</button>
 </div>
 
 <!-- MAIN FORM -->
@@ -132,7 +135,7 @@ textarea{resize:vertical;min-height:60px}
 
   <div class="sec">Service</div>
   <div class="chips" id="svcChips"></div>
-  <button class="none-btn" id="otherSvcBtn" onclick="toggleOtherSvc()" style="margin-top:9px">Don't see your service? Add it here</button>
+  <button class="none-btn" id="otherSvcBtn" onclick="toggleOtherSvc()" style="margin-top:9px"><i class="ti ti-plus"></i> None of these? Add your own</button>
   <div class="custom-wrap" id="otherSvcWrap">
     <input type="text" id="otherSvc" placeholder="e.g. scalp treatment, colour correction" oninput="onOtherSvc()">
   </div>
@@ -210,7 +213,7 @@ textarea{resize:vertical;min-height:60px}
 
   <button class="book-btn" id="bookBtn" onclick="submitBooking()"><i class="ti ti-send"></i> Request booking</button>
   <div class="foot-note"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px"></i> You'll get a confirmation once the stylist approves. This just sends a request.</div>
-  <div class="foot-note" id="bkVer" style="opacity:.5;margin-top:14px;font-size:11px"></div>
+  <div class="foot-note" id="bkVer" style="margin-top:14px;font-size:12.5px;font-weight:700;color:#e8e8ef;background:rgba(255,255,255,.09);display:inline-block;padding:4px 12px;border-radius:9px;letter-spacing:.3px"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -230,7 +233,25 @@ var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 
 function $(id){return document.getElementById(id);}
-var VERSION='book v1.8 · calendar moved to approval';
+var VERSION='book v2.2 · add-your-own now unmissable';
+
+/* ---- tap-away keyboard dismiss (iOS) ---- */
+document.addEventListener('touchstart',function(e){
+  var a=document.activeElement;
+  if(!a)return;
+  var tag=(a.tagName||'').toLowerCase();
+  if(tag!=='input'&&tag!=='textarea'&&tag!=='select')return;
+  var t=e.target;
+  if(t===a)return;
+  var tt=(t.tagName||'').toLowerCase();
+  if(tt==='input'||tt==='textarea'||tt==='select'||tt==='label')return;
+  a.blur();
+},{passive:true});
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter')return;
+  var a=document.activeElement;
+  if(a&&a.tagName==='INPUT')a.blur();
+});
 try{var _bv=document.getElementById('bkVer');if(_bv)_bv.textContent=VERSION;}catch(e){}
 function show(id){['loadingView','closedView','errorView','doneView','formView'].forEach(function(v){$(v).classList.toggle('hidden',v!==id);});}
 function retry(){show('loadingView');setTimeout(init,250);}
@@ -409,16 +430,19 @@ function toggleCustom(){
 /* ---- add to calendar (.ics) ---- */
 function addToCal(){
   var b=_lastBooking; if(!b)return;
+  var a=_approvedRec;
   var pad=function(n){return (n<10?'0':'')+n;};
   var fmt=function(x){return x.getFullYear()+pad(x.getMonth()+1)+pad(x.getDate())+'T'+pad(x.getHours())+pad(x.getMinutes())+'00';};
-  var startD=new Date(b.date+'T'+(b.time||'09:00')+':00');
-  if(isNaN(startD.getTime()))startD=new Date(b.date+'T09:00:00');
-  var endD=new Date(startD.getTime()+60*60000);
+  var date=(a&&a.date)||b.date, time=((a&&a.time)||b.time||'09:00'), dur=(a&&+a.dur)||60, svc=(a&&a.service)||b.svc;
+  var startD=new Date(date+'T'+time+':00');
+  if(isNaN(startD.getTime()))startD=new Date(date+'T09:00:00');
+  var endD=new Date(startD.getTime()+dur*60000);
   var ie=function(s){return String(s||'').replace(/([,;\\])/g,'\\$1').replace(/\n/g,'\\n');};
-  var desc='Booking request sent to '+b.salon+'. This is pending confirmation.'+(b.custom&&b.customTime?(' Requested time: '+b.customTime+'.'):'');
+  var desc=a?('Confirmed with '+b.salon+'. See you then!')
+           :('Booking request sent to '+b.salon+'. This is pending confirmation.'+(b.custom&&b.customTime?(' Requested time: '+b.customTime+'.'):''));
   var ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Your Salon//Booking//EN','CALSCALE:GREGORIAN','BEGIN:VEVENT',
-    'UID:ys-'+Date.now()+'@yoursalon','DTSTAMP:'+fmt(new Date()),'DTSTART:'+fmt(startD),'DTEND:'+fmt(endD),
-    'SUMMARY:'+ie(b.svc+' — '+b.salon+' (requested)'),'DESCRIPTION:'+ie(desc),'STATUS:TENTATIVE','END:VEVENT','END:VCALENDAR'].join('\r\n');
+    'UID:ys-'+(b.id||Date.now())+'@yoursalon','DTSTAMP:'+fmt(new Date()),'DTSTART:'+fmt(startD),'DTEND:'+fmt(endD),
+    'SUMMARY:'+ie(svc+' — '+b.salon+(a?'':' (requested)')),'DESCRIPTION:'+ie(desc),'STATUS:'+(a?'CONFIRMED':'TENTATIVE'),'END:VEVENT','END:VCALENDAR'].join('\r\n');
   var fn=(b.salon+'-appointment').replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,'')+'.ics';
   try{
     var blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
@@ -445,14 +469,16 @@ function submitBooking(){
   var time=isCustom?'':selTime;
   var notesFull=isCustom?('Requested time: '+$('customTime').value.trim()+(notes?(' — '+notes):'')):notes;
   if(!time && !isCustom){alert('Please pick a time');return;}
+  _unlockAudio();
   $('bookBtn').disabled=true;$('bookBtn').innerHTML='<i class="ti ti-loader"></i> Sending…';
   var rec={
     salon:SALON_ID,name:name,phone:phone,service:svcStr,
     date:selDate,time:time||'09:00',dur:60,price:0,
     notes:notesFull,hair:collectHair(),hairData:collectHairData(),custom:!!isCustom,customSvc:!!(otherSvcMode && $('otherSvc').value.trim()),status:'pending',createdAt:Date.now()
   };
-  db.collection('requests').add(rec).then(function(){
-    _lastBooking={date:selDate,time:(time||'09:00'),svc:svcStr,salon:(info&&info.salonName)||'Salon',custom:!!isCustom,customTime:isCustom?$('customTime').value.trim():''};
+  db.collection('requests').add(rec).then(function(ref){
+    _lastBooking={id:(ref&&ref.id)||'',date:selDate,time:(time||'09:00'),svc:svcStr,salon:(info&&info.salonName)||'Salon',custom:!!isCustom,customTime:isCustom?$('customTime').value.trim():''};
+    if(ref&&ref.id)watchRequest(ref.id);
     var when=isCustom?$('customTime').value.trim():(to12(selTime)+' on '+new Date(selDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}));
     $('doneSub').innerHTML='Your request for <b>'+esc(svcStr)+'</b> ('+esc(when)+') has been sent. You\u2019ll get a confirmation once it\u2019s approved.';
     show('doneView');
@@ -462,7 +488,73 @@ function submitBooking(){
     alert('Could not send — please try again.');
   });
 }
+/* ===== approval watcher + soft chime + add-to-calendar ===== */
+var _watchUnsub=null,_approvedRec=null,_audioCtx=null;
+function _unlockAudio(){try{if(!_audioCtx)_audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(_audioCtx.state==='suspended')_audioCtx.resume();}catch(e){}}
+document.addEventListener('touchend',_unlockAudio,{passive:true});
+document.addEventListener('click',_unlockAudio,{passive:true});
+function softChime(){
+  try{
+    if(!_audioCtx||_audioCtx.state!=='running')return;
+    var t=_audioCtx.currentTime;
+    [[880,0],[1174.66,0.16]].forEach(function(nf){
+      var o=_audioCtx.createOscillator(),g=_audioCtx.createGain();
+      o.type='sine';o.frequency.value=nf[0];
+      g.gain.setValueAtTime(0.0001,t+nf[1]);
+      g.gain.exponentialRampToValueAtTime(0.1,t+nf[1]+0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+nf[1]+0.9);
+      o.connect(g);g.connect(_audioCtx.destination);
+      o.start(t+nf[1]);o.stop(t+nf[1]+1);
+    });
+  }catch(e){}
+}
+function watchRequest(id){
+  try{
+    if(_watchUnsub)_watchUnsub();
+    _watchUnsub=db.collection('requests').doc(id).onSnapshot(function(d){
+      var r=d.data();if(!r)return;
+      if(r.status==='approved'){_watchUnsub();_watchUnsub=null;onApproved(r);}
+      else if(r.status==='declined'){_watchUnsub();_watchUnsub=null;onDeclined(r);}
+    },function(err){console.warn('watch err',err);});
+  }catch(e){console.warn('watch',e);}
+}
+function onApproved(r){
+  _approvedRec=r;
+  softChime();
+  try{if(navigator.vibrate)navigator.vibrate([80,60,80]);}catch(e){}
+  var when=(r.time?to12(r.time)+' on ':'')+new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  if($('doneTitle'))$('doneTitle').textContent="You're booked! 🎉";
+  if($('doneSub'))$('doneSub').innerHTML='<b>'+esc(r.service||_lastBooking.svc||'Your appointment')+'</b> is confirmed for <b>'+esc(when)+'</b>. See you then!';
+  if($('doneWait'))$('doneWait').classList.add('hidden');
+  if($('calBtn'))$('calBtn').classList.remove('hidden');
+  var g=$('gcalLink');if(g){g.href=_gcalUrl(r);g.classList.remove('hidden');g.style.display='block';}
+}
+function onDeclined(r){
+  var ic=$('doneIc');if(ic){ic.className='cs-ic';ic.innerHTML='<i class="ti ti-calendar-x"></i>';}
+  if($('doneTitle'))$('doneTitle').textContent="That time didn't work out";
+  if($('doneSub'))$('doneSub').innerHTML='No worries — tap below to pick a different time.';
+  if($('doneWait'))$('doneWait').classList.add('hidden');
+}
+function _calDates(r){
+  var t=(r.time||'09:00');
+  var s=new Date(r.date+'T'+t+':00');if(isNaN(s.getTime()))s=new Date(r.date+'T09:00:00');
+  var e=new Date(s.getTime()+((+r.dur||60)*60000));
+  var p=function(n){return (n<10?'0':'')+n;};
+  var f=function(x){return x.getFullYear()+p(x.getMonth()+1)+p(x.getDate())+'T'+p(x.getHours())+p(x.getMinutes())+'00';};
+  return {start:f(s),end:f(e)};
+}
+function _gcalUrl(r){
+  var d=_calDates(r);
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent((r.service||'Appointment')+' — '+(_lastBooking.salon||'Salon'))+'&dates='+d.start+'/'+d.end;
+}
 function resetForm(){
+  if(_watchUnsub){try{_watchUnsub();}catch(e){}_watchUnsub=null;}
+  _approvedRec=null;
+  var ic=$('doneIc');if(ic){ic.className='cs-ic green';ic.innerHTML='<i class="ti ti-check"></i>';}
+  if($('doneTitle'))$('doneTitle').textContent='Request sent!';
+  if($('doneWait'))$('doneWait').classList.remove('hidden');
+  if($('calBtn'))$('calBtn').classList.add('hidden');
+  var _g=$('gcalLink');if(_g){_g.classList.add('hidden');_g.style.display='';}
   selSvcArr=[];selTime='';customMode=false;returning=false;otherSvcMode=false;
   document.querySelectorAll('#svcChips .chip.sel').forEach(function(c){c.classList.remove('sel');});
   if($('svcPills'))$('svcPills').innerHTML='';
