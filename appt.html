@@ -2575,7 +2575,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.57 · keep-screen-awake toggle';
+var VERSION='v4.58 · decline failures now speak up';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3201,7 +3201,7 @@ function commitApproved(r,silent){
   save(APPTS,appts);
   addClientFromBooking(r);
   if(apptPrice>0){var _c2=clientForReq(r);if(_c2){_c2.savedPrice=apptPrice;save(CLIENTS,clients);}}
-  if(fbReady&&r._id)db.collection('requests').doc(r._id).update({status:'approved'}).catch(function(){});
+  if(fbReady&&r._id)db.collection('requests').doc(r._id).update({status:'approved'}).catch(function(e){console.warn('approve notify rejected',e);toast("Booked here — but the cloud refused the update, so the client wasn't notified",1,4200);});
   pendingReqs=pendingReqs.filter(function(x){return x._id!==r._id;});
   if(!silent){
     viewDate=parseDate(r.date);dayMode='day';
@@ -3300,10 +3300,13 @@ function confirmApprovePrice(){
 }
 function declineRequest(id){
   var r=pendingReqs.find(function(x){return x._id===id;});if(!r)return;
-  if(fbReady&&r._id)db.collection('requests').doc(r._id).update({status:'declined'}).catch(function(){});
+  if(fbReady&&r._id){
+    db.collection('requests').doc(r._id).update({status:'declined',declinedAt:Date.now()})
+      .then(function(){toast('Declined — the client sees it instantly');})
+      .catch(function(e){console.warn('decline rejected',e);toast("Cloud refused the decline — check Firestore rules (card will return)",1,4200);});
+  }else{toast('Declined');}
   pendingReqs=pendingReqs.filter(function(x){return x._id!==id;});
   renderReqBadge();renderRequests();
-  toast('Declined');
 }
 
 /* ---- requests UI ---- */
