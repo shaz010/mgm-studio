@@ -9,6 +9,9 @@
 <link rel="icon" type="image/png" href="appt-icon-192.png">
 <title>Book an appointment</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0a0a;--bg2:#141414;--bg3:#1c1c1c;--gold:#FFB800;--gold-dim:rgba(255,184,0,.13);--gold-border:rgba(255,184,0,.4);--text:#f5f5f5;--text2:#cfcfcf;--muted:#8a8a8a;--border:#222;--border-bright:#333;--green:#5ddb7c;--red:#ff7070;--blue:#7eb8ff}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -16,7 +19,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .wrap{width:100%;box-sizing:border-box;margin:0;padding:16px max(16px,env(safe-area-inset-left)) 16px max(16px,env(safe-area-inset-right))}
 .brand{display:flex;align-items:center;gap:12px;margin:8px 0 18px}
 .brand-ic{width:40px;height:40px;background:linear-gradient(135deg,#ffcf4d,#e8a91a);border:none;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#1a1208;font-size:20px;flex-shrink:0;box-shadow:0 3px 10px rgba(232,169,26,.28)}
-.brand-name{font-size:18px;font-weight:700}
+.brand-name{font-family:'DM Serif Display',Georgia,'Times New Roman',serif;font-size:21px;font-weight:400;letter-spacing:.4px}
 .brand-sub{font-size:12.5px;color:var(--muted);margin-top:1px}
 .sec{font-size:14px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin:26px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--gold-dim,rgba(212,175,55,.35))}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
@@ -233,7 +236,7 @@ var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 
 function $(id){return document.getElementById(id);}
-var VERSION='book v2.4 · screen stays awake while waiting';
+var VERSION='book v2.5 · serif brand moment';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

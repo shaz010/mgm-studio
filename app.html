@@ -14,6 +14,9 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html{overflow-x:hidden;overflow-x:clip;width:100%;max-width:100%;-webkit-text-size-adjust:100%;background:#0a0a0a;overscroll-behavior-x:none}
@@ -48,7 +51,7 @@ html.in-shell .topbar-brand{display:none}
 html.in-shell .topbar{justify-content:flex-start;background:var(--bg);border:none;border-radius:0;padding:8px 2px 10px;margin-bottom:8px;box-shadow:0 8px 18px -14px rgba(0,0,0,.75)}
 html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 .topbar-icon{width:38px;height:38px;background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px}
-.topbar-name{font-size:18px;font-weight:600;color:var(--text)}.topbar-name span{color:var(--gold)}
+.topbar-name{font-family:'DM Serif Display',Georgia,'Times New Roman',serif;font-size:21px;font-weight:400;letter-spacing:.3px;color:var(--text)}.topbar-name span{color:var(--gold)}
 .topbar-sub{font-size:12px;color:var(--muted);margin-top:2px;font-weight:400}
 
 /* SYNC BADGE */
@@ -122,7 +125,7 @@ body.a11y-big .calc-hint{font-size:16px;line-height:1.95}
 body.a11y-big .ty-row,body.a11y-big .backup-status,body.a11y-big .legal-body,body.a11y-big .bn-txt{font-size:14px}
 body.a11y-big .cf-pill,body.a11y-big .tf-chip,body.a11y-big .chip,body.a11y-big .msg-chip{font-size:13px}
 body.a11y-big .msg-text{font-size:16.5px}
-body.a11y-big .sum-val{font-size:20px}
+body.a11y-big .sum-val{font-family:'DM Serif Display',Georgia,serif;font-weight:400;letter-spacing:.3px;font-size:20px}
 body.a11y-big .client-card{font-size:15px}
 
 /* ROW BOXES */
@@ -645,6 +648,13 @@ td{padding:12px 10px;vertical-align:middle}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto}
 .modal-overlay.open{display:flex}
 .modal{background:#141414;border:1px solid #333;border-radius:16px;width:100%;max-width:660px;margin:auto}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .modal-overlay{background:rgba(0,0,0,.45);backdrop-filter:blur(10px) saturate(1.4);-webkit-backdrop-filter:blur(10px) saturate(1.4)}
+  .modal{background:rgba(18,18,20,.78);backdrop-filter:blur(26px) saturate(1.7);-webkit-backdrop-filter:blur(26px) saturate(1.7);border-color:rgba(255,255,255,.14)}
+  .modal-bar{background:rgba(8,8,10,.5)}
+  body.theme-light .modal{background:rgba(255,255,255,.78);border-color:rgba(0,0,0,.12)}
+  body.theme-light .modal-bar{background:rgba(255,255,255,.45)}
+}
 .modal-bar{background:#0a0a0a;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2a2a2a;border-radius:16px 16px 0 0}
 .modal-title{font-size:14px;font-weight:700;color:var(--gold)}
 .modal-close{background:none;border:none;color:#666;font-size:20px;cursor:pointer;line-height:1}
@@ -3492,7 +3502,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.73 · service email updated';
+var VERSION='app v1.74 · glass + serif moment';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
