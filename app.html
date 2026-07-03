@@ -2972,6 +2972,15 @@ applyFx(getFx());
 buildServiceChips();
 initFavDrag();
 calc();loadAll();try{applyBigText();}catch(e){}try{maybeShowBackupNudge();}catch(e){}if(document.documentElement.classList.contains('in-shell')){try{showTab('hist');}catch(e){}}
+/* shell keeps this room alive in the background — re-read shared data + repaint when shown */
+window.addEventListener('message',function(ev){
+  var d=ev.data||{};
+  if(d&&d.salon==='roomShown'){
+    try{loadPrefs();}catch(e){}
+    try{loadAll();calc();}catch(e){}
+    try{var m=$('pMgm');if(m&&m.style.display!=='none')renderMgm();}catch(e){}
+  }
+});
 
 /* ── Pay to Unlock ── */
 var UNLOCK={codeHash:4159026715,trialDays:3,stripeUrl:'https://buy.stripe.com/3cIdR97x4gdA4z9dCEfw401'};
@@ -3463,7 +3472,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.70 · trades in Settings + 4 text sizes';
+var VERSION='app v1.71 · live-room wake refresh';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

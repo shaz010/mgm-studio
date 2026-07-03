@@ -2568,7 +2568,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.54 · trades in Settings + confirm-sheet fix';
+var VERSION='v4.55 · soft chime on new requests';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3090,8 +3090,30 @@ function listenRequests(){
       },function(err){console.warn('listen err',err);});
   }catch(e){console.warn('listen',e);}
 }
+/* ---- soft chime (WebAudio, unlocked by first tap per iOS rules) ---- */
+var _audioCtx=null,_lastReqN=-1;
+function _unlockAudio(){try{if(!_audioCtx)_audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(_audioCtx.state==='suspended')_audioCtx.resume();}catch(e){}}
+document.addEventListener('touchend',_unlockAudio,{passive:true});
+document.addEventListener('click',_unlockAudio,{passive:true});
+function softChime(){
+  try{
+    if(!_audioCtx||_audioCtx.state!=='running')return;
+    var t=_audioCtx.currentTime;
+    [[880,0],[1174.66,0.16]].forEach(function(nf){
+      var o=_audioCtx.createOscillator(),g=_audioCtx.createGain();
+      o.type='sine';o.frequency.value=nf[0];
+      g.gain.setValueAtTime(0.0001,t+nf[1]);
+      g.gain.exponentialRampToValueAtTime(0.1,t+nf[1]+0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+nf[1]+0.9);
+      o.connect(g);g.connect(_audioCtx.destination);
+      o.start(t+nf[1]);o.stop(t+nf[1]+1);
+    });
+  }catch(e){}
+}
 function renderReqBadge(){
   var n=pendingReqs.length;
+  if(_lastReqN>=0&&n>_lastReqN)softChime();
+  _lastReqN=n;
   var b=$('sbReqBadge');if(b){b.textContent=n;b.style.display=n?'inline-block':'none';}
   /* priority banner — new requests jump on top of everything */
   var ban=$('newReqBanner');
@@ -3356,6 +3378,15 @@ maybeShowTradePicker();
 window.addEventListener('message',function(ev){
   var d=ev.data||{};
   if(d&&d.salon==='openView'&&d.view==='add'){try{if(typeof openAdd==='function')openAdd();}catch(e){}}
+  if(d&&d.salon==='roomShown'){ /* shell kept us alive in the background — re-read shared data + repaint */
+    try{
+      reload();
+      var av=document.querySelector('.view.active');
+      var v=av?av.id.replace('view-',''):'day';
+      showView(v);
+      renderReqBadge();
+    }catch(e){}
+  }
 });
 initFB();
 

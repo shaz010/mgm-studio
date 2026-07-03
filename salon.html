@@ -105,7 +105,7 @@
 
   /* ===== The room itself ===== */
   .stage{flex:1 1 auto;position:relative;background:#000}
-  #room{
+  .room{
     position:absolute;inset:0;
     width:100%;height:100%;
     border:0;
@@ -113,7 +113,7 @@
     opacity:1;
     transition:opacity .18s ease;
   }
-  #room.swapping{opacity:0}
+  .room.hide{visibility:hidden;opacity:0;pointer-events:none}
 
   .ver{
     position:absolute;bottom:6px;right:10px;
@@ -148,8 +148,9 @@
   </div>
 
   <div class="stage">
-    <iframe id="room" title="room" allow="web-share; clipboard-write"></iframe>
-    <div class="ver">salon v0.15</div>
+    <iframe id="roomEarn" class="room" title="Earnings" allow="web-share; clipboard-write"></iframe>
+    <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
+    <div class="ver">salon v0.16</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -176,54 +177,77 @@
   </div>
 
 <script>
+  /* shell guard: if the shell ever gets served INTO its own iframe
+     (e.g. offline fallback), self-heal by loading a room instead
+     — prevents the infinite "Your Salon" mirror hall. */
+  if(window.self!==window.top){
+    var _last='earn';
+    try{_last=localStorage.getItem('salon_last_room')||'earn';}catch(e){}
+    location.replace((_last==='appt'?'appt.html':'app.html')+'?v='+Date.now());
+  }
   var ROOMS={ earn:'app.html', appt:'appt.html' };
   var KEY='salon_last_room';
-  var frame=document.getElementById('room');
+  var FRAMES={ earn:document.getElementById('roomEarn'), appt:document.getElementById('roomAppt') };
+  var loaded={ earn:false, appt:false };
   var btnEarn=document.getElementById('btnEarn');
   var btnAppt=document.getElementById('btnAppt');
   var current='earn';
   var BUST=Date.now();
   function roomSrc(r){return ROOMS[r]+(ROOMS[r].indexOf('?')<0?'?':'&')+'v='+BUST;}
+  function otherRoom(r){return r==='earn'?'appt':'earn';}
+  function ensureLoaded(r){ if(!loaded[r]){ loaded[r]=true; FRAMES[r].src=roomSrc(r); } }
 
   function setActive(room){
     btnEarn.classList.toggle('active', room==='earn');
     btnAppt.classList.toggle('active', room==='appt');
   }
 
+  /* both rooms stay ALIVE — switching just shows/hides, so it's instant */
   function goRoom(room){
     if(room===current) return;            // already here, do nothing
     current=room;
     setActive(room);
     try{ localStorage.setItem(KEY, room); }catch(e){}
-    // gentle fade while the room swaps in
-    frame.classList.add('swapping');
-    setTimeout(function(){
-      frame.src=roomSrc(room);
-    },120);
+    ensureLoaded(room);
+    FRAMES[otherRoom(room)].classList.add('hide');
+    FRAMES[room].classList.remove('hide');
+    notifyShown(room);                    // wake the room so its numbers are fresh
+  }
+  function notifyShown(room){
+    try{ FRAMES[room].contentWindow.postMessage({salon:'roomShown'},'*'); }catch(e){}
   }
   var pendingView=null;
   window.addEventListener('message', function(ev){
     var d=ev.data||{};
     if(d&&d.salon==='goRoom'&&d.room&&ROOMS[d.room]){
       pendingView=d.view||null;
-      goRoom(d.room);
+      var target=d.room, wasLoaded=loaded[target];
+      goRoom(target);
+      if(wasLoaded&&pendingView){ // room is alive, deliver straight away
+        try{FRAMES[target].contentWindow.postMessage({salon:'openView',view:pendingView},'*');}catch(e){}
+        pendingView=null;
+      }
     }
   });
-  frame.addEventListener('load', function(){
-    frame.classList.remove('swapping');
-    if(pendingView){
-      try{frame.contentWindow.postMessage({salon:'openView',view:pendingView},'*');}catch(e){}
-      pendingView=null;
-    }
+  Object.keys(FRAMES).forEach(function(r){
+    FRAMES[r].addEventListener('load', function(){
+      if(pendingView&&r===current){
+        try{FRAMES[r].contentWindow.postMessage({salon:'openView',view:pendingView},'*');}catch(e){}
+        pendingView=null;
+      }
+    });
   });
 
-  // restore the room you were last in
+  // restore the room you were last in, then quietly warm up the other one
   (function(){
     var last='earn';
     try{ last=localStorage.getItem(KEY)||'earn'; }catch(e){}
     current=(last==='appt')?'appt':'earn';
     setActive(current);
-    frame.src=roomSrc(current);
+    FRAMES[otherRoom(current)].classList.add('hide');
+    FRAMES[current].classList.remove('hide');
+    ensureLoaded(current);
+    setTimeout(function(){ ensureLoaded(otherRoom(current)); }, 2500);
   })();
 
   /* ===== Account / sync auth (Step 1: login only — data sync comes next) ===== */
@@ -344,8 +368,11 @@
   var _lastReload=0;
   function reloadRoomSoon(){
     clearTimeout(_reloadTimer);
-    var since=Date.now()-_lastReload, wait=since<20000?(20000-since):500;  // throttle: ≤1 room reload per ~20s (kills cross-device reload thrash)
-    _reloadTimer=setTimeout(function(){ _lastReload=Date.now(); try{ frame.src=roomSrc(current); }catch(e){} }, wait);
+    var since=Date.now()-_lastReload, wait=since<20000?(20000-since):500;  // throttle: ≤1 reload per ~20s (kills cross-device reload thrash)
+    _reloadTimer=setTimeout(function(){
+      _lastReload=Date.now();
+      Object.keys(FRAMES).forEach(function(r){ if(loaded[r]){ try{ FRAMES[r].src=roomSrc(r); }catch(e){} } });
+    }, wait);
   }
 
   function startUserSync(uid){
