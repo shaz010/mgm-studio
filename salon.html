@@ -123,6 +123,23 @@
     transition:opacity .6s ease;
   }
   .ver.dim{opacity:0}
+
+  /* ===== shell self-update pill ===== */
+  .upd-pill{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    z-index:60;display:none;align-items:center;gap:8px;
+    font-family:inherit;font-size:13px;font-weight:800;color:#fff;
+    padding:12px 18px;border-radius:999px;cursor:pointer;
+    border:1.5px solid transparent;
+    background:
+      linear-gradient(#0b0b10,#0b0b10) padding-box,
+      linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;
+    box-shadow:0 6px 24px rgba(0,0,0,.55),0 0 18px rgba(167,139,250,.35);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .upd-pill.show{display:flex}
+  .upd-pill:active{transform:translateX(-50%) scale(.96)}
+  .upd-pill i{font-size:16px}
 </style>
 </head>
 <body>
@@ -152,7 +169,8 @@
   <div class="stage">
     <iframe id="roomEarn" class="room" title="Earnings" allow="web-share; clipboard-write"></iframe>
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
-    <div class="ver">salon v0.18</div>
+    <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
+    <div class="ver">salon v0.19</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -425,6 +443,37 @@
   setInterval(function(){ if(_uid)scheduleScan(); },5000);
 
   setTimeout(function(){var v=document.querySelector('.ver');if(v)v.classList.add('dim');},6000);
+  /* ===== update watcher — the shell owns updates now that rooms stay alive ===== */
+  var _updSeen={},_updShown=false;
+  function _verOf(txt){var m=txt.match(/var VERSION='([^']+)'/)||txt.match(/salon v[\d.]+/);return m?(m[1]||m[0]):'';}
+  function _checkUpd(){
+    ['salon.html','app.html','appt.html'].forEach(function(f){
+      fetch(f+'?_u='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():'';}).then(function(t){
+        var v=_verOf(t); if(!v)return;
+        if(!(f in _updSeen)){ _updSeen[f]=v; return; }      // first sight = baseline
+        if(_updSeen[f]!==v && !_updShown){ _updShown=true; var p=document.getElementById('updPill'); if(p)p.classList.add('show'); }
+      }).catch(function(){});
+    });
+  }
+  setTimeout(_checkUpd,8000);
+  setInterval(_checkUpd,90000);
+  /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
+  var SHELL_V='v0.19';
+  function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
+  function checkShellUpdate(){
+    try{
+      fetch(location.pathname+'?_t='+Date.now(),{cache:'no-store'})
+        .then(function(r){return r.text();})
+        .then(function(txt){
+          var m=txt.match(/var SHELL_V='([^']+)'/);
+          if(m&&m[1]&&m[1]!==SHELL_V){var p=document.getElementById('updPill');if(p)p.classList.add('show');}
+        }).catch(function(){});
+    }catch(e){}
+  }
+  setTimeout(checkShellUpdate,8000);
+  setInterval(checkShellUpdate,60000);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)checkShellUpdate();});
+
   initAuth();
 </script>
 </body>
