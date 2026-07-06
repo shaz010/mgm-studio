@@ -2582,7 +2582,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.63 · approve & decline sing different songs';
+var VERSION='v4.64 · send-a-text escapes the shell';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3294,7 +3294,19 @@ function _gcalLink(r){
   }catch(e){return '';}
 }
 function closeConfirm(){var m=$('bookConfirmModal');if(m)m.classList.remove('show');}
-function sendConfirm(){var num=(_confirmPhone||'').replace(/[^0-9+]/g,'');if(!num){copyConfirm();return;}var body=encodeURIComponent(($('confirmText')||{}).value||'');window.location.href='sms:'+num+'&body='+body;}
+function sendConfirm(){
+  var num=(_confirmPhone||'').replace(/[^0-9+]/g,'');if(!num){copyConfirm();return;}
+  var body=encodeURIComponent(($('confirmText')||{}).value||'');
+  var url='sms:'+num+'&body='+body;
+  /* inside the shell iframe, location.href='sms:' fails silently on iOS —
+     a real anchor click targeted at _top escapes the frame */
+  try{
+    var a=document.createElement('a');a.href=url;a.target='_top';a.rel='noopener';
+    document.body.appendChild(a);a.click();a.remove();
+  }catch(e){
+    try{window.top.location.href=url;}catch(_e){window.location.href=url;}
+  }
+}
 function copyConfirm(){var ta=$('confirmText');if(!ta)return;ta.focus();ta.select();try{document.execCommand('copy');toast('Copied ✓');}catch(e){}}
 function approveRequest(id){
   var r=pendingReqs.find(function(x){return x._id===id;});if(!r)return;
