@@ -2317,7 +2317,6 @@ function confirmErase(){
   catch(e){ try{['cp_appts','cp_paid','cp_clients','cp_prefs','ap_appts','ap_clients','ap_custom','ap_prefs','ap_stock'].forEach(function(k){localStorage.removeItem(k);});}catch(_e){} }
   location.reload();
 }
-function resetQuickPicks(){if(!confirm('Reset Quick Picks to the default starter set?'))return;saveFavorites(DEFAULT_FAVES.slice());buildServiceChips();}
 function exportData(){
   try{
     var all={};
@@ -2342,8 +2341,16 @@ function _downloadBackup(json,fname){
   setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},100);
 }
 function _markBackup(){try{localStorage.setItem('cp_lastBackup',String(Date.now()));}catch(_e){} try{renderBackupStatus();}catch(_e){} try{maybeShowBackupNudge();}catch(_e){}}
+function _cloudSyncAge(){try{var t=parseInt(localStorage.getItem('salon_lastSync')||'0',10)||0;return t?(Date.now()-t):-1;}catch(e){return -1;}}
+function _cloudFresh(){var a=_cloudSyncAge();return a>=0&&a<26*3600000;} /* synced within ~a day = covered */
+function _cloudWhen(){var a=_cloudSyncAge();if(a<0)return '';var m=Math.floor(a/60000);if(m<1)return 'just now';if(m<60)return m+' min ago';var h=Math.floor(m/60);if(h<24)return h+'h ago';return Math.floor(h/24)+'d ago';}
 function renderBackupStatus(){
   var el=document.getElementById('backupStatus'); if(!el)return;
+  if(_cloudFresh()){
+    el.className='backup-status';
+    el.innerHTML='<i class="ti ti-cloud-check"></i> Cloud sync on — synced '+_cloudWhen()+'. File copies below are optional extra safety.';
+    return;
+  }
   var t=0; try{t=parseInt(localStorage.getItem('cp_lastBackup')||'0',10)||0;}catch(e){}
   var has=loadAppts().length>0;
   if(!t){ el.className='backup-status'+(has?' due':''); el.innerHTML=has?'<i class="ti ti-alert-circle"></i> No backup saved yet — tap &ldquo;Save a copy&rdquo; above.':'<i class="ti ti-cloud"></i> Nothing to back up yet.'; return; }
@@ -2355,6 +2362,7 @@ function renderBackupStatus(){
 }
 function maybeShowBackupNudge(){
   var el=document.getElementById('backupNudge'); if(!el)return;
+  if(_cloudFresh()){el.style.display='none';return;} /* live-synced — no nagging */
   var has=(loadAppts().length>0)||(typeof getClients==='function'&&getClients().length>0);
   if(!has){el.style.display='none';return;}
   var t=0;try{t=parseInt(localStorage.getItem('cp_lastBackup')||'0',10)||0;}catch(e){}
@@ -2364,7 +2372,7 @@ function maybeShowBackupNudge(){
   var snoozed=dis&&((Date.now()-dis)<3*86400000);
   if(due&&!snoozed){
     var msg=t?("It's been "+days+" days since your last saved copy."):("You haven't saved a copy of your data yet.");
-    var txt=el.querySelector('.bn-txt'); if(txt)txt.innerHTML='<b>Keep your data safe.</b> '+msg+' Save a copy you control — clients, consent, everything.';
+    var txt=el.querySelector('.bn-txt'); if(txt)txt.innerHTML='<b>Keep your data safe.</b> '+msg+' Save a copy — or sign in (cloud icon, top of the shell) and it backs up itself.';
     el.style.display='flex';
   }else{el.style.display='none';}
 }
@@ -3502,7 +3510,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.74 · glass + serif moment';
+var VERSION='app v1.75 · backup banner learns about the cloud';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
