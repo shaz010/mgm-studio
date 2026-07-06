@@ -665,11 +665,11 @@ body.theme-noir .svc-mode-btn{background:#000;border-color:#2e2e3a}
 .trade-tile span{font-size:13px;font-weight:700;color:#e8e8f2}
 .trade-tile:hover{border-color:transparent;background:linear-gradient(#0a0a0e,#0a0a0e) padding-box,linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 18px rgba(167,139,250,.28)}
 .set-trade-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
-.set-trade-tile{min-height:64px;background:#141419;border:1.5px solid #2a2a35;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:10px 4px;-webkit-tap-highlight-color:transparent;transition:transform .12s ease}
+.set-trade-tile{position:relative;min-height:64px;background:#141419;border:1.5px solid #2a2a35;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:10px 4px;-webkit-tap-highlight-color:transparent;transition:transform .12s ease}
 .set-trade-tile:active{transform:scale(.94)}
 .set-trade-tile i{font-size:22px;color:#cbd5ff}
 .set-trade-tile span{font-size:12px;font-weight:700;color:#e8e8f2}
-.set-trade-tile.on{border-color:transparent;background:linear-gradient(#101016,#101016) padding-box,linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 14px rgba(167,139,250,.25)}
+.set-trade-tile.on{border:2.5px solid transparent;background:linear-gradient(rgba(103,232,249,.12),rgba(167,139,250,.18)) padding-box,linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 22px rgba(167,139,250,.5)}.set-trade-tile.on i{color:#e9d5ff}.set-trade-tile.on span{color:#fff}.set-trade-tile.on::after{content:'\2713';position:absolute;top:5px;right:6px;width:17px;height:17px;border-radius:50%;background:linear-gradient(135deg,#67e8f9,#a78bfa);color:#0a0a0e;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center}
 #settingsModal .set-sec{padding-bottom:8px}
 .svc-trade-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .svc-trade-label{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:800;letter-spacing:.3px;color:var(--gold);padding:7px 14px;border:1.5px solid var(--gold-border);border-radius:20px;background:var(--gold-dim)}
@@ -2582,7 +2582,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.60 · glass sheets + serif brand';
+var VERSION='v4.61 · trade pick pops';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
