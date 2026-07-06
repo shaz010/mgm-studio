@@ -703,8 +703,8 @@ body.theme-noir .tabs{background:#000}
 .trade-opt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;border-radius:12px;border:1.5px solid var(--border-bright);background:#050507;color:var(--text2);font-size:15px;font-weight:700;cursor:pointer;width:100%}
 .trade-opt-l{display:flex;align-items:center;gap:10px}
 .trade-opt-c{font-size:22px;color:var(--muted);flex-shrink:0}
-.trade-opt.on{color:#fff;border-color:transparent;background:linear-gradient(#050507,#050507) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 12px rgba(167,139,250,.25)}
-.trade-opt.on .trade-opt-c{color:#5ddb7c}
+.trade-opt.on{color:#fff;font-weight:800;border-color:transparent;border-width:2px;background:linear-gradient(#050507,#050507) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 16px rgba(167,139,250,.6),0 0 36px rgba(103,232,249,.32)}
+.trade-opt.on .trade-opt-c{color:#6ff294;text-shadow:0 0 10px rgba(111,242,148,.6)}
 /* Month: fill width on iPad/tablet with wide cells (not tiny squares) */
 @media(min-width:700px){
   #monthPane{max-width:none;margin:0}
@@ -2582,7 +2582,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.64 · send-a-text escapes the shell';
+var VERSION='v4.65 · chosen trade goes full hologram';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

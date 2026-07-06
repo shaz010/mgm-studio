@@ -953,7 +953,10 @@ body.theme-noir .svc-trade-change{color:#cbd5ff;border-color:#23232e;background:
 .set-trade-tile i{font-size:22px;color:#cbd5ff}
 .set-trade-tile span{font-size:12px;font-weight:700;color:#e8e8f2}
 body.theme-noir .set-trade-tile{background:#0a0a0e;border-color:#23232e}
-.set-trade-tile.on{border-color:transparent;background:linear-gradient(#101016,#101016) padding-box,linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 14px rgba(167,139,250,.25)}
+.set-trade-tile.on{border-color:transparent;border-width:2px;background:linear-gradient(#101016,#101016) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 16px rgba(167,139,250,.6),0 0 36px rgba(103,232,249,.32)}
+.set-trade-tile.on i{background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:iridShift 4.5s linear infinite}
+.set-trade-tile.on span{color:#fff}
+@keyframes iridShift{to{background-position:200% 50%}}
 body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!important;background:linear-gradient(#000,#000) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 10px rgba(167,139,250,.25)}
 .trade-screen{position:fixed;inset:0;z-index:7000;background:#000;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
 .tour-screen{position:fixed;inset:0;z-index:7100;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:24px}
@@ -3510,7 +3513,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.75 · backup banner learns about the cloud';
+var VERSION='app v1.76 · chosen trade goes full hologram';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
