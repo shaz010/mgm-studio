@@ -2582,7 +2582,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.61 · trade pick pops';
+var VERSION='v4.62 · decline gets its own voice';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3034,13 +3034,13 @@ var toastT;
 function toast(msg,warn,dur,bright){
   $('toastMsg').textContent=msg;
   var t=$('toast');t.classList.add('show');
-  var col=warn?'var(--red)':(bright?'#FFD23F':'var(--gold)');
+  var col=(warn===2)?'#a78bfa':(warn?'var(--red)':(bright?'#FFD23F':'var(--gold)'));
   t.style.borderColor=col;
   t.style.borderWidth=bright?'2.5px':'1.5px';
   t.style.boxShadow=bright?'0 0 26px rgba(255,200,40,.65),0 8px 30px rgba(0,0,0,.5)':'0 8px 30px rgba(0,0,0,.5)';
   var ic=t.querySelector('i');
   ic.style.color=col;
-  ic.className=warn?'ti ti-alert-circle':'ti ti-check';
+  ic.className=(warn===2)?'ti ti-x':(warn?'ti ti-alert-circle':'ti ti-check');
   clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},dur||3200);
 }
 
@@ -3138,6 +3138,22 @@ function softChime(){
       g.gain.exponentialRampToValueAtTime(0.0001,t+nf[1]+0.9);
       o.connect(g);g.connect(_audioCtx.destination);
       o.start(t+nf[1]);o.stop(t+nf[1]+1);
+    });
+  }catch(e){}
+}
+/* gentle descending pair for declines — quieter, closing-the-door feel */
+function softChimeDown(){
+  try{
+    if(!_audioCtx||_audioCtx.state!=='running')return;
+    var t=_audioCtx.currentTime;
+    [[587.33,0],[440,0.16]].forEach(function(nf){
+      var o=_audioCtx.createOscillator(),g=_audioCtx.createGain();
+      o.type='sine';o.frequency.value=nf[0];
+      g.gain.setValueAtTime(0.0001,t+nf[1]);
+      g.gain.exponentialRampToValueAtTime(0.07,t+nf[1]+0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+nf[1]+0.8);
+      o.connect(g);g.connect(_audioCtx.destination);
+      o.start(t+nf[1]);o.stop(t+nf[1]+0.9);
     });
   }catch(e){}
 }
@@ -3309,11 +3325,12 @@ function confirmApprovePrice(){
 }
 function declineRequest(id){
   var r=pendingReqs.find(function(x){return x._id===id;});if(!r)return;
+  try{softChimeDown();}catch(e){}
   if(fbReady&&r._id){
     db.collection('requests').doc(r._id).update({status:'declined',declinedAt:Date.now()})
-      .then(function(){toast('Declined — the client sees it instantly');})
+      .then(function(){toast('Declined — the client sees it instantly',2);})
       .catch(function(e){console.warn('decline rejected',e);toast("Cloud refused the decline — check Firestore rules (card will return)",1,4200);});
-  }else{toast('Declined');}
+  }else{toast('Declined',2);}
   pendingReqs=pendingReqs.filter(function(x){return x._id!==id;});
   renderReqBadge();renderRequests();
 }
