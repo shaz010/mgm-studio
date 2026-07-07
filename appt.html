@@ -1118,6 +1118,9 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="copyBookingLink()"><i class="ti ti-link"></i> Copy link</button>
     </div>
     <div class="sb-conn" id="sbConn"><i class="ti ti-point"></i> <span id="sbConnTxt">Connecting…</span></div>
+    <label style="margin-top:14px">Fallback contact on the booking page <span style="color:#666;font-weight:400">(optional)</span></label>
+    <input id="sbContact" type="tel" placeholder="Leave blank to show nothing" onchange="saveBookContact()">
+    <div style="font-size:12px;color:var(--muted);margin:7px 0 2px;line-height:1.5">If the form ever hiccups, clients see a small "text or call directly" line with this number. Blank = never shown.</div>
 
     <div class="set-sec">Insights</div>
     <div class="btn-row" style="margin-top:0">
@@ -2608,7 +2611,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.67 · book again, done properly';
+var VERSION='v4.68 · booking page gets a lifeline';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -2643,6 +2646,7 @@ function openSettings(){
   $('setBizName').value=p.bizName||'';
   $('setStylist').value=p.stylist||'';
   $('setSplit').value=(p.splitPct!=null?p.splitPct:60);
+  var sc=$('sbContact');if(sc)sc.value=p.bookContact||'';
   try{_lockSplit();}catch(e){}
   (function(){var parts=VERSION.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';$('setVersion').innerHTML='AppointmentPro · <span style="color:#f5f5fa;font-weight:800">'+ver+'</span>'+rest;})();
   renderHours(true);
@@ -3117,9 +3121,15 @@ function publishAvailability(){
       hours:getHours(),
       services:svc,
       taken:taken,
+      contact:((p.bookContact||'')+'').trim(),
       updatedAt:Date.now()
     },{merge:true}).catch(function(e){console.warn('publish',e);});
   }catch(e){console.warn('publish err',e);}
+}
+function saveBookContact(){
+  var p=getPrefs();p.bookContact=($('sbContact').value||'').trim();setPrefs(p);
+  publishAvailability();
+  toast(p.bookContact?'Fallback contact will show on the booking page':'Fallback contact removed');
 }
 function bookableServices(){
   // favourites first, else first 12 from catalog of current trade

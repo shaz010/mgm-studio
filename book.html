@@ -219,6 +219,7 @@ textarea{resize:vertical;min-height:60px}
   <button class="book-btn" id="bookBtn" onclick="submitBooking()"><i class="ti ti-send"></i> Request booking</button>
   <div class="btn-hint" id="btnHint"></div>
   <div class="foot-note"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px"></i> You'll get a confirmation once the stylist approves. This just sends a request.</div>
+  <div class="foot-note" id="fallbackContact" style="display:none"></div>
   <div class="foot-note" id="bkVer" style="margin-top:14px;font-size:12.5px;font-weight:700;color:#e8e8ef;background:rgba(255,255,255,.09);display:inline-block;padding:4px 12px;border-radius:9px;letter-spacing:.3px"></div>
 </div>
 
@@ -239,7 +240,7 @@ var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 
 function $(id){return document.getElementById(id);}
-var VERSION='book v2.6 · decline keeps your details + lit-button hints';
+var VERSION='book v2.7 · a lifeline if the form hiccups';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -294,6 +295,11 @@ function init(){
       if(!info.bookingOpen){show('closedView');return;}
       $('salonName').textContent=info.salonName||'Salon';
       document.title='Book · '+(info.salonName||'Salon');
+      (function(){var fc=$('fallbackContact');if(!fc)return;
+        var ct=((info.contact||'')+'').replace(/[^0-9+]/g,'');
+        if(ct){fc.innerHTML='<i class="ti ti-message-circle" style="font-size:12px;vertical-align:-1px"></i> Form playing up? <a href="sms:'+ct+'" style="color:var(--gold);font-weight:700;text-decoration:none">Text</a> or <a href="tel:'+ct+'" style="color:var(--gold);font-weight:700;text-decoration:none">call</a> directly from your phone instead.';fc.style.display='block';}
+        else fc.style.display='none';
+      })();
       loadPending(function(){ buildForm(); show('formView'); });
     }).catch(function(e){console.warn(e);show('errorView');});
   }catch(e){console.warn(e);show('errorView');}
