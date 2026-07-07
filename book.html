@@ -32,7 +32,11 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .svc-pill{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;padding:7px 10px 7px 12px;border-radius:20px;background:var(--gold-dim);border:1.5px solid var(--gold);color:var(--gold)}
 .svc-pill span.x{cursor:pointer;font-weight:800;font-size:15px;line-height:1;opacity:.8}
 .svc-pill span.x:active{opacity:1}
-.chip:active{transform:scale(.95)}
+.chip:active{transform:scale(.93)}
+.sec{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.sec-chev{font-size:18px;transition:transform .28s cubic-bezier(.4,0,.2,1);color:var(--gold);margin-left:auto;flex-shrink:0;pointer-events:none}
+.sec-body{overflow:hidden;max-height:2000px;opacity:1;transition:max-height .38s cubic-bezier(.4,0,.2,1),opacity .28s ease}
+.sec-body.closed{max-height:0!important;opacity:0;pointer-events:none}
 .dates{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
 .dmonth{flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;opacity:.85;padding:0 3px}
 .datecell{flex:0 0 auto;width:58px;background:#111;border:1.5px solid var(--border-bright);border-radius:11px;padding:8px 0;text-align:center;cursor:pointer;transition:all .15s}
@@ -140,29 +144,39 @@ textarea{resize:vertical;min-height:60px}
     </div>
   </div>
 
-  <div class="sec">Service</div>
-  <div class="chips" id="svcChips"></div>
-  <button class="none-btn" id="otherSvcBtn" onclick="toggleOtherSvc()" style="margin-top:9px"><i class="ti ti-plus"></i> None of these? Add your own</button>
-  <div class="custom-wrap" id="otherSvcWrap">
-    <input type="text" id="otherSvc" placeholder="e.g. scalp treatment, colour correction" oninput="onOtherSvc()">
-  </div>
-  <div class="svc-pills" id="svcPills"></div>
-
-  <div class="sec">Pick a day</div>
-  <div class="dates" id="dateRow"></div>
-
-  <div class="sec">Pick a time</div>
-  <div class="slots" id="slotGrid"></div>
-  <button class="none-btn" id="noneBtn" onclick="toggleCustom()"><i class="ti ti-clock-plus"></i> None of these work? Request another time</button>
-  <div class="custom-wrap" id="customWrap">
-    <label>Preferred time</label>
-    <input type="text" id="customTime" oninput="updateBtn()" onkeyup="updateBtn()" placeholder="e.g. Tuesday after 6pm, or 5:15">
+  <div class="sec" onclick="toggleSec(this)">Service <i class="sec-chev ti ti-chevron-down"></i></div>
+  <div class="sec-body">
+    <div class="chips" id="svcChips"></div>
+    <button class="none-btn" id="otherSvcBtn" onclick="toggleOtherSvc()" style="margin-top:9px"><i class="ti ti-plus"></i> None of these? Add your own</button>
+    <div class="custom-wrap" id="otherSvcWrap">
+      <input type="text" id="otherSvc" placeholder="e.g. scalp treatment, colour correction" oninput="onOtherSvc()">
+    </div>
+    <div class="svc-pills" id="svcPills"></div>
   </div>
 
-  <div class="sec" style="display:flex;align-items:center;justify-content:space-between">
+  <div class="sec" onclick="toggleSec(this)">Pick a day <i class="sec-chev ti ti-chevron-down"></i></div>
+  <div class="sec-body">
+    <div class="dates" id="dateRow"></div>
+  </div>
+
+  <div class="sec" onclick="toggleSec(this)">Pick a time <i class="sec-chev ti ti-chevron-down"></i></div>
+  <div class="sec-body">
+    <div class="slots" id="slotGrid"></div>
+    <button class="none-btn" id="noneBtn" onclick="toggleCustom()"><i class="ti ti-clock-plus"></i> None of these work? Request another time</button>
+    <div class="custom-wrap" id="customWrap">
+      <label>Preferred time</label>
+      <input type="text" id="customTime" oninput="updateBtn()" onkeyup="updateBtn()" placeholder="e.g. Tuesday after 6pm, or 5:15">
+    </div>
+  </div>
+
+  <div class="sec" style="display:flex;align-items:center;justify-content:space-between" onclick="toggleSec(this)">
     <span>My hair</span>
-    <button class="returning-btn" id="returningBtn" onclick="toggleReturning()"><i class="ti ti-user-check"></i> I've been here before</button>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="returning-btn" id="returningBtn" onclick="event.stopPropagation();toggleReturning()"><i class="ti ti-user-check"></i> I've been here before</button>
+      <i class="sec-chev ti ti-chevron-down"></i>
+    </div>
   </div>
+  <div class="sec-body">
   <div id="hairWrap">
     <p class="hair-hint"><b>First visit?</b> A quick picture of your hair helps your stylist set the right time &amp; price — tap all that apply. <b>Been here before?</b> Tap <i>“I've been here before”</i> above to skip this — your stylist already has you on file.</p>
     <div class="hair-row">
@@ -209,14 +223,17 @@ textarea{resize:vertical;min-height:60px}
     <label>Anything else? <span style="color:var(--muted);font-weight:400">(optional)</span></label>
     <textarea id="fHairNotes" placeholder="e.g. recently box-dyed, sensitive scalp, going much lighter"></textarea>
   </div>
+  </div>
 
-  <div class="sec">Your details</div>
+  <div class="sec" onclick="toggleSec(this)">Your details <i class="sec-chev ti ti-chevron-down"></i></div>
+  <div class="sec-body">
   <label>Name</label>
   <input type="text" id="fName" placeholder="Your name" autocomplete="name">
   <label>Phone number</label>
   <input type="tel" id="fPhone" placeholder="So they can reach you" autocomplete="tel" inputmode="tel">
   <label>Notes <span style="color:var(--muted);font-weight:400">(optional)</span></label>
   <textarea id="fNotes" placeholder="e.g. first time, going lighter"></textarea>
+  </div>
 
   <button class="book-btn" id="bookBtn" onclick="submitBooking()"><i class="ti ti-send"></i> Request booking</button>
   <div class="btn-hint" id="btnHint"></div>
@@ -225,7 +242,15 @@ textarea{resize:vertical;min-height:60px}
   <div class="foot-note" id="bkVer" style="margin-top:14px;font-size:12.5px;font-weight:700;color:#e8e8ef;background:rgba(255,255,255,.09);display:inline-block;padding:4px 12px;border-radius:9px;letter-spacing:.3px"></div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js">function toggleSec(hdr){
+  var body=hdr.nextElementSibling;
+  if(!body||!body.classList.contains('sec-body'))return;
+  var closing=!body.classList.contains('closed');
+  body.classList.toggle('closed',closing);
+  var chev=hdr.querySelector('.sec-chev');
+  if(chev)chev.style.transform=closing?'rotate(-90deg)':'';
+}
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
 var FB_CONFIG={
@@ -242,7 +267,7 @@ var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 
 function $(id){return document.getElementById(id);}
-var VERSION='book v2.9 · all chips → tiles, live custom preview';
+var VERSION='book v3.0 · tiles + collapsible sections';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
