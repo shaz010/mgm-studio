@@ -1470,8 +1470,21 @@ function initFavDrag(){
   var row=$('favRow');if(!row)return;
   var chips=row.querySelectorAll('.svc-chip');if(chips.length<2)return;
   var dragSrc=null,ghost=null,holdTimer=null;
+  function onDocMove(e){
+    if(!dragSrc)return;
+    e.preventDefault();
+    var t=e.touches?e.touches[0]:e;
+    if(ghost){ghost.style.left=(t.clientX-52)+'px';ghost.style.top=(t.clientY-22)+'px';}
+    if(ghost){ghost.style.visibility='hidden';}
+    var el=document.elementFromPoint(t.clientX,t.clientY);
+    if(ghost){ghost.style.visibility='';}
+    var target=el&&el.closest?el.closest('#favRow .svc-chip'):null;
+    row.querySelectorAll('.svc-chip').forEach(function(c){c.classList.remove('drag-over');});
+    if(target&&target!==dragSrc)target.classList.add('drag-over');
+  }
   function cleanup(){
     clearTimeout(holdTimer);
+    document.removeEventListener('touchmove',onDocMove);
     if(ghost){try{ghost.remove();}catch(_e){} ghost=null;}
     if(row)row.querySelectorAll('.svc-chip').forEach(function(c){c.classList.remove('dragging','drag-over');});
     dragSrc=null;
@@ -1487,24 +1500,15 @@ function initFavDrag(){
         ghost.textContent=chip.dataset.name||'';
         ghost.style.left=(sx-52)+'px';ghost.style.top=(sy-22)+'px';
         document.body.appendChild(ghost);
+        document.addEventListener('touchmove',onDocMove,{passive:false});
         try{if(navigator.vibrate)navigator.vibrate(22);}catch(_e){}
       },400);
     },{passive:true});
-    chip.addEventListener('touchmove',function(e){
-      if(!dragSrc){clearTimeout(holdTimer);return;}
-      e.preventDefault();
-      var t=e.touches[0];
-      if(ghost){ghost.style.left=(t.clientX-52)+'px';ghost.style.top=(t.clientY-22)+'px';}
-      ghost.style.visibility='hidden';
-      var el=document.elementFromPoint(t.clientX,t.clientY);
-      ghost.style.visibility='';
-      var target=el&&el.closest?el.closest('#favRow .svc-chip'):null;
-      row.querySelectorAll('.svc-chip').forEach(function(c){c.classList.remove('drag-over');});
-      if(target&&target!==dragSrc)target.classList.add('drag-over');
-    },{passive:false});
+    chip.addEventListener('touchmove',function(){
+      if(!dragSrc)clearTimeout(holdTimer);
+    },{passive:true});
     chip.addEventListener('touchend',function(e){
       if(!dragSrc){clearTimeout(holdTimer);return;}
-      e.preventDefault();
       var t=e.changedTouches[0];
       if(ghost){ghost.style.visibility='hidden';}
       var el=document.elementFromPoint(t.clientX,t.clientY);
@@ -1522,7 +1526,7 @@ function initFavDrag(){
           toast('Moved "'+srcName+'"');
         }
       }
-    },{passive:false});
+    },{passive:true});
     chip.addEventListener('touchcancel',cleanup,{passive:true});
   });
 }
@@ -1623,7 +1627,6 @@ function addCustom(){
   if(!customSvc.find(function(x){return x.name.toLowerCase()===name.toLowerCase()})){
     customSvc.push({name:name,mode:svcMode});save(CUSTOM,customSvc);
   }
-  /* custom goes to More first — pin to Quick Picks via the ★ on the tile */
   var list=servicesInField();
   if(list.map(function(s){return s.toLowerCase()}).indexOf(name.toLowerCase())===-1)list.push(name);
   setField(list);
@@ -2704,7 +2707,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.75 · drag-reorder, erase-all fix';
+var VERSION='v4.76 · safe drag-reorder, erase-all fix';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
