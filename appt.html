@@ -202,6 +202,9 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 .svc-chip.sel .svc-price{opacity:1;color:#ffd24d}
 @keyframes svcPop{0%{transform:scale(.9)}55%{transform:scale(1.07)}100%{transform:scale(1)}}
 .svc-chip.pop{animation:svcPop .3s ease}
+.svc-chip.dragging{opacity:.3;border-style:dashed!important;transform:scale(.96)}
+.svc-chip.drag-over{border-color:#a78bfa!important;box-shadow:0 0 0 2px #a78bfa66!important;transform:scale(1.04)}
+.svc-drag-ghost{position:fixed;z-index:9999;min-width:80px;padding:10px 14px;border-radius:12px;background:linear-gradient(135deg,#1a1a28,#0c0c14);border:2px solid #a78bfa;color:#e2e2ea;font-size:12.5px;font-weight:700;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.75);opacity:.93;text-align:center;white-space:nowrap}
 .svc-ghost{position:fixed;z-index:999;border:1.5px solid transparent;border-radius:11px;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;color:#fff;font-size:12.5px;font-weight:700;padding:7px 12px;pointer-events:none;transition:transform .45s cubic-bezier(.4,.8,.4,1),opacity .45s ease;will-change:transform,opacity}
 .svc-star{position:absolute;top:4px;right:5px;font-size:13px!important;margin:0;padding:5px;color:#5a5a66!important;flex-shrink:0}
 .svc-star.on{color:var(--gold)!important}
@@ -885,7 +888,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <div id="svcSelected" class="svc-selected"></div>
       <div class="svc-trade-row"><div class="svc-trade-label" id="svcTradeLabel"></div><button type="button" class="svc-trade-change" onclick="openTradePicker()"><i class="ti ti-arrows-exchange"></i> Change</button></div>
       <div class="svc-panel">
-        <div class="svc-cat" style="color:var(--gold)">Quick picks <span class="qp-hint">— tap to add · ★ removes</span></div>
+        <div class="svc-cat" style="color:var(--gold)">Quick picks <span class="qp-hint">— tap to toggle · hold &amp; drag to reorder · ★ to unpin</span></div>
         <div class="svc-row" id="favRow"></div>
         <button type="button" class="svc-more-btn" id="svcMoreBtn" onclick="toggleMore()"><i class="ti ti-chevron-down"></i> More services</button>
         <div id="svcMore" style="display:none;margin-top:10px"></div>
@@ -1312,7 +1315,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 <script>
 /* ===== service catalog — identical to CommissionPro ===== */
 const SERVICE_GROUPS=[
-  {c:'Color',d:'hair',s:[['Color','palette'],['Root Touch-up','brush'],['Root Smudge','brush'],['All-Over Color',"palette"],["Gray Coverage",'palette'],["Men's Color",'palette'],['Vivid Color','diamond'],['Color Correction','palette'],['Toner / Gloss','droplet'],['Highlights','sparkles'],['Partial Highlight','sparkles'],['Full Highlight','sparkles'],['Lowlights','sparkles'],['Balayage','sparkles'],['Foilage','sparkles'],['Ombre','color-swatch'],['Babylights','sparkles']]},
+  {c:'Color',d:'hair',s:[['Color','palette'],['Root Touch-up','brush'],['Root Smudge','brush'],['All-Over Color','palette'],['Gray Coverage','palette'],["Men's Color",'palette'],['Vivid Color','diamond'],['Color Correction','palette'],['Toner / Gloss','droplet'],['Highlights','sparkles'],['Partial Highlight','sparkles'],['Full Highlight','sparkles'],['Lowlights','sparkles'],['Balayage','sparkles'],['Foilage','sparkles'],['Ombre','color-swatch'],['Babylights','sparkles']]},
   {c:'Haircuts',d:'hair',s:[["Women's Haircut",'scissors'],["Men's Haircut",'user'],['Kids Haircut','mood-kid'],['Bang / Fringe Trim','cut'],['Dry Trim','scissors'],['Restyle / Major Cut','scissors'],['Trim Only','cut']]},
   {c:'Styling',d:'hair',s:[['Blow Dry','wind'],['Curls','wave-sine'],['Wand Curls','wand'],['Straighten / Flat Iron','minus'],['Beach Waves','wave-sine'],['Silk Press','flame'],['Hand-Styled','hand-finger'],['Updo','crown'],['Braids','line'],['Roller Set','circle'],['Special Occasion','sparkles'],['Bridal Styling','heart']]},
   {c:'Treatments',d:'hair',s:[['Treatment','flask'],['Deep Conditioning','droplet'],['Olaplex','flask'],['Scalp Treatment','massage'],['Keratin','flame'],['Brazilian Blowout','flame'],['Clarifying','droplet'],['Gloss / Shine','droplet']]},
@@ -1461,7 +1464,67 @@ function buildChips(){
   }).join('');
   document.querySelectorAll('.svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.mode===mode)});
   syncChips();
+  initFavDrag();
 }
+function initFavDrag(){
+  var row=$('favRow');if(!row)return;
+  var chips=row.querySelectorAll('.svc-chip');if(chips.length<2)return;
+  var dragSrc=null,ghost=null,holdTimer=null;
+  function cleanup(){
+    clearTimeout(holdTimer);
+    if(ghost){try{ghost.remove();}catch(_e){} ghost=null;}
+    if(row)row.querySelectorAll('.svc-chip').forEach(function(c){c.classList.remove('dragging','drag-over');});
+    dragSrc=null;
+  }
+  chips.forEach(function(chip){
+    chip.addEventListener('touchstart',function(e){
+      var t=e.touches[0],sx=t.clientX,sy=t.clientY;
+      holdTimer=setTimeout(function(){
+        dragSrc=chip;
+        chip.classList.add('dragging');
+        ghost=document.createElement('div');
+        ghost.className='svc-drag-ghost';
+        ghost.textContent=chip.dataset.name||'';
+        ghost.style.left=(sx-52)+'px';ghost.style.top=(sy-22)+'px';
+        document.body.appendChild(ghost);
+        try{if(navigator.vibrate)navigator.vibrate(22);}catch(_e){}
+      },400);
+    },{passive:true});
+    chip.addEventListener('touchmove',function(e){
+      if(!dragSrc){clearTimeout(holdTimer);return;}
+      e.preventDefault();
+      var t=e.touches[0];
+      if(ghost){ghost.style.left=(t.clientX-52)+'px';ghost.style.top=(t.clientY-22)+'px';}
+      ghost.style.visibility='hidden';
+      var el=document.elementFromPoint(t.clientX,t.clientY);
+      ghost.style.visibility='';
+      var target=el&&el.closest?el.closest('#favRow .svc-chip'):null;
+      row.querySelectorAll('.svc-chip').forEach(function(c){c.classList.remove('drag-over');});
+      if(target&&target!==dragSrc)target.classList.add('drag-over');
+    },{passive:false});
+    chip.addEventListener('touchend',function(e){
+      if(!dragSrc){clearTimeout(holdTimer);return;}
+      e.preventDefault();
+      var t=e.changedTouches[0];
+      if(ghost){ghost.style.visibility='hidden';}
+      var el=document.elementFromPoint(t.clientX,t.clientY);
+      var target=el&&el.closest?el.closest('#favRow .svc-chip'):null;
+      var srcName=dragSrc.dataset.name,tgtName=target?target.dataset.name:null;
+      cleanup();
+      if(tgtName&&tgtName!==srcName){
+        var favs=getFavorites();
+        var si=favs.indexOf(srcName),ti=favs.indexOf(tgtName);
+        if(si!==-1&&ti!==-1){
+          favs.splice(si,1);
+          var ni=favs.indexOf(tgtName);
+          favs.splice(ni,0,srcName);
+          saveFavorites(favs);buildChips();
+          toast('Moved "'+srcName+'"');
+        }
+      }
+    },{passive:false});
+    chip.addEventListener('touchcancel',cleanup,{passive:true});
+  });
 var svcMode=getMode();
 function setMode(m){svcMode=m;saveMode(m);buildChips();}
 function servicesInField(){return ($('fService').value||'').split('+').map(function(s){return s.trim()}).filter(Boolean)}
@@ -2640,7 +2703,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.73 · unlimited Quick Picks, custom → More first';
+var VERSION='v4.74 · drag-to-reorder Quick Picks';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
