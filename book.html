@@ -21,7 +21,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .brand-ic{width:40px;height:40px;background:linear-gradient(135deg,#ffcf4d,#e8a91a);border:none;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#1a1208;font-size:20px;flex-shrink:0;box-shadow:0 3px 10px rgba(232,169,26,.28)}
 .brand-name{font-family:'DM Serif Display',Georgia,'Times New Roman',serif;font-size:21px;font-weight:400;letter-spacing:.4px}
 .brand-sub{font-size:12.5px;color:var(--muted);margin-top:1px}
-.sec{font-size:14px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin:26px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--gold-dim,rgba(212,175,55,.35))}
+.sec{font-size:14px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin:26px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--gold-dim,rgba(212,175,55,.35));display:flex;align-items:center}
 .chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
 .chip{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:12px 6px 10px;min-height:76px;border-radius:14px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.035);color:#e2e2ea;font-size:12.5px;font-weight:700;cursor:pointer;transition:transform .14s,border-color .2s,box-shadow .25s;-webkit-tap-highlight-color:transparent;text-align:center;line-height:1.25;word-break:break-word}
 .chip>i{font-size:19px;color:var(--gold)}
@@ -85,7 +85,6 @@ textarea{resize:vertical;min-height:60px}
 .cs-sub{font-size:14px;color:var(--muted);line-height:1.6;max-width:340px}
 .empty-slots{text-align:center;color:var(--muted);font-size:13px;padding:18px;font-style:italic}
 .hidden{display:none}
-/* My Hair */
 .returning-btn{font-size:13px;font-weight:700;color:var(--gold);background:transparent;border:1.5px solid var(--gold);border-radius:20px;padding:7px 13px;cursor:pointer;display:flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0}
 .returning-btn.on{color:var(--gold);border-color:var(--gold);background:var(--gold-dim)}
 #hairWrap.collapsed{display:none}
@@ -106,13 +105,11 @@ textarea{resize:vertical;min-height:60px}
 
 <div id="updateBar" class="update-bar" onclick="applyUpdate()"><i class="ti ti-refresh"></i> New version ready — tap to update</div>
 
-<!-- LOADING -->
 <div class="center-screen" id="loadingView">
   <div class="spin"></div>
   <div class="cs-sub" style="margin-top:16px">Loading…</div>
 </div>
 
-<!-- CLOSED -->
 <div class="center-screen hidden" id="closedView">
   <div class="cs-ic muted"><i class="ti ti-calendar-off"></i></div>
   <div class="cs-title">Booking is closed right now</div>
@@ -120,7 +117,6 @@ textarea{resize:vertical;min-height:60px}
   <button class="book-btn" style="max-width:240px;margin-top:22px" onclick="retry()"><i class="ti ti-refresh"></i> Try again</button>
 </div>
 
-<!-- ERROR -->
 <div class="center-screen hidden" id="errorView">
   <div class="cs-ic muted"><i class="ti ti-wifi-off"></i></div>
   <div class="cs-title">Couldn't load</div>
@@ -128,7 +124,6 @@ textarea{resize:vertical;min-height:60px}
   <button class="book-btn" style="max-width:240px;margin-top:22px" onclick="retry()"><i class="ti ti-refresh"></i> Try again</button>
 </div>
 
-<!-- SUCCESS -->
 <div class="center-screen hidden" id="doneView">
   <div class="cs-ic green" id="doneIc"><i class="ti ti-check"></i></div>
   <div class="cs-title" id="doneTitle">Request sent!</div>
@@ -139,7 +134,6 @@ textarea{resize:vertical;min-height:60px}
   <button class="book-btn" id="bookAnotherBtn" style="max-width:260px;margin-top:20px" onclick="resetForm()"><i class="ti ti-plus"></i> Book another</button>
 </div>
 
-<!-- MAIN FORM -->
 <div class="wrap hidden" id="formView">
   <div class="brand">
     <div class="brand-ic"><svg viewBox="0 0 100 100" width="78%" height="78%" style="display:block"><g fill="#1a1208"><polygon points="48,30.5 53.2,52 48,73.5 42.8,52"/><polygon points="26.5,52 48,46.8 69.5,52 48,57.2"/><polygon points="74,24.2 76.3,33 74,41.8 71.7,33"/><polygon points="65.2,33 74,30.7 82.8,33 74,35.3"/><polygon points="74,63.8 75.9,71 74,78.2 72.1,71"/><polygon points="66.8,71 74,69.1 81.2,71 74,72.9"/></g></svg></div>
@@ -188,7 +182,7 @@ textarea{resize:vertical;min-height:60px}
   </div>
   <div class="sec-body">
   <div id="hairWrap">
-    <p class="hair-hint"><b>First visit?</b> A quick picture of your hair helps your stylist set the right time &amp; price — tap all that apply. <b>Been here before?</b> Tap <i>“I've been here before”</i> above to skip this — your stylist already has you on file.</p>
+    <p class="hair-hint"><b>First visit?</b> A quick picture of your hair helps your stylist set the right time &amp; price — tap all that apply. <b>Been here before?</b> Tap <i>"I've been here before"</i> above to skip this — your stylist already has you on file.</p>
     <div class="hair-row">
       <div class="hair-lbl">Length</div>
       <div class="chips" data-hair="length">
@@ -252,9 +246,11 @@ textarea{resize:vertical;min-height:60px}
   <div class="foot-note" id="bkVer" style="margin-top:14px;font-size:12.5px;font-weight:700;color:#e8e8ef;background:rgba(255,255,255,.09);display:inline-block;padding:4px 12px;border-radius:9px;letter-spacing:.3px"></div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
 var DEMO_SVCS={
-  women:["Women's Haircut","Bang Trim","Fringe Cut","Pixie Cut","Bob Cut","Layered Cut","Blunt Cut","Wolf Cut","Trim / Dusting","Single Process Color","Root Touch-Up","Root Smudge","Gray Coverage","Toner / Gloss","Vivid / Fashion Color","Color Correction","Full Highlights","Partial Highlights","Balayage","Foilayage","Babylights","Money Piece","Ombr\u00e9","Lowlights","Bleach & Tone","Deep Conditioning","Keratin Treatment","Brazilian Blowout","Olaplex Treatment","Scalp Treatment","Hot Oil Treatment","Blowout","Silk Press","Flat Iron Style","Curling Iron Style","Updo","Half-Up Style","Bridal Style","Special Occasion Style","Box Braids","Cornrows","Goddess Braids","Loc Retwist","Loc Styling","Perm","Body Wave","Relaxer","Extensions Install","Extensions Maintenance","Extensions Removal","Wig Install","Eyebrow Wax / Shape","Eyebrow Tint","Lip Wax"],
+  women:["Women's Haircut","Bang Trim","Fringe Cut","Pixie Cut","Bob Cut","Layered Cut","Blunt Cut","Wolf Cut","Trim / Dusting","Single Process Color","Root Touch-Up","Root Smudge","Gray Coverage","Toner / Gloss","Vivid / Fashion Color","Color Correction","Full Highlights","Partial Highlights","Balayage","Foilayage","Babylights","Money Piece","Ombré","Lowlights","Bleach & Tone","Deep Conditioning","Keratin Treatment","Brazilian Blowout","Olaplex Treatment","Scalp Treatment","Hot Oil Treatment","Blowout","Silk Press","Flat Iron Style","Curling Iron Style","Updo","Half-Up Style","Bridal Style","Special Occasion Style","Box Braids","Cornrows","Goddess Braids","Loc Retwist","Loc Styling","Perm","Body Wave","Relaxer","Extensions Install","Extensions Maintenance","Extensions Removal","Wig Install","Eyebrow Wax / Shape","Eyebrow Tint","Lip Wax"],
   men:["Men's Haircut","Buzz Cut","Crew Cut","Taper Cut","Fade","Skin Fade","High Fade","Mid Fade","Low Fade","Temple Fade","Undercut","Textured Cut","Scissor Cut","French Crop","Mohawk","Beard Trim","Beard Shape-Up","Beard Lineup","Full Beard Styling","Goatee Trim","Mustache Trim","Hot Towel Straight Razor Shave","Neck Shave","Beard Color","Edge Up / Lineup","Hair Design / Razor Art","Hard Part","Men's Color","Men's Gray Coverage","Men's Highlights","Bleach & Tone","Toner","Blowout","Scalp Treatment","Deep Conditioning","Keratin Treatment","Eyebrow Trim","Nose Hair Wax","Ear Hair Wax"],
   kids:["Kids Haircut","Toddler / First Haircut","Kids Buzz Cut","Kids Fade","Kids Trim","Kids Bang Trim","Kids Highlights","Kids Toner / Gloss","Kids Fashion Color","Kids Blowout","Kids Style & Finish","Kids Braid / Cornrow","Kids Protective Style","Kids Ponytail / Updo","Kids Deep Conditioning","Lice Treatment / Removal"]
 };
@@ -286,9 +282,6 @@ function toggleSec(hdr){
   var chev=hdr.querySelector('.sec-chev');
   if(chev)chev.style.transform=closing?'rotate(-90deg)':'';
 }
-</script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script>
 var FB_CONFIG={
   apiKey:"AIzaSyCxPNPOcu-ShSRXDJtwdNBZJ6kFaxQ8apM",
   authDomain:"telemetry-eagle.firebaseapp.com",
@@ -299,29 +292,19 @@ var FB_CONFIG={
 };
 var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
-
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
-
 function $(id){return document.getElementById(id);}
 var VERSION='book v3.1 · MEN/WOMEN/KIDS tabs, tiles, collapsible';
-
-/* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
-  var a=document.activeElement;
-  if(!a)return;
+  var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
   if(tag!=='input'&&tag!=='textarea'&&tag!=='select')return;
-  var t=e.target;
-  if(t===a)return;
+  var t=e.target;if(t===a)return;
   var tt=(t.tagName||'').toLowerCase();
   if(tt==='input'||tt==='textarea'||tt==='select'||tt==='label')return;
   a.blur();
 },{passive:true});
-document.addEventListener('keydown',function(e){
-  if(e.key!=='Enter')return;
-  var a=document.activeElement;
-  if(a&&a.tagName==='INPUT')a.blur();
-});
+document.addEventListener('keydown',function(e){if(e.key!=='Enter')return;var a=document.activeElement;if(a&&a.tagName==='INPUT')a.blur();});
 try{var _bv=document.getElementById('bkVer');if(_bv)_bv.textContent=VERSION;}catch(e){}
 function show(id){['loadingView','closedView','errorView','doneView','formView'].forEach(function(v){$(v).classList.toggle('hidden',v!==id);});}
 function retry(){show('loadingView');setTimeout(init,250);}
@@ -330,23 +313,19 @@ function fromMins(m){var h=Math.floor(m/60),mm=m%60;return (h<10?'0':'')+h+':'+(
 function to12(t){if(!t)return '';var p=(''+t).split(':'),h=+p[0],m=p[1],ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+m+' '+ap;}
 function ymd(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-
-/* ---- pure: generate 30-min slots for a day ---- */
-function genSlots(dayHours, taken, pending){
+function genSlots(dayHours,taken,pending){
   if(!dayHours||dayHours.open===false)return [];
-  var s=mins(dayHours.start||'09:00'), e=mins(dayHours.end||'18:00');
+  var s=mins(dayHours.start||'09:00'),e=mins(dayHours.end||'18:00');
   var out=[];
   for(var t=s;t<=e-STEP;t+=STEP){
-    var blocked=(taken||[]).some(function(b){var bs=mins(b.time),be=bs+(+b.dur||60);return t<be && (t+STEP)>bs;});
+    var blocked=(taken||[]).some(function(b){var bs=mins(b.time),be=bs+(+b.dur||60);return t<be&&(t+STEP)>bs;});
     if(blocked)continue;
     var pend=(pending||[]).some(function(p){return mins(p.time)===t;});
     out.push({t:t,time:fromMins(t),label:to12(fromMins(t)),pending:pend});
   }
   return out;
 }
-function dayIdx(d){return (d.getDay()+6)%7;} // Mon=0 .. Sun=6
-
-/* ---- init ---- */
+function dayIdx(d){return (d.getDay()+6)%7;}
 function init(){
   try{
     if(typeof firebase==='undefined'){show('errorView');return;}
@@ -363,7 +342,7 @@ function init(){
         if(ct){fc.innerHTML='<i class="ti ti-message-circle" style="font-size:12px;vertical-align:-1px"></i> Form playing up? <a href="sms:'+ct+'" style="color:var(--gold);font-weight:700;text-decoration:none">Text</a> or <a href="tel:'+ct+'" style="color:var(--gold);font-weight:700;text-decoration:none">call</a> directly from your phone instead.';fc.style.display='block';}
         else fc.style.display='none';
       })();
-      loadPending(function(){ buildForm(); show('formView'); });
+      loadPending(function(){buildForm();show('formView');});
     }).catch(function(e){console.warn(e);show('errorView');});
   }catch(e){console.warn(e);show('errorView');}
 }
@@ -376,22 +355,18 @@ function loadPending(cb){
     }).catch(function(){cb();});
   }catch(e){cb();}
 }
-
-/* ---- build UI ---- */
 function buildForm(){
-  // services
   var svc=(info.services&&info.services.length)?info.services:['Appointment'];
   window._allSvcs=svc;
   renderDemoChips();
-  // dates: next WEEKS_AHEAD*7 days, only open days
   var hours=info.hours||[];
-  var row='', today=new Date(); today.setHours(12,0,0,0);
-  var first='', lastMonth=-1;
+  var row='',today=new Date();today.setHours(12,0,0,0);
+  var first='',lastMonth=-1;
   for(var i=0;i<WEEKS_AHEAD*7;i++){
-    var d=new Date(today); d.setDate(today.getDate()+i);
+    var d=new Date(today);d.setDate(today.getDate()+i);
     var dh=hours[dayIdx(d)];
     if(dh&&dh.open===false)continue;
-    var ds=ymd(d), mo=d.getMonth();
+    var ds=ymd(d),mo=d.getMonth();
     if(!first)first=ds;
     if(mo!==lastMonth){
       var lbl=d.toLocaleDateString('en-US',{month:'short'});
@@ -410,17 +385,17 @@ function buildForm(){
 function allSvcs(){
   var arr=selSvcArr.slice();
   var c=$('otherSvc')?$('otherSvc').value.trim():'';
-  if(otherSvcMode && c) arr.push(c);
+  if(otherSvcMode&&c)arr.push(c);
   return arr;
 }
 function renderSvcPills(){
-  var el=$('svcPills'); if(!el) return;
+  var el=$('svcPills');if(!el)return;
   var all=selSvcArr.slice();
   var cv=otherSvcMode&&$('otherSvc')?$('otherSvc').value.trim():'';
   if(cv)all.push(cv);
   el.innerHTML=all.map(function(s){
     var isCustom=selSvcArr.indexOf(s)===-1;
-    return '<span class="svc-pill">'+esc(s)+(isCustom?'':'<span class="x" onclick="removeSvc(\''+esc(s).replace(/'/g,"\\'")+'\')">\u00d7</span>')+'</span>';
+    return '<span class="svc-pill">'+esc(s)+(isCustom?'':'<span class="x" onclick="removeSvc(\''+esc(s).replace(/'/g,"\\'")+'\')">&#215;</span>')+'</span>';
   }).join('');
 }
 function pickSvc(el){
@@ -428,15 +403,12 @@ function pickSvc(el){
   var i=selSvcArr.indexOf(s);
   if(i>=0){selSvcArr.splice(i,1);el.classList.remove('sel');}
   else{selSvcArr.push(s);el.classList.add('sel');}
-  renderSvcPills();
-  updateBtn();
+  renderSvcPills();updateBtn();
 }
 function removeSvc(s){
-  var i=selSvcArr.indexOf(s);
-  if(i>=0)selSvcArr.splice(i,1);
+  var i=selSvcArr.indexOf(s);if(i>=0)selSvcArr.splice(i,1);
   document.querySelectorAll('#svcChips .chip').forEach(function(c){if(c.dataset.s===s)c.classList.remove('sel');});
-  renderSvcPills();
-  updateBtn();
+  renderSvcPills();updateBtn();
 }
 function toggleOtherSvc(){
   otherSvcMode=!otherSvcMode;
@@ -445,10 +417,7 @@ function toggleOtherSvc(){
   if(!otherSvcMode)$('otherSvc').value='';
   updateBtn();
 }
-function onOtherSvc(){
-  renderSvcPills();
-  updateBtn();
-}
+function onOtherSvc(){renderSvcPills();updateBtn();}
 function pickDate(el){selDate=el.dataset.d;selTime='';markSel('dateRow',selDate,'d');renderSlots();updateBtn();}
 function markSel(wrap,val,attr){document.querySelectorAll('#'+wrap+' [data-'+attr+']').forEach(function(c){c.classList.toggle('sel',c.dataset[attr]===val);});}
 function renderSlots(){
@@ -469,7 +438,6 @@ function pickTime(el){
   document.querySelectorAll('#slotGrid .slot').forEach(function(c){c.classList.toggle('sel',c===el);});
   updateBtn();
 }
-/* ---- My Hair ---- */
 var returning=false;
 function toggleHair(el){el.classList.toggle('sel');}
 function toggleReturning(){
@@ -494,7 +462,7 @@ function collectHairData(){
   if(returning)return null;
   var d={length:'',thickness:'',colour:'',grey:'',history:[]};
   document.querySelectorAll('#hairWrap [data-hair]').forEach(function(row){
-    var key=row.dataset.hair, picks=[];
+    var key=row.dataset.hair,picks=[];
     row.querySelectorAll('.hchip.sel').forEach(function(c){picks.push(c.textContent.trim());});
     if(!picks.length)return;
     if(key==='history'){d.history=picks;}else{d[key]=picks[0];}
@@ -508,19 +476,17 @@ function toggleCustom(){
   if(customMode){selTime='';document.querySelectorAll('#slotGrid .slot').forEach(function(c){c.classList.remove('sel');});setTimeout(function(){var ct=$('customTime');if(ct)ct.focus();},120);}
   updateBtn();
 }
-/* ---- add to calendar (.ics) ---- */
 function addToCal(){
-  var b=_lastBooking; if(!b)return;
+  var b=_lastBooking;if(!b)return;
   var a=_approvedRec;
   var pad=function(n){return (n<10?'0':'')+n;};
   var fmt=function(x){return x.getFullYear()+pad(x.getMonth()+1)+pad(x.getDate())+'T'+pad(x.getHours())+pad(x.getMinutes())+'00';};
-  var date=(a&&a.date)||b.date, time=((a&&a.time)||b.time||'09:00'), dur=(a&&+a.dur)||60, svc=(a&&a.service)||b.svc;
+  var date=(a&&a.date)||b.date,time=((a&&a.time)||b.time||'09:00'),dur=(a&&+a.dur)||60,svc=(a&&a.service)||b.svc;
   var startD=new Date(date+'T'+time+':00');
   if(isNaN(startD.getTime()))startD=new Date(date+'T09:00:00');
   var endD=new Date(startD.getTime()+dur*60000);
   var ie=function(s){return String(s||'').replace(/([,;\\])/g,'\\$1').replace(/\n/g,'\\n');};
-  var desc=a?('Confirmed with '+b.salon+'. See you then!')
-           :('Booking request sent to '+b.salon+'. This is pending confirmation.'+(b.custom&&b.customTime?(' Requested time: '+b.customTime+'.'):''));
+  var desc=a?('Confirmed with '+b.salon+'. See you then!'):('Booking request sent to '+b.salon+'. This is pending confirmation.'+(b.custom&&b.customTime?(' Requested time: '+b.customTime+'.'):''));
   var ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Your Salon//Booking//EN','CALSCALE:GREGORIAN','BEGIN:VEVENT',
     'UID:ys-'+(b.id||Date.now())+'@yoursalon','DTSTAMP:'+fmt(new Date()),'DTSTART:'+fmt(startD),'DTEND:'+fmt(endD),
     'SUMMARY:'+ie(svc+' — '+b.salon+(a?'':' (requested)')),'DESCRIPTION:'+ie(desc),'STATUS:'+(a?'CONFIRMED':'TENTATIVE'),'END:VEVENT','END:VCALENDAR'].join('\r\n');
@@ -534,69 +500,60 @@ function addToCal(){
 function _icsDl(blob,fn){var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=fn;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(url);a.remove();},1500);}
 function updateBtn(){
   var needSvc=!allSvcs().length;
-  var needTime=!(selTime || (customMode && $('customTime').value.trim()));
-  var ok=!needSvc && selDate && !needTime;
+  var needTime=!(selTime||(customMode&&$('customTime').value.trim()));
+  var ok=!needSvc&&selDate&&!needTime;
   $('bookBtn').disabled=!ok;
   var h=$('btnHint');
-  if(h){
-    h.textContent=needSvc?'↑ Pick a service first':(needTime?'↑ Pick a time — or request your own':'');
-    h.classList.toggle('show',!ok&&(needSvc||needTime));
-  }
+  if(h){h.textContent=needSvc?'↑ Pick a service first':(needTime?'↑ Pick a time — or request your own':'');h.classList.toggle('show',!ok&&(needSvc||needTime));}
 }
 document.addEventListener('input',function(e){if(e.target&&e.target.id==='customTime')updateBtn();});
-
-/* ---- submit ---- */
 function submitBooking(){
-  var name=$('fName').value.trim(), phone=$('fPhone').value.trim(), notes=$('fNotes').value.trim();
+  var name=$('fName').value.trim(),phone=$('fPhone').value.trim(),notes=$('fNotes').value.trim();
   var svcs=allSvcs();
   if(!name){alert('Please add your name');return;}
   if(!phone){alert('Please add a phone number');return;}
   if(!svcs.length){alert('Please pick at least one service');return;}
   var svcStr=svcs.join(' + ');
-  var isCustom=customMode && $('customTime').value.trim();
+  var isCustom=customMode&&$('customTime').value.trim();
   var time=isCustom?'':selTime;
   var notesFull=isCustom?('Requested time: '+$('customTime').value.trim()+(notes?(' — '+notes):'')):notes;
-  if(!time && !isCustom){alert('Please pick a time');return;}
+  if(!time&&!isCustom){alert('Please pick a time');return;}
   _unlockAudio();
   $('bookBtn').disabled=true;$('bookBtn').innerHTML='<i class="ti ti-loader"></i> Sending…';
-  /* last-second freshness check — the slot may have been booked while this page sat open */
   var doSend=function(){
-  var rec={
-    salon:SALON_ID,name:name,phone:phone,service:svcStr,
-    date:selDate,time:time||'09:00',dur:60,price:0,
-    notes:notesFull,hair:collectHair(),hairData:collectHairData(),custom:!!isCustom,customSvc:!!(otherSvcMode && $('otherSvc').value.trim()),status:'pending',createdAt:Date.now()
+    var rec={
+      salon:SALON_ID,name:name,phone:phone,service:svcStr,
+      date:selDate,time:time||'09:00',dur:60,price:0,
+      notes:notesFull,hair:collectHair(),hairData:collectHairData(),custom:!!isCustom,customSvc:!!(otherSvcMode&&$('otherSvc').value.trim()),status:'pending',createdAt:Date.now()
+    };
+    db.collection('requests').add(rec).then(function(ref){
+      _lastBooking={id:(ref&&ref.id)||'',date:selDate,time:(time||'09:00'),svc:svcStr,salon:(info&&info.salonName)||'Salon',custom:!!isCustom,customTime:isCustom?$('customTime').value.trim():''};
+      if(ref&&ref.id){watchRequest(ref.id);_waiting=true;wakeOn();}
+      var when=isCustom?$('customTime').value.trim():(to12(selTime)+' on '+new Date(selDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}));
+      $('doneSub').innerHTML='Your request for <b>'+esc(svcStr)+'</b> ('+esc(when)+') has been sent. You’ll get a confirmation once it’s approved.';
+      show('doneView');
+    }).catch(function(e){
+      console.warn(e);
+      $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Request booking';
+      alert('Could not send — please try again.');
+    });
   };
-  db.collection('requests').add(rec).then(function(ref){
-    _lastBooking={id:(ref&&ref.id)||'',date:selDate,time:(time||'09:00'),svc:svcStr,salon:(info&&info.salonName)||'Salon',custom:!!isCustom,customTime:isCustom?$('customTime').value.trim():''};
-    if(ref&&ref.id){watchRequest(ref.id);_waiting=true;wakeOn();}
-    var when=isCustom?$('customTime').value.trim():(to12(selTime)+' on '+new Date(selDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}));
-    $('doneSub').innerHTML='Your request for <b>'+esc(svcStr)+'</b> ('+esc(when)+') has been sent. You\u2019ll get a confirmation once it\u2019s approved.';
-    show('doneView');
-  }).catch(function(e){
-    console.warn(e);
-    $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Request booking';
-    alert('Could not send — please try again.');
-  });
-  };
-  if(isCustom){ doSend(); return; }  // custom times are the stylist's call anyway
+  if(isCustom){doSend();return;}
   db.collection('public').doc(SALON_ID).get().then(function(doc){
     var fresh=doc.exists?(doc.data()||{}):{};
-    var t0=mins(time), t1=t0+60;
-    var clash=(fresh.taken||[]).some(function(b){ if(b.date!==selDate)return false; var bs=mins(b.time),be=bs+(+b.dur||60); return t0<be && t1>bs; });
+    var t0=mins(time),t1=t0+60;
+    var clash=(fresh.taken||[]).some(function(b){if(b.date!==selDate)return false;var bs=mins(b.time),be=bs+(+b.dur||60);return t0<be&&t1>bs;});
     if(clash){
-      info.taken=fresh.taken||info.taken;   // refresh what we know
-      selTime='';
-      renderSlots();updateBtn();
+      info.taken=fresh.taken||info.taken;
+      selTime='';renderSlots();updateBtn();
       $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Request booking';
       alert('Ah — that time was just snapped up! Please pick another that suits you.');
       return;
     }
     doSend();
-  }).catch(function(){ doSend(); });  // if the check itself fails, send anyway — the stylist still sees clashes
+  }).catch(function(){doSend();});
 }
-/* ===== approval watcher + soft chime + add-to-calendar ===== */
 var _watchUnsub=null,_approvedRec=null,_audioCtx=null;
-/* keep the client's screen awake while they wait, so the approval chime lands */
 var _wl=null,_waiting=false;
 function wakeOn(){try{if(navigator.wakeLock&&navigator.wakeLock.request){navigator.wakeLock.request('screen').then(function(s){_wl=s;}).catch(function(){});}}catch(e){}}
 function wakeOff(){try{if(_wl){_wl.release();_wl=null;}}catch(e){}}
@@ -630,9 +587,7 @@ function watchRequest(id){
   }catch(e){console.warn('watch',e);}
 }
 function onApproved(r){
-  _approvedRec=r;
-  _waiting=false;wakeOff();
-  softChime();
+  _approvedRec=r;_waiting=false;wakeOff();softChime();
   try{if(navigator.vibrate)navigator.vibrate([80,60,80]);}catch(e){}
   var when=(r.time?to12(r.time)+' on ':'')+new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
   if($('doneTitle'))$('doneTitle').textContent="You're booked! 🎉";
@@ -662,7 +617,6 @@ function _gcalUrl(r){
   return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent((r.service||'Appointment')+' — '+(_lastBooking.salon||'Salon'))+'&dates='+d.start+'/'+d.end;
 }
 function retryForm(){
-  /* declined? your details are safe — just pick a new time */
   _waiting=false;wakeOff();
   if(_watchUnsub){try{_watchUnsub();}catch(e){}_watchUnsub=null;}
   _approvedRec=null;
@@ -676,10 +630,7 @@ function retryForm(){
   if($('noneBtn'))$('noneBtn').classList.remove('on');
   var bb=$('bookAnotherBtn');if(bb){bb.innerHTML='<i class="ti ti-plus"></i> Book another';bb.onclick=resetForm;}
   $('bookBtn').innerHTML='<i class="ti ti-send"></i> Request booking';$('bookBtn').disabled=true;
-  loadPending(function(){
-    renderSlots();updateBtn();show('formView');
-    try{var el=$('slotGrid');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
-  });
+  loadPending(function(){renderSlots();updateBtn();show('formView');try{var el=$('slotGrid');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}});
 }
 function resetForm(){
   _waiting=false;wakeOff();
@@ -704,9 +655,7 @@ function resetForm(){
   $('bookBtn').innerHTML='<i class="ti ti-send"></i> Request booking';$('bookBtn').disabled=true;
   loadPending(function(){buildForm();show('formView');});
 }
-
-/* auto-detect a fresh upload — shows a tap-to-update bar, never reloads on its own */
-function applyUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
+function applyUpdate(){location.replace(location.pathname+'?v='+Date.now());}
 function checkForUpdate(){
   try{
     fetch(location.pathname+'?_t='+Date.now(),{cache:'no-store'})
@@ -719,7 +668,6 @@ function checkForUpdate(){
 }
 setTimeout(checkForUpdate,8000);
 setInterval(checkForUpdate,60000);
-
 init();
 </script>
 </body>
