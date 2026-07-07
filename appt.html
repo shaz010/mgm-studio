@@ -992,6 +992,9 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="btn-row" style="margin-top:16px">
       <button class="btn" onclick="saveClient()"><i class="ti ti-check"></i> Save client</button>
     </div>
+    <div class="btn-row" id="csRebook" style="display:none">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="bookAgain()"><i class="ti ti-repeat"></i> Book again</button>
+    </div>
     <div class="btn-row" id="csDel" style="display:none">
       <button class="btn btn-danger btn-sm" style="flex:1" onclick="deleteClient()"><i class="ti ti-trash"></i> Delete client</button>
     </div>
@@ -2175,11 +2178,13 @@ function openClientSheet(id){
     $('csName').value=c.name;$('csPhone').value=c.phone||'';$('csEmail').value=c.email||'';
     $('csPrice').value=(c.savedPrice>0)?c.savedPrice:'';
     $('csDel').style.display='flex';
+    var rb=$('csRebook');if(rb)rb.style.display='flex';
   }else{
     $('csTitle').textContent='Add client';
     $('csName').value='';$('csPhone').value='';$('csEmail').value='';
     $('csPrice').value='';
     $('csDel').style.display='none';
+    var rb2=$('csRebook');if(rb2)rb2.style.display='none';
   }
   $('clientModal').classList.add('show');
 }
@@ -2191,6 +2196,27 @@ function saveClient(){
   if(!isNaN(sp)&&sp>0)rec.savedPrice=sp; else delete rec.savedPrice;
   if(clientId){clients=clients.map(function(c){return c.id===clientId?rec:c})}else{clients.push(rec)}
   save(CLIENTS,clients);closeSheet('clientModal');renderClients();toast('Client saved');
+}
+function bookAgain(){
+  if(!clientId)return;
+  var c=clients.find(function(x){return x.id===clientId});if(!c)return;
+  closeSheet('clientModal');
+  openAdd(); /* clean slate: resets fields + priceManual, builds chips */
+  $('fName').value=c.name||'';
+  $('fPhone').value=c.phone||'';
+  /* seed service + duration from their most recent visit */
+  var mine=appts.filter(function(a){return sameClient(a,c)&&a.status!=='cancelled';})
+                .sort(function(a,b){return ((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||''));});
+  var last=mine[0];
+  if(last){
+    if(last.service){setField(String(last.service).split('+').map(function(s){return s.trim()}).filter(Boolean));syncChips();}
+    if(+last.dur)$('fDur').value=+last.dur;
+  }
+  /* price: their saved go-to first, else last visit's — locked so chips don't overwrite */
+  var p=(+c.savedPrice>0)?+c.savedPrice:((last&&+last.price>0)?+last.price:0);
+  if(p>0){$('fPrice').value=p;priceManual=true;}
+  if(typeof apCalc==='function')apCalc();
+  toast(((c.name||'Client').split(' ')[0])+' pre-filled — just pick date & time');
 }
 function deleteClient(){
   if(!clientId)return;
@@ -2582,7 +2608,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.66 · export button tells the truth';
+var VERSION='v4.67 · book again, done properly';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
