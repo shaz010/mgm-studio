@@ -2707,7 +2707,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.76 · safe drag-reorder, erase-all fix';
+var VERSION='v4.77 · show-all-settings fix';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3649,15 +3649,19 @@ function _applyApptSettingsLayout(){
 function toggleApptAdv(){
   var m=document.getElementById('settingsModal'); if(!m)return;
   var on=m.classList.toggle('show-adv');
-  document.querySelectorAll('#settingsModal .set-sec.adv-sec').forEach(function(h){
-    h.classList.toggle('sec-hidden',!on);
-    if(on){
-      h.classList.remove('collapsed');
+  if(on){
+    m.querySelectorAll('.set-sec').forEach(function(h){
+      h.classList.remove('collapsed','sec-hidden');
       var el=h.nextElementSibling;
       while(el&&!_apptSecBoundary(el)){if(el.classList)el.classList.remove('sec-hidden');el=el.nextElementSibling;}
-    }
-  });
-  var b=document.getElementById('apptAdvToggle'); if(b)b.innerHTML=on?'Hide advanced settings ▴':'Show advanced settings ▾';
+    });
+    var sheet=m.querySelector('.sheet');if(sheet)sheet.scrollTop=0;
+  } else {
+    m.classList.remove('show-adv');
+    _applyApptSettingsLayout();
+  }
+  var b=document.getElementById('apptAdvToggle');
+  if(b)b.innerHTML=on?'Hide advanced settings ▴':'Show advanced settings ▾';
 }
 document.addEventListener('click',function(e){
   var h=e.target;
