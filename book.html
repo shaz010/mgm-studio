@@ -254,20 +254,14 @@ textarea{resize:vertical;min-height:60px}
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js">
 var DEMO_SVCS={
-  women:["Women's Haircut","Bang Trim","Fringe Cut","Pixie Cut","Bob Cut","Layered Cut","Blunt Cut","Wolf Cut","Trim / Dusting","Single Process Color","Root Touch-Up","Root Smudge","Gray Coverage","Toner / Gloss","Vivid / Fashion Color","Color Correction","Full Highlights","Partial Highlights","Balayage","Foilayage","Babylights","Money Piece","Ombré","Lowlights","Bleach & Tone","Deep Conditioning","Keratin Treatment","Brazilian Blowout","Olaplex Treatment","Scalp Treatment","Hot Oil Treatment","Blowout","Silk Press","Flat Iron Style","Curling Iron Style","Updo","Half-Up Style","Bridal Style","Special Occasion Style","Box Braids","Cornrows","Goddess Braids","Loc Retwist","Loc Styling","Perm","Body Wave","Relaxer","Extensions — Install","Extensions — Maintenance","Extensions — Removal","Wig Install","Eyebrow Wax / Shape","Eyebrow Tint","Lip Wax"],
+  women:["Women's Haircut","Bang Trim","Fringe Cut","Pixie Cut","Bob Cut","Layered Cut","Blunt Cut","Wolf Cut","Trim / Dusting","Single Process Color","Root Touch-Up","Root Smudge","Gray Coverage","Toner / Gloss","Vivid / Fashion Color","Color Correction","Full Highlights","Partial Highlights","Balayage","Foilayage","Babylights","Money Piece","Ombr\u00e9","Lowlights","Bleach & Tone","Deep Conditioning","Keratin Treatment","Brazilian Blowout","Olaplex Treatment","Scalp Treatment","Hot Oil Treatment","Blowout","Silk Press","Flat Iron Style","Curling Iron Style","Updo","Half-Up Style","Bridal Style","Special Occasion Style","Box Braids","Cornrows","Goddess Braids","Loc Retwist","Loc Styling","Perm","Body Wave","Relaxer","Extensions Install","Extensions Maintenance","Extensions Removal","Wig Install","Eyebrow Wax / Shape","Eyebrow Tint","Lip Wax"],
   men:["Men's Haircut","Buzz Cut","Crew Cut","Taper Cut","Fade","Skin Fade","High Fade","Mid Fade","Low Fade","Temple Fade","Undercut","Textured Cut","Scissor Cut","French Crop","Mohawk","Beard Trim","Beard Shape-Up","Beard Lineup","Full Beard Styling","Goatee Trim","Mustache Trim","Hot Towel Straight Razor Shave","Neck Shave","Beard Color","Edge Up / Lineup","Hair Design / Razor Art","Hard Part","Men's Color","Men's Gray Coverage","Men's Highlights","Bleach & Tone","Toner","Blowout","Scalp Treatment","Deep Conditioning","Keratin Treatment","Eyebrow Trim","Nose Hair Wax","Ear Hair Wax"],
-  kids:["Kids' Haircut (12 & Under)","Toddler / First Haircut","Kids' Buzz Cut","Kids' Fade","Kids' Trim","Kids' Bang Trim","Kids' Highlights","Kids' Toner / Gloss","Kids' Fashion Color (Streak)","Kids' Blowout","Kids' Style & Finish","Kids' Braid / Cornrow","Kids' Protective Style","Kids' Ponytail / Updo","Kids' Deep Conditioning","Lice Treatment / Removal"]
+  kids:["Kids Haircut","Toddler / First Haircut","Kids Buzz Cut","Kids Fade","Kids Trim","Kids Bang Trim","Kids Highlights","Kids Toner / Gloss","Kids Fashion Color","Kids Blowout","Kids Style & Finish","Kids Braid / Cornrow","Kids Protective Style","Kids Ponytail / Updo","Kids Deep Conditioning","Lice Treatment / Removal"]
 };
 var curDemo=null;
 function pickDemo(demo,tab){
-  if(curDemo===demo){
-    curDemo=null;
-    document.querySelectorAll('.demo-tab').forEach(function(t){t.classList.remove('sel');});
-  } else {
-    curDemo=demo;
-    document.querySelectorAll('.demo-tab').forEach(function(t){t.classList.remove('sel');});
-    tab.classList.add('sel');
-  }
+  if(curDemo===demo){curDemo=null;document.querySelectorAll('.demo-tab').forEach(function(t){t.classList.remove('sel');});}
+  else{curDemo=demo;document.querySelectorAll('.demo-tab').forEach(function(t){t.classList.remove('sel');});tab.classList.add('sel');}
   renderDemoChips();
 }
 function renderDemoChips(){
@@ -278,20 +272,12 @@ function renderDemoChips(){
     var groupLow=group.map(function(s){return s.toLowerCase();});
     list=allSvcs.filter(function(s){return groupLow.indexOf(s.toLowerCase())>-1;});
     if(!list.length)list=group;
-  } else {
-    list=allSvcs.length?allSvcs:[];
-  }
+  }else{list=allSvcs.length?allSvcs:[];}
   var el=$('svcChips');if(!el)return;
-  el.innerHTML=list.map(function(s){
-    return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-sparkles"></i>'+esc(s)+'</div>';
-  }).join('');
+  el.innerHTML=list.map(function(s){return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-sparkles"></i>'+esc(s)+'</div>';}).join('');
   syncSvcSel();
 }
-function syncSvcSel(){
-  document.querySelectorAll('#svcChips .chip').forEach(function(c){
-    c.classList.toggle('sel',selSvcArr.indexOf(c.dataset.s)>-1);
-  });
-}
+function syncSvcSel(){document.querySelectorAll('#svcChips .chip').forEach(function(c){c.classList.toggle('sel',selSvcArr.indexOf(c.dataset.s)>-1);});}
 function toggleSec(hdr){
   var body=hdr.nextElementSibling;
   if(!body||!body.classList.contains('sec-body'))return;
@@ -317,7 +303,7 @@ var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.1 · MEN·WOMEN·KIDS tabs, tiles, collapsible';
+var VERSION='book v3.1 · MEN/WOMEN/KIDS tabs, tiles, collapsible';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
