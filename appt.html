@@ -1160,7 +1160,10 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     </div>
 
     <div class="set-version" id="setVersion">AppointmentPro · v1.0</div>
-    <button class="adv-toggle" id="apptAdvToggle" onclick="toggleApptAdv()">Show advanced settings ▾</button>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="forceUpdate()"><i class="ti ti-refresh"></i> Force update to latest</button>
+    </div>
+    <button class="adv-toggle" id="apptAdvToggle" onclick="toggleApptAdv()">Hide advanced settings ▴</button>
 
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-sm" style="flex:1" onclick="closeSheet('settingsModal')">Done</button>
@@ -2707,7 +2710,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.77 · show-all-settings fix';
+var VERSION='v4.78 · settings always open, force-update visible';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -2748,8 +2751,9 @@ function openSettings(){
   renderHours(true);
   syncBookingToggle();renderReqBadge();applyTheme();syncAwakeUI();
   try{renderSetTradeGrid();}catch(e){}
+  $('settingsModal').classList.add('show-adv');
   $('settingsModal').classList.add('show');
-  try{$('settingsModal').classList.remove('show-adv');_applyApptSettingsLayout();var _ab=document.getElementById('apptAdvToggle');if(_ab)_ab.innerHTML='Show advanced settings ▾';}catch(e){}
+  try{_applyApptSettingsLayout();toggleApptAdv();var _ab=document.getElementById('apptAdvToggle');if(_ab)_ab.innerHTML='Hide advanced settings ▴';}catch(e){}
 }
 function saveBusiness(){
   var p=getPrefs();
