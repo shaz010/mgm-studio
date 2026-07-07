@@ -1144,7 +1144,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     </div>
     <input type="file" id="importFile" accept=".json,application/json,text/plain" style="display:none" onchange="importData(event)">
 
-    <div class="set-sec adv-sec">Clear</div>
+    <div class="set-sec adv-sec">Erase / Reset</div>
     <div class="btn-row" style="margin-top:0">
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="clearDay()"><i class="ti ti-eraser"></i> Clear this day</button>
     </div>
@@ -1525,6 +1525,7 @@ function initFavDrag(){
     },{passive:false});
     chip.addEventListener('touchcancel',cleanup,{passive:true});
   });
+}
 var svcMode=getMode();
 function setMode(m){svcMode=m;saveMode(m);buildChips();}
 function servicesInField(){return ($('fService').value||'').split('+').map(function(s){return s.trim()}).filter(Boolean)}
@@ -2703,7 +2704,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.74 · drag-to-reorder Quick Picks';
+var VERSION='v4.75 · drag-reorder, erase-all fix';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3645,7 +3646,14 @@ function _applyApptSettingsLayout(){
 function toggleApptAdv(){
   var m=document.getElementById('settingsModal'); if(!m)return;
   var on=m.classList.toggle('show-adv');
-  document.querySelectorAll('#settingsModal .set-sec.adv-sec').forEach(function(h){ h.classList.toggle('sec-hidden', !on); });
+  document.querySelectorAll('#settingsModal .set-sec.adv-sec').forEach(function(h){
+    h.classList.toggle('sec-hidden',!on);
+    if(on){
+      h.classList.remove('collapsed');
+      var el=h.nextElementSibling;
+      while(el&&!_apptSecBoundary(el)){if(el.classList)el.classList.remove('sec-hidden');el=el.nextElementSibling;}
+    }
+  });
   var b=document.getElementById('apptAdvToggle'); if(b)b.innerHTML=on?'Hide advanced settings ▴':'Show advanced settings ▾';
 }
 document.addEventListener('click',function(e){
