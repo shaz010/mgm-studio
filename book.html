@@ -37,6 +37,11 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .sec-chev{font-size:18px;transition:transform .28s cubic-bezier(.4,0,.2,1);color:var(--gold);margin-left:auto;flex-shrink:0;pointer-events:none}
 .sec-body{overflow:hidden;max-height:2000px;opacity:1;transition:max-height .38s cubic-bezier(.4,0,.2,1),opacity .28s ease}
 .sec-body.closed{max-height:0!important;opacity:0;pointer-events:none}
+.demo-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px}
+.demo-tab{padding:11px 0;border-radius:12px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.035);color:#8a8a8a;font-size:13px;font-weight:800;letter-spacing:.4px;cursor:pointer;text-align:center;transition:border-color .2s,color .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;gap:6px}
+.demo-tab i{font-size:16px}
+.demo-tab.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 14px rgba(167,139,250,.35)}
+.demo-tab:active{transform:scale(.96)}
 .dates{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
 .dmonth{flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;opacity:.85;padding:0 3px}
 .datecell{flex:0 0 auto;width:58px;background:#111;border:1.5px solid var(--border-bright);border-radius:11px;padding:8px 0;text-align:center;cursor:pointer;transition:all .15s}
@@ -146,6 +151,11 @@ textarea{resize:vertical;min-height:60px}
 
   <div class="sec" onclick="toggleSec(this)">Service <i class="sec-chev ti ti-chevron-down"></i></div>
   <div class="sec-body">
+    <div class="demo-tabs">
+      <button class="demo-tab" onclick="pickDemo('women',this)"><i class="ti ti-gender-female"></i>Women</button>
+      <button class="demo-tab" onclick="pickDemo('men',this)"><i class="ti ti-gender-male"></i>Men</button>
+      <button class="demo-tab" onclick="pickDemo('kids',this)"><i class="ti ti-mood-kid"></i>Kids</button>
+    </div>
     <div class="chips" id="svcChips"></div>
     <button class="none-btn" id="otherSvcBtn" onclick="toggleOtherSvc()" style="margin-top:9px"><i class="ti ti-plus"></i> None of these? Add your own</button>
     <div class="custom-wrap" id="otherSvcWrap">
@@ -242,7 +252,47 @@ textarea{resize:vertical;min-height:60px}
   <div class="foot-note" id="bkVer" style="margin-top:14px;font-size:12.5px;font-weight:700;color:#e8e8ef;background:rgba(255,255,255,.09);display:inline-block;padding:4px 12px;border-radius:9px;letter-spacing:.3px"></div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js">function toggleSec(hdr){
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js">
+var DEMO_SVCS={
+  women:["Women's Haircut","Bang Trim","Fringe Cut","Pixie Cut","Bob Cut","Layered Cut","Blunt Cut","Wolf Cut","Trim / Dusting","Single Process Color","Root Touch-Up","Root Smudge","Gray Coverage","Toner / Gloss","Vivid / Fashion Color","Color Correction","Full Highlights","Partial Highlights","Balayage","Foilayage","Babylights","Money Piece","Ombré","Lowlights","Bleach & Tone","Deep Conditioning","Keratin Treatment","Brazilian Blowout","Olaplex Treatment","Scalp Treatment","Hot Oil Treatment","Blowout","Silk Press","Flat Iron Style","Curling Iron Style","Updo","Half-Up Style","Bridal Style","Special Occasion Style","Box Braids","Cornrows","Goddess Braids","Loc Retwist","Loc Styling","Perm","Body Wave","Relaxer","Extensions — Install","Extensions — Maintenance","Extensions — Removal","Wig Install","Eyebrow Wax / Shape","Eyebrow Tint","Lip Wax"],
+  men:["Men's Haircut","Buzz Cut","Crew Cut","Taper Cut","Fade","Skin Fade","High Fade","Mid Fade","Low Fade","Temple Fade","Undercut","Textured Cut","Scissor Cut","French Crop","Mohawk","Beard Trim","Beard Shape-Up","Beard Lineup","Full Beard Styling","Goatee Trim","Mustache Trim","Hot Towel Straight Razor Shave","Neck Shave","Beard Color","Edge Up / Lineup","Hair Design / Razor Art","Hard Part","Men's Color","Men's Gray Coverage","Men's Highlights","Bleach & Tone","Toner","Blowout","Scalp Treatment","Deep Conditioning","Keratin Treatment","Eyebrow Trim","Nose Hair Wax","Ear Hair Wax"],
+  kids:["Kids' Haircut (12 & Under)","Toddler / First Haircut","Kids' Buzz Cut","Kids' Fade","Kids' Trim","Kids' Bang Trim","Kids' Highlights","Kids' Toner / Gloss","Kids' Fashion Color (Streak)","Kids' Blowout","Kids' Style & Finish","Kids' Braid / Cornrow","Kids' Protective Style","Kids' Ponytail / Updo","Kids' Deep Conditioning","Lice Treatment / Removal"]
+};
+var curDemo=null;
+function pickDemo(demo,tab){
+  if(curDemo===demo){
+    curDemo=null;
+    document.querySelectorAll('.demo-tab').forEach(function(t){t.classList.remove('sel');});
+  } else {
+    curDemo=demo;
+    document.querySelectorAll('.demo-tab').forEach(function(t){t.classList.remove('sel');});
+    tab.classList.add('sel');
+  }
+  renderDemoChips();
+}
+function renderDemoChips(){
+  var allSvcs=window._allSvcs||[];
+  var list;
+  if(curDemo&&DEMO_SVCS[curDemo]){
+    var group=DEMO_SVCS[curDemo];
+    var groupLow=group.map(function(s){return s.toLowerCase();});
+    list=allSvcs.filter(function(s){return groupLow.indexOf(s.toLowerCase())>-1;});
+    if(!list.length)list=group;
+  } else {
+    list=allSvcs.length?allSvcs:[];
+  }
+  var el=$('svcChips');if(!el)return;
+  el.innerHTML=list.map(function(s){
+    return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-sparkles"></i>'+esc(s)+'</div>';
+  }).join('');
+  syncSvcSel();
+}
+function syncSvcSel(){
+  document.querySelectorAll('#svcChips .chip').forEach(function(c){
+    c.classList.toggle('sel',selSvcArr.indexOf(c.dataset.s)>-1);
+  });
+}
+function toggleSec(hdr){
   var body=hdr.nextElementSibling;
   if(!body||!body.classList.contains('sec-body'))return;
   var closing=!body.classList.contains('closed');
@@ -267,7 +317,7 @@ var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.0 · tiles + collapsible sections';
+var VERSION='book v3.1 · MEN·WOMEN·KIDS tabs, tiles, collapsible';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -345,7 +395,8 @@ function loadPending(cb){
 function buildForm(){
   // services
   var svc=(info.services&&info.services.length)?info.services:['Appointment'];
-  $('svcChips').innerHTML=svc.map(function(s){return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-sparkles"></i>'+esc(s)+'</div>';}).join('');
+  window._allSvcs=svc;
+  renderDemoChips();
   // dates: next WEEKS_AHEAD*7 days, only open days
   var hours=info.hours||[];
   var row='', today=new Date(); today.setHours(12,0,0,0);
