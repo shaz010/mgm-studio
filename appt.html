@@ -1312,7 +1312,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 <script>
 /* ===== service catalog — identical to CommissionPro ===== */
 const SERVICE_GROUPS=[
-  {c:'Color',d:'hair',s:[['Color','palette'],['Root Touch-up','brush'],['Root Smudge','brush'],['All-Over Color','palette'],['Gray Coverage','palette'],["Men's Color",'palette'],['Vivid Color','diamond'],['Color Correction','palette'],['Toner / Gloss','droplet'],['Highlights','sparkles'],['Partial Highlight','sparkles'],['Full Highlight','sparkles'],['Lowlights','sparkles'],['Balayage','sparkles'],['Foilage','sparkles'],['Ombre','color-swatch'],['Babylights','sparkles']]},
+  {c:'Color',d:'hair',s:[['Color','palette'],['Root Touch-up','brush'],['Root Smudge','brush'],['All-Over Color',"palette"],["Gray Coverage",'palette'],["Men's Color",'palette'],['Vivid Color','diamond'],['Color Correction','palette'],['Toner / Gloss','droplet'],['Highlights','sparkles'],['Partial Highlight','sparkles'],['Full Highlight','sparkles'],['Lowlights','sparkles'],['Balayage','sparkles'],['Foilage','sparkles'],['Ombre','color-swatch'],['Babylights','sparkles']]},
   {c:'Haircuts',d:'hair',s:[["Women's Haircut",'scissors'],["Men's Haircut",'user'],['Kids Haircut','mood-kid'],['Bang / Fringe Trim','cut'],['Dry Trim','scissors'],['Restyle / Major Cut','scissors'],['Trim Only','cut']]},
   {c:'Styling',d:'hair',s:[['Blow Dry','wind'],['Curls','wave-sine'],['Wand Curls','wand'],['Straighten / Flat Iron','minus'],['Beach Waves','wave-sine'],['Silk Press','flame'],['Hand-Styled','hand-finger'],['Updo','crown'],['Braids','line'],['Roller Set','circle'],['Special Occasion','sparkles'],['Bridal Styling','heart']]},
   {c:'Treatments',d:'hair',s:[['Treatment','flask'],['Deep Conditioning','droplet'],['Olaplex','flask'],['Scalp Treatment','massage'],['Keratin','flame'],['Brazilian Blowout','flame'],['Clarifying','droplet'],['Gloss / Shine','droplet']]},
@@ -1443,14 +1443,14 @@ function buildChips(){
   var favs=getFavorites(), mode=svcMode, groups=groupsForMode(mode);
   var modeNames={};groups.forEach(function(g){g.s.forEach(function(it){modeNames[it[0]]=1})});
   var favHere=favs.filter(function(n){return modeNames[n]});
-  var shown=favHere.slice(0,9); /* 9 tiles on display; overflow faves stay findable under More */
+  var shown=favHere; /* all faves in Quick Picks — no cap */
   var favRow=$('favRow');
   favRow.innerHTML=shown.length?shown.map(function(n){return chipHTML(n,iconFor(n),true)}).join(''):'<div class="svc-empty">Tap a service under “More” to add it up here.</div>';
   var more=$('svcMore');
   more.innerHTML=groups.map(function(g){
     var rest=g.s.filter(function(it){return shown.indexOf(it[0])===-1}).slice().sort(function(a,b){return a[0].localeCompare(b[0])});
     if(!rest.length)return '';
-    var chips=rest.map(function(it){return chipHTML(it[0],it[1],favHere.indexOf(it[0])>-1)}).join('');
+    var chips=rest.map(function(it){return chipHTML(it[0],it[1],false)}).join('');
     var col=(g.c==='Your services')?'var(--gold)':catColorOf(g.c);
     return '<div class="svc-catwrap">'+
       '<div class="svc-cat-head" data-cat="'+esc(g.c)+'" onclick="toggleSvcCat(this)" style="color:'+col+';border-color:'+col+'55">'+
@@ -1559,15 +1559,16 @@ function addCustom(){
   if(!customSvc.find(function(x){return x.name.toLowerCase()===name.toLowerCase()})){
     customSvc.push({name:name,mode:svcMode});save(CUSTOM,customSvc);
   }
-  var favs=getFavorites();
-  if(favs.indexOf(name)===-1){favs.push(name);saveFavorites(favs);}
+  /* custom goes to More first — pin to Quick Picks via the ★ on the tile */
   var list=servicesInField();
   if(list.map(function(s){return s.toLowerCase()}).indexOf(name.toLowerCase())===-1)list.push(name);
   setField(list);
   $('fCustom').value='';
+  var more=$('svcMore'),btn=$('svcMoreBtn');
+  if(more&&more.style.display==='none'){more.style.display='block';if(btn)btn.innerHTML='<i class="ti ti-chevron-up"></i> Hide services';}
   buildChips();
   applyAutoPrice();
-  toast('Added “'+name+'”');
+  toast('Added "'+name+'" — tap ★ on its tile to pin to Quick Picks');
 }
 
 /* ===== DAY VIEW ===== */
@@ -2639,7 +2640,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.72 · color group restored, fave toggle fixed';
+var VERSION='v4.73 · unlimited Quick Picks, custom → More first';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
