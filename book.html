@@ -33,6 +33,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .svc-pill span.x{cursor:pointer;font-weight:800;font-size:15px;line-height:1;opacity:.8}
 .svc-pill span.x:active{opacity:1}
 .chip:active{transform:scale(.93)}
+.chip,.hchip{user-select:none;-webkit-user-select:none}
 .sec{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .sec-chev{font-size:18px;transition:transform .28s cubic-bezier(.4,0,.2,1);color:var(--gold);margin-left:auto;flex-shrink:0;pointer-events:none}
 .sec-body{overflow:hidden;max-height:2000px;opacity:1;transition:max-height .38s cubic-bezier(.4,0,.2,1),opacity .28s ease}
@@ -152,8 +153,9 @@ textarea{resize:vertical;min-height:60px}
     </div>
     <div class="chips" id="svcChips"></div>
     <button class="none-btn" id="otherSvcBtn" onclick="toggleOtherSvc()" style="margin-top:9px"><i class="ti ti-plus"></i> None of these? Add your own</button>
-    <div class="custom-wrap" id="otherSvcWrap">
-      <input type="text" id="otherSvc" placeholder="e.g. scalp treatment, colour correction" oninput="onOtherSvc()">
+    <div class="custom-wrap" id="otherSvcWrap" style="display:flex;gap:8px;align-items:center">
+      <input type="text" id="otherSvc" placeholder="e.g. scalp treatment, colour correction" oninput="onOtherSvc()" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomSvc();}" style="flex:1;margin:0">
+      <button onclick="addCustomSvc()" style="flex-shrink:0;padding:11px 16px;border-radius:9px;border:none;background:var(--gold);color:#1a1208;font-weight:800;font-size:14px;cursor:pointer">Add</button>
     </div>
     <div class="svc-pills" id="svcPills"></div>
   </div>
@@ -291,7 +293,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.1 · MEN/WOMEN/KIDS tabs, tiles, collapsible';
+var VERSION='book v3.2 · fix custom add + no text-select on chips';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -420,7 +422,15 @@ function toggleOtherSvc(){
   if(!otherSvcMode)$('otherSvc').value='';
   updateBtn();
 }
-function onOtherSvc(){renderSvcPills();updateBtn();}
+function onOtherSvc(){updateBtn();}
+function addCustomSvc(){
+  var input=$('otherSvc');
+  var val=input?input.value.trim():'';
+  if(!val)return;
+  if(selSvcArr.indexOf(val)===-1)selSvcArr.push(val);
+  if(input)input.value='';
+  renderSvcPills();updateBtn();
+}
 function pickDate(el){selDate=el.dataset.d;selTime='';markSel('dateRow',selDate,'d');renderSlots();updateBtn();}
 function markSel(wrap,val,attr){document.querySelectorAll('#'+wrap+' [data-'+attr+']').forEach(function(c){c.classList.toggle('sel',c.dataset[attr]===val);});}
 function renderSlots(){
