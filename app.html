@@ -1395,7 +1395,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
         <button class="modal-close" onclick="closePrices()"><i class="ti ti-x"></i></button>
       </div>
       <div class="modal-body">
-        <p class="price-hint">Set what you charge for each service. Leave blank for ones you don't offer. When you combine services in a booking, the Charge auto-fills with the total — you can still adjust it.<br><br>Tap <b style="color:var(--gold)">By hair</b> next to a service to <b style="color:var(--gold)">auto-price by the client's hair</b> — the price you set becomes the baseline (short, fine hair) and scales up for length, thickness, grey &amp; prior chemical work. Best for colour &amp; highlight services.</p>
+        <p class="price-hint">Set what you charge for each service. Prices are shared across all rooms — enter once here or in Appointments and they appear everywhere. Leave blank for services you don't offer.<br><br>Tap <b style="color:var(--gold)">By hair</b> next to a service to <b style="color:var(--gold)">auto-price by the client's hair</b> — the price you set becomes the baseline (short, fine hair) and scales up for length, thickness, grey &amp; prior chemical work. Best for colour &amp; highlight services.</p>
         <div class="svc-trade-label" id="priceTradeLabel" style="margin-bottom:12px"></div>
         <div id="priceList"></div>
         <button class="btn-print" onclick="closePrices()"><i class="ti ti-check" style="font-size:16px"></i>Done</button>
@@ -3551,7 +3551,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.78 · Ombré fix, all-trade price modal buttons';
+var VERSION='app v1.79 · price book hint clarifies shared storage';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
