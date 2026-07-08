@@ -24,8 +24,8 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .sec{font-size:14px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin:26px 0 12px;padding:12px 0 6px;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid var(--gold-dim,rgba(212,175,55,.35));display:flex;align-items:center}
 .chips{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
 .chip{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 6px 10px;min-height:86px;border-radius:14px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.035);color:#e2e2ea;font-size:12px;font-weight:700;cursor:pointer;transition:transform .14s,border-color .2s,box-shadow .25s;-webkit-tap-highlight-color:transparent;text-align:center;line-height:1.25;word-break:break-word}
-.chip>i{font-size:20px;color:var(--gold)}.chip-name{font-size:12px;font-weight:700;line-height:1.2}.chip-price{font-size:11.5px;font-weight:600;color:#ffe566;background:transparent;border:1px solid rgba(255,215,60,.65);border-radius:20px;padding:2px 8px;margin-top:3px;letter-spacing:.4px;white-space:nowrap}
-.chip.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 14px rgba(167,139,250,.45)}.chip.sel .chip-price{background:transparent;border-color:rgba(255,255,255,.5);color:#fff}
+.chip>i{font-size:20px;color:var(--gold)}.chip-name{font-size:12px;font-weight:700;line-height:1.2}.chip-price{font-size:11.5px;font-weight:600;color:#ffe566;background:none;border:none;padding:0;margin-top:2px;letter-spacing:.3px;white-space:nowrap}
+.chip.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 14px rgba(167,139,250,.45)}.chip.sel .chip-price{background:none;border:none;color:#fff}
 .chip.sel>i{background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent!important;animation:iridShift 4.5s linear infinite}
 .svc-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
 .svc-pills:empty{display:none}
@@ -115,6 +115,12 @@ textarea{resize:vertical;min-height:60px}
 .update-bar{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 8px);transform:translateX(-50%) translateY(-140%);z-index:99999;background:var(--gold);color:#1a1208;font-weight:800;font-size:13.5px;padding:11px 18px;border-radius:30px;box-shadow:0 8px 24px rgba(0,0,0,.55);cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;transition:transform .32s cubic-bezier(.2,.8,.2,1)}
 .update-bar.show{transform:translateX(-50%) translateY(0)}
 .update-bar:active{transform:translateX(-50%) translateY(0) scale(.96)}
+
+.more-svcs-btn{display:flex;align-items:center;gap:7px;width:100%;margin-top:14px;padding:11px 14px;border-radius:12px;border:1.5px dashed rgba(255,255,255,.18);background:transparent;color:var(--text2,#aaa);font-size:13px;font-weight:700;cursor:pointer;transition:border-color .18s,color .18s;-webkit-tap-highlight-color:transparent}
+.more-svcs-btn.on{border-color:rgba(167,139,250,.5);color:var(--gold)}
+.more-svcs-btn:active{opacity:.7}
+.more-svcs-body{display:none;margin-top:4px}
+.more-svcs-body.open{display:block}
 </style>
 </head>
 <body>
@@ -292,6 +298,12 @@ var DEMO_SVCS={
     'Treatments':["Kids Deep Conditioning","Lice Treatment / Removal"]
   }
 };
+
+var MORE_GROUPS={
+  women:['Extensions','Eyebrow','Other Chemical Services'],
+  men:['Extensions','Eyebrow','Other Chemical Services'],
+  kids:['Styling','Treatments']
+};
 var GRP_ICONS={'Cut':'scissors','Color':'palette','Lights':'sparkles','Styling':'wind','Extensions':'diamond','Eyebrow':'eye','Other Chemical Services':'flask','Beard':'user','Treatments':'droplet'};
 var GRP_COLORS={'Cut':'#8FD17A','Color':'#d4af37','Lights':'#a78bfa','Styling':'#67e8f9','Extensions':'#f5a8ff','Eyebrow':'#fb923c','Other Chemical Services':'#4fd1c5','Beard':'#94a3b8','Treatments':'#60a5fa'};
 var DEMO_PRICES={"Women's Haircut":75,"Bang Trim":25,"Fringe Cut":30,"Pixie Cut":85,"Bob Cut":80,"Layered Cut":85,"Blunt Cut":75,"Wolf Cut":85,"Trim / Dusting":45,"Single Process Color":95,"Root Touch-Up":80,"Root Smudge":65,"Gray Coverage":90,"Toner / Gloss":55,"Vivid / Fashion Color":150,"Color Correction":200,"Full Highlights":150,"Partial Highlights":110,"Balayage":175,"Foilayage":190,"Babylights":160,"Money Piece":95,"Ombré":140,"Lowlights":120,"Bleach & Tone":165,"Blowout":55,"Brushing":45,"Silk Press":80,"Flat Iron Style":65,"Curling Iron Style":60,"Updo":95,"Half-Up Style":75,"Bridal Style":150,"Special Occasion Style":120,"Box Braids":200,"Cornrows":120,"Goddess Braids":160,"Loc Retwist":80,"Loc Styling":75,"Extensions Install":400,"Extensions Maintenance":150,"Extensions Removal":85,"Wig Install":120,"Eyebrow Wax / Shape":25,"Eyebrow Tint":20,"Lip Wax":15,"Deep Conditioning":45,"Keratin Treatment":250,"Brazilian Blowout":250,"Olaplex Treatment":85,"Scalp Treatment":60,"Hot Oil Treatment":45,"Perm":150,"Body Wave":140,"Relaxer":120,"Men's Haircut":35,"Buzz Cut":25,"Crew Cut":30,"Taper Cut":35,"Fade":35,"Skin Fade":40,"High Fade":40,"Mid Fade":38,"Low Fade":35,"Temple Fade":40,"Undercut":45,"Textured Cut":45,"Scissor Cut":50,"French Crop":40,"Mohawk":50,"Beard Trim":20,"Beard Shape-Up":25,"Beard Lineup":20,"Full Beard Styling":35,"Goatee Trim":20,"Mustache Trim":15,"Hot Towel Straight Razor Shave":45,"Neck Shave":15,"Toner":35,"Beard Color":35,"Men's Color":65,"Men's Gray Coverage":70,"Men's Highlights":75,"Hard Part":15,"Hair Design / Razor Art":25,"Edge Up / Lineup":15,"Eyebrow Trim":15,"Nose Hair Wax":15,"Ear Hair Wax":15,"Kids Haircut":30,"Toddler / First Haircut":25,"Kids Buzz Cut":20,"Kids Fade":25,"Kids Trim":20,"Kids Bang Trim":15,"Kids Highlights":80,"Kids Toner / Gloss":45,"Kids Fashion Color":90,"Kids Blowout":35,"Kids Style & Finish":30,"Kids Braid / Cornrow":45,"Kids Protective Style":80,"Kids Ponytail / Updo":25,"Kids Deep Conditioning":35,"Lice Treatment / Removal":85};
@@ -310,25 +322,35 @@ function renderDemoChips(){
     syncSvcSel();_injectCustomChips();return;
   }
   var grps=DEMO_SVCS[curDemo];
-  var html='';
-  Object.keys(grps).forEach(function(grpName){
-    var svcs=grps[grpName];
+  var moreGrps=(MORE_GROUPS[curDemo]||[]);
+  var html='';var moreHtml='';
+  function buildGrp(grpName){
+    var svcs=grps[grpName];if(!svcs)return '';
     var gid='g'+curDemo+'_'+grpName.replace(/[^a-z0-9]/gi,'_');
-    html+='<div class="svc-grp">';
-    html+='<div class="svc-grp-hdr" onclick="toggleGrp(\''+gid+'\')">';
-    html+='<i class="ti ti-chevron-down" id="chev_'+gid+'" style="transition:transform .2s;flex-shrink:0"></i>';
-    html+='<span>'+esc(grpName)+'</span>';
-    html+='<span class="grp-count">'+svcs.length+'</span>';
-    html+='</div>';
-    html+='<div class="svc-grp-body" id="'+gid+'">';
-    html+='<div class="chips">';html+=svcs.map(function(s){var ic=GRP_ICONS[grpName]||'sparkles';var cl=GRP_COLORS[grpName]||'var(--gold)';var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="chip-price">$'+p+'</span>':'';return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+ic+'" style="color:'+cl+'"></i><span class="chip-name">'+esc(s)+'</span>'+ph+'</div>';}).join('');html+='</div>';
-    html+='<div class="svc-grp-add">';
-    html+='<input class="svc-grp-add-input" id="inp_'+gid+'" type="text" placeholder="Add to '+esc(grpName)+'" onkeydown="if(event.key===\'Enter\')addGrpSvc(\''+gid+'\')">';
-    html+='<button class="svc-grp-add-btn" onclick="addGrpSvc(\''+gid+'\')">Add</button>';
-    html+='</div>';
-    html+='</div>';
-    html+='</div>';
+    var h='<div class="svc-grp">';
+    h+='<div class="svc-grp-hdr" onclick="toggleGrp(\''+gid+'\')">'.replace(/\\/g,'\\');
+    h+='<i class="ti ti-chevron-down" id="chev_'+gid+'" style="transition:transform .2s;flex-shrink:0"></i>';
+    h+='<span>'+esc(grpName)+'</span>';
+    h+='<span class="grp-count">'+svcs.length+'</span>';
+    h+='</div>';
+    h+='<div class="svc-grp-body" id="'+gid+'">';
+    h+='<div class="chips">';h+=svcs.map(function(s){var ic=GRP_ICONS[grpName]||'sparkles';var cl=GRP_COLORS[grpName]||'var(--gold)';var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="chip-price">$'+p+'</span>':'';return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+ic+'" style="color:'+cl+'"></i><span class="chip-name">'+esc(s)+'</span>'+ph+'</div>';}).join('');h+='</div>';
+    h+='<div class="svc-grp-add">';
+    h+='<input class="svc-grp-add-input" id="inp_'+gid+'" type="text" placeholder="Add to '+esc(grpName)+'" onkeydown="if(event.key===\'Enter\')addGrpSvc(\''+gid+'\')">'.replace(/\\/g,'\\');
+    h+='<button class="svc-grp-add-btn" onclick="addGrpSvc(\''+gid+'\')">Add</button>'.replace(/\\/g,'\\');
+    h+='</div>';
+    h+='</div>';
+    h+='</div>';
+    return h;
+  }
+  Object.keys(grps).forEach(function(grpName){
+    if(moreGrps.indexOf(grpName)>-1){moreHtml+=buildGrp(grpName);}
+    else{html+=buildGrp(grpName);}
   });
+  if(moreHtml){
+    html+='<button class="more-svcs-btn" id="moreSvcsBtn" onclick="toggleMoreSvcs()"><i class="ti ti-plus" id="moreSvcsIco" style="transition:transform .2s"></i> More services</button>';
+    html+='<div class="more-svcs-body" id="moreSvcsBody">'+moreHtml+'</div>';
+  }
   el.innerHTML=html;
   syncSvcSel();_injectCustomChips();
 }
@@ -337,6 +359,15 @@ function toggleGrp(gid){
   var closed=body.classList.toggle('closed');
   var chev=document.getElementById('chev_'+gid);
   if(chev)chev.style.transform=closed?'rotate(-90deg)':'rotate(0deg)';
+}
+function toggleMoreSvcs(){
+  var body=document.getElementById('moreSvcsBody');
+  var btn=document.getElementById('moreSvcsBtn');
+  var ico=document.getElementById('moreSvcsIco');
+  if(!body)return;
+  var open=body.classList.toggle('open');
+  if(ico)ico.style.transform=open?'rotate(45deg)':'rotate(0deg)';
+  if(btn)btn.classList.toggle('on',open);
 }
 function addGrpSvc(gid){
   var inp=document.getElementById('inp_'+gid);if(!inp)return;
@@ -390,7 +421,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.18 · price badge — border back, no fill background';
+var VERSION='book v3.20 · More services collapsible pane';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
