@@ -55,7 +55,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .demo-tab{padding:11px 0;border-radius:12px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.035);color:#8a8a8a;font-size:13px;font-weight:800;letter-spacing:.4px;cursor:pointer;text-align:center;transition:border-color .2s,color .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;gap:6px}
 .demo-tab i{font-size:16px}
 .demo-tab.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 14px rgba(167,139,250,.35)}
-.demo-tab:active{transform:scale(.96)}
+.demo-tab:active{transform:scale(.96)}#demoTabsBar{position:sticky;top:0;z-index:100;background:#0c0c14;padding:8px 0 10px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:8px}.chip-del{position:absolute;top:4px;right:5px;font-size:14px;line-height:1;color:rgba(255,255,255,.28);cursor:pointer;z-index:2;padding:2px}.chip-del:active,.chip-del:hover{color:#ff6b6b}
 .dates{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
 .dmonth{flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;opacity:.85;padding:0 3px}
 .datecell{flex:0 0 auto;width:58px;background:#111;border:1.5px solid var(--border-bright);border-radius:11px;padding:8px 0;text-align:center;cursor:pointer;transition:all .15s}
@@ -158,12 +158,12 @@ textarea{resize:vertical;min-height:60px}
   </div>
 
   <div class="sec" onclick="toggleSec(this)">Service <i class="sec-chev ti ti-chevron-down"></i></div>
-  <div class="sec-body">
-    <div class="demo-tabs">
+  <div id="demoTabsBar" class="demo-tabs">
       <button class="demo-tab" onclick="pickDemo('women',this)"><i class="ti ti-gender-female"></i>Women</button>
       <button class="demo-tab" onclick="pickDemo('men',this)"><i class="ti ti-gender-male"></i>Men</button>
       <button class="demo-tab" onclick="pickDemo('kids',this)"><i class="ti ti-mood-kid"></i>Kids</button>
-    </div>
+  </div>
+  <div class="sec-body">
     <div class="chips" id="svcChips"></div>
     <button class="none-btn" id="otherSvcBtn" onclick="toggleOtherSvc()" style="margin-top:9px"><i class="ti ti-plus"></i> None of these? Add your own</button>
     <div class="custom-wrap" id="otherSvcWrap" style="display:flex;gap:8px;align-items:center">
@@ -343,7 +343,7 @@ function addGrpSvc(gid){
     var cd=document.createElement('div');
     cd.className='chip sel';cd.dataset.s=val;
     cd.setAttribute('onclick','pickSvc(this)');
-    cd.innerHTML='<i class="ti ti-sparkles"></i><span class="chip-name">'+esc(val)+'</span>';
+    cd.innerHTML='<i class="ti ti-sparkles"></i><span class="chip-name">'+esc(val)+'</span><span class="chip-del" onclick="event.stopPropagation();removeCustomChip(this)">&#215;</span>';
     var cw=body.querySelector('.chips');
     if(cw){cw.appendChild(cd);}
     else{var ar=body.querySelector('.svc-grp-add');if(ar)body.insertBefore(cd,ar);else body.appendChild(cd);}
@@ -355,8 +355,18 @@ function addGrpSvc(gid){
   renderSvcPills();updateBtn();
 }
 function syncSvcSel(){document.querySelectorAll('#svcChips .chip').forEach(function(c){c.classList.toggle('sel',selSvcArr.indexOf(c.dataset.s)>-1);});}
+function removeCustomChip(btn){
+  var chip=btn.parentElement;while(chip&&!chip.classList.contains('chip'))chip=chip.parentElement;if(!chip)return;
+  var s=chip.dataset.s;var idx=selSvcArr.indexOf(s);if(idx>-1)selSvcArr.splice(idx,1);
+  chip.remove();renderSvcPills();updateBtn();
+}
 function toggleSec(hdr){
-  var body=hdr.nextElementSibling;
+  var sib=hdr.nextElementSibling;
+  if(sib&&sib.id==='demoTabsBar'){
+    sib.style.display=(!sib.style.display||sib.style.display==='')? 'none':'';
+    sib=sib.nextElementSibling;
+  }
+  var body=sib;
   if(!body||!body.classList.contains('sec-body'))return;
   var closing=!body.classList.contains('closed');
   body.classList.toggle('closed',closing);
@@ -375,7 +385,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.7 · 2-col group grid + Add-chip fix + price tiles';
+var VERSION='book v3.8 · sticky tabs, × delete, 2-col group grid, price tiles';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
