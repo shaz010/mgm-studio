@@ -264,10 +264,7 @@ function renderDemoChips(){
   var allSvcs=window._allSvcs||[];
   var list;
   if(curDemo&&DEMO_SVCS[curDemo]){
-    var group=DEMO_SVCS[curDemo];
-    var groupLow=group.map(function(s){return s.toLowerCase();});
-    list=allSvcs.filter(function(s){return groupLow.indexOf(s.toLowerCase())>-1;});
-    if(!list.length)list=group;
+    list=DEMO_SVCS[curDemo];
   }else{list=allSvcs.length?allSvcs:[];}
   var el=$('svcChips');if(!el)return;
   el.innerHTML=list.map(function(s){return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-sparkles"></i>'+esc(s)+'</div>';}).join('');
@@ -356,8 +353,14 @@ function loadPending(cb){
   }catch(e){cb();}
 }
 function buildForm(){
-  var svc=(info.services&&info.services.length)?info.services:['Appointment'];
+  var svc=(info.services&&info.services.length)?info.services:[];
   window._allSvcs=svc;
+  // Auto-select Women tab on load
+  if(!curDemo){
+    curDemo='women';
+    var tab=document.querySelector('.demo-tab');
+    if(tab)tab.classList.add('sel');
+  }
   renderDemoChips();
   var hours=info.hours||[];
   var row='',today=new Date();today.setHours(12,0,0,0);
