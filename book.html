@@ -56,6 +56,8 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .demo-tab i{font-size:16px}
 .demo-tab.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 14px rgba(167,139,250,.35)}
 .demo-tab:active{transform:scale(.96)}#demoTabsBar{position:sticky;top:0;z-index:100;background:#0c0c14;padding:8px 0 10px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:8px}.chip-del{position:absolute;top:4px;right:5px;font-size:14px;line-height:1;color:rgba(255,255,255,.28);cursor:pointer;z-index:2;padding:2px}.chip-del:active,.chip-del:hover{color:#ff6b6b}
+.avail-toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e1e2a;border:1px solid rgba(212,175,55,.4);color:#d4af37;font-size:12.5px;font-weight:700;padding:9px 18px;border-radius:24px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:9000;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.avail-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .dates{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
 .dmonth{flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;opacity:.85;padding:0 3px}
 .datecell{flex:0 0 auto;width:58px;background:#111;border:1.5px solid var(--border-bright);border-radius:11px;padding:8px 0;text-align:center;cursor:pointer;transition:all .15s}
@@ -117,6 +119,7 @@ textarea{resize:vertical;min-height:60px}
 </head>
 <body>
 
+<div id="availToast" class="avail-toast"></div>
 <div id="updateBar" class="update-bar" onclick="applyUpdate()"><i class="ti ti-refresh"></i> New version ready — tap to update</div>
 
 <div class="center-screen" id="loadingView">
@@ -385,7 +388,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.10 · force server fetch — hours always fresh';
+var VERSION='book v3.11 · live availability — onSnapshot auto-updates hours';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -422,19 +425,40 @@ function init(){
     if(typeof firebase==='undefined'){show('errorView');return;}
     if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(FB_CONFIG);
     db=firebase.firestore();
-    db.collection('public').doc(SALON_ID).get({source:'server'}).then(function(doc){
+    if(_salonUnsub)_salonUnsub();
+    _salonUnsub=db.collection('public').doc(SALON_ID).onSnapshot(function(doc){
       if(!doc.exists){show('errorView');return;}
-      info=doc.data();window._priceBook=info.priceBook||null;
-      if(!info.bookingOpen){show('closedView');return;}
-      $('salonName').textContent=info.salonName||'Salon';
-      document.title='Book · '+(info.salonName||'Salon');
-      (function(){var fc=$('fallbackContact');if(!fc)return;
-        var ct=((info.contact||'')+'').replace(/[^0-9+]/g,'');
-        if(ct){fc.innerHTML='<i class="ti ti-message-circle" style="font-size:12px;vertical-align:-1px"></i> Form playing up? <a href="sms:'+ct+'" style="color:var(--gold);font-weight:700;text-decoration:none">Text</a> or <a href="tel:'+ct+'" style="color:var(--gold);font-weight:700;text-decoration:none">call</a> directly from your phone instead.';fc.style.display='block';}
-        else fc.style.display='none';
-      })();
-      loadPending(function(){buildForm();show('formView');});
-    }).catch(function(e){console.warn(e);show('errorView');});
+      var fresh=doc.data();
+      window._priceBook=fresh.priceBook||null;
+      if(!_salonInited){
+        // First load — build form normally
+        _salonInited=true;
+        info=fresh;
+        if(!info.bookingOpen){show('closedView');return;}
+        $('salonName').textContent=info.salonName||'Salon';
+        document.title='Book · '+(info.salonName||'Salon');
+        (function(){var fc=$('fallbackContact');if(!fc)return;
+          var ct=((info.contact||'')+'').replace(/[^0-9+]/g,'');
+          if(ct){fc.innerHTML='<i class="ti ti-message-circle" style="font-size:12px;vertical-align:-1px"></i> Form playing up? <a href="sms:'+ct+'" style="color:var(--gold);font-weight:700;text-decoration:none">Text</a> or <a href="tel:'+ct+'" style="color:var(--gold);font-weight:700;text-decoration:none">call</a> directly from your phone instead.';fc.style.display='block';}
+          else fc.style.display='none';
+        })();
+        loadPending(function(){buildForm();show('formView');});
+      } else {
+        // Live update — refresh hours & slots silently
+        info=fresh;
+        if(!info.bookingOpen){show('closedView');return;}
+        try{buildCal();}catch(e){}
+        if(selDate){
+          var prevTime=selTime;
+          loadPending(function(){
+            renderSlots();
+            // If the previously selected time is now gone, clear it
+            if(prevTime&&!document.querySelector('.slot.sel')){selTime='';updateBtn();}
+          });
+        }
+        showAvailToast('✦ Availability just updated');
+      }
+    },function(e){console.warn(e);if(!_salonInited)show('errorView');});
   }catch(e){console.warn(e);show('errorView');}
 }
 function loadPending(cb){
@@ -729,7 +753,8 @@ function submitBooking(){
   }).catch(function(){doSend();});
 }
 var _watchUnsub=null,_approvedRec=null,_audioCtx=null;
-var _wl=null,_waiting=false;
+var _wl=null,_waiting=false,_salonUnsub=null,_salonInited=false;
+function showAvailToast(msg){var t=document.getElementById("availToast");if(!t)return;t.textContent=msg;t.classList.add("show");clearTimeout(t._tid);t._tid=setTimeout(function(){t.classList.remove("show");},3500);}
 function wakeOn(){try{if(navigator.wakeLock&&navigator.wakeLock.request){navigator.wakeLock.request('screen').then(function(s){_wl=s;}).catch(function(){});}}catch(e){}}
 function wakeOff(){try{if(_wl){_wl.release();_wl=null;}}catch(e){}}
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&_waiting)wakeOn();});
