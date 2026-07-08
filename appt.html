@@ -781,6 +781,22 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 .price-custom-inp{flex:1;padding:10px 12px;background:#1a1a1a;border:1.5px solid #333;border-radius:9px;color:#fff;font-size:14px;outline:none;min-width:0}
 .price-custom-inp:focus{border-color:#a78bfa}
 .price-custom-add-btn{padding:10px 16px;border-radius:9px;border:none;background:#a78bfa;color:#fff;font-weight:800;font-size:14px;cursor:pointer;flex-shrink:0}
+
+.bc-tabs{display:flex;gap:6px;margin-bottom:12px}
+.bc-tab{flex:1;padding:8px 4px;border-radius:9px;border:1.5px solid #2a2a2a;background:#111;color:#666;font-size:12px;font-weight:700;cursor:pointer;position:relative;transition:border-color .15s,color .15s}
+.bc-tab.on{border-color:var(--gold);color:var(--gold)}
+.bc-tab-badge{position:absolute;top:-5px;right:-4px;background:#f87171;color:#fff;font-size:9px;font-weight:800;border-radius:8px;padding:1px 4px;line-height:1.4}
+.bc-grp{margin-bottom:6px;border:1px solid #1e1e1e;border-radius:10px;overflow:hidden}
+.bc-grp-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:#888;background:#0d0d0d}
+.bc-grp-badge{font-size:10px;font-weight:700;color:#f87171;text-transform:none;letter-spacing:0}
+.bc-grp-body{padding:2px 0}
+.bc-svc-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #141414;transition:opacity .15s}
+.bc-svc-row:last-child{border-bottom:none}
+.bc-svc-row.bc-hidden{opacity:.35}
+.bc-svc-name{font-size:13px;color:#ddd;flex:1}
+.bc-svc-row.bc-hidden .bc-svc-name{text-decoration:line-through;color:#555}
+.bc-eye-btn{flex-shrink:0;background:none;border:none;padding:5px 6px;cursor:pointer;border-radius:6px;color:#555;font-size:15px;line-height:1;transition:color .15s}
+.bc-eye-btn:active{color:var(--gold)}
 </style>
 </head>
 <body>
@@ -1147,6 +1163,9 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <label style="margin-top:14px">Fallback contact on the booking page <span style="color:#666;font-weight:400">(optional)</span></label>
     <input id="sbContact" type="tel" placeholder="Leave blank to show nothing" onchange="saveBookContact()">
     <div style="font-size:12px;color:var(--muted);margin:7px 0 2px;line-height:1.5">If the form ever hiccups, clients see a small "text or call directly" line with this number. Blank = never shown.</div>
+
+    <div class="set-sec" onclick="(function(el){el.classList.toggle('collapsed');var b=document.getElementById('bookingCuratorBody');if(b){b.style.display=el.classList.contains('collapsed')?'none':'block';if(!el.classList.contains('collapsed'))renderBookingCurator();}})(this)">Booking services</div>
+    <div id="bookingCuratorBody" style="display:none"></div>
 
     <div class="set-sec">Insights</div>
     <div class="btn-row" style="margin-top:0">
@@ -2767,7 +2786,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.87 · Hours: 15-min select wheels, clean pane';
+var VERSION='v4.88 · Booking services curator — control what clients see';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3301,6 +3320,76 @@ function setConnState(state,txt){
 }
 
 /* ---- availability published for the client page ---- */
+/* ----- booking services curator ----- */
+var BOOK_SVCS={
+  women:{
+    'Cut':["Women's Haircut","Bang Trim","Fringe Cut","Pixie Cut","Bob Cut","Layered Cut","Blunt Cut","Wolf Cut","Trim / Dusting"],
+    'Color':["Single Process Color","Root Touch-Up","Root Smudge","Gray Coverage","Toner / Gloss","Vivid / Fashion Color","Color Correction"],
+    'Lights':["Full Highlights","Partial Highlights","Balayage","Foilayage","Babylights","Money Piece","Ombré","Lowlights","Bleach & Tone"],
+    'Styling':["Blowout","Brushing","Silk Press","Flat Iron Style","Curling Iron Style","Updo","Half-Up Style","Bridal Style","Special Occasion Style","Box Braids","Cornrows","Goddess Braids","Loc Retwist","Loc Styling"],
+    'Extensions':["Extensions Install","Extensions Maintenance","Extensions Removal","Wig Install"],
+    'Eyebrow':["Eyebrow Wax / Shape","Eyebrow Tint","Lip Wax"],
+    'Other Chemical Services':["Deep Conditioning","Keratin Treatment","Brazilian Blowout","Olaplex Treatment","Scalp Treatment","Hot Oil Treatment","Perm","Body Wave","Relaxer"]
+  },
+  men:{
+    'Cut':["Men's Haircut","Buzz Cut","Crew Cut","Taper Cut","Fade","Skin Fade","High Fade","Mid Fade","Low Fade","Temple Fade","Undercut","Textured Cut","Scissor Cut","French Crop","Mohawk"],
+    'Beard':["Beard Trim","Beard Shape-Up","Beard Lineup","Full Beard Styling","Goatee Trim","Mustache Trim","Hot Towel Straight Razor Shave","Neck Shave"],
+    'Color':["Beard Color","Men's Color","Men's Gray Coverage","Men's Highlights","Bleach & Tone","Toner"],
+    'Styling':["Blowout","Hard Part","Hair Design / Razor Art","Edge Up / Lineup"],
+    'Treatments':["Scalp Treatment","Deep Conditioning","Keratin Treatment"],
+    'Eyebrow':["Eyebrow Trim","Nose Hair Wax","Ear Hair Wax"]
+  },
+  kids:{
+    'Cut':["Kids Haircut","Toddler / First Haircut","Kids Buzz Cut","Kids Fade","Kids Trim","Kids Bang Trim"],
+    'Color':["Kids Highlights","Kids Toner / Gloss","Kids Fashion Color"],
+    'Styling':["Kids Blowout","Kids Style & Finish","Kids Braid / Cornrow","Kids Protective Style","Kids Ponytail / Updo"],
+    'Treatments':["Kids Deep Conditioning","Lice Treatment / Removal"]
+  }
+};
+var _bcTab='women';
+function getBookingHiddenSvcs(){try{var p=JSON.parse(localStorage.getItem('ap_prefs')||'{}');return(p.bookingHiddenSvcs&&typeof p.bookingHiddenSvcs==='object')?p.bookingHiddenSvcs:{};}catch(e){return {};}}
+function saveBookingHiddenSvcs(obj){try{var p=JSON.parse(localStorage.getItem('ap_prefs')||'{}');p.bookingHiddenSvcs=obj;localStorage.setItem('ap_prefs',JSON.stringify(p));}catch(e){}}
+function toggleBookingSvc(tab,name){
+  var h=getBookingHiddenSvcs();
+  if(!h[tab])h[tab]=[];
+  var idx=h[tab].indexOf(name);
+  if(idx>-1){h[tab].splice(idx,1);}else{h[tab].push(name);}
+  saveBookingHiddenSvcs(h);
+  renderBookingCurator();
+  try{publishAvailability();}catch(_){}
+}
+function switchBcTab(tab){_bcTab=tab;renderBookingCurator();}
+function renderBookingCurator(){
+  var el=document.getElementById('bookingCuratorBody');if(!el)return;
+  var h=getBookingHiddenSvcs();
+  var hidden=(h[_bcTab]||[]);
+  var grps=BOOK_SVCS[_bcTab]||{};
+  var tabs=['women','men','kids'];
+  var tabLabels={women:'Women',men:'Men',kids:'Kids'};
+  var tabHtml=tabs.map(function(t){
+    var hidCnt=(h[t]||[]).length;
+    var badge=hidCnt?'<span class="bc-tab-badge">'+hidCnt+'</span>':'';
+    return '<button class="bc-tab'+(t===_bcTab?' on':'')+'" onclick="switchBcTab(\''+t+'\')">'+tabLabels[t]+badge+'</button>';
+  }).join('');
+  var grpHtml=Object.keys(grps).map(function(grp){
+    var svcs=grps[grp];
+    var hidInGrp=svcs.filter(function(s){return hidden.indexOf(s)>-1;}).length;
+    var badge=hidInGrp?'<span class="bc-grp-badge">'+hidInGrp+' hidden</span>':'';
+    var rows=svcs.map(function(s){
+      var isHid=hidden.indexOf(s)>-1;
+      var e2=s.replace(/'/g,"\\'").replace(/\\/g,'\\\\');
+      return '<div class="bc-svc-row'+(isHid?' bc-hidden':'')+'">'+
+        '<span class="bc-svc-name">'+esc(s)+'</span>'+
+        '<button class="bc-eye-btn" onclick="toggleBookingSvc(\''+_bcTab+'\',\''+e2+'\')" title="'+(isHid?'Restore':'Hide')+'">'+
+          '<i class="ti ti-'+(isHid?'eye-off':'eye')+'"></i>'+
+        '</button>'+
+      '</div>';
+    }).join('');
+    return '<div class="bc-grp"><div class="bc-grp-hdr">'+esc(grp)+badge+'</div><div class="bc-grp-body">'+rows+'</div></div>';
+  }).join('');
+  el.innerHTML='<div class="bc-tabs">'+tabHtml+'</div><div class="bc-groups">'+grpHtml+'</div>';
+}
+
 function publishAvailability(){
   if(!fbReady)return;
   try{
@@ -3316,6 +3405,7 @@ function publishAvailability(){
       priceBook:getPrices(),
       taken:taken,
       contact:((p.bookContact||'')+'').trim(),
+      bookingHiddenSvcs:getBookingHiddenSvcs(),
       updatedAt:Date.now()
     },{merge:true}).catch(function(e){console.warn('publish',e);});
   }catch(e){console.warn('publish err',e);}

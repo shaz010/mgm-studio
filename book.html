@@ -325,7 +325,7 @@ function renderDemoChips(){
   var moreGrps=(MORE_GROUPS[curDemo]||[]);
   var html='';var moreHtml='';
   function buildGrp(grpName){
-    var svcs=grps[grpName];if(!svcs)return '';
+    var svcs=(grps[grpName]||[]).filter(function(s){var bh=(window._bookingHiddenSvcs&&window._bookingHiddenSvcs[curDemo])||[];return bh.indexOf(s)===-1;});if(!svcs.length)return '';
     var gid='g'+curDemo+'_'+grpName.replace(/[^a-z0-9]/gi,'_');
     var h='<div class="svc-grp">';
     h+='<div class="svc-grp-hdr" onclick="toggleGrp(\''+gid+'\')">'.replace(/\\/g,'\\');
@@ -421,7 +421,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.20 · More services collapsible pane';
+var VERSION='book v3.21 · Reads booking service visibility from Firestore';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -463,6 +463,7 @@ function init(){
       if(!doc.exists){show('errorView');return;}
       var fresh=doc.data();
       window._priceBook=fresh.priceBook||null;
+      window._bookingHiddenSvcs=fresh.bookingHiddenSvcs||{};
       if(!_salonInited){
         _salonInited=true;
         info=fresh;
