@@ -123,6 +123,7 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 .hrow-toggle.on .hrow-knob{left:20px}
 .hrow-times{display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end}
 .hrow-times input{width:auto;flex:1;min-width:0;padding:7px 8px;font-size:14px;text-align:center}
+.hrow-sel{flex:1;min-width:0;padding:7px 8px;font-size:14px;background:#1a1a1a;border:1.5px solid #333;border-radius:9px;color:#fff;font-weight:600;cursor:pointer;text-align:center;-webkit-appearance:none;appearance:none;text-align-last:center}
 .hrow-times.off{opacity:.35;pointer-events:none}
 .hrow-dash{color:var(--muted);font-size:13px}
 .hrow-closed{font-size:12px;color:var(--muted);flex:1;text-align:right;padding-right:4px}
@@ -2766,7 +2767,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.86 · Price book: hide, restore, add custom services';
+var VERSION='v4.87 · Hours: 15-min select wheels, clean pane';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -2947,12 +2948,18 @@ function renderInsights(){
 }
 
 /* ----- working hours ----- */
+var _TIME_OPTS=(function(){var r=[];for(var h=5;h<24;h++){for(var m=0;m<60;m+=15){r.push((h<10?'0':'')+h+':'+(m===0?'00':m===15?'15':m===30?'30':'45'));}}return r;})();
+function _fmt12(t){var p=t.split(':');var h=parseInt(p[0]);var m=p[1];return (h%12||12)+':'+(m||'00')+' '+(h>=12?'pm':'am');}
+function _timeSel(i,k,val){
+  var opts=_TIME_OPTS.map(function(t){return '<option value="'+t+'"'+(t===val?' selected':'')+'>'+_fmt12(t)+'</option>';}).join('');
+  return '<select class="hrow-sel" onchange="setHour('+i+',\''+k+'\',this.value)">'+opts+'</select>';
+}
 var hoursDraft=null;
 function renderHours(reset){
   if(reset||!hoursDraft)hoursDraft=getHours().map(function(d){return {open:!!d.open,start:d.start||'09:00',end:d.end||'18:00'}});
   $('hoursList').innerHTML=hoursDraft.map(function(d,i){
     var times=d.open
-      ? '<div class="hrow-times"><input type="time" value="'+d.start+'" oninput="setHour('+i+',\'start\',this.value)"><span class="hrow-dash">–</span><input type="time" value="'+d.end+'" oninput="setHour('+i+',\'end\',this.value)"></div>'
+      ? '<div class="hrow-times">'+_timeSel(i,'start',d.start)+'<span class="hrow-dash">–</span>'+_timeSel(i,'end',d.end)+'</div>'
       : '<div class="hrow-closed">Closed</div>';
     return '<div class="hrow"><div class="hrow-day">'+DAYS[i]+'</div>'+
       '<button type="button" class="hrow-toggle'+(d.open?' on':'')+'" onclick="toggleHour('+i+')"><span class="hrow-knob"></span></button>'+
@@ -2961,6 +2968,7 @@ function renderHours(reset){
 }
 function toggleHour(i){hoursDraft[i].open=!hoursDraft[i].open;renderHours(false);}
 function setHour(i,k,v){hoursDraft[i][k]=v;}
+
 function saveHours(){
   var p=getPrefs();
   p.hours=hoursDraft.map(function(d){return {open:d.open,start:d.start,end:d.end}});
