@@ -77,8 +77,8 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 .price-cat-head.open .price-chev{transform:rotate(180deg)}
 .pc-count{display:inline-block;font-size:10px;font-weight:700;background:rgba(255,255,255,.13);color:inherit;border-radius:20px;padding:2px 8px;margin-left:7px;vertical-align:middle}
 .price-cat-body{padding-top:2px}
-.price-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #2a2a2a}
-.price-name{font-size:15px;color:#ededed;font-weight:600}
+.price-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #2a2a2a}
+.price-name{font-size:15px;color:#ededed;font-weight:600;flex:1;min-width:0}
 .price-in-wrap{position:relative;flex-shrink:0}
 .price-in-wrap::before{content:'$';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#888;font-size:14px;pointer-events:none}
 .price-in{width:116px;padding:10px 12px 10px 24px;background:#1a1a1a;border:1.5px solid #444;border-radius:10px;color:#fff;font-size:16px;font-weight:600;outline:none;text-align:right}
@@ -764,6 +764,22 @@ body.a11y-big .btn,body.a11y-big .btn-sm{font-size:15px}
 body.a11y-big table td,body.a11y-big table th{font-size:14.5px}
 body.a11y-big .cb-svc,body.a11y-big .cb-date,body.a11y-big .cb-time{font-size:15px}
 body.a11y-big .cdp-chip{font-size:13.5px}
+
+.price-hide-btn{flex-shrink:0;background:none;border:none;color:#444;padding:5px;cursor:pointer;border-radius:6px;line-height:1;transition:color .15s;-webkit-tap-highlight-color:transparent}
+.price-hide-btn:active,.price-hide-btn:hover{color:#f87171}
+.price-manage-area{margin-top:22px;padding-top:16px;border-top:1px solid #222}
+.price-manage-btn{display:flex;align-items:center;width:100%;padding:11px 14px;border-radius:11px;border:1.5px dashed rgba(255,255,255,.15);background:transparent;color:#666;font-size:13px;font-weight:700;cursor:pointer;transition:border-color .18s,color .18s;-webkit-tap-highlight-color:transparent}
+.price-manage-btn.on{border-color:rgba(167,139,250,.5);color:#a78bfa}
+.price-manage-body{display:none;margin-top:14px}
+.price-manage-body.open{display:block}
+.price-manage-lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#555;margin-bottom:8px}
+.price-restore-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #1e1e1e}
+.price-restore-name{font-size:14px;color:#888}
+.price-restore-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid #333;background:#1a1a1a;color:#a78bfa;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0}
+.price-custom-add{display:flex;gap:8px;margin-top:6px}
+.price-custom-inp{flex:1;padding:10px 12px;background:#1a1a1a;border:1.5px solid #333;border-radius:9px;color:#fff;font-size:14px;outline:none;min-width:0}
+.price-custom-inp:focus{border-color:#a78bfa}
+.price-custom-add-btn{padding:10px 16px;border-radius:9px;border:none;background:#a78bfa;color:#fff;font-weight:800;font-size:14px;cursor:pointer;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -2750,7 +2766,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.85 · Price pane larger and roomier';
+var VERSION='v4.86 · Price book: hide, restore, add custom services';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3117,6 +3133,15 @@ function eyeRest(){
 var priceMode='hair';
 function getPrices(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.prices&&typeof p.prices==='object')?p.prices:{};}catch(e){return {};}}
 function savePrices(obj){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.prices=obj;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}}
+function getHiddenSvcs(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return(p.hiddenSvcs&&typeof p.hiddenSvcs==='object')?p.hiddenSvcs:{};}catch(e){return {};}}
+function saveHiddenSvcs(obj){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.hiddenSvcs=obj;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}}
+function getCustomPriceSvcs(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return(p.customPriceSvcs&&typeof p.customPriceSvcs==='object')?p.customPriceSvcs:{};}catch(e){return {};}}
+function saveCustomPriceSvcs(obj){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.customPriceSvcs=obj;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}}
+function hidePriceSvc(name){var h=getHiddenSvcs();if(!h[priceMode])h[priceMode]=[];if(h[priceMode].indexOf(name)===-1)h[priceMode].push(name);saveHiddenSvcs(h);buildPriceList();}
+function restorePriceSvc(name){var h=getHiddenSvcs();if(h[priceMode])h[priceMode]=h[priceMode].filter(function(s){return s!==name;});saveHiddenSvcs(h);buildPriceList();}
+function addCustomPriceSvc(){var inp=document.getElementById('customPriceSvcInp');var name=inp?inp.value.trim():'';if(!name)return;if(inp)inp.value='';var c=getCustomPriceSvcs();if(!c[priceMode])c[priceMode]=[];if(c[priceMode].indexOf(name)===-1)c[priceMode].push(name);saveCustomPriceSvcs(c);buildPriceList();}
+function removeCustomPriceSvc(name){var c=getCustomPriceSvcs();if(c[priceMode])c[priceMode]=c[priceMode].filter(function(s){return s!==name;});saveCustomPriceSvcs(c);var prices=getPrices();delete prices[name];savePrices(prices);buildPriceList();}
+function togglePriceManage(btn){var body=btn.nextElementSibling;if(!body)return;var open=body.classList.toggle('open');btn.classList.toggle('on',open);}
 function setPrice(name,val){
   var prices=getPrices();
   var v=parseFloat(val);
@@ -3169,25 +3194,45 @@ function applyAutoPrice(){
 function setPriceMode(m){priceMode=m;document.querySelectorAll('#priceModal .svc-mode-btn').forEach(function(b){b.classList.toggle('on',b.dataset.pmode===m);});buildPriceList();}
 function buildPriceList(){
   var prices=getPrices();
+  var hidden=(getHiddenSvcs()[priceMode]||[]);
+  var customSvcs=(getCustomPriceSvcs()[priceMode]||[]);
   var groups=SERVICE_GROUPS.filter(function(g){return g.d===priceMode||g.d==='both';});
+  function makeRow(n,isCustom){
+    var val=(prices[n]!==undefined&&prices[n]!==null)?prices[n]:'';
+    var e2=n.replace(/'/g,"\\'");
+    var hpOn=isHairPriced(n);
+    var hideBtn;
+    if(isCustom){hideBtn='<button class="price-hide-btn" onclick="event.stopPropagation();removeCustomPriceSvc(\''+e2+'\')" title="Remove"><i class="ti ti-trash" style="font-size:14px"></i></button>';}
+    else{hideBtn='<button class="price-hide-btn" onclick="event.stopPropagation();hidePriceSvc(\''+e2+'\')" title="Hide"><i class="ti ti-eye-off" style="font-size:14px"></i></button>';}
+    return '<div class="price-row">'+hideBtn+'<span class="price-name">'+esc(n)+'</span>'+
+      '<span class="price-tools">'+
+        '<button class="hair-toggle'+(hpOn?' on':'')+'" onclick="event.stopPropagation();toggleHairPriced(\''+e2+'\',this)">'+(hpOn?'&#10003; By hair':'By hair')+'</button>'+
+        '<span class="price-in-wrap"><input class="price-in" type="number" inputmode="decimal" placeholder="0" value="'+val+'" onclick="event.stopPropagation()" oninput="setPrice(\''+e2+'\',this.value)"></span>'+
+      '</span></div>';
+  }
   var html=groups.map(function(g){
     var items=g.s.slice().sort(function(a,b){return a[0].localeCompare(b[0]);});
-    var priced=items.filter(function(it){return prices[it[0]]!==undefined&&prices[it[0]]!==null&&prices[it[0]]!=='';}).length;
-    var rows=items.map(function(it){
-      var n=it[0];
-      var val=(prices[n]!==undefined&&prices[n]!==null)?prices[n]:'';
-      var e2=n.replace(/'/g,"\\'");
-      var hpOn=isHairPriced(n);
-      return '<div class="price-row"><span class="price-name">'+esc(n)+'</span>'+
-        '<span class="price-tools">'+
-          '<button class="hair-toggle'+(hpOn?' on':'')+'" onclick="event.stopPropagation();toggleHairPriced(\''+e2+'\',this)">'+(hpOn?'✓ By hair':'By hair')+'</button>'+
-          '<span class="price-in-wrap"><input class="price-in" type="number" inputmode="decimal" placeholder="0" value="'+val+'" onclick="event.stopPropagation()" oninput="setPrice(\''+e2+'\',this.value)"></span>'+
-        '</span></div>';
-    }).join('');
+    var visible=items.filter(function(it){return hidden.indexOf(it[0])===-1;});
+    var priced=visible.filter(function(it){return prices[it[0]]!==undefined&&prices[it[0]]!==null&&prices[it[0]]!=='';}).length;
+    var rows=visible.map(function(it){return makeRow(it[0],false);}).join('');
     var col=catColorOf(g.c);
     var badge=priced?'<span class="pc-count">'+priced+'</span>':'';
     return '<div class="price-group"><div class="price-cat-head" onclick="togglePriceCat(this)" style="color:'+col+';border-color:'+col+'66"><span>'+esc(g.c)+badge+'</span><i class="ti ti-chevron-down price-chev"></i></div><div class="price-cat-body" style="display:none">'+rows+'</div></div>';
   }).join('');
+  if(customSvcs.length){
+    html+='<div class="price-group"><div class="price-cat-head open" onclick="togglePriceCat(this)" style="color:#a78bfa;border-color:#a78bfa66"><span>My services<span class="pc-count">'+customSvcs.length+'</span></span><i class="ti ti-chevron-down price-chev"></i></div><div class="price-cat-body">'+customSvcs.map(function(n){return makeRow(n,true);}).join('')+'</div></div>';
+  }
+  var hiddenList=hidden.map(function(n){
+    var e2=n.replace(/'/g,"\\'");
+    return '<div class="price-restore-row"><span class="price-restore-name">'+esc(n)+'</span><button class="price-restore-btn" onclick="restorePriceSvc(\''+e2+'\')"><i class="ti ti-eye"></i> Restore</button></div>';
+  }).join('');
+  html+='<div class="price-manage-area">'+
+    '<button class="price-manage-btn" onclick="togglePriceManage(this)"><i class="ti ti-adjustments-horizontal" style="margin-right:6px;font-size:15px"></i>Add · restore services</button>'+
+    '<div class="price-manage-body">'+
+    (hiddenList?'<div class="price-manage-lbl">Hidden</div>'+hiddenList:'<div class="price-manage-lbl" style="color:#444;font-style:italic">Nothing hidden yet</div>')+
+    '<div class="price-manage-lbl" style="margin-top:14px">Add a service</div>'+
+    '<div class="price-custom-add"><input id="customPriceSvcInp" type="text" class="price-custom-inp" placeholder="e.g. Olaplex Treatment" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addCustomPriceSvc();}"><button class="price-custom-add-btn" onclick="addCustomPriceSvc()">Add</button></div>'+
+    '</div></div>';
   var el=$('priceList');if(el)el.innerHTML=html;
 }
 function togglePriceCat(head){
