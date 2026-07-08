@@ -21,8 +21,9 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .brand-ic{width:40px;height:40px;background:linear-gradient(135deg,#ffcf4d,#e8a91a);border:none;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#1a1208;font-size:20px;flex-shrink:0;box-shadow:0 3px 10px rgba(232,169,26,.28)}
 .brand-name{font-family:'DM Serif Display',Georgia,'Times New Roman',serif;font-size:21px;font-weight:400;letter-spacing:.4px}
 .brand-sub{font-size:12.5px;color:var(--muted);margin-top:1px}
-.sec{font-size:14px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin:26px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--gold-dim,rgba(212,175,55,.35));display:flex;align-items:center}
-.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+.sec{font-size:14px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin:26px 0 12px;padding:12px 0 6px;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid var(--gold-dim,rgba(212,175,55,.35));display:flex;align-items:center}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(min-width:560px){.chips{grid-template-columns:repeat(4,1fr);gap:10px}.chip{min-height:88px;font-size:13px}}
 .chip{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:12px 6px 10px;min-height:76px;border-radius:14px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.035);color:#e2e2ea;font-size:12.5px;font-weight:700;cursor:pointer;transition:transform .14s,border-color .2s,box-shadow .25s;-webkit-tap-highlight-color:transparent;text-align:center;line-height:1.25;word-break:break-word}
 .chip>i{font-size:19px;color:var(--gold)}
 .chip.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 14px rgba(167,139,250,.45)}
@@ -34,7 +35,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .svc-pill span.x:active{opacity:1}
 .chip:active{transform:scale(.93)}
 .chip,.hchip{user-select:none;-webkit-user-select:none}
-.svc-grp{margin-bottom:14px}
+.svc-grp{margin-bottom:18px}
 .svc-grp-hdr{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:900;color:var(--gold);text-transform:uppercase;letter-spacing:1.8px;padding:9px 0 8px;border-bottom:1px solid rgba(255,184,0,.18);cursor:pointer;user-select:none;-webkit-user-select:none}
 .grp-count{font-size:10px;font-weight:800;color:#a78bfa;background:rgba(167,139,250,.18);border-radius:20px;padding:2px 8px;flex-shrink:0}
 .svc-grp-body{margin-top:10px}
@@ -49,7 +50,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .pill-drag-ghost{position:fixed;z-index:9999;padding:7px 14px;border-radius:20px;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d) border-box;border:1.5px solid transparent;color:#fff;font-size:13px;font-weight:700;pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,.7);opacity:.93;white-space:nowrap;transform:rotate(-2deg)}
 .sec{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .sec-chev{font-size:18px;transition:transform .28s cubic-bezier(.4,0,.2,1);color:var(--gold);margin-left:auto;flex-shrink:0;pointer-events:none}
-.sec-body{overflow:hidden;max-height:2000px;opacity:1;transition:max-height .38s cubic-bezier(.4,0,.2,1),opacity .28s ease}
+.sec-body{overflow:hidden;max-height:4000px;opacity:1;padding-bottom:14px;transition:max-height .45s cubic-bezier(.4,0,.2,1),opacity .28s ease}
 .sec-body.closed{max-height:0!important;opacity:0;pointer-events:none}
 .demo-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px}
 .demo-tab{padding:11px 0;border-radius:12px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.035);color:#8a8a8a;font-size:13px;font-weight:800;letter-spacing:.4px;cursor:pointer;text-align:center;transition:border-color .2s,color .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;gap:6px}
@@ -361,7 +362,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.4 · grouped services (Cut/Color/Lights/Styling/Extensions/Eyebrow/Chemical) + per-group add';
+var VERSION='book v3.5 · sec dividers, Add-row overlap fix, chip grid 3-col + tablet 4-col';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
