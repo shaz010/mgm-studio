@@ -2712,7 +2712,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.79 · taxonomy groups, drag-shake fix, adv-settings fix';
+var VERSION='v4.80 · priceBook syncs to Firebase on price-book close';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3159,7 +3159,7 @@ function togglePriceCat(head){
   head.classList.toggle('open',!open);
 }
 function openPrices(){priceMode=getMode();renderTradeLabel();buildPriceList();$('priceModal').classList.add('show');}
-function closePrices(){$('priceModal').classList.remove('show');applyAutoPrice();}
+function closePrices(){$('priceModal').classList.remove('show');applyAutoPrice();try{if(typeof publishAvailability==='function')publishAvailability();}catch(_){}}
 
 /* ===== toast ===== */
 var toastT;
@@ -3222,6 +3222,7 @@ function publishAvailability(){
       salonName:getBizName()||'Salon',
       hours:getHours(),
       services:svc,
+      priceBook:getPrices(),
       taken:taken,
       contact:((p.bookContact||'')+'').trim(),
       updatedAt:Date.now()
