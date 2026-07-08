@@ -1474,51 +1474,48 @@ function buildChips(){
 function initFavDrag(){
   var row=$('favRow');if(!row)return;
   var chips=row.querySelectorAll('.svc-chip');if(chips.length<2)return;
-  var dragSrc=null,ghost=null,holdTimer=null,startX=0,startY=0;
+  var dragSrc=null,ghost=null,holdTimer=null;
+  function onDocMove(e){
+    if(!dragSrc)return;
+    e.preventDefault();
+    var t=e.touches?e.touches[0]:e;
+    if(ghost){ghost.style.left=(t.clientX-52)+'px';ghost.style.top=(t.clientY-22)+'px';}
+    if(ghost){ghost.style.visibility='hidden';}
+    var el=document.elementFromPoint(t.clientX,t.clientY);
+    if(ghost){ghost.style.visibility='';}
+    var target=el&&el.closest?el.closest('#favRow .svc-chip'):null;
+    row.querySelectorAll('.svc-chip').forEach(function(c){c.classList.remove('drag-over');});
+    if(target&&target!==dragSrc)target.classList.add('drag-over');
+  }
   function cleanup(){
-    clearTimeout(holdTimer);holdTimer=null;
-    if(ghost){try{ghost.remove();}catch(_e){}ghost=null;}
+    clearTimeout(holdTimer);
+    document.removeEventListener('touchmove',onDocMove);
+    if(ghost){try{ghost.remove();}catch(_e){} ghost=null;}
     if(row)row.querySelectorAll('.svc-chip').forEach(function(c){c.classList.remove('dragging','drag-over');});
     dragSrc=null;
   }
   chips.forEach(function(chip){
     chip.addEventListener('touchstart',function(e){
-      var t=e.touches[0];
-      startX=t.clientX;startY=t.clientY;
+      var t=e.touches[0],sx=t.clientX,sy=t.clientY;
       holdTimer=setTimeout(function(){
         dragSrc=chip;
         chip.classList.add('dragging');
         ghost=document.createElement('div');
         ghost.className='svc-drag-ghost';
         ghost.textContent=chip.dataset.name||'';
-        ghost.style.left=(startX-52)+'px';ghost.style.top=(startY-22)+'px';
+        ghost.style.left=(sx-52)+'px';ghost.style.top=(sy-22)+'px';
         document.body.appendChild(ghost);
-        try{if(navigator.vibrate)navigator.vibrate(18);}catch(_e){}
+        document.addEventListener('touchmove',onDocMove,{passive:false});
+        try{if(navigator.vibrate)navigator.vibrate(22);}catch(_e){}
       },400);
     },{passive:true});
-    /* passive:false so we CAN call preventDefault once a drag is live */
-    chip.addEventListener('touchmove',function(e){
-      var t=e.touches[0];
-      if(dragSrc){
-        e.preventDefault(); /* blocks page scroll during active drag */
-        if(ghost){ghost.style.left=(t.clientX-52)+'px';ghost.style.top=(t.clientY-22)+'px';}
-        if(ghost)ghost.style.visibility='hidden';
-        var el=document.elementFromPoint(t.clientX,t.clientY);
-        if(ghost)ghost.style.visibility='';
-        var target=el&&el.closest?el.closest('#favRow .svc-chip'):null;
-        row.querySelectorAll('.svc-chip').forEach(function(c){c.classList.remove('drag-over');});
-        if(target&&target!==dragSrc)target.classList.add('drag-over');
-      }else{
-        /* still in hold period — cancel if finger drifted, but let browser scroll */
-        if(Math.abs(t.clientX-startX)>8||Math.abs(t.clientY-startY)>8){
-          clearTimeout(holdTimer);holdTimer=null;
-        }
-      }
-    },{passive:false});
+    chip.addEventListener('touchmove',function(){
+      if(!dragSrc)clearTimeout(holdTimer);
+    },{passive:true});
     chip.addEventListener('touchend',function(e){
-      if(!dragSrc){clearTimeout(holdTimer);holdTimer=null;return;}
+      if(!dragSrc){clearTimeout(holdTimer);return;}
       var t=e.changedTouches[0];
-      if(ghost)ghost.style.visibility='hidden';
+      if(ghost){ghost.style.visibility='hidden';}
       var el=document.elementFromPoint(t.clientX,t.clientY);
       var target=el&&el.closest?el.closest('#favRow .svc-chip'):null;
       var srcName=dragSrc.dataset.name,tgtName=target?target.dataset.name:null;
@@ -2715,7 +2712,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.79 · taxonomy groups + drag-shake fix';
+var VERSION='v4.79 · taxonomy groups, drag-shake fix, adv-settings fix';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -2756,9 +2753,9 @@ function openSettings(){
   renderHours(true);
   syncBookingToggle();renderReqBadge();applyTheme();syncAwakeUI();
   try{renderSetTradeGrid();}catch(e){}
-  $('settingsModal').classList.add('show-adv');
+  $('settingsModal').classList.remove('show-adv');
   $('settingsModal').classList.add('show');
-  try{_applyApptSettingsLayout();toggleApptAdv();var _ab=document.getElementById('apptAdvToggle');if(_ab)_ab.innerHTML='Hide advanced settings ▴';}catch(e){}
+  try{_applyApptSettingsLayout();var _ab=document.getElementById('apptAdvToggle');if(_ab)_ab.innerHTML='Show advanced settings ▾';}catch(e){}
 }
 function saveBusiness(){
   var p=getPrefs();
@@ -3659,12 +3656,10 @@ function toggleApptAdv(){
   var m=document.getElementById('settingsModal'); if(!m)return;
   var on=m.classList.toggle('show-adv');
   if(on){
-    m.querySelectorAll('.set-sec').forEach(function(h){
-      h.classList.remove('collapsed','sec-hidden');
-      var el=h.nextElementSibling;
-      while(el&&!_apptSecBoundary(el)){if(el.classList)el.classList.remove('sec-hidden');el=el.nextElementSibling;}
+    /* Only unhide adv section headers — they stay collapsed; user taps to expand */
+    m.querySelectorAll('.set-sec.adv-sec').forEach(function(h){
+      h.classList.remove('sec-hidden');
     });
-    var sheet=m.querySelector('.sheet');if(sheet)sheet.scrollTop=0;
   } else {
     m.classList.remove('show-adv');
     _applyApptSettingsLayout();
