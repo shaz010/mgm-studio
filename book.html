@@ -34,6 +34,15 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .svc-pill span.x:active{opacity:1}
 .chip:active{transform:scale(.93)}
 .chip,.hchip{user-select:none;-webkit-user-select:none}
+.svc-grp{margin-bottom:14px}
+.svc-grp-hdr{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:900;color:var(--gold);text-transform:uppercase;letter-spacing:1.8px;padding:9px 0 8px;border-bottom:1px solid rgba(255,184,0,.18);cursor:pointer;user-select:none;-webkit-user-select:none}
+.grp-count{font-size:10px;font-weight:800;color:#a78bfa;background:rgba(167,139,250,.18);border-radius:20px;padding:2px 8px;flex-shrink:0}
+.svc-grp-body{margin-top:10px}
+.svc-grp-body.closed{display:none}
+.svc-grp-add{display:flex;align-items:center;gap:7px;margin-top:10px}
+.svc-grp-add-input{flex:1;font-size:14px;padding:8px 10px;border-radius:8px;background:#1a1a1a;border:1.5px solid #333;color:var(--text);outline:none;font-family:inherit}
+.svc-grp-add-input:focus{border-color:var(--gold)}
+.svc-grp-add-btn{font-size:12px;font-weight:800;color:#1a1208;background:var(--gold);border:none;border-radius:8px;padding:8px 13px;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .svc-pill{cursor:grab;touch-action:none}
 .svc-pill.dragging{opacity:.25;outline:2px dashed var(--gold)}
 .svc-pill.drag-over{outline:2px solid #a78bfa;box-shadow:0 0 0 3px rgba(167,139,250,.35)}
@@ -256,9 +265,29 @@ textarea{resize:vertical;min-height:60px}
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
 var DEMO_SVCS={
-  women:["Women's Haircut","Bang Trim","Fringe Cut","Pixie Cut","Bob Cut","Layered Cut","Blunt Cut","Wolf Cut","Trim / Dusting","Single Process Color","Root Touch-Up","Root Smudge","Gray Coverage","Toner / Gloss","Vivid / Fashion Color","Color Correction","Full Highlights","Partial Highlights","Balayage","Foilayage","Babylights","Money Piece","Ombré","Lowlights","Bleach & Tone","Deep Conditioning","Keratin Treatment","Brazilian Blowout","Olaplex Treatment","Scalp Treatment","Hot Oil Treatment","Blowout","Silk Press","Flat Iron Style","Curling Iron Style","Updo","Half-Up Style","Bridal Style","Special Occasion Style","Box Braids","Cornrows","Goddess Braids","Loc Retwist","Loc Styling","Perm","Body Wave","Relaxer","Extensions Install","Extensions Maintenance","Extensions Removal","Wig Install","Eyebrow Wax / Shape","Eyebrow Tint","Lip Wax"],
-  men:["Men's Haircut","Buzz Cut","Crew Cut","Taper Cut","Fade","Skin Fade","High Fade","Mid Fade","Low Fade","Temple Fade","Undercut","Textured Cut","Scissor Cut","French Crop","Mohawk","Beard Trim","Beard Shape-Up","Beard Lineup","Full Beard Styling","Goatee Trim","Mustache Trim","Hot Towel Straight Razor Shave","Neck Shave","Beard Color","Edge Up / Lineup","Hair Design / Razor Art","Hard Part","Men's Color","Men's Gray Coverage","Men's Highlights","Bleach & Tone","Toner","Blowout","Scalp Treatment","Deep Conditioning","Keratin Treatment","Eyebrow Trim","Nose Hair Wax","Ear Hair Wax"],
-  kids:["Kids Haircut","Toddler / First Haircut","Kids Buzz Cut","Kids Fade","Kids Trim","Kids Bang Trim","Kids Highlights","Kids Toner / Gloss","Kids Fashion Color","Kids Blowout","Kids Style & Finish","Kids Braid / Cornrow","Kids Protective Style","Kids Ponytail / Updo","Kids Deep Conditioning","Lice Treatment / Removal"]
+  women:{
+    'Cut':["Women's Haircut","Bang Trim","Fringe Cut","Pixie Cut","Bob Cut","Layered Cut","Blunt Cut","Wolf Cut","Trim / Dusting"],
+    'Color':["Single Process Color","Root Touch-Up","Root Smudge","Gray Coverage","Toner / Gloss","Vivid / Fashion Color","Color Correction"],
+    'Lights':["Full Highlights","Partial Highlights","Balayage","Foilayage","Babylights","Money Piece","Ombré","Lowlights","Bleach & Tone"],
+    'Styling':["Blowout","Brushing","Silk Press","Flat Iron Style","Curling Iron Style","Updo","Half-Up Style","Bridal Style","Special Occasion Style","Box Braids","Cornrows","Goddess Braids","Loc Retwist","Loc Styling"],
+    'Extensions':["Extensions Install","Extensions Maintenance","Extensions Removal","Wig Install"],
+    'Eyebrow':["Eyebrow Wax / Shape","Eyebrow Tint","Lip Wax"],
+    'Other Chemical Services':["Deep Conditioning","Keratin Treatment","Brazilian Blowout","Olaplex Treatment","Scalp Treatment","Hot Oil Treatment","Perm","Body Wave","Relaxer"]
+  },
+  men:{
+    'Cut':["Men's Haircut","Buzz Cut","Crew Cut","Taper Cut","Fade","Skin Fade","High Fade","Mid Fade","Low Fade","Temple Fade","Undercut","Textured Cut","Scissor Cut","French Crop","Mohawk"],
+    'Beard':["Beard Trim","Beard Shape-Up","Beard Lineup","Full Beard Styling","Goatee Trim","Mustache Trim","Hot Towel Straight Razor Shave","Neck Shave"],
+    'Color':["Beard Color","Men's Color","Men's Gray Coverage","Men's Highlights","Bleach & Tone","Toner"],
+    'Styling':["Blowout","Hard Part","Hair Design / Razor Art","Edge Up / Lineup"],
+    'Treatments':["Scalp Treatment","Deep Conditioning","Keratin Treatment"],
+    'Eyebrow':["Eyebrow Trim","Nose Hair Wax","Ear Hair Wax"]
+  },
+  kids:{
+    'Cut':["Kids Haircut","Toddler / First Haircut","Kids Buzz Cut","Kids Fade","Kids Trim","Kids Bang Trim"],
+    'Color':["Kids Highlights","Kids Toner / Gloss","Kids Fashion Color"],
+    'Styling':["Kids Blowout","Kids Style & Finish","Kids Braid / Cornrow","Kids Protective Style","Kids Ponytail / Updo"],
+    'Treatments':["Kids Deep Conditioning","Lice Treatment / Removal"]
+  }
 };
 var curDemo=null;
 function pickDemo(demo,tab){
@@ -267,14 +296,49 @@ function pickDemo(demo,tab){
   renderDemoChips();
 }
 function renderDemoChips(){
-  var allSvcs=window._allSvcs||[];
-  var list;
-  if(curDemo&&DEMO_SVCS[curDemo]){
-    list=DEMO_SVCS[curDemo];
-  }else{list=allSvcs.length?allSvcs:[];}
   var el=$('svcChips');if(!el)return;
-  el.innerHTML=list.map(function(s){return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-sparkles"></i>'+esc(s)+'</div>';}).join('');
+  if(!curDemo||!DEMO_SVCS[curDemo]){
+    var allSvcs=window._allSvcs||[];
+    el.innerHTML=allSvcs.map(function(s){return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-sparkles"></i>'+esc(s)+'</div>';}).join('');
+    syncSvcSel();return;
+  }
+  var grps=DEMO_SVCS[curDemo];
+  var html='';
+  Object.keys(grps).forEach(function(grpName){
+    var svcs=grps[grpName];
+    var gid='g'+curDemo+'_'+grpName.replace(/[^a-z0-9]/gi,'_');
+    html+='<div class="svc-grp">';
+    html+='<div class="svc-grp-hdr" onclick="toggleGrp(\''+gid+'\')">';
+    html+='<i class="ti ti-chevron-down" id="chev_'+gid+'" style="transition:transform .2s;flex-shrink:0"></i>';
+    html+='<span>'+esc(grpName)+'</span>';
+    html+='<span class="grp-count">'+svcs.length+'</span>';
+    html+='</div>';
+    html+='<div class="svc-grp-body" id="'+gid+'">';
+    html+=svcs.map(function(s){return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-sparkles"></i>'+esc(s)+'</div>';}).join('');
+    html+='<div class="svc-grp-add">';
+    html+='<input class="svc-grp-add-input" id="inp_'+gid+'" type="text" placeholder="Add to '+esc(grpName)+'" onkeydown="if(event.key===\'Enter\')addGrpSvc(\''+gid+'\')">';
+    html+='<button class="svc-grp-add-btn" onclick="addGrpSvc(\''+gid+'\')">Add</button>';
+    html+='</div>';
+    html+='</div>';
+    html+='</div>';
+  });
+  el.innerHTML=html;
   syncSvcSel();
+}
+function toggleGrp(gid){
+  var body=document.getElementById(gid);if(!body)return;
+  var closed=body.classList.toggle('closed');
+  var chev=document.getElementById('chev_'+gid);
+  if(chev)chev.style.transform=closed?'rotate(-90deg)':'rotate(0deg)';
+}
+function addGrpSvc(gid){
+  var inp=document.getElementById('inp_'+gid);if(!inp)return;
+  var val=inp.value.trim();if(!val)return;
+  if(selSvcArr.indexOf(val)===-1)selSvcArr.push(val);
+  inp.value='';
+  renderSvcPills();updateBtn();
+  var pills=$('svcPills');
+  if(pills)setTimeout(function(){pills.scrollIntoView({behavior:'smooth',block:'nearest'});},80);
 }
 function syncSvcSel(){document.querySelectorAll('#svcChips .chip').forEach(function(c){c.classList.toggle('sel',selSvcArr.indexOf(c.dataset.s)>-1);});}
 function toggleSec(hdr){
@@ -297,7 +361,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.3 · scroll-to-added + drag reorder selected services';
+var VERSION='book v3.4 · grouped services (Cut/Color/Lights/Styling/Extensions/Eyebrow/Chemical) + per-group add';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
