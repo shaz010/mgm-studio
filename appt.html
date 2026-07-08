@@ -1318,18 +1318,50 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 <script>
 /* ===== service catalog — identical to CommissionPro ===== */
 const SERVICE_GROUPS=[
-  {c:'Cut',d:'hair',open:true,s:[["Women's Haircut",'scissors'],['Bang Trim','cut'],['Fringe Cut','cut'],['Pixie Cut','scissors'],['Bob Cut','scissors'],['Layered Cut','scissors'],['Blunt Cut','scissors'],['Wolf Cut','scissors'],['Trim / Dusting','cut']]},
-  {c:'Color',d:'hair',open:true,s:[['Single Process Color','palette'],['Root Touch-Up','brush'],['Root Smudge','brush'],['Gray Coverage','palette'],['Toner / Gloss','droplet'],['Vivid / Fashion Color','diamond'],['Color Correction','palette']]},
-  {c:'Lights',d:'hair',open:true,s:[['Full Highlights','sparkles'],['Partial Highlights','sparkles'],['Balayage','sparkles'],['Foilayage','sparkles'],['Babylights','sparkles'],['Money Piece','sparkles'],['Ombré','color-swatch'],['Lowlights','sparkles'],['Bleach & Tone','sparkles']]},
-  {c:'Styling',d:'hair',open:true,s:[['Blowout','wind'],['Brushing','wind'],['Silk Press','flame'],['Flat Iron Style','minus'],['Curling Iron Style','wave-sine'],['Updo','crown'],['Half-Up Style','crown'],['Bridal Style','heart'],['Special Occasion Style','sparkles'],['Box Braids','line'],['Cornrows','line'],['Goddess Braids','line'],['Loc Retwist','refresh'],['Loc Styling','sparkles']]},
-  {c:'Extensions',d:'hair',s:[['Extensions Install','wind'],['Extensions Maintenance','refresh'],['Extensions Removal','eraser'],['Wig Install','wind']]},
-  {c:'Eyebrow',d:'hair',s:[['Eyebrow Wax / Shape','eye'],['Eyebrow Tint','palette'],['Lip Wax','droplet']]},
-  {c:'Other Chemical Services',d:'hair',s:[['Deep Conditioning','droplet'],['Keratin Treatment','flame'],['Brazilian Blowout','flame'],['Olaplex Treatment','flask'],['Scalp Treatment','massage'],['Hot Oil Treatment','droplet'],['Perm','wave-sine'],['Body Wave','wave-sine'],['Relaxer','wave-sine']]},
-  {c:"Men's Cut",d:'hair',s:[["Men's Haircut",'user'],['Buzz Cut','user'],['Crew Cut','user'],['Taper Cut','user'],['Fade','user'],['Skin Fade','user'],['High Fade','user'],['Mid Fade','user'],['Low Fade','user'],['Temple Fade','user'],['Undercut','scissors'],['Textured Cut','scissors'],['Scissor Cut','scissors'],['French Crop','user'],['Mohawk','user']]},
-  {c:'Beard & Grooming',d:'hair',s:[['Beard Trim','user'],['Beard Shape-Up','user'],['Beard Lineup','user'],['Full Beard Styling','user'],['Goatee Trim','user'],['Mustache Trim','user'],['Hot Towel Straight Razor Shave','user'],['Neck Shave','user']]},
-  {c:"Men's Color & Style",d:'hair',s:[["Men's Color",'palette'],["Men's Gray Coverage",'palette'],["Men's Highlights",'sparkles'],['Beard Color','palette'],['Toner','droplet'],['Blowout','wind'],['Hard Part','minus'],['Hair Design / Razor Art','pencil'],['Edge Up / Lineup','minus'],['Scalp Treatment','massage'],['Deep Conditioning','droplet'],['Keratin Treatment','flame'],['Eyebrow Trim','eye'],['Nose Hair Wax','droplet'],['Ear Hair Wax','droplet']]},
-  {c:"Kids' Cut",d:'hair',s:[['Kids Haircut','mood-kid'],['Toddler / First Haircut','mood-kid'],['Kids Buzz Cut','mood-kid'],['Kids Fade','mood-kid'],['Kids Trim','mood-kid'],['Kids Bang Trim','mood-kid']]},
-  {c:"Kids' Color & Style",d:'hair',s:[['Kids Highlights','sparkles'],['Kids Toner / Gloss','droplet'],['Kids Fashion Color','palette'],['Kids Blowout','wind'],['Kids Style & Finish','wind'],['Kids Braid / Cornrow','line'],['Kids Protective Style','sparkles'],['Kids Ponytail / Updo','crown'],['Kids Deep Conditioning','droplet'],['Lice Treatment / Removal','droplet']]},
+    {c:'Cut',d:'hair',open:true,s:[
+    ["Women's Haircut",'scissors'],['Bang Trim','cut'],['Fringe Cut','cut'],['Pixie Cut','scissors'],
+    ['Bob Cut','scissors'],['Layered Cut','scissors'],['Blunt Cut','scissors'],['Wolf Cut','scissors'],['Trim / Dusting','cut'],
+    ["Men's Haircut",'user'],['Buzz Cut','user'],['Crew Cut','user'],['Taper Cut','user'],['Fade','user'],
+    ['Skin Fade','user'],['High Fade','user'],['Mid Fade','user'],['Low Fade','user'],['Temple Fade','user'],
+    ['Undercut','scissors'],['Textured Cut','scissors'],['Scissor Cut','scissors'],['French Crop','user'],['Mohawk','user'],
+    ['Beard Trim','user'],['Beard Shape-Up','user'],['Beard Lineup','user'],['Goatee Trim','user'],['Mustache Trim','user'],
+    ['Neck Shave','user'],['Hot Towel Straight Razor Shave','user'],
+    ['Kids Haircut','mood-kid'],['Toddler / First Haircut','mood-kid'],['Kids Buzz Cut','mood-kid'],
+    ['Kids Fade','mood-kid'],['Kids Trim','mood-kid'],['Kids Bang Trim','mood-kid']
+  ]},
+  {c:'Color',d:'hair',open:true,s:[
+    ['Single Process Color','palette'],['Root Touch-Up','brush'],['Root Smudge','brush'],
+    ['Gray Coverage','palette'],['Toner / Gloss','droplet'],['Vivid / Fashion Color','diamond'],['Color Correction','palette'],
+    ["Men's Color",'palette'],["Men's Gray Coverage",'palette'],["Men's Highlights",'sparkles'],['Beard Color','palette'],
+    ['Kids Highlights','sparkles'],['Kids Toner / Gloss','droplet'],['Kids Fashion Color','palette']
+  ]},
+  {c:'Lights',d:'hair',open:true,s:[
+    ['Full Highlights','sparkles'],['Partial Highlights','sparkles'],['Balayage','sparkles'],
+    ['Foilayage','sparkles'],['Babylights','sparkles'],['Money Piece','sparkles'],
+    ['Ombre','color-swatch'],['Lowlights','sparkles'],['Bleach & Tone','sparkles']
+  ]},
+  {c:'Styling',d:'hair',open:true,s:[
+    ['Blowout','wind'],['Brushing','wind'],['Silk Press','flame'],['Flat Iron Style','minus'],
+    ['Curling Iron Style','wave-sine'],['Updo','crown'],['Half-Up Style','crown'],['Bridal Style','heart'],
+    ['Special Occasion Style','sparkles'],['Box Braids','line'],['Cornrows','line'],['Goddess Braids','line'],
+    ['Loc Retwist','refresh'],['Loc Styling','sparkles'],
+    ['Full Beard Styling','user'],['Hard Part','minus'],['Hair Design / Razor Art','pencil'],['Edge Up / Lineup','minus'],
+    ['Kids Blowout','wind'],['Kids Style & Finish','wind'],['Kids Braid / Cornrow','line'],
+    ['Kids Protective Style','sparkles'],['Kids Ponytail / Updo','crown']
+  ]},
+  {c:'Extensions',d:'hair',s:[
+    ['Extensions Install','wind'],['Extensions Maintenance','refresh'],['Extensions Removal','eraser'],['Wig Install','wind']
+  ]},
+  {c:'Eyebrow',d:'hair',s:[
+    ['Eyebrow Wax / Shape','eye'],['Eyebrow Tint','palette'],['Lip Wax','droplet'],
+    ['Eyebrow Trim','eye'],['Nose Hair Wax','droplet'],['Ear Hair Wax','droplet']
+  ]},
+  {c:'Other Chemical Services',d:'hair',s:[
+    ['Deep Conditioning','droplet'],['Keratin Treatment','flame'],['Brazilian Blowout','flame'],
+    ['Olaplex Treatment','flask'],['Scalp Treatment','massage'],['Hot Oil Treatment','droplet'],
+    ['Perm','wave-sine'],['Body Wave','wave-sine'],['Relaxer','wave-sine'],
+    ['Kids Deep Conditioning','droplet'],['Lice Treatment / Removal','droplet']
+  ]},
   {c:'Barbering',d:'barber',s:[['Haircut','scissors'],["Men's Haircut",'user'],['Kids Cut','mood-kid'],['Skin Fade','cut'],['Taper','cut'],['Buzz Cut','cut'],['Line-up / Edge-up','cut'],['Head Shave','razor'],['Design / Pattern','star']]},
   {c:'Beard & Shave',d:'barber',s:[['Beard Trim','mustache'],['Beard Sculpt','mustache'],['Hot Towel Shave','razor'],['Mustache Trim','mustache'],['Razor Line','razor']]},
   {c:'Nails - Hands',d:'nail',s:[['Manicure','hand-stop'],['Gel Manicure','hand-stop'],['Spa Manicure','hand-stop'],['Dip Powder','diamond'],['Polish Change','droplet']]},
@@ -2718,7 +2750,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.82 · price book aligned — Men & Kids fully expanded to match book.html';
+var VERSION='v4.83 · price book unified — 7 groups across all rooms, iOS hours fix';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -2904,7 +2936,7 @@ function renderHours(reset){
   if(reset||!hoursDraft)hoursDraft=getHours().map(function(d){return {open:!!d.open,start:d.start||'09:00',end:d.end||'18:00'}});
   $('hoursList').innerHTML=hoursDraft.map(function(d,i){
     var times=d.open
-      ? '<div class="hrow-times"><input type="time" value="'+d.start+'" onchange="setHour('+i+',\'start\',this.value)"><span class="hrow-dash">–</span><input type="time" value="'+d.end+'" onchange="setHour('+i+',\'end\',this.value)"></div>'
+      ? '<div class="hrow-times"><input type="time" value="'+d.start+'" oninput="setHour('+i+',\'start\',this.value)"><span class="hrow-dash">–</span><input type="time" value="'+d.end+'" oninput="setHour('+i+',\'end\',this.value)"></div>'
       : '<div class="hrow-closed">Closed</div>';
     return '<div class="hrow"><div class="hrow-day">'+DAYS[i]+'</div>'+
       '<button type="button" class="hrow-toggle'+(d.open?' on':'')+'" onclick="toggleHour('+i+')"><span class="hrow-knob"></span></button>'+

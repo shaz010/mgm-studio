@@ -2252,12 +2252,50 @@ function showTab(t){
 }
 // ── SERVICE PICKER ──
 const SERVICE_GROUPS=[
-  {c:'Color',d:'hair',s:[['Color','palette'],['Root Touch-up','brush'],['Root Smudge','brush'],['All-Over Color','palette'],['Gray Coverage','palette'],["Men's Color",'palette'],['Vivid Color','diamond'],['Color Correction','palette'],['Toner / Gloss','droplet']]},
-  {c:'Highlights',d:'hair',s:[['Highlights','sparkles'],['Partial Highlight','sparkles'],['Full Highlight','sparkles'],['Lowlights','sparkles'],['Balayage','sparkles'],['Foilage','sparkles'],['Ombre','color-swatch'],['Babylights','sparkles']]},
-  {c:'Haircuts',d:'hair',s:[["Women's Haircut",'scissors'],["Men's Haircut",'user'],['Kids Haircut','mood-kid'],['Bang / Fringe Trim','cut'],['Dry Trim','scissors'],['Restyle / Major Cut','scissors'],['Trim Only','cut']]},
-  {c:'Styling',d:'hair',s:[['Blow Dry','wind'],['Curls','wave-sine'],['Wand Curls','wand'],['Straighten / Flat Iron','minus'],['Beach Waves','wave-sine'],['Silk Press','flame'],['Hand-Styled','hand-finger'],['Updo','crown'],['Braids','line'],['Roller Set','circle'],['Special Occasion','sparkles'],['Bridal Styling','heart']]},
-  {c:'Treatments',d:'hair',s:[['Treatment','flask'],['Deep Conditioning','droplet'],['Olaplex','flask'],['Scalp Treatment','massage'],['Keratin','flame'],['Brazilian Blowout','flame'],['Clarifying','droplet'],['Gloss / Shine','droplet']]},
-  {c:'Texture',d:'hair',s:[['Perm','wave-sine'],['Relaxer','wave-sine'],['Permanent Straightening','wave-sine']]},
+    {c:'Cut',d:'hair',open:true,s:[
+    ["Women's Haircut",'scissors'],['Bang Trim','cut'],['Fringe Cut','cut'],['Pixie Cut','scissors'],
+    ['Bob Cut','scissors'],['Layered Cut','scissors'],['Blunt Cut','scissors'],['Wolf Cut','scissors'],['Trim / Dusting','cut'],
+    ["Men's Haircut",'user'],['Buzz Cut','user'],['Crew Cut','user'],['Taper Cut','user'],['Fade','user'],
+    ['Skin Fade','user'],['High Fade','user'],['Mid Fade','user'],['Low Fade','user'],['Temple Fade','user'],
+    ['Undercut','scissors'],['Textured Cut','scissors'],['Scissor Cut','scissors'],['French Crop','user'],['Mohawk','user'],
+    ['Beard Trim','user'],['Beard Shape-Up','user'],['Beard Lineup','user'],['Goatee Trim','user'],['Mustache Trim','user'],
+    ['Neck Shave','user'],['Hot Towel Straight Razor Shave','user'],
+    ['Kids Haircut','mood-kid'],['Toddler / First Haircut','mood-kid'],['Kids Buzz Cut','mood-kid'],
+    ['Kids Fade','mood-kid'],['Kids Trim','mood-kid'],['Kids Bang Trim','mood-kid']
+  ]},
+  {c:'Color',d:'hair',open:true,s:[
+    ['Single Process Color','palette'],['Root Touch-Up','brush'],['Root Smudge','brush'],
+    ['Gray Coverage','palette'],['Toner / Gloss','droplet'],['Vivid / Fashion Color','diamond'],['Color Correction','palette'],
+    ["Men's Color",'palette'],["Men's Gray Coverage",'palette'],["Men's Highlights",'sparkles'],['Beard Color','palette'],
+    ['Kids Highlights','sparkles'],['Kids Toner / Gloss','droplet'],['Kids Fashion Color','palette']
+  ]},
+  {c:'Lights',d:'hair',open:true,s:[
+    ['Full Highlights','sparkles'],['Partial Highlights','sparkles'],['Balayage','sparkles'],
+    ['Foilayage','sparkles'],['Babylights','sparkles'],['Money Piece','sparkles'],
+    ['Ombre','color-swatch'],['Lowlights','sparkles'],['Bleach & Tone','sparkles']
+  ]},
+  {c:'Styling',d:'hair',open:true,s:[
+    ['Blowout','wind'],['Brushing','wind'],['Silk Press','flame'],['Flat Iron Style','minus'],
+    ['Curling Iron Style','wave-sine'],['Updo','crown'],['Half-Up Style','crown'],['Bridal Style','heart'],
+    ['Special Occasion Style','sparkles'],['Box Braids','line'],['Cornrows','line'],['Goddess Braids','line'],
+    ['Loc Retwist','refresh'],['Loc Styling','sparkles'],
+    ['Full Beard Styling','user'],['Hard Part','minus'],['Hair Design / Razor Art','pencil'],['Edge Up / Lineup','minus'],
+    ['Kids Blowout','wind'],['Kids Style & Finish','wind'],['Kids Braid / Cornrow','line'],
+    ['Kids Protective Style','sparkles'],['Kids Ponytail / Updo','crown']
+  ]},
+  {c:'Extensions',d:'hair',s:[
+    ['Extensions Install','wind'],['Extensions Maintenance','refresh'],['Extensions Removal','eraser'],['Wig Install','wind']
+  ]},
+  {c:'Eyebrow',d:'hair',s:[
+    ['Eyebrow Wax / Shape','eye'],['Eyebrow Tint','palette'],['Lip Wax','droplet'],
+    ['Eyebrow Trim','eye'],['Nose Hair Wax','droplet'],['Ear Hair Wax','droplet']
+  ]},
+  {c:'Other Chemical Services',d:'hair',s:[
+    ['Deep Conditioning','droplet'],['Keratin Treatment','flame'],['Brazilian Blowout','flame'],
+    ['Olaplex Treatment','flask'],['Scalp Treatment','massage'],['Hot Oil Treatment','droplet'],
+    ['Perm','wave-sine'],['Body Wave','wave-sine'],['Relaxer','wave-sine'],
+    ['Kids Deep Conditioning','droplet'],['Lice Treatment / Removal','droplet']
+  ]},
   {c:'Barbering',d:'barber',s:[['Haircut','scissors'],["Men's Haircut",'user'],['Kids Cut','mood-kid'],['Skin Fade','cut'],['Taper','cut'],['Buzz Cut','cut'],['Line-up / Edge-up','cut'],['Head Shave','razor'],['Design / Pattern','star']]},
   {c:'Beard & Shave',d:'barber',s:[['Beard Trim','mustache'],['Beard Sculpt','mustache'],['Hot Towel Shave','razor'],['Mustache Trim','mustache'],['Razor Line','razor']]},
   {c:'Nails - Hands',d:'nail',s:[['Manicure','hand-stop'],['Gel Manicure','hand-stop'],['Spa Manicure','hand-stop'],['Dip Powder','diamond'],['Polish Change','droplet']]},
@@ -2309,7 +2347,7 @@ function tourNext(){if(tourI>=TOUR.length-1){endTour();return;}tourI++;renderTou
 function endTour(){var sc=document.getElementById('tourScreen');if(sc)sc.style.display='none';try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.tourDone=true;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.tourDone=true;}
 function openTour(){tourI=0;renderTour();var sc=document.getElementById('tourScreen');if(sc)sc.style.display='flex';}
 function maybeShowTour(){var done=false;try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');done=!!p.tourDone;}catch(e){}if(!done)openTour();}
-var CAT_COLORS={'Haircuts':'#FFC04D','Styling':'#FFD27A','Color':'#FF7AB0','Highlights':'#FFE15A','Treatments':'#5FD6C6','Texture':'#B79CFF','Barbering':'#8FD17A','Beard & Shave':'#C9A87C','Nails - Hands':'#FF93A6','Nails - Feet':'#5FC8EC','Nails - Enhancements':'#CBA6FF','Lash Extensions':'#67E8F9','Lash Extras':'#9FE0FF','Brows':'#E6B07E','Facials':'#9AD9A6','Waxing & Skin':'#F4A6C8','Makeup':'#FF7AB0','Massage':'#B79CFF','Extensions':'#7FB4FF'};
+var CAT_COLORS={'Cut':'#8FD17A','Haircuts':'#8FD17A','Color':'#FF7AB0','Lights':'#a78bfa','Styling':'#67e8f9','Extensions':'#f5a8ff','Eyebrow':'#fb923c','Other Chemical Services':'#4fd1c5','Highlights':'#FFE15A','Treatments':'#5FD6C6','Texture':'#B79CFF','Barbering':'#8FD17A','Beard & Shave':'#C9A87C','Nails - Hands':'#FF93A6','Nails - Feet':'#5FC8EC','Nails - Enhancements':'#CBA6FF','Lash Extensions':'#67E8F9','Lash Extras':'#9FE0FF','Brows':'#E6B07E','Facials':'#9AD9A6','Waxing & Skin':'#F4A6C8','Makeup':'#FF7AB0','Massage':'#B79CFF','Extensions':'#7FB4FF'};
 function catColorOf(c){return CAT_COLORS[c]||'#FFC04D';}
 function getFavorites(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return Array.isArray(p.favorites)?p.favorites:DEFAULT_FAVES.slice();}catch(e){return DEFAULT_FAVES.slice();}}
 function saveFavorites(arr){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.favorites=arr;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.favorites=arr;}
@@ -3513,7 +3551,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.76 · chosen trade goes full hologram';
+var VERSION='app v1.77 · price book unified — 7 groups match Appointments & booking page';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
