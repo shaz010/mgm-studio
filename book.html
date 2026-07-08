@@ -67,8 +67,8 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .datecell.sel .dc-n{color:var(--gold)}
 .dc-mo{font-size:9.5px;color:var(--muted);margin-top:1px}
 .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:4px}
-.slot{text-align:center;font-size:14px;font-weight:600;padding:11px 0;border-radius:9px;background:#1a1a1a;border:1.5px solid var(--border-bright);color:var(--text2);cursor:pointer;transition:all .12s}
-.slot.sel{background:var(--gold-dim);border-color:var(--gold);color:var(--gold);font-weight:700}
+.slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;padding:9px 4px;border-radius:9px;background:#1a1a1a;border:1.5px solid var(--border-bright);color:var(--text2);cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .12s;overflow:hidden}.slot-tod{font-size:13px;line-height:1}.slot-lbl{font-size:12.5px;font-weight:700;line-height:1}
+.slot.sel{background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box!important;background-size:auto,200% 100%!important;border-color:transparent!important;color:var(--gold)!important;font-weight:800;animation:iridShift 4.5s linear infinite;box-shadow:0 0 16px rgba(167,139,250,.5)}
 .slot.pending{border-color:#7a5a1a;color:#e0a93c}
 .btn-hint{display:none;text-align:center;font-size:13px;font-weight:700;color:#e0a93c;margin-top:8px}
 .btn-hint.show{display:block}
@@ -385,7 +385,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.8 · sticky tabs, × delete, 2-col group grid, price tiles';
+var VERSION='book v3.9 · time-of-day living light, sticky tabs, price chips';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -576,6 +576,24 @@ function addCustomSvc(){
 }
 function pickDate(el){selDate=el.dataset.d;selTime='';markSel('dateRow',selDate,'d');renderSlots();updateBtn();}
 function markSel(wrap,val,attr){document.querySelectorAll('#'+wrap+' [data-'+attr+']').forEach(function(c){c.classList.toggle('sel',c.dataset[attr]===val);});}
+function slotTOD(t){
+  var p=t.split(':'),h=+p[0],m=+(p[1]||0),d=h+m/60;
+  var r=[
+    [5.5, 'linear-gradient(145deg,rgba(12,12,55,.62),rgba(25,8,65,.52))', '#9898e8','🌙'],
+    [7,   'linear-gradient(145deg,rgba(130,25,20,.55),rgba(170,50,0,.45))','#ffb098','🌄'],
+    [8.5, 'linear-gradient(145deg,rgba(195,80,0,.48),rgba(215,110,0,.38))','#ffc888','🌅'],
+    [10,  'linear-gradient(145deg,rgba(185,135,0,.42),rgba(218,168,0,.32))','#ffe090','☀️'],
+    [12,  'linear-gradient(145deg,rgba(195,155,0,.38),rgba(235,195,0,.28))','#fff2a0','🌞'],
+    [14,  'linear-gradient(145deg,rgba(182,142,0,.40),rgba(225,180,0,.30))','#ffe888','🌤️'],
+    [16,  'linear-gradient(145deg,rgba(168,108,0,.42),rgba(205,138,0,.32))','#ffd870','🌻'],
+    [17.5,'linear-gradient(145deg,rgba(155,68,0,.46),rgba(185,85,0,.36))', '#ffba68','🌤️'],
+    [19,  'linear-gradient(145deg,rgba(148,38,0,.52),rgba(118,18,35,.42))','#ffaa70','🌇'],
+    [20.5,'linear-gradient(145deg,rgba(68,8,105,.52),rgba(98,18,78,.42))', '#e078ff','🌆'],
+    [99,  'linear-gradient(145deg,rgba(10,10,58,.60),rgba(18,5,58,.50))',  '#8080cc','🌃'],
+  ];
+  for(var i=0;i<r.length;i++){if(d<r[i][0])return {bg:r[i][1],col:r[i][2],ic:r[i][3]};}
+  return {bg:'linear-gradient(145deg,rgba(10,10,58,.60),rgba(18,5,58,.50))',col:'#8080cc',ic:'🌃'};
+}
 function renderSlots(){
   var hours=info.hours||[];
   var d=new Date(selDate+'T12:00:00');
@@ -585,7 +603,8 @@ function renderSlots(){
   var slots=genSlots(dh,taken,pend);
   if(!slots.length){$('slotGrid').innerHTML='<div class="empty-slots" style="grid-column:1/-1">No open times this day — try another, or request a time below.</div>';return;}
   $('slotGrid').innerHTML=slots.map(function(s){
-    return '<div class="slot'+(s.pending?' pending':'')+'" data-t="'+s.time+'" onclick="pickTime(this)">'+s.label+'</div>';
+    var td=slotTOD(s.time);
+    return '<div class="slot'+(s.pending?' pending':'')+'" data-t="'+s.time+'" onclick="pickTime(this)" style="background:'+td.bg+',#161618;color:'+td.col+'"><span class="slot-tod">'+td.ic+'</span><span class="slot-lbl">'+s.label+'</span></div>';
   }).join('');
 }
 function pickTime(el){
