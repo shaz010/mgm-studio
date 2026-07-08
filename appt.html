@@ -1164,7 +1164,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <input id="sbContact" type="tel" placeholder="Leave blank to show nothing" onchange="saveBookContact()">
     <div style="font-size:12px;color:var(--muted);margin:7px 0 2px;line-height:1.5">If the form ever hiccups, clients see a small "text or call directly" line with this number. Blank = never shown.</div>
 
-    <div class="set-sec" onclick="(function(el){el.classList.toggle('collapsed');var b=document.getElementById('bookingCuratorBody');if(b){b.style.display=el.classList.contains('collapsed')?'none':'block';if(!el.classList.contains('collapsed'))renderBookingCurator();}})(this)">Booking services</div>
+    <div class="set-sec">Booking services</div>
     <div id="bookingCuratorBody" style="display:none"></div>
 
     <div class="set-sec">Insights</div>
@@ -2786,7 +2786,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.88 · Booking services curator — control what clients see';
+var VERSION='v4.89 · Booking services curator fix — sec handler';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -2830,6 +2830,7 @@ function openSettings(){
   $('settingsModal').classList.remove('show-adv');
   $('settingsModal').classList.add('show');
   try{_applyApptSettingsLayout();var _ab=document.getElementById('apptAdvToggle');if(_ab)_ab.innerHTML='Show advanced settings ▾';}catch(e){}
+  try{renderBookingCurator();}catch(e){}
 }
 function saveBusiness(){
   var p=getPrefs();
