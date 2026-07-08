@@ -385,7 +385,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.9 · time-of-day living light, sticky tabs, price chips';
+var VERSION='book v3.10 · force server fetch — hours always fresh';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -422,7 +422,7 @@ function init(){
     if(typeof firebase==='undefined'){show('errorView');return;}
     if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(FB_CONFIG);
     db=firebase.firestore();
-    db.collection('public').doc(SALON_ID).get().then(function(doc){
+    db.collection('public').doc(SALON_ID).get({source:'server'}).then(function(doc){
       if(!doc.exists){show('errorView');return;}
       info=doc.data();window._priceBook=info.priceBook||null;
       if(!info.bookingOpen){show('closedView');return;}
@@ -714,7 +714,7 @@ function submitBooking(){
     });
   };
   if(isCustom){doSend();return;}
-  db.collection('public').doc(SALON_ID).get().then(function(doc){
+  db.collection('public').doc(SALON_ID).get({source:'server'}).then(function(doc){
     var fresh=doc.exists?(doc.data()||{}):{};
     var t0=mins(time),t1=t0+60;
     var clash=(fresh.taken||[]).some(function(b){if(b.date!==selDate)return false;var bs=mins(b.time),be=bs+(+b.dur||60);return t0<be&&t1>bs;});
