@@ -34,6 +34,10 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .svc-pill span.x:active{opacity:1}
 .chip:active{transform:scale(.93)}
 .chip,.hchip{user-select:none;-webkit-user-select:none}
+.svc-pill{cursor:grab;touch-action:none}
+.svc-pill.dragging{opacity:.25;outline:2px dashed var(--gold)}
+.svc-pill.drag-over{outline:2px solid #a78bfa;box-shadow:0 0 0 3px rgba(167,139,250,.35)}
+.pill-drag-ghost{position:fixed;z-index:9999;padding:7px 14px;border-radius:20px;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d) border-box;border:1.5px solid transparent;color:#fff;font-size:13px;font-weight:700;pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,.7);opacity:.93;white-space:nowrap;transform:rotate(-2deg)}
 .sec{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .sec-chev{font-size:18px;transition:transform .28s cubic-bezier(.4,0,.2,1);color:var(--gold);margin-left:auto;flex-shrink:0;pointer-events:none}
 .sec-body{overflow:hidden;max-height:2000px;opacity:1;transition:max-height .38s cubic-bezier(.4,0,.2,1),opacity .28s ease}
@@ -293,7 +297,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.2 · fix custom add + no text-select on chips';
+var VERSION='book v3.3 · scroll-to-added + drag reorder selected services';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -395,13 +399,62 @@ function allSvcs(){
 }
 function renderSvcPills(){
   var el=$('svcPills');if(!el)return;
-  var all=selSvcArr.slice();
-  var cv=otherSvcMode&&$('otherSvc')?$('otherSvc').value.trim():'';
-  if(cv)all.push(cv);
-  el.innerHTML=all.map(function(s){
-    var isCustom=selSvcArr.indexOf(s)===-1;
-    return '<span class="svc-pill">'+esc(s)+(isCustom?'':'<span class="x" onclick="removeSvc(\''+esc(s).replace(/'/g,"\\'")+'\')">&#215;</span>')+'</span>';
+  el.innerHTML=selSvcArr.map(function(s){
+    return '<span class="svc-pill" data-s="'+esc(s)+'">'+esc(s)+'<span class="x" onclick="removeSvc(\''+esc(s).replace(/'/g,"\\'")+'\')">&#215;</span></span>';
   }).join('');
+  initPillDrag();
+}
+function initPillDrag(){
+  var wrap=$('svcPills');if(!wrap)return;
+  var pills=wrap.querySelectorAll('.svc-pill');if(pills.length<2)return;
+  var dragSrc=null,ghost=null,holdTimer=null;
+  function onDocMove(e){
+    if(!dragSrc)return;e.preventDefault();
+    var t=e.touches?e.touches[0]:e;
+    if(ghost){ghost.style.left=(t.clientX-60)+'px';ghost.style.top=(t.clientY-20)+'px';}
+    if(ghost)ghost.style.visibility='hidden';
+    var el=document.elementFromPoint(t.clientX,t.clientY);
+    if(ghost)ghost.style.visibility='';
+    var target=el&&el.closest?el.closest('#svcPills .svc-pill'):null;
+    wrap.querySelectorAll('.svc-pill').forEach(function(p){p.classList.remove('drag-over');});
+    if(target&&target!==dragSrc)target.classList.add('drag-over');
+  }
+  function cleanup(){
+    clearTimeout(holdTimer);
+    document.removeEventListener('touchmove',onDocMove);
+    if(ghost){try{ghost.remove();}catch(_e){}ghost=null;}
+    wrap.querySelectorAll('.svc-pill').forEach(function(p){p.classList.remove('dragging','drag-over');});
+    dragSrc=null;
+  }
+  pills.forEach(function(pill){
+    pill.addEventListener('touchstart',function(e){
+      var t=e.touches[0],sx=t.clientX,sy=t.clientY;
+      holdTimer=setTimeout(function(){
+        dragSrc=pill;pill.classList.add('dragging');
+        ghost=document.createElement('div');ghost.className='pill-drag-ghost';
+        ghost.textContent=pill.dataset.s||'';
+        ghost.style.left=(sx-60)+'px';ghost.style.top=(sy-20)+'px';
+        document.body.appendChild(ghost);
+        document.addEventListener('touchmove',onDocMove,{passive:false});
+        try{if(navigator.vibrate)navigator.vibrate(18);}catch(_e){}
+      },420);
+    },{passive:true});
+    pill.addEventListener('touchmove',function(){if(!dragSrc)clearTimeout(holdTimer);},{passive:true});
+    pill.addEventListener('touchend',function(e){
+      if(!dragSrc){clearTimeout(holdTimer);return;}
+      var t=e.changedTouches[0];
+      if(ghost)ghost.style.visibility='hidden';
+      var el=document.elementFromPoint(t.clientX,t.clientY);
+      var target=el&&el.closest?el.closest('#svcPills .svc-pill'):null;
+      var srcName=dragSrc.dataset.s,tgtName=target?target.dataset.s:null;
+      cleanup();
+      if(tgtName&&tgtName!==srcName){
+        var si=selSvcArr.indexOf(srcName),ti=selSvcArr.indexOf(tgtName);
+        if(si!==-1&&ti!==-1){selSvcArr.splice(si,1);selSvcArr.splice(selSvcArr.indexOf(tgtName),0,srcName);renderSvcPills();}
+      }
+    },{passive:true});
+    pill.addEventListener('touchcancel',cleanup,{passive:true});
+  });
 }
 function pickSvc(el){
   var s=el.dataset.s;
@@ -430,6 +483,8 @@ function addCustomSvc(){
   if(selSvcArr.indexOf(val)===-1)selSvcArr.push(val);
   if(input)input.value='';
   renderSvcPills();updateBtn();
+  var pills=$('svcPills');
+  if(pills)setTimeout(function(){pills.scrollIntoView({behavior:'smooth',block:'nearest'});},80);
 }
 function pickDate(el){selDate=el.dataset.d;selTime='';markSel('dateRow',selDate,'d');renderSlots();updateBtn();}
 function markSel(wrap,val,attr){document.querySelectorAll('#'+wrap+' [data-'+attr+']').forEach(function(c){c.classList.toggle('sel',c.dataset[attr]===val);});}
