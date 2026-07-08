@@ -24,8 +24,8 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .sec{font-size:14px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin:26px 0 12px;padding:12px 0 6px;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid var(--gold-dim,rgba(212,175,55,.35));display:flex;align-items:center}
 .chips{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
 .chip{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 6px 10px;min-height:86px;border-radius:14px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.035);color:#e2e2ea;font-size:12px;font-weight:700;cursor:pointer;transition:transform .14s,border-color .2s,box-shadow .25s;-webkit-tap-highlight-color:transparent;text-align:center;line-height:1.25;word-break:break-word}
-.chip>i{font-size:20px;color:var(--gold)}.chip-name{font-size:12px;font-weight:700;line-height:1.2}.chip-price{font-size:11px;font-weight:800;color:#e8c84a;background:rgba(212,175,55,.28);border:1.5px solid rgba(212,175,55,.6);border-radius:20px;padding:2px 9px;margin-top:2px;letter-spacing:.2px;white-space:nowrap}
-.chip.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 14px rgba(167,139,250,.45)}.chip.sel .chip-price{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);color:#fff}
+.chip>i{font-size:20px;color:var(--gold)}.chip-name{font-size:12px;font-weight:700;line-height:1.2}.chip-price{font-size:11.5px;font-weight:600;color:#ffe566;background:rgba(0,0,0,.6);border:1px solid rgba(255,215,60,.55);border-radius:20px;padding:2px 8px;margin-top:3px;letter-spacing:.4px;white-space:nowrap}
+.chip.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 14px rgba(167,139,250,.45)}.chip.sel .chip-price{background:rgba(0,0,0,.55);border-color:rgba(255,215,60,.6);color:#fff}
 .chip.sel>i{background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent!important;animation:iridShift 4.5s linear infinite}
 .svc-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
 .svc-pills:empty{display:none}
@@ -34,7 +34,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .svc-pill span.x:active{opacity:1}
 .chip:active{transform:scale(.93)}
 .chip,.hchip{user-select:none;-webkit-user-select:none}
-.svc-grp{margin-bottom:0;background:rgba(255,255,255,.025);border-radius:12px;border:1px solid rgba(255,255,255,.065);padding:8px 8px 10px}.svc-grp .chip{min-height:72px;font-size:11px;padding:8px 4px}.svc-grp .chip-price{font-size:10px;padding:1px 6px;margin-top:1px}.svc-grp .svc-grp-add-input{font-size:12px;padding:6px 8px}.svc-grp .svc-grp-add-btn{font-size:11px;padding:6px 10px}.svc-grp-hdr{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:900;color:var(--gold);text-transform:uppercase;letter-spacing:1.8px;padding:7px 0 7px;border-bottom:1px solid rgba(255,184,0,.18);cursor:pointer;user-select:none;-webkit-user-select:none}.svc-grp-body{margin-top:8px}.svc-grp-body.closed{display:none}#svcChips{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}@media(min-width:560px){#svcChips{grid-template-columns:repeat(3,1fr)}}
+.svc-grp{margin-bottom:0;background:rgba(255,255,255,.025);border-radius:12px;border:1px solid rgba(255,255,255,.065);padding:8px 8px 10px}.svc-grp .chip{min-height:72px;font-size:11px;padding:8px 4px}.svc-grp .chip-price{font-size:11px;padding:2px 7px;margin-top:2px}.svc-grp .svc-grp-add-input{font-size:12px;padding:6px 8px}.svc-grp .svc-grp-add-btn{font-size:11px;padding:6px 10px}.svc-grp-hdr{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:900;color:var(--gold);text-transform:uppercase;letter-spacing:1.8px;padding:7px 0 7px;border-bottom:1px solid rgba(255,184,0,.18);cursor:pointer;user-select:none;-webkit-user-select:none}.svc-grp-body{margin-top:8px}.svc-grp-body.closed{display:none}#svcChips{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}@media(min-width:560px){#svcChips{grid-template-columns:repeat(3,1fr)}}
 .svc-grp-hdr{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:900;color:var(--gold);text-transform:uppercase;letter-spacing:1.8px;padding:9px 0 8px;border-bottom:1px solid rgba(255,184,0,.18);cursor:pointer;user-select:none;-webkit-user-select:none}
 .grp-count{font-size:10px;font-weight:800;color:#a78bfa;background:rgba(167,139,250,.18);border-radius:20px;padding:2px 8px;flex-shrink:0}
 .svc-grp-body{margin-top:10px}
@@ -390,7 +390,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.15 · iPad custom service tile fix, sharper price badges';
+var VERSION='book v3.16 · price badges — thin 600 weight, dark pill, bright gold';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
