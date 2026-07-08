@@ -72,16 +72,16 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 /* PRICE BOOK (verbatim from CommissionPro) */
 .price-hint{font-size:12.5px;color:#999;line-height:1.6;margin-bottom:14px}
 .price-group{margin-bottom:6px}
-.price-cat-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:14.5px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;padding:13px 2px;border-bottom:1.5px solid #2c2c2c;user-select:none;-webkit-tap-highlight-color:transparent}
+.price-cat-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;padding:15px 4px;border-bottom:1.5px solid #333;user-select:none;-webkit-tap-highlight-color:transparent}
 .price-chev{font-size:18px;transition:transform .22s ease;opacity:.85}
 .price-cat-head.open .price-chev{transform:rotate(180deg)}
 .pc-count{display:inline-block;font-size:10px;font-weight:700;background:rgba(255,255,255,.13);color:inherit;border-radius:20px;padding:2px 8px;margin-left:7px;vertical-align:middle}
 .price-cat-body{padding-top:2px}
-.price-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #222}
-.price-name{font-size:14px;color:#ededed;font-weight:600}
+.price-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #2a2a2a}
+.price-name{font-size:15px;color:#ededed;font-weight:600}
 .price-in-wrap{position:relative;flex-shrink:0}
 .price-in-wrap::before{content:'$';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#888;font-size:14px;pointer-events:none}
-.price-in{width:104px;padding:8px 10px 8px 22px;background:#1a1a1a;border:1.5px solid #444;border-radius:8px;color:#fff;font-size:16px;font-weight:600;outline:none;text-align:right}
+.price-in{width:116px;padding:10px 12px 10px 24px;background:#1a1a1a;border:1.5px solid #444;border-radius:10px;color:#fff;font-size:16px;font-weight:600;outline:none;text-align:right}
 .price-in:focus{border-color:var(--gold);background:#1e1e1e}
 .set-sec{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin:22px 0 10px;padding-top:16px;border-top:1px solid var(--border)}
 #settingsModal .set-sec{cursor:pointer;display:flex;align-items:center;justify-content:space-between;-webkit-tap-highlight-color:transparent}
@@ -453,7 +453,7 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 .ap-price-wrap{display:flex;align-items:center;gap:8px;background:#111;border:1.5px solid var(--border-bright);border-radius:12px;padding:12px 16px;margin-top:8px}
 .ap-price-cur{font-size:24px;font-weight:800;color:var(--gold)}
 .ap-price-in{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:26px;font-weight:800;width:100%;min-width:0}
-.sheet{background:var(--bg2);border:1px solid var(--border-bright);border-bottom:none;border-radius:18px 18px 0 0;padding:20px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:slideup .22s ease}
+.sheet{background:var(--bg2);border:1px solid var(--border-bright);border-bottom:none;border-radius:22px 22px 0 0;padding:26px 24px;padding-bottom:calc(32px + env(safe-area-inset-bottom,0px));width:100%;max-width:680px;max-height:94vh;overflow-y:auto;animation:slideup .22s ease}
 @keyframes slideup{from{transform:translateY(40px);opacity:.6}to{transform:translateY(0);opacity:1}}
 .sheet-grip{width:38px;height:4px;background:#444;border-radius:3px;margin:0 auto 16px}
 .sheet-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px}
@@ -2750,7 +2750,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.84 · Ombré accent fix, iOS hours oninput';
+var VERSION='v4.85 · Price pane larger and roomier';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
