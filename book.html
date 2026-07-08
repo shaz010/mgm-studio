@@ -388,7 +388,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.11 · live availability — onSnapshot auto-updates hours';
+var VERSION='book v3.12 · live hours — calendar rebuilds without losing user selection';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -431,7 +431,6 @@ function init(){
       var fresh=doc.data();
       window._priceBook=fresh.priceBook||null;
       if(!_salonInited){
-        // First load — build form normally
         _salonInited=true;
         info=fresh;
         if(!info.bookingOpen){show('closedView');return;}
@@ -444,15 +443,13 @@ function init(){
         })();
         loadPending(function(){buildForm();show('formView');});
       } else {
-        // Live update — refresh hours & slots silently
         info=fresh;
         if(!info.bookingOpen){show('closedView');return;}
-        try{buildCal();}catch(e){}
+        try{rebuildCal();}catch(e){}
         if(selDate){
           var prevTime=selTime;
           loadPending(function(){
             renderSlots();
-            // If the previously selected time is now gone, clear it
             if(prevTime&&!document.querySelector('.slot.sel')){selTime='';updateBtn();}
           });
         }
@@ -502,6 +499,32 @@ function buildForm(){
   }
   $('dateRow').innerHTML=row;
   if(first){selDate=first;markSel('dateRow',first,'d');renderSlots();}
+}
+function rebuildCal(){
+  var hours=info.hours||[];
+  var row='',today=new Date();today.setHours(12,0,0,0);
+  var first='',lastMonth=-1;
+  for(var i=0;i<WEEKS_AHEAD*7;i++){
+    var d=new Date(today);d.setDate(today.getDate()+i);
+    var dh=hours[dayIdx(d)];
+    if(dh&&dh.open===false)continue;
+    var ds=ymd(d),mo=d.getMonth();
+    if(!first)first=ds;
+    if(mo!==lastMonth){
+      var lbl=d.toLocaleDateString('en-US',{month:'short'});
+      if(d.getFullYear()!==today.getFullYear())lbl+=" '"+String(d.getFullYear()).slice(2);
+      row+='<div class="dmonth">'+lbl+'</div>';
+      lastMonth=mo;
+    }
+    row+='<div class="datecell" data-d="'+ds+'" onclick="pickDate(this)">'+
+      '<div class="dc-dow">'+['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()]+'</div>'+
+      '<div class="dc-n">'+d.getDate()+'</div>'+
+      '<div class="dc-mo">'+d.toLocaleDateString('en-US',{month:'short'})+'</div></div>';
+  }
+  $('dateRow').innerHTML=row;
+  var stillValid=selDate&&document.querySelector('.datecell[data-d="'+selDate+'"]');
+  if(stillValid){markSel('dateRow',selDate,'d');}
+  else if(first){selDate=first;markSel('dateRow',first,'d');}
 }
 function allSvcs(){
   var arr=selSvcArr.slice();
@@ -738,7 +761,7 @@ function submitBooking(){
     });
   };
   if(isCustom){doSend();return;}
-  db.collection('public').doc(SALON_ID).get({source:'server'}).then(function(doc){
+  db.collection('public').doc(SALON_ID).get().then(function(doc){
     var fresh=doc.exists?(doc.data()||{}):{};
     var t0=mins(time),t1=t0+60;
     var clash=(fresh.taken||[]).some(function(b){if(b.date!==selDate)return false;var bs=mins(b.time),be=bs+(+b.dur||60);return t0<be&&t1>bs;});
