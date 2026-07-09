@@ -84,6 +84,7 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 .price-in{width:116px;padding:10px 12px 10px 24px;background:#1a1a1a;border:1.5px solid #444;border-radius:10px;color:#fff;font-size:16px;font-weight:600;outline:none;text-align:right}
 .price-in:focus{border-color:var(--gold);background:#1e1e1e}
 .set-sec{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin:22px 0 10px;padding-top:16px;border-top:1px solid var(--border)}
+.set-sec.booking-sec{color:#a78bfa;border-top-color:#2d1f4a;background:linear-gradient(90deg,rgba(167,139,250,.06) 0%,transparent 80%);border-radius:0 8px 0 0;padding-left:6px;margin-left:-6px}
 #settingsModal .set-sec{cursor:pointer;display:flex;align-items:center;justify-content:space-between;-webkit-tap-highlight-color:transparent}
 #settingsModal .set-sec::after{content:'›';font-size:18px;line-height:1;color:var(--muted);transform:rotate(90deg);transition:transform .2s;margin-left:8px}
 #settingsModal .set-sec.collapsed::after{transform:rotate(0deg)}
@@ -1164,7 +1165,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <input id="sbContact" type="tel" placeholder="Leave blank to show nothing" onchange="saveBookContact()">
     <div style="font-size:12px;color:var(--muted);margin:7px 0 2px;line-height:1.5">If the form ever hiccups, clients see a small "text or call directly" line with this number. Blank = never shown.</div>
 
-    <div class="set-sec">Booking services</div>
+    <div class="set-sec booking-sec">Booking services</div>
     <div id="bookingCuratorBody"></div>
 
     <div class="set-sec">Insights</div>
@@ -2786,7 +2787,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.90 · Booking services curator — inline style fix';
+var VERSION='v4.91 · Per-group more, booking-sec accent';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
