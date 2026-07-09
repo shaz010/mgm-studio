@@ -510,16 +510,12 @@ function renderQpBar(){
     bar.innerHTML=hdr+'<div class="qpb-empty">Tap services below to add to quick picks</div>';
     return;
   }
-  var MAX=6;
-  var visible=qp.slice(0,MAX);
-  var rest=qp.length-MAX;
-  var tiles=visible.map(function(s){
+  var tiles=qp.map(function(s){
     var sel=selSvcArr.indexOf(s)>=0;
     var lbl=esc((window._qpLabels&&window._qpLabels[s])||s);
     var gf=_findGrpFor(s);
     return '<div class="qpb-tile'+(sel?' sel':'')+'" onclick="pickSvcByKey(\''+esc(s).replace(/'/g,"\\'")+'\')"><i class="ti ti-'+gf.ic+'" style="color:'+gf.cl+'"></i><span>'+lbl+'</span></div>';
   }).join('');
-  if(rest>0)tiles+='<div class="qpb-more" onclick="scrollToQP()">+'+rest+' more</div>';
   bar.innerHTML=hdr+'<div class="qpb-grid">'+tiles+'</div>';
 }
 function scrollToQP(){
@@ -620,7 +616,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.37 · fix renderQpBar crash · _findGrpFor top-level';
+var VERSION='book v3.38 · QP anchor shows all items no cap';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
