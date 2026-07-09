@@ -318,7 +318,7 @@ function renderDemoChips(){
   var el=$('svcChips');if(!el)return;
   if(!curDemo||!DEMO_SVCS[curDemo]){
     var allSvcs=window._allSvcs||[];
-    el.innerHTML=allSvcs.map(function(s){var p=window._priceBook&&window._priceBook[s];var ph=p?'<span class="chip-price">$'+p+'</span>':'';return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-sparkles"></i><span class="chip-name">'+esc(s)+'</span>'+ph+'</div>';}).join('');
+    el.innerHTML=allSvcs.map(function(s){var p=window._priceBook&&window._priceBook[s];var ph=p?'<span class="chip-price">'+p+'</span>':'';return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-sparkles"></i><span class="chip-name">'+esc(s)+'</span>'+ph+'</div>';}).join('');
     syncSvcSel();_injectCustomChips();return;
   }
   var grps=DEMO_SVCS[curDemo];
@@ -334,7 +334,7 @@ function renderDemoChips(){
     h+='<span class="grp-count">'+svcs.length+'</span>';
     h+='</div>';
     h+='<div class="svc-grp-body" id="'+gid+'">';
-    h+='<div class="chips">';h+=svcs.map(function(s){var ic=GRP_ICONS[grpName]||'sparkles';var cl=GRP_COLORS[grpName]||'var(--gold)';var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="chip-price">$'+p+'</span>':'';return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+ic+'" style="color:'+cl+'"></i><span class="chip-name">'+esc(s)+'</span>'+ph+'</div>';}).join('');h+='</div>';
+    h+='<div class="chips">';h+=svcs.map(function(s){var ic=GRP_ICONS[grpName]||'sparkles';var cl=GRP_COLORS[grpName]||'var(--gold)';var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="chip-price">'+p+'</span>':'';return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+ic+'" style="color:'+cl+'"></i><span class="chip-name">'+esc(s)+'</span>'+ph+'</div>';}).join('');h+='</div>';
     h+='<div class="svc-grp-add">';
     h+='<input class="svc-grp-add-input" id="inp_'+gid+'" type="text" placeholder="Add to '+esc(grpName)+'" onkeydown="if(event.key===\'Enter\')addGrpSvc(\''+gid+'\')">'.replace(/\\/g,'\\');
     h+='<button class="svc-grp-add-btn" onclick="addGrpSvc(\''+gid+'\')">Add</button>'.replace(/\\/g,'\\');
@@ -421,7 +421,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.21 · Reads booking service visibility from Firestore';
+var VERSION='book v3.22 · Price shown without dollar sign';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
