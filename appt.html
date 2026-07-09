@@ -89,8 +89,8 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 #settingsModal .set-sec::after{content:'›';font-size:18px;line-height:1;color:var(--muted);transform:rotate(90deg);transition:transform .2s;margin-left:8px}
 #settingsModal .set-sec.collapsed::after{transform:rotate(0deg)}
 .sec-hidden{display:none!important}
-#settingsModal .adv-toggle{width:100%;margin:22px 0 6px;padding:14px 16px;border-radius:12px;border:2px solid rgba(167,139,250,.45);background:rgba(167,139,250,.08);color:#a78bfa;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .18s}
-#settingsModal.show-adv .adv-toggle{color:#c4b5fd;border-color:#a78bfa;background:rgba(167,139,250,.18)}
+#settingsModal .adv-toggle{width:100%;margin:22px 0 6px;padding:16px 18px;border-radius:12px;border:2.5px solid #a78bfa;background:rgba(167,139,250,.22);color:#e9d5ff;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .18s;box-shadow:0 0 20px rgba(167,139,250,.28);letter-spacing:.2px;display:flex;align-items:center;justify-content:center;gap:8px}
+#settingsModal.show-adv .adv-toggle{background:rgba(167,139,250,.34);box-shadow:0 0 28px rgba(167,139,250,.42)}
 .set-version{text-align:center;font-size:11px;color:#666;margin-top:20px;letter-spacing:.3px}
 /* STOCK */
 .stk{display:flex;align-items:center;gap:12px;background:#111;border:1px solid var(--border-bright);border-radius:11px;padding:12px 13px;margin-bottom:9px}
@@ -1199,11 +1199,11 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('settingsModal');openDebug()"><i class="ti ti-stethoscope"></i> Run diagnostics</button>
     </div>
 
+    <button class="adv-toggle" id="apptAdvToggle" onclick="toggleApptAdv()"><i class="ti ti-settings"></i> Show advanced settings ▾</button>
     <div class="set-version" id="setVersion">AppointmentPro · v1.0</div>
     <div class="btn-row" style="margin-top:8px">
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="forceUpdate()"><i class="ti ti-refresh"></i> Force update to latest</button>
     </div>
-    <button class="adv-toggle" id="apptAdvToggle" onclick="toggleApptAdv()">Hide advanced settings ▴</button>
 
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-sm" style="flex:1" onclick="closeSheet('settingsModal')">Done</button>
@@ -2790,7 +2790,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.94 · Booking curator groups collapsible';
+var VERSION='v4.96 · Adv toggle consistent bottom position';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -2833,7 +2833,7 @@ function openSettings(){
   try{renderSetTradeGrid();}catch(e){}
   $('settingsModal').classList.remove('show-adv');
   $('settingsModal').classList.add('show');
-  try{_applyApptSettingsLayout();var _ab=document.getElementById('apptAdvToggle');if(_ab)_ab.innerHTML='Show advanced settings ▾';}catch(e){}
+  try{_applyApptSettingsLayout();var _ab=document.getElementById('apptAdvToggle');if(_ab)_ab.innerHTML='<i class="ti ti-settings"></i> Show advanced settings ▾';}catch(e){}
   try{renderBookingCurator();}catch(e){}
 }
 function saveBusiness(){
@@ -3858,7 +3858,7 @@ function toggleApptAdv(){
     _applyApptSettingsLayout();
   }
   var b=document.getElementById('apptAdvToggle');
-  if(b)b.innerHTML=on?'Hide advanced settings ▴':'Show advanced settings ▾';
+  if(b)b.innerHTML=on?'<i class="ti ti-settings"></i> Hide advanced settings ▴':'<i class="ti ti-settings"></i> Show advanced settings ▾';
 }
 document.addEventListener('click',function(e){
   var h=e.target;

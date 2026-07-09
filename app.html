@@ -839,8 +839,8 @@ body.accent-gold{--gold:#FFB800;--gold2:#2a1f00;--gold3:#665522;--gold-light:#FF
 #settingsPanel .setup-section.collapsed > *:not(.setup-section-title){display:none}
 #settingsPanel .setup-section.adv-sec{display:none}
 #settingsPanel.show-adv .setup-section.adv-sec{display:block}
-.adv-toggle{width:100%;margin:0 0 16px;padding:11px;border-radius:10px;border:1px dashed #4a4a4a;background:transparent;color:#9a9aa6;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
-#settingsPanel.show-adv .adv-toggle{color:var(--gold,#e8c37a);border-color:var(--gold,#e8c37a);border-style:solid}
+.adv-toggle{width:100%;margin:0 0 16px;padding:16px 18px;border-radius:12px;border:2.5px solid #a78bfa;background:rgba(167,139,250,.22);color:#e9d5ff;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .18s;box-shadow:0 0 20px rgba(167,139,250,.28);letter-spacing:.2px;display:flex;align-items:center;justify-content:center;gap:8px}
+#settingsPanel.show-adv .adv-toggle{background:rgba(167,139,250,.34);box-shadow:0 0 28px rgba(167,139,250,.42)}
 .setup-input{width:100%;padding:10px 14px;background:#1e1e1e;border:1.5px solid #333;border-radius:9px;color:#f0f0f0;font-size:16px;outline:none;transition:border .2s;font-family:-apple-system,sans-serif}
 .setup-input:focus{border-color:#FFB800}
 .setup-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -1130,7 +1130,6 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       <span class="settings-title">⚙️ Settings</span>
       <button class="settings-close" onclick="closeSettings()">×</button>
     </div>
-    <button class="adv-toggle" id="advToggle" onclick="toggleAdvSettings()">Show advanced settings ▾</button>
 
     <div class="setup-section">
       <div class="setup-section-title">Your details</div>
@@ -1273,6 +1272,8 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
         </div>
       </details>
     </div>
+
+    <button class="adv-toggle" id="advToggle" onclick="toggleAdvSettings()"><i class="ti ti-settings"></i> Show advanced settings ▾</button>
 
     <details class="ty-details" ontoggle="if(this.open)buildTaxYear()">
       <summary class="ty-summary">Income by tax year</summary>
@@ -3256,7 +3257,7 @@ function applyBigText(){var n=getBigText();document.body.classList.toggle('a11y-
 function markBigText(){var n=getBigText();document.querySelectorAll('.bigtext-btn').forEach(function(b){b.classList.toggle('sel',parseInt(b.dataset.v,10)===n);});}
 function setBigText(n,btn){try{localStorage.setItem('ys_textsize',String(n));}catch(e){}applyBigText();markBigText();}
 document.addEventListener('click',function(e){var t=e.target;if(t&&t.classList&&t.classList.contains('setup-section-title')&&t.closest&&t.closest('#settingsPanel')){var s=t.parentElement;if(s&&s.classList.contains('setup-section'))s.classList.toggle('collapsed');}});
-function toggleAdvSettings(){var p=document.getElementById('settingsPanel');if(!p)return;var on=p.classList.toggle('show-adv');var b=document.getElementById('advToggle');if(b)b.innerHTML=on?'Hide advanced settings ▴':'Show advanced settings ▾';}
+function toggleAdvSettings(){var p=document.getElementById('settingsPanel');if(!p)return;var on=p.classList.toggle('show-adv');var b=document.getElementById('advToggle');if(b)b.innerHTML=on?'<i class="ti ti-settings"></i> Hide advanced settings ▴':'<i class="ti ti-settings"></i> Show advanced settings ▾';}
 function openSettings(){
   loadPrefs();
   const ni = document.getElementById('settingName');
@@ -3267,7 +3268,7 @@ function openSettings(){
   if(ri) ri.value = prefs.rate||60;
   _lockRate();
   const panel = document.getElementById('settingsPanel');
-  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); markBigText(); renderBackupStatus(); initBookLink(); try{renderSetTradeGrid();}catch(e){} try{document.querySelectorAll('#settingsPanel .setup-section').forEach(function(s){s.classList.add('collapsed');});var _sp=document.getElementById('settingsPanel');if(_sp)_sp.classList.remove('show-adv');var _at=document.getElementById('advToggle');if(_at)_at.innerHTML='Show advanced settings ▾';}catch(e){} }
+  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); markBigText(); renderBackupStatus(); initBookLink(); try{renderSetTradeGrid();}catch(e){} try{document.querySelectorAll('#settingsPanel .setup-section').forEach(function(s){s.classList.add('collapsed');});var _sp=document.getElementById('settingsPanel');if(_sp)_sp.classList.remove('show-adv');var _at=document.getElementById('advToggle');if(_at)_at.innerHTML='<i class="ti ti-settings"></i> Show advanced settings ▾';}catch(e){} }
 }
 
 function closeSettings(){
@@ -3551,7 +3552,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.79 · price book hint clarifies shared storage';
+var VERSION='app v1.82 · Adv toggle moved to bottom';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
