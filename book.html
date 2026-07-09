@@ -682,9 +682,10 @@ var FB_CONFIG={
 var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
+var STRIPE_PK='pk_live_51Ti0soDvwJdoHdEZNZkU5qSjuHxIJlL3kqee3BBVWOYFtv9fPgW63hwTbVRCcJ79x7EMmceD9sbUQAAWJMOVqSaG00vBDF7xUc';
 var _stripe=null,_stripeElements=null,_stripePayEl=null,_pendingRec=null,_depositAmt=50;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.42 · hair passport level 1 · device-local visit history';
+var VERSION='book v3.43 · stripe pk hardcoded · payment sheet live';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -1153,7 +1154,7 @@ function _sendRec(rec){
 function showPaymentStep(rec){
   _pendingRec=rec;
   _depositAmt=(info&&info.depositAmount)||50;
-  var pk=(info&&info.stripePk)||'';
+  var pk=(info&&info.stripePk)||STRIPE_PK||'';
   var ps=$('paySheet');if(!ps)return;
   var amt=$('paySheetAmt');if(amt)amt.innerHTML='$'+_depositAmt.toFixed(0)+' <span>deposit</span>';
   var ba=$('payBtnAmt');if(ba)ba.textContent=_depositAmt.toFixed(0);
