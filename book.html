@@ -56,7 +56,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .demo-tab{padding:11px 0;border-radius:12px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.035);color:#8a8a8a;font-size:13px;font-weight:800;letter-spacing:.4px;cursor:pointer;text-align:center;transition:border-color .2s,color .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;gap:6px}
 .demo-tab i{font-size:16px}
 .demo-tab.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 14px rgba(167,139,250,.35)}
-.demo-tab:active{transform:scale(.96)}#demoTabsBar{position:sticky;top:0;z-index:100;background:#0c0c14;padding:8px 0 10px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:8px}.chip-del{position:absolute;top:4px;right:5px;font-size:14px;line-height:1;color:rgba(255,255,255,.28);cursor:pointer;z-index:2;padding:2px}.chip-del:active,.chip-del:hover{color:#ff6b6b}
+.demo-tab:active{transform:scale(.96)}#demoTabsBar{position:sticky;top:0;z-index:100;background:#0c0c14;padding:8px 0 10px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:8px;-webkit-transform:translateZ(0);transform:translateZ(0);will-change:transform}.chip-del{position:absolute;top:4px;right:5px;font-size:14px;line-height:1;color:rgba(255,255,255,.28);cursor:pointer;z-index:2;padding:2px}.chip-del:active,.chip-del:hover{color:#ff6b6b}
 .avail-toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e1e2a;border:1px solid rgba(212,175,55,.4);color:#d4af37;font-size:12.5px;font-weight:700;padding:9px 18px;border-radius:24px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:9000;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5)}
 .avail-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .dates{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
@@ -685,7 +685,7 @@ var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', cus
 var STRIPE_PK='pk_live_51Ti0soDvwJdoHdEZNZkU5qSjuHxIJlL3kqee3BBVWOYFtv9fPgW63hwTbVRCcJ79x7EMmceD9sbUQAAWJMOVqSaG00vBDF7xUc';
 var _stripe=null,_stripeElements=null,_stripePayEl=null,_pendingRec=null,_depositAmt=50;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.43 · stripe pk hardcoded · payment sheet live';
+var VERSION='book v3.44 · scroll flicker fix';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
