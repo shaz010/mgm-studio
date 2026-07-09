@@ -202,12 +202,12 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 .svc-chip.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 14px rgba(167,139,250,.45)}
 .svc-chip.sel>i:first-child{background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:iridShift 4.5s linear infinite}
 .svc-chip.sel .svc-price{opacity:1;color:#ffd24d}
-@keyframes svcPop{0%{transform:scale(.9)}55%{transform:scale(1.07)}100%{transform:scale(1)}}
-.svc-chip.pop{animation:svcPop .3s ease}
+@keyframes svcPop{0%{transform:scale(.82)}35%{transform:scale(1.14)}68%{transform:scale(.96)}100%{transform:scale(1)}}
+.svc-chip.pop{animation:svcPop .55s cubic-bezier(.3,.9,.4,1)}
 .svc-chip.dragging{opacity:.3;border-style:dashed!important;transform:scale(.96)}
 .svc-chip.drag-over{border-color:#a78bfa!important;box-shadow:0 0 0 2px #a78bfa66!important;transform:scale(1.04)}
 .svc-drag-ghost{position:fixed;z-index:9999;min-width:80px;padding:10px 14px;border-radius:12px;background:linear-gradient(135deg,#1a1a28,#0c0c14);border:2px solid #a78bfa;color:#e2e2ea;font-size:12.5px;font-weight:700;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.75);opacity:.93;text-align:center;white-space:nowrap}
-.svc-ghost{position:fixed;z-index:999;border:1.5px solid transparent;border-radius:11px;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;color:#fff;font-size:12.5px;font-weight:700;padding:7px 12px;pointer-events:none;transition:transform .45s cubic-bezier(.4,.8,.4,1),opacity .45s ease;will-change:transform,opacity}
+.svc-ghost{position:fixed;z-index:9999;border:2px solid transparent;border-radius:20px;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,300% 100%;color:#fff;font-size:13.5px;font-weight:800;padding:9px 16px;pointer-events:none;white-space:nowrap;box-shadow:0 0 24px rgba(167,139,250,.75),0 0 10px rgba(103,232,249,.5);will-change:transform,opacity}
 .svc-star{position:absolute;top:4px;right:5px;font-size:13px!important;margin:0;padding:5px;color:#5a5a66!important;flex-shrink:0}
 .svc-star.on{color:var(--gold)!important}
 .svc-empty{font-size:12.5px;color:var(--muted);padding:5px 2px;grid-column:1/-1}
@@ -1628,17 +1628,33 @@ function _svcDelight(el,name){
   try{
     if(!el)return;
     el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
-    try{if(navigator.vibrate)navigator.vibrate(12);}catch(_e){}
+    try{if(navigator.vibrate)navigator.vibrate([15,40,15]);}catch(_e){}
     var tgt=$('fService');if(!tgt)return;
     var s=el.getBoundingClientRect(),t=tgt.getBoundingClientRect();
     if(!s.width||!t.width)return;
-    var g=document.createElement('div');g.className='svc-ghost';g.textContent=name;
+    var g=document.createElement('div');
+    g.className='svc-ghost';
+    g.innerHTML='<i class="ti ti-sparkles" style="margin-right:6px;font-size:14px;vertical-align:-1px"></i>'+name;
     document.body.appendChild(g);
-    g.style.left=s.left+(s.width/2-40)+'px';g.style.top=s.top+'px';
-    g.getBoundingClientRect();
-    g.style.transform='translate('+((t.left+16)-(s.left+s.width/2-40))+'px,'+((t.top+t.height/2)-(s.top+14))+'px) scale(.5)';
-    g.style.opacity='0.12';
-    setTimeout(function(){try{g.remove();}catch(_e){}},500);
+    var gw=Math.max(name.length*8+60,120);
+    var startX=s.left+s.width/2-gw/2;
+    var startY=s.top+s.height/2-18;
+    var endX=t.left+t.width/2-gw/2;
+    var endY=t.top+t.height/2-18;
+    var dx=endX-startX;
+    var dy=endY-startY;
+    var arcX=dx*0.5+dy*0.28;
+    var arcY=dy*0.42-Math.abs(dx)*0.32-60;
+    g.style.left=startX+'px';
+    g.style.top=startY+'px';
+    var dur=950;
+    g.animate([
+      {transform:'translate(0,0) scale(1.05) rotate(-6deg)',opacity:1},
+      {transform:'translate('+arcX+'px,'+arcY+'px) scale(1.3) rotate(9deg)',opacity:1,offset:0.42},
+      {transform:'translate('+(arcX+dx*0.3)+'px,'+(arcY+dy*0.55)+'px) scale(1.1) rotate(3deg)',opacity:0.9,offset:0.72},
+      {transform:'translate('+dx+'px,'+dy+'px) scale(0.35) rotate(0deg)',opacity:0}
+    ],{duration:dur,easing:'cubic-bezier(.2,.85,.35,1)',fill:'forwards'});
+    setTimeout(function(){try{g.remove();}catch(_e){}},dur+120);
   }catch(e){}
 }
 function promoteFav(name){
@@ -2790,7 +2806,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.96 · Adv toggle consistent bottom position';
+var VERSION='v4.97 · Service whoosh — arced, glowing, playful';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
