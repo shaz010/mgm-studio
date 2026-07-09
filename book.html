@@ -112,6 +112,24 @@ textarea{resize:vertical;min-height:60px}
 .passport-card .pc-hdr{font-size:10px;font-weight:800;color:#a78bfa;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:5px}
 .passport-card .pc-entry{font-size:12px;color:#9a9aaa;line-height:1.6}
 .passport-card .pc-svc{font-size:13px;font-weight:700;color:#e8e8f0;margin-top:4px}
+.pay-sheet{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .25s}
+.pay-sheet.open{opacity:1;pointer-events:all}
+.pay-inner{background:#0d0d18;border-radius:22px 22px 0 0;padding:22px 20px 40px;max-height:90vh;overflow-y:auto;transform:translateY(30px);transition:transform .3s cubic-bezier(.2,0,.2,1)}
+.pay-sheet.open .pay-inner{transform:translateY(0)}
+.pay-drag{width:36px;height:4px;border-radius:2px;background:#2a2a3a;margin:0 auto 18px}
+.pay-hdr{font-size:17px;font-weight:800;color:#e8e8f0;margin-bottom:3px}
+.pay-sub{font-size:12.5px;color:#6a6a7a;margin-bottom:18px;line-height:1.5}
+.pay-amount{font-size:32px;font-weight:800;color:#d4af37;text-align:center;margin:0 0 20px;letter-spacing:-.5px}
+.pay-amount span{font-size:16px;color:#7a7a8a;font-weight:600;margin-left:4px}
+#stripeElement{min-height:48px;margin-bottom:14px}
+.pay-btn{width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,#c9a227,#f5d77e);color:#1a1208;font-size:16px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.pay-btn:disabled{opacity:.45;cursor:default}
+.pay-btn:active:not(:disabled){opacity:.85}
+.pay-skip{text-align:center;margin-top:14px;font-size:12.5px;color:#4a4a5a;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:6px}
+.pay-skip:active{color:#8a8a9a}
+.pay-lock{text-align:center;margin-top:10px;font-size:11px;color:#3a3a4a;line-height:1.5}
+.pay-err{background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.3);border-radius:10px;padding:10px 12px;font-size:12px;color:#ff9999;margin-bottom:12px;display:none}
+.pay-err.show{display:block}
 .center-screen{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
 .cs-ic{width:64px;height:64px;border-radius:16px;background:var(--gold-dim);border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:32px;margin-bottom:16px}
 .cs-ic.green{background:rgba(93,219,124,.12);border-color:var(--green);color:var(--green)}
@@ -356,7 +374,7 @@ textarea{resize:vertical;min-height:60px}
     </div>
   </div>
 
-  <button class="book-btn" id="bookBtn" onclick="submitBooking()"><i class="ti ti-send"></i> Request booking</button>
+  <button class="book-btn" id="bookBtn" onclick="submitBooking()"><i class="ti ti-send"></i> Confirm & book</button>
   <div class="btn-hint" id="btnHint"></div>
   <div class="foot-note"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px"></i> You'll get a confirmation once the stylist approves. This just sends a request.</div>
   <div class="foot-note" id="fallbackContact" style="display:none"></div>
@@ -365,6 +383,8 @@ textarea{resize:vertical;min-height:60px}
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
 <script>
 var DEMO_SVCS={
   women:{
@@ -658,8 +678,9 @@ var FB_CONFIG={
 var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
+var _stripe=null,_stripeElements=null,_stripePayEl=null,_pendingRec=null,_depositAmt=50;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.39 · consent + intake · review prompt · hair passport';
+var VERSION='book v3.41 · confirm & book button · consent-aware label';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -1069,6 +1090,92 @@ function updateBtn(){
   if(h){h.textContent=hint;h.classList.toggle('show',!ok);}
 }
 document.addEventListener('input',function(e){if(e.target&&e.target.id==='customTime')updateBtn();});
+/* ── Payment helpers ─────────────────────────────────────────── */
+function _sendRec(rec){
+  db.collection('requests').add(rec).then(function(ref){
+    _lastBooking={id:(ref&&ref.id)||'',date:rec.date,time:rec.time,svc:rec.service,salon:(info&&info.salonName)||'Salon',custom:!!rec.custom,customTime:rec.customTime||''};
+    if(ref&&ref.id){watchRequest(ref.id);_waiting=true;wakeOn();}
+    var isCustom=rec.custom;
+    var when=isCustom?(rec.customTime||'custom time'):(to12(rec.time)+' on '+new Date(rec.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}));
+    $('doneSub').innerHTML='Your request for <b>'+esc(rec.service)+'</b> ('+esc(when)+') has been sent. You\'ll get a confirmation once it\'s approved.';
+    show('doneView');
+  }).catch(function(e){
+    console.warn(e);
+    $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Confirm & book';
+    closePaySheet();
+    alert('Could not send — please try again.');
+  });
+}
+function showPaymentStep(rec){
+  _pendingRec=rec;
+  _depositAmt=(info&&info.depositAmount)||50;
+  var pk=(info&&info.stripePk)||'';
+  var ps=$('paySheet');if(!ps)return;
+  var amt=$('paySheetAmt');if(amt)amt.innerHTML='$'+_depositAmt.toFixed(0)+' <span>deposit</span>';
+  var ba=$('payBtnAmt');if(ba)ba.textContent=_depositAmt.toFixed(0);
+  var sub=$('paySheetSvc');if(sub)sub.textContent=rec.service;
+  var err=$('payErr');if(err){err.textContent='';err.classList.remove('show');}
+  var pb=$('payConfirmBtn');if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
+  ps.classList.add('open');
+  if(!pk){console.warn('No Stripe PK in Firestore info.stripePk');return;}
+  if(!_stripe||_stripe._pk!==pk){
+    _stripe=Stripe(pk);_stripe._pk=pk;
+    _stripeElements=null;_stripePayEl=null;
+  }
+  if(!_stripeElements){
+    _stripeElements=_stripe.elements({
+      mode:'payment',amount:Math.round(_depositAmt*100),currency:'usd',
+      appearance:{theme:'night',variables:{colorBackground:'#0d0d18',colorPrimary:'#d4af37',colorText:'#e8e8f0',fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif',borderRadius:'10px'}}
+    });
+    _stripePayEl=_stripeElements.create('payment',{layout:'tabs'});
+    var container=$('stripeElement');if(container){container.innerHTML='';_stripePayEl.mount('#stripeElement');}
+  }
+}
+function closePaySheet(){
+  var ps=$('paySheet');if(ps)ps.classList.remove('open');
+  $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Confirm & book';
+}
+function skipDeposit(){
+  closePaySheet();
+  if(_pendingRec){_sendRec(_pendingRec);_pendingRec=null;}
+}
+function confirmPayment(){
+  if(!_stripe||!_stripeElements){skipDeposit();return;}
+  var pb=$('payConfirmBtn');if(pb){pb.disabled=true;pb.innerHTML='<i class="ti ti-loader"></i> Processing…';}
+  var err=$('payErr');if(err){err.textContent='';err.classList.remove('show');}
+  _stripeElements.submit().then(function(r){
+    if(r.error){
+      if(err){err.textContent=r.error.message;err.classList.add('show');}
+      if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
+      return;
+    }
+    var fn=firebase.functions().httpsCallable('createPaymentIntent');
+    fn({amount:Math.round(_depositAmt*100),currency:'usd',salonId:SALON_ID}).then(function(res){
+      var clientSecret=res.data&&res.data.clientSecret;
+      if(!clientSecret){throw new Error('No client secret returned');}
+      return _stripe.confirmPayment({elements:_stripeElements,clientSecret:clientSecret,redirect:'if_required'});
+    }).then(function(res2){
+      if(res2&&res2.error){
+        if(err){err.textContent=res2.error.message;err.classList.add('show');}
+        if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
+        return;
+      }
+      var pi=res2&&res2.paymentIntent;
+      if(_pendingRec&&pi){_pendingRec.depositPaid=true;_pendingRec.depositAmount=_depositAmt;_pendingRec.paymentIntentId=pi.id||'';}
+      closePaySheet();
+      if(_pendingRec){_sendRec(_pendingRec);_pendingRec=null;}
+    }).catch(function(e){
+      console.warn(e);
+      if(err){err.textContent=(e&&e.message)||'Payment failed — please try again.';err.classList.add('show');}
+      if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
+    });
+  }).catch(function(e){
+    console.warn(e);
+    if(err){err.textContent=(e&&e.message)||'Payment failed — please try again.';err.classList.add('show');}
+    if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
+  });
+}
+/* ── Main submit ─────────────────────────────────────────────── */
 function submitBooking(){
   var name=$('fName').value.trim(),phone=$('fPhone').value.trim(),notes=$('fNotes').value.trim();
   var svcs=allSvcs();
@@ -1082,27 +1189,22 @@ function submitBooking(){
   if(!time&&!isCustom){alert('Please pick a time');return;}
   _unlockAudio();
   $('bookBtn').disabled=true;$('bookBtn').innerHTML='<i class="ti ti-loader"></i> Sending…';
-  var doSend=function(){
-    var consentNotes=$('consentNotes')?$('consentNotes').value.trim():'';
-    var rec={
-      salon:SALON_ID,name:name,phone:phone,service:svcStr,
-      date:selDate,time:time||'09:00',dur:60,price:0,
-      notes:notesFull,hair:collectHair(),hairData:collectHairData(),custom:!!isCustom,customSvc:!!(otherSvcMode&&$('otherSvc').value.trim()),status:'pending',createdAt:Date.now(),
-      consent:{agreed:true,agreedAt:Date.now(),conditions:gatherConsentFlags(),notes:consentNotes}
-    };
-    db.collection('requests').add(rec).then(function(ref){
-      _lastBooking={id:(ref&&ref.id)||'',date:selDate,time:(time||'09:00'),svc:svcStr,salon:(info&&info.salonName)||'Salon',custom:!!isCustom,customTime:isCustom?$('customTime').value.trim():''};
-      if(ref&&ref.id){watchRequest(ref.id);_waiting=true;wakeOn();}
-      var when=isCustom?$('customTime').value.trim():(to12(selTime)+' on '+new Date(selDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}));
-      $('doneSub').innerHTML='Your request for <b>'+esc(svcStr)+'</b> ('+esc(when)+') has been sent. You’ll get a confirmation once it’s approved.';
-      show('doneView');
-    }).catch(function(e){
-      console.warn(e);
-      $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Request booking';
-      alert('Could not send — please try again.');
-    });
+  var consentNotes=$('consentNotes')?$('consentNotes').value.trim():'';
+  var rec={
+    salon:SALON_ID,name:name,phone:phone,service:svcStr,
+    date:selDate,time:time||'09:00',dur:60,price:0,
+    notes:notesFull,hair:collectHair(),hairData:collectHairData(),
+    custom:!!isCustom,customTime:isCustom?$('customTime').value.trim():'',
+    customSvc:!!(otherSvcMode&&$('otherSvc').value.trim()),
+    status:'pending',createdAt:Date.now(),
+    consent:{agreed:true,agreedAt:Date.now(),conditions:gatherConsentFlags(),notes:consentNotes}
   };
-  if(isCustom){doSend();return;}
+  var proceed=function(){
+    var pk=(info&&info.stripePk)||'';
+    if(pk){showPaymentStep(rec);}
+    else{_sendRec(rec);}
+  };
+  if(isCustom){proceed();return;}
   db.collection('public').doc(SALON_ID).get().then(function(doc){
     var fresh=doc.exists?(doc.data()||{}):{};
     var t0=mins(time),t1=t0+60;
@@ -1110,12 +1212,12 @@ function submitBooking(){
     if(clash){
       info.taken=fresh.taken||info.taken;
       selTime='';renderSlots();updateBtn();
-      $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Request booking';
+      $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Confirm & book';
       alert('Ah — that time was just snapped up! Please pick another that suits you.');
       return;
     }
-    doSend();
-  }).catch(function(){doSend();});
+    proceed();
+  }).catch(function(){proceed();});
 }
 var _watchUnsub=null,_approvedRec=null,_audioCtx=null;
 var _wl=null,_waiting=false,_salonUnsub=null,_salonInited=false;
@@ -1205,7 +1307,7 @@ function retryForm(){
   if($('customWrap'))$('customWrap').classList.remove('on');
   if($('noneBtn'))$('noneBtn').classList.remove('on');
   var bb=$('bookAnotherBtn');if(bb){bb.innerHTML='<i class="ti ti-plus"></i> Book another';bb.onclick=resetForm;}
-  $('bookBtn').innerHTML='<i class="ti ti-send"></i> Request booking';$('bookBtn').disabled=true;
+  $('bookBtn').innerHTML='<i class="ti ti-send"></i> Confirm & book';$('bookBtn').disabled=true;
   loadPending(function(){renderSlots();updateBtn();show('formView');try{var el=$('slotGrid');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}});
 }
 function resetForm(){
@@ -1234,7 +1336,7 @@ function resetForm(){
   document.querySelectorAll('#hairWrap .hchip.sel').forEach(function(c){c.classList.remove('sel');});
   if($('returningBtn'))$('returningBtn').classList.remove('on');
   if($('hairWrap'))$('hairWrap').classList.remove('collapsed');
-  $('bookBtn').innerHTML='<i class="ti ti-send"></i> Request booking';$('bookBtn').disabled=true;
+  $('bookBtn').innerHTML='<i class="ti ti-send"></i> Confirm & book';$('bookBtn').disabled=true;
   loadPending(function(){buildForm();show('formView');});
 }
 function applyUpdate(){location.replace(location.pathname+'?v='+Date.now());}
@@ -1252,5 +1354,22 @@ setTimeout(checkForUpdate,8000);
 setInterval(checkForUpdate,60000);
 init();
 </script>
+
+<!-- ── Payment sheet ───────────────────────────────────────── -->
+<div class="pay-sheet" id="paySheet" onclick="if(event.target===this)closePaySheet()">
+  <div class="pay-inner">
+    <div class="pay-drag"></div>
+    <div class="pay-hdr">Secure your spot</div>
+    <p class="pay-sub" id="paySheetSvc">Hold your appointment with a deposit — the rest you pay at the salon.</p>
+    <div class="pay-amount" id="paySheetAmt">$50 <span>deposit</span></div>
+    <div id="payErr" class="pay-err"></div>
+    <div id="stripeElement"></div>
+    <button class="pay-btn" id="payConfirmBtn" onclick="confirmPayment()">
+      <i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $<span id="payBtnAmt">50</span> deposit
+    </button>
+    <div class="pay-skip" onclick="skipDeposit()">Pay at the salon instead →</div>
+    <div class="pay-lock"><i class="ti ti-lock" style="font-size:11px"></i> Secured by Stripe · Apple Pay &amp; Google Pay accepted</div>
+  </div>
+</div>
 </body>
 </html>
