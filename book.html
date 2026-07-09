@@ -150,6 +150,10 @@ textarea{resize:vertical;min-height:60px}
 .qp-drag-over{outline:2px solid #a78bfa!important;outline-offset:2px;border-radius:14px}
 .qp-tile-ghost{position:fixed;z-index:9999;padding:8px 16px;border-radius:12px;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d) border-box;border:1.5px solid transparent;color:#fff;font-size:12px;font-weight:700;pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,.7);opacity:.93;white-space:nowrap;transform:rotate(-2deg)}
 .qp-dd{position:absolute;top:5px;right:6px;font-size:11px;color:rgba(255,255,255,.18);pointer-events:none;line-height:1}
+.qp-star{font-size:14px;color:rgba(255,255,255,.22);cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;padding:5px;margin-right:-4px;line-height:1;transition:color .15s}
+.qp-star.on{color:#ffd24d}
+.qp-sec-hint{font-size:9px;font-weight:600;color:#3a3a4a;margin-left:8px;text-transform:none;letter-spacing:.2px}
+.qp-empty{text-align:center;color:#4a4a58;font-size:12px;font-weight:600;padding:16px;border:1.5px dashed #252530;border-radius:12px;margin-bottom:12px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -341,6 +345,30 @@ var GRP_COLORS={'Cut':'#8FD17A','Color':'#d4af37','Lights':'#a78bfa','Styling':'
 var DEMO_PRICES={"Women's Haircut":75,"Bang Trim":25,"Fringe Cut":30,"Pixie Cut":85,"Bob Cut":80,"Layered Cut":85,"Blunt Cut":75,"Wolf Cut":85,"Trim / Dusting":45,"Single Process Color":95,"Root Touch-Up":80,"Root Smudge":65,"Gray Coverage":90,"Toner / Gloss":55,"Vivid / Fashion Color":150,"Color Correction":200,"Full Highlights":150,"Partial Highlights":110,"Balayage":175,"Foilayage":190,"Babylights":160,"Money Piece":95,"Ombré":140,"Lowlights":120,"Bleach & Tone":165,"Blowout":55,"Brushing":45,"Silk Press":80,"Flat Iron Style":65,"Curling Iron Style":60,"Updo":95,"Half-Up Style":75,"Bridal Style":150,"Special Occasion Style":120,"Box Braids":200,"Cornrows":120,"Goddess Braids":160,"Loc Retwist":80,"Loc Styling":75,"Extensions Install":400,"Extensions Maintenance":150,"Extensions Removal":85,"Wig Install":120,"Eyebrow Wax / Shape":25,"Eyebrow Tint":20,"Lip Wax":15,"Deep Conditioning":45,"Keratin Treatment":250,"Brazilian Blowout":250,"Olaplex Treatment":85,"Scalp Treatment":60,"Hot Oil Treatment":45,"Perm":150,"Body Wave":140,"Relaxer":120,"Men's Haircut":35,"Buzz Cut":25,"Crew Cut":30,"Taper Cut":35,"Fade":35,"Skin Fade":40,"High Fade":40,"Mid Fade":38,"Low Fade":35,"Temple Fade":40,"Undercut":45,"Textured Cut":45,"Scissor Cut":50,"French Crop":40,"Mohawk":50,"Beard Trim":20,"Beard Shape-Up":25,"Beard Lineup":20,"Full Beard Styling":35,"Goatee Trim":20,"Mustache Trim":15,"Hot Towel Straight Razor Shave":45,"Neck Shave":15,"Toner":35,"Beard Color":35,"Men's Color":65,"Men's Gray Coverage":70,"Men's Highlights":75,"Hard Part":15,"Hair Design / Razor Art":25,"Edge Up / Lineup":15,"Eyebrow Trim":15,"Nose Hair Wax":15,"Ear Hair Wax":15,"Kids Haircut":30,"Toddler / First Haircut":25,"Kids Buzz Cut":20,"Kids Fade":25,"Kids Trim":20,"Kids Bang Trim":15,"Kids Highlights":80,"Kids Toner / Gloss":45,"Kids Fashion Color":90,"Kids Blowout":35,"Kids Style & Finish":30,"Kids Braid / Cornrow":45,"Kids Protective Style":80,"Kids Ponytail / Updo":25,"Kids Deep Conditioning":35,"Lice Treatment / Removal":85};
 var curDemo=null;
 var _customSvcs=[];
+var _userQP={};
+function getUserQP(demo){
+  if(!_userQP[demo]){
+    try{var sv=localStorage.getItem('userQP_'+SALON_ID+'_'+demo);_userQP[demo]=sv?JSON.parse(sv):(QUICK_PICKS[demo]||[]).slice();}
+    catch(x){_userQP[demo]=(QUICK_PICKS[demo]||[]).slice();}
+  }
+  return _userQP[demo];
+}
+function saveUserQP(demo){try{localStorage.setItem('userQP_'+SALON_ID+'_'+demo,JSON.stringify(_userQP[demo]));}catch(x){}}
+function promoteQp(e){
+  e.stopPropagation();
+  var chip=e.currentTarget.closest&&e.currentTarget.closest('.chip');if(!chip)return;
+  var s=chip.dataset.s;if(!s||!curDemo)return;
+  var qp=getUserQP(curDemo);
+  if(qp.indexOf(s)===-1){qp.push(s);saveUserQP(curDemo);renderDemoChips();}
+}
+function demoteQp(e){
+  e.stopPropagation();
+  var chip=e.currentTarget.closest&&e.currentTarget.closest('.chip');if(!chip)return;
+  var s=chip.dataset.s;if(!s||!curDemo)return;
+  var qp=getUserQP(curDemo);
+  var idx=qp.indexOf(s);
+  if(idx>-1){qp.splice(idx,1);saveUserQP(curDemo);renderDemoChips();}
+}
 function pickDemo(demo,tab){
   if(curDemo===demo){curDemo=null;document.querySelectorAll('.demo-tab').forEach(function(t){t.classList.remove('sel');});}
   else{curDemo=demo;document.querySelectorAll('.demo-tab').forEach(function(t){t.classList.remove('sel');});tab.classList.add('sel');}
@@ -355,13 +383,13 @@ function renderDemoChips(){
   }
   var grps=DEMO_SVCS[curDemo];
   var hidden=(window._bookingHiddenSvcs&&window._bookingHiddenSvcs[curDemo])||[];
-  var qpSvcs=(QUICK_PICKS[curDemo]||[]).filter(function(s){return hidden.indexOf(s)===-1;});
+  var qpSvcs=getUserQP(curDemo).filter(function(s){return hidden.indexOf(s)===-1;});
   function findGrpFor(s){var r={ic:'sparkles',cl:'var(--gold)'};Object.keys(grps).forEach(function(g){if((grps[g]||[]).indexOf(s)>-1){r={ic:GRP_ICONS[g]||'sparkles',cl:GRP_COLORS[g]||'var(--gold)'};}});return r;}
-  function makeQpTile(s){var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="qp-price">'+p+'</span>':'';var gf=findGrpFor(s);var disp=esc((window._qpLabels&&window._qpLabels[s])||s);return '<div class="chip qp-tile" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+gf.ic+'" style="color:'+gf.cl+';font-size:20px;flex-shrink:0" aria-hidden="true"></i><div class="qp-info"><span class="qp-name">'+disp+'</span>'+ph+'</div><i class="ti ti-grid-dots qp-dd" aria-hidden="true"></i></div>';}
+  function makeQpTile(s){var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="qp-price">'+p+'</span>':'';var gf=findGrpFor(s);var disp=esc((window._qpLabels&&window._qpLabels[s])||s);return '<div class="chip qp-tile" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+gf.ic+'" style="color:'+gf.cl+';font-size:20px;flex-shrink:0" aria-hidden="true"></i><div class="qp-info"><span class="qp-name">'+disp+'</span>'+ph+'</div><i class="ti ti-star-filled qp-star on" onclick="demoteQp(event)" aria-hidden="true"></i></div>';}
   var grpKeys=Object.keys(grps);
   var hint=grpKeys.slice(0,4).join(' · ')+(grpKeys.length>4?' · more':'');
-  var html='<div class="qp-sec-lbl"><i class="ti ti-bolt" aria-hidden="true"></i> Quick picks</div>';
-  html+='<div class="qp-grid">'+qpSvcs.map(makeQpTile).join('')+'</div>';
+  var html='<div class="qp-sec-lbl"><i class="ti ti-bolt" aria-hidden="true"></i> Quick picks<span class="qp-sec-hint">hold &amp; drag to reorder · ★ to remove</span></div>';
+  html+=qpSvcs.length?'<div class="qp-grid">'+qpSvcs.map(makeQpTile).join('')+'</div>':'<div class="qp-empty"><i class="ti ti-star" style="font-size:14px;margin-right:5px;vertical-align:-2px;color:#3a3a4a"></i>Tap ★ on any service below to pin it here</div>';
   html+='<button class="more-svc-btn" id="moreSvcBtn" onclick="toggleMoreSvc()"><i class="ti ti-chevron-down msb-ico" aria-hidden="true"></i> More services<span class="more-svc-hint">'+esc(hint)+'</span></button>';
   html+='<div class="cat-list" id="catList">';
   function buildGrp(grpName){
@@ -370,7 +398,7 @@ function renderDemoChips(){
     var extra=allSvcs.slice(GRP_MAX_VIS);
     var gid='g'+curDemo+'_'+grpName.replace(/[^a-z0-9]/gi,'_');
     var ic=GRP_ICONS[grpName]||'sparkles';var cl=GRP_COLORS[grpName]||'var(--gold)';
-    function makeChip(s){var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="qp-price">'+p+'</span>':'';return '<div class="chip qp-tile" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+ic+'" style="color:'+cl+';font-size:20px;flex-shrink:0" aria-hidden="true"></i><div class="qp-info"><span class="qp-name">'+esc(s)+'</span>'+ph+'</div></div>';}
+    function makeChip(s){var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="qp-price">'+p+'</span>':'';var inQP=getUserQP(curDemo).indexOf(s)>-1;var starHtml=inQP?'<i class="ti ti-star-filled qp-star on" onclick="demoteQp(event)" aria-hidden="true"></i>':'<i class="ti ti-star qp-star" onclick="promoteQp(event)" aria-hidden="true"></i>';return '<div class="chip qp-tile" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+ic+'" style="color:'+cl+';font-size:20px;flex-shrink:0" aria-hidden="true"></i><div class="qp-info"><span class="qp-name">'+esc(s)+'</span>'+ph+'</div>'+starHtml+'</div>';}
     var h='<div class="svc-grp">';
     h+='<div class="svc-grp-hdr" onclick="toggleGrp(\''+gid+'\')">';
     h+='<i class="ti ti-chevron-down" id="chev_'+gid+'" style="transition:transform .2s;flex-shrink:0;transform:rotate(-90deg)"></i>';
@@ -433,6 +461,7 @@ function initQpDrag(){
         var as=srcEl.dataset.s,at=tc.dataset.s,ai=srcEl.innerHTML,bi=tc.innerHTML;
         srcEl.dataset.s=at;srcEl.innerHTML=bi;
         tc.dataset.s=as;tc.innerHTML=ai;
+        if(curDemo){_userQP[curDemo]=Array.from(grid.querySelectorAll('.chip')).map(function(t){return t.dataset.s;}).filter(Boolean);saveUserQP(curDemo);}
         syncSvcSel();
       }
     }
@@ -516,7 +545,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.29 · Landscape tiles + QP drag-reorder + rename labels';
+var VERSION='book v3.30 · QP add/remove from More · drag · rename labels';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
