@@ -2806,7 +2806,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.97 · Service whoosh — arced, glowing, playful';
+var VERSION='v4.98 · Booking ON by default';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3319,7 +3319,7 @@ var FB_CONFIG={
 var SALON_ID='mgm-studio';
 var db=null, fbReady=false, pendingReqs=[], _reqUnsub=null;
 
-function bookingOpen(){return getPrefs().bookingOpen===true;}
+function bookingOpen(){return getPrefs().bookingOpen!==false;}
 function bookingLink(){return location.origin+location.pathname.replace(/appt\.html$/,'book.html');}
 
 function initFB(){
