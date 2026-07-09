@@ -154,6 +154,7 @@ textarea{resize:vertical;min-height:60px}
 .qp-star.on{color:#ffd24d}
 .qp-sec-hint{font-size:9px;font-weight:600;color:#3a3a4a;margin-left:8px;text-transform:none;letter-spacing:.2px}
 .qp-empty{text-align:center;color:#4a4a58;font-size:12px;font-weight:600;padding:16px;border:1.5px dashed #252530;border-radius:12px;margin-bottom:12px;line-height:1.5}
+.qp-grid.drag-accept{outline:2px solid rgba(167,139,250,.6);outline-offset:4px;border-radius:14px;background:rgba(167,139,250,.04)}
 </style>
 </head>
 <body>
@@ -388,7 +389,7 @@ function renderDemoChips(){
   function makeQpTile(s){var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="qp-price">'+p+'</span>':'';var gf=findGrpFor(s);var disp=esc((window._qpLabels&&window._qpLabels[s])||s);return '<div class="chip qp-tile" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+gf.ic+'" style="color:'+gf.cl+';font-size:20px;flex-shrink:0" aria-hidden="true"></i><div class="qp-info"><span class="qp-name">'+disp+'</span>'+ph+'</div><i class="ti ti-star-filled qp-star on" onclick="demoteQp(event)" aria-hidden="true"></i></div>';}
   var grpKeys=Object.keys(grps);
   var hint=grpKeys.slice(0,4).join(' · ')+(grpKeys.length>4?' · more':'');
-  var html='<div class="qp-sec-lbl"><i class="ti ti-bolt" aria-hidden="true"></i> Quick picks<span class="qp-sec-hint">hold &amp; drag to reorder · ★ to remove</span></div>';
+  var html='<div class="qp-sec-lbl"><i class="ti ti-bolt" aria-hidden="true"></i> Quick picks<span class="qp-sec-hint">hold any tile to pin here · drag out to remove</span></div>';
   html+=qpSvcs.length?'<div class="qp-grid">'+qpSvcs.map(makeQpTile).join('')+'</div>':'<div class="qp-empty"><i class="ti ti-star" style="font-size:14px;margin-right:5px;vertical-align:-2px;color:#3a3a4a"></i>Tap ★ on any service below to pin it here</div>';
   html+='<button class="more-svc-btn" id="moreSvcBtn" onclick="toggleMoreSvc()"><i class="ti ti-chevron-down msb-ico" aria-hidden="true"></i> More services<span class="more-svc-hint">'+esc(hint)+'</span></button>';
   html+='<div class="cat-list" id="catList">';
@@ -419,56 +420,84 @@ function renderDemoChips(){
 }
 function initQpDrag(){
   var chips=$('svcChips');if(!chips)return;
-  var grid=chips.querySelector('.qp-grid');if(!grid)return;
   var ghost=null,srcEl=null,holdTmr=null;
+  function getQG(){return chips.querySelector('.qp-grid');}
+  function inQP(el){var g=getQG();return !!(g&&g.contains(el));}
   function gx(e){var t=e.touches&&e.touches.length?e.touches[0]:e.changedTouches&&e.changedTouches.length?e.changedTouches[0]:e;return t.clientX;}
   function gy(e){var t=e.touches&&e.touches.length?e.touches[0]:e.changedTouches&&e.changedTouches.length?e.changedTouches[0]:e;return t.clientY;}
+  function overQP(cx,cy){var g=getQG();if(!g)return false;var r=g.getBoundingClientRect();return cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom;}
   function cleanup(){
     clearTimeout(holdTmr);holdTmr=null;
     if(ghost&&ghost.parentNode)ghost.parentNode.removeChild(ghost);ghost=null;
     if(srcEl)srcEl.classList.remove('qp-drag-src');
     chips.querySelectorAll('.qp-drag-over').forEach(function(t){t.classList.remove('qp-drag-over');});
+    var qg=getQG();if(qg)qg.classList.remove('drag-accept');
     srcEl=null;
   }
-  grid.addEventListener('touchstart',function(e){
+  chips.addEventListener('touchstart',function(e){
+    if(e.target.closest&&e.target.closest('.qp-star'))return;
     var tile=e.target.closest&&e.target.closest('.chip');
-    if(!tile||!grid.contains(tile))return;
+    if(!tile||!chips.contains(tile))return;
+    var ex=gx(e),ey=gy(e);
     holdTmr=setTimeout(function(){
       srcEl=tile;tile.classList.add('qp-drag-src');
       try{if(navigator.vibrate)navigator.vibrate(18);}catch(x){}
       ghost=document.createElement('div');ghost.className='qp-tile-ghost';
       var nm=tile.querySelector('.qp-name');ghost.textContent=nm?nm.textContent:(tile.dataset.s||'');
-      ghost.style.left=(gx(e)-60)+'px';ghost.style.top=(gy(e)-26)+'px';
+      ghost.style.left=(ex-60)+'px';ghost.style.top=(ey-26)+'px';
       document.body.appendChild(ghost);
     },300);
   },{passive:true});
-  grid.addEventListener('touchmove',function(e){
+  chips.addEventListener('touchmove',function(e){
     if(holdTmr&&!ghost){clearTimeout(holdTmr);holdTmr=null;return;}
     if(!ghost)return;
     e.preventDefault();
-    ghost.style.left=(gx(e)-60)+'px';ghost.style.top=(gy(e)-26)+'px';
+    var cx=gx(e),cy=gy(e);
+    ghost.style.left=(cx-60)+'px';ghost.style.top=(cy-26)+'px';
     chips.querySelectorAll('.qp-drag-over').forEach(function(t){t.classList.remove('qp-drag-over');});
-    var el2=document.elementFromPoint(gx(e),gy(e));
-    if(el2){var tc=el2.closest&&el2.closest('#svcChips .qp-grid .chip');if(tc&&tc!==srcEl&&grid.contains(tc))tc.classList.add('qp-drag-over');}
+    var qg=getQG();
+    var el2=document.elementFromPoint(cx,cy);
+    var tc=el2&&el2.closest&&el2.closest('#svcChips .chip');
+    if(tc&&tc!==srcEl)tc.classList.add('qp-drag-over');
+    if(qg)qg.classList.toggle('drag-accept',!inQP(srcEl)&&overQP(cx,cy));
   },{passive:false});
   function onEnd(e){
     if(!ghost){cleanup();return;}
     var cx=gx(e),cy=gy(e);
     var el2=document.elementFromPoint(cx,cy);
-    if(el2&&srcEl){
-      var tc=el2.closest&&el2.closest('#svcChips .qp-grid .chip');
-      if(tc&&tc!==srcEl&&grid.contains(tc)){
-        var as=srcEl.dataset.s,at=tc.dataset.s,ai=srcEl.innerHTML,bi=tc.innerHTML;
-        srcEl.dataset.s=at;srcEl.innerHTML=bi;
-        tc.dataset.s=as;tc.innerHTML=ai;
-        if(curDemo){_userQP[curDemo]=Array.from(grid.querySelectorAll('.chip')).map(function(t){return t.dataset.s;}).filter(Boolean);saveUserQP(curDemo);}
-        syncSvcSel();
+    var qg=getQG();
+    var doRender=false;
+    if(el2&&srcEl&&curDemo){
+      var tc=el2.closest&&el2.closest('#svcChips .chip');
+      var srcQP=inQP(srcEl);
+      var tgtQP=!!(tc&&qg&&qg.contains(tc));
+      var dropOnQP=overQP(cx,cy);
+      var s=srcEl.dataset.s;
+      if(srcQP&&tgtQP&&tc&&tc!==srcEl){
+        // reorder within QP — swap content+data
+        var at=tc.dataset.s,ai=srcEl.innerHTML,bi=tc.innerHTML;
+        srcEl.dataset.s=at;srcEl.innerHTML=bi;tc.dataset.s=s;tc.innerHTML=ai;
+        _userQP[curDemo]=Array.from(qg.querySelectorAll('.chip')).map(function(t){return t.dataset.s;}).filter(Boolean);
+        saveUserQP(curDemo);syncSvcSel();
+      } else if(!srcQP&&(tgtQP||dropOnQP)){
+        // add to QP
+        var qp=getUserQP(curDemo);
+        if(qp.indexOf(s)===-1){
+          if(tgtQP&&tc){var ti=Array.from(qg.querySelectorAll('.chip')).indexOf(tc);if(ti>-1){qp.splice(ti,0,s);}else{qp.push(s);}}
+          else{qp.push(s);}
+          saveUserQP(curDemo);doRender=true;
+        }
+      } else if(srcQP&&!dropOnQP){
+        // remove from QP (drag out)
+        var qp2=getUserQP(curDemo);var ri=qp2.indexOf(s);
+        if(ri>-1){qp2.splice(ri,1);saveUserQP(curDemo);doRender=true;}
       }
     }
     cleanup();
+    if(doRender)renderDemoChips();
   }
-  grid.addEventListener('touchend',onEnd);
-  grid.addEventListener('touchcancel',cleanup);
+  chips.addEventListener('touchend',onEnd);
+  chips.addEventListener('touchcancel',cleanup);
 }
 function toggleMoreSvc(){
   var cl=$('catList');var btn=$('moreSvcBtn');if(!cl||!btn)return;
@@ -545,7 +574,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.30 · QP add/remove from More · drag · rename labels';
+var VERSION='book v3.31 · drag any tile to QP · drag out to remove · ★ · rename';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
