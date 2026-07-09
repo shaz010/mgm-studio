@@ -89,8 +89,8 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 #settingsModal .set-sec::after{content:'›';font-size:18px;line-height:1;color:var(--muted);transform:rotate(90deg);transition:transform .2s;margin-left:8px}
 #settingsModal .set-sec.collapsed::after{transform:rotate(0deg)}
 .sec-hidden{display:none!important}
-#settingsModal .adv-toggle{width:100%;margin:18px 0 6px;padding:11px;border-radius:10px;border:1px dashed #4a4a4a;background:transparent;color:var(--muted);font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
-#settingsModal.show-adv .adv-toggle{color:var(--gold);border-color:var(--gold);border-style:solid}
+#settingsModal .adv-toggle{width:100%;margin:22px 0 6px;padding:14px 16px;border-radius:12px;border:2px solid rgba(167,139,250,.45);background:rgba(167,139,250,.08);color:#a78bfa;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .18s}
+#settingsModal.show-adv .adv-toggle{color:#c4b5fd;border-color:#a78bfa;background:rgba(167,139,250,.18)}
 .set-version{text-align:center;font-size:11px;color:#666;margin-top:20px;letter-spacing:.3px}
 /* STOCK */
 .stk{display:flex;align-items:center;gap:12px;background:#111;border:1px solid var(--border-bright);border-radius:11px;padding:12px 13px;margin-bottom:9px}
@@ -788,9 +788,12 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 .bc-tab.on{border-color:var(--gold);color:var(--gold)}
 .bc-tab-badge{position:absolute;top:-5px;right:-4px;background:#f87171;color:#fff;font-size:9px;font-weight:800;border-radius:8px;padding:1px 4px;line-height:1.4}
 .bc-grp{margin-bottom:6px;border:1px solid #1e1e1e;border-left:3px solid var(--gc,#444);border-radius:10px;overflow:hidden}
-.bc-grp-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--gc,#888);background:color-mix(in srgb,var(--gc,#444) 8%,#0d0d0d)}
+.bc-grp-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--gc,#888);background:color-mix(in srgb,var(--gc,#444) 8%,#0d0d0d);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .bc-grp-badge{font-size:10px;font-weight:700;color:#f87171;text-transform:none;letter-spacing:0}
-.bc-grp-body{padding:2px 0}
+.bc-grp-body{padding:2px 0;overflow:hidden;transition:max-height .22s ease}
+.bc-grp.closed .bc-grp-body{display:none}
+.bc-grp-chev{flex-shrink:0;font-size:13px;transition:transform .2s;margin-right:4px}
+.bc-grp.closed .bc-grp-chev{transform:rotate(-90deg)}
 .bc-svc-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #141414;transition:opacity .15s}
 .bc-svc-row:last-child{border-bottom:none}
 .bc-svc-row.bc-hidden{opacity:.35}
@@ -2787,7 +2790,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.92 · Booking curator per-group colour accents';
+var VERSION='v4.94 · Booking curator groups collapsible';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3361,6 +3364,10 @@ function toggleBookingSvc(tab,name){
   try{publishAvailability();}catch(_){}
 }
 function switchBcTab(tab){_bcTab=tab;renderBookingCurator();}
+function toggleBcGrp(hdr){
+  var grp=hdr.parentElement;if(!grp)return;
+  grp.classList.toggle('closed');
+}
 var BC_GRP_COLORS={'Cut':'#8FD17A','Color':'#d4af37','Lights':'#a78bfa','Styling':'#67e8f9','Extensions':'#f5a8ff','Eyebrow':'#fb923c','Other Chemical Services':'#4fd1c5','Beard':'#94a3b8','Treatments':'#60a5fa'};
 function renderBookingCurator(){
   var el=document.getElementById('bookingCuratorBody');if(!el)return;
@@ -3389,7 +3396,7 @@ function renderBookingCurator(){
       '</div>';
     }).join('');
     var gc=BC_GRP_COLORS[grp]||'#888';
-    return '<div class="bc-grp" style="--gc:'+gc+';"><div class="bc-grp-hdr">'+esc(grp)+badge+'</div><div class="bc-grp-body">'+rows+'</div></div>';
+    return '<div class="bc-grp" style="--gc:'+gc+';"><div class="bc-grp-hdr" onclick="toggleBcGrp(this)"><i class="ti ti-chevron-down bc-grp-chev"></i><span style="flex:1">'+esc(grp)+badge+'</span></div><div class="bc-grp-body">'+rows+'</div></div>';
   }).join('');
   el.innerHTML='<div class="bc-tabs">'+tabHtml+'</div><div class="bc-groups">'+grpHtml+'</div>';
 }
