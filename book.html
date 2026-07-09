@@ -156,6 +156,12 @@ textarea{resize:vertical;min-height:60px}
 .qp-sec-hint{font-size:9px;font-weight:600;color:#3a3a4a;margin-left:8px;text-transform:none;letter-spacing:.2px}
 .qp-empty{text-align:center;color:#4a4a58;font-size:12px;font-weight:600;padding:16px;border:1.5px dashed #252530;border-radius:12px;margin-bottom:12px;line-height:1.5}
 .qp-grid.drag-accept{outline:2px solid rgba(167,139,250,.6);outline-offset:4px;border-radius:14px;background:rgba(167,139,250,.04)}
+#qpBar{position:sticky;top:62px;z-index:98;background:#0c0c14;border-bottom:1px solid rgba(255,255,255,.06);padding:7px 14px;gap:8px;align-items:center;display:none}
+.qpb-inner{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex:1;align-items:center;min-width:0}
+.qpb-inner::-webkit-scrollbar{display:none}
+.qpb-chip{font-size:10.5px;font-weight:700;color:#d4af37;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);border-radius:20px;padding:3px 9px;white-space:nowrap;flex-shrink:0}
+.qpb-empty{font-size:10.5px;color:#3a3a4a;font-weight:600;white-space:nowrap}
+.qpb-up{color:#555;font-size:14px;flex-shrink:0;cursor:pointer;padding:4px;-webkit-tap-highlight-color:transparent}
 </style>
 </head>
 <body>
@@ -207,6 +213,7 @@ textarea{resize:vertical;min-height:60px}
       <button class="demo-tab" onclick="pickDemo('men',this)"><i class="ti ti-gender-male"></i>Men</button>
       <button class="demo-tab" onclick="pickDemo('kids',this)"><i class="ti ti-mood-kid"></i>Kids</button>
   </div>
+  <div id="qpBar"></div>
   <div class="sec-body">
     <div class="chips" id="svcChips"></div>
     <button class="none-btn" id="otherSvcBtn" onclick="toggleOtherSvc()" style="margin-top:9px"><i class="ti ti-plus"></i> None of these? Add your own</button>
@@ -424,6 +431,7 @@ function renderDemoChips(){
   el.innerHTML=html;
   syncSvcSel();_injectCustomChips();
   initQpDrag();
+  if(window._qpBarCheck)window._qpBarCheck();else renderQpBar();
 }
 function initQpDrag(){
   var chips=$('svcChips');if(!chips)return;
@@ -477,6 +485,43 @@ function initQpDrag(){
   }
   grid.addEventListener('touchend',onEnd);
   grid.addEventListener('touchcancel',cleanup);
+}
+function renderQpBar(){
+  var bar=$('qpBar');if(!bar)return;
+  var qp=curDemo?getUserQP(curDemo):[];
+  var inner='<i class="ti ti-bolt" style="color:#d4af37;font-size:13px;flex-shrink:0"></i><div class="qpb-inner">';
+  if(!qp.length){
+    inner+='<span class="qpb-empty">No quick picks yet — tap below to add</span>';
+  }else{
+    inner+=qp.map(function(s){
+      return '<span class="qpb-chip">'+esc((window._qpLabels&&window._qpLabels[s])||s)+'</span>';
+    }).join('');
+  }
+  inner+='</div><i class="ti ti-chevron-up qpb-up" onclick="scrollToQP()" title="Back to Quick Picks"></i>';
+  bar.innerHTML=inner;
+}
+function scrollToQP(){
+  var lbl=document.querySelector('#svcChips .qp-sec-lbl');
+  if(lbl)lbl.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function initQpStickyBar(){
+  var bar=$('qpBar');if(!bar)return;
+  function check(){
+    var lbl=document.querySelector('#svcChips .qp-sec-lbl');
+    if(!lbl||!curDemo){bar.style.display='none';return;}
+    var r=lbl.getBoundingClientRect();
+    if(r.bottom<72){
+      bar.style.display='flex';
+      renderQpBar();
+    }else{
+      bar.style.display='none';
+    }
+  }
+  if(window._qpBarUnlisten)window._qpBarUnlisten();
+  window.addEventListener('scroll',check,{passive:true});
+  window._qpBarUnlisten=function(){window.removeEventListener('scroll',check);};
+  window._qpBarCheck=check;
+  check();
 }
 function toggleMoreSvc(){
   var cl=$('catList');var btn=$('moreSvcBtn');if(!cl||!btn)return;
@@ -553,7 +598,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.33 · custom svcs in QP · drag to reorder · big × remove';
+var VERSION='book v3.34 · sticky QP bar while browsing More services';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -644,6 +689,7 @@ function buildForm(){
     if(tab)tab.classList.add('sel');
   }
   renderDemoChips();
+  setTimeout(initQpStickyBar,100);
   var hours=info.hours||[];
   var row='',today=new Date();today.setHours(12,0,0,0);
   var first='',lastMonth=-1;
