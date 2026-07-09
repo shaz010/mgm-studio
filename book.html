@@ -80,6 +80,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .none-btn{margin-top:10px;width:100%;text-align:center;font-size:14px;font-weight:700;color:var(--gold);background:transparent;border:1.5px dashed var(--gold);border-radius:9px;padding:12px;cursor:pointer}
 .none-btn.on{color:var(--gold);border-color:var(--gold);border-style:solid}
 @keyframes iridShift{to{background-position:200% 50%}}
+.no-anim *{animation-play-state:paused!important}
 #noneBtn,#otherSvcBtn{display:flex;align-items:center;justify-content:center;gap:8px;font-size:15.5px;font-weight:800;color:#fff;border:1.5px solid transparent;border-radius:11px;padding:15px;background:linear-gradient(var(--bg2),var(--bg2)) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 16px rgba(167,139,250,.22);transition:transform .14s}
 #noneBtn:active,#otherSvcBtn:active{transform:scale(.97)}
 #noneBtn i,#otherSvcBtn i{font-size:17px;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:iridShift 4.5s linear infinite}
@@ -128,9 +129,14 @@ textarea{resize:vertical;min-height:60px}
 .pay-btn{width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,#c9a227,#f5d77e);color:#1a1208;font-size:16px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:8px}
 .pay-btn:disabled{opacity:.45;cursor:default}
 .pay-btn:active:not(:disabled){opacity:.85}
-.pay-skip{text-align:center;margin-top:14px;font-size:12.5px;color:#4a4a5a;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:6px}
+.pay-skip{text-align:center;margin-top:14px;font-size:13.5px;color:#7a7a8a;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:8px;text-decoration:underline;text-underline-offset:3px}
 .pay-skip:active{color:#8a8a9a}
 .pay-lock{text-align:center;margin-top:10px;font-size:11px;color:#3a3a4a;line-height:1.5}
+#expressCheckoutElement{margin-bottom:4px;min-height:0}
+#expressCheckoutElement:empty{display:none}
+.pay-divider{display:flex;align-items:center;gap:10px;margin:10px 0;color:#3a3a4a;font-size:11.5px}
+.pay-divider::before,.pay-divider::after{content:'';flex:1;border-top:1px solid #2a2a3a}
+.pay-divider:empty+#stripeElement,.pay-divider.hidden{display:none}
 .pay-err{background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.3);border-radius:10px;padding:10px 12px;font-size:12px;color:#ff9999;margin-bottom:12px;display:none}
 .pay-err.show{display:block}
 .center-screen{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
@@ -683,9 +689,9 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 var STRIPE_PK='pk_live_51Ti0soDvwJdoHdEZNZkU5qSjuHxIJlL3kqee3BBVWOYFtv9fPgW63hwTbVRCcJ79x7EMmceD9sbUQAAWJMOVqSaG00vBDF7xUc';
-var _stripe=null,_stripeElements=null,_stripePayEl=null,_pendingRec=null,_depositAmt=50;
+var _stripe=null,_stripeElements=null,_stripePayEl=null,_stripeECEl=null,_pendingRec=null,_depositAmt=50;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.44 · scroll flicker fix';
+var VERSION='book v3.47 · express checkout Apple Pay';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -1165,13 +1171,33 @@ function showPaymentStep(rec){
   if(!pk){console.warn('No Stripe PK in Firestore info.stripePk');return;}
   if(!_stripe||_stripe._pk!==pk){
     _stripe=Stripe(pk);_stripe._pk=pk;
-    _stripeElements=null;_stripePayEl=null;
+    _stripeElements=null;_stripePayEl=null;_stripeECEl=null;
   }
   if(!_stripeElements){
     _stripeElements=_stripe.elements({
       mode:'payment',amount:Math.round(_depositAmt*100),currency:'usd',
       appearance:{theme:'night',variables:{colorBackground:'#0d0d18',colorPrimary:'#d4af37',colorText:'#e8e8f0',fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif',borderRadius:'10px'}}
     });
+    // Express Checkout Element — shows Apple Pay / Google Pay button natively
+    _stripeECEl=_stripeElements.create('expressCheckout',{buttonHeight:48,buttonTheme:{applePay:'black',googlePay:'black'}});
+    var eceEl=$('expressCheckoutElement');
+    if(eceEl){eceEl.innerHTML='';_stripeECEl.mount('#expressCheckoutElement');}
+    _stripeECEl.on('confirm',function(){
+      var fn=firebase.functions().httpsCallable('createPaymentIntent');
+      var err=$('payErr');
+      fn({amount:Math.round(_depositAmt*100),currency:'usd',salonId:SALON_ID}).then(function(res){
+        var clientSecret=res.data&&res.data.clientSecret;
+        if(!clientSecret){throw new Error('No client secret');}
+        return _stripe.confirmPayment({elements:_stripeElements,clientSecret:clientSecret,redirect:'if_required'});
+      }).then(function(res2){
+        if(res2&&res2.error){if(err){err.textContent=res2.error.message;err.classList.add('show');}return;}
+        var pi=res2&&res2.paymentIntent;
+        if(_pendingRec&&pi){_pendingRec.depositPaid=true;_pendingRec.depositAmount=_depositAmt;_pendingRec.paymentIntentId=pi.id||'';}
+        closePaySheet();
+        if(_pendingRec){_sendRec(_pendingRec);_pendingRec=null;}
+      }).catch(function(e){if(err){err.textContent=e.message||'Payment error';err.classList.add('show');}});
+    });
+    // Card input element
     _stripePayEl=_stripeElements.create('payment',{layout:'tabs'});
     var container=$('stripeElement');if(container){container.innerHTML='';_stripePayEl.mount('#stripeElement');}
   }
@@ -1272,6 +1298,12 @@ function wakeOff(){try{if(_wl){_wl.release();_wl=null;}}catch(e){}}
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&_waiting)wakeOn();});
 function _unlockAudio(){try{if(!_audioCtx)_audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(_audioCtx.state==='suspended')_audioCtx.resume();}catch(e){}}
 document.addEventListener('touchend',_unlockAudio,{passive:true});
+var _scrollTimer=null;
+document.addEventListener('scroll',function(){
+  document.body.classList.add('no-anim');
+  clearTimeout(_scrollTimer);
+  _scrollTimer=setTimeout(function(){document.body.classList.remove('no-anim');},150);
+},{passive:true});
 document.addEventListener('click',_unlockAudio,{passive:true});
 function softChime(){
   try{
@@ -1408,9 +1440,11 @@ init();
     <p class="pay-sub" id="paySheetSvc">Hold your appointment with a deposit — the rest you pay at the salon.</p>
     <div class="pay-amount" id="paySheetAmt">$50 <span>deposit</span></div>
     <div id="payErr" class="pay-err"></div>
+    <div id="expressCheckoutElement"></div>
+    <div class="pay-divider" id="payDivider"><span>or pay by card</span></div>
     <div id="stripeElement"></div>
     <button class="pay-btn" id="payConfirmBtn" onclick="confirmPayment()">
-      <i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $<span id="payBtnAmt">50</span> deposit
+      <i class="ti ti-credit-card" style="font-size:18px"></i> Pay $<span id="payBtnAmt">50</span> by card
     </button>
     <div class="pay-skip" onclick="skipDeposit()">Pay at the salon instead →</div>
     <div class="pay-lock"><i class="ti ti-lock" style="font-size:11px"></i> Secured by Stripe · Apple Pay &amp; Google Pay accepted</div>
