@@ -39,7 +39,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .grp-count{font-size:10px;font-weight:800;color:#a78bfa;background:rgba(167,139,250,.18);border-radius:20px;padding:2px 8px;flex-shrink:0}
 .svc-grp-body{margin-top:10px}
 .svc-grp-body.closed{display:none}
-.svc-grp-add{display:flex;align-items:center;gap:7px;margin-top:10px}
+.svc-grp-add{display:none}
 .svc-grp-add-input{flex:1;font-size:14px;padding:8px 10px;border-radius:8px;background:#1a1a1a;border:1.5px solid #333;color:var(--text);outline:none;font-family:inherit}
 .svc-grp-add-input:focus{border-color:var(--gold)}
 .svc-grp-add-btn{font-size:12px;font-weight:800;color:#1a1208;background:var(--gold);border:none;border-radius:8px;padding:8px 13px;cursor:pointer;white-space:nowrap;flex-shrink:0}
@@ -423,7 +423,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.25 · Services layout gaps fixed';
+var VERSION='book v3.26 · Remove per-group add inputs from client view';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
