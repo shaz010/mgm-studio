@@ -2357,7 +2357,7 @@ function closeEraseModal(){ var m=document.getElementById('eraseModal'); if(m)m.
 function confirmErase(){
   try{ localStorage.clear(); }
   catch(e){ try{['cp_appts','cp_paid','cp_clients','cp_prefs','ap_appts','ap_clients','ap_custom','ap_prefs','ap_stock'].forEach(function(k){localStorage.removeItem(k);});}catch(_e){} }
-  location.reload();
+  try{(window.top||window).location.reload();}catch(_e){location.reload();}
 }
 function exportData(){
   try{
@@ -3552,7 +3552,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.82 · Adv toggle moved to bottom';
+var VERSION='app v1.83 · Erase reloads all frames — clients truly gone';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

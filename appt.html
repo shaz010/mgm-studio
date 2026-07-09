@@ -2806,7 +2806,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.98 · Booking ON by default';
+var VERSION='v4.99 · Erase truly clears all frames';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3085,21 +3085,11 @@ function clearDay(){
 function startFresh(){
   askConfirm('This erases ALL appointments, clients and your custom services on this device. It cannot be undone.',function(){
     askConfirm('Really erase everything? This is permanent.',function(){
-      try{
-        localStorage.removeItem(APPTS);
-        localStorage.removeItem(CLIENTS);
-        localStorage.removeItem(CUSTOM);
-        localStorage.removeItem(STOCK);
-        localStorage.removeItem(PREFS);
-      }catch(e){}
-      /* reset in-memory state instantly — no slow full-page reload */
-      appts=[];clients=[];customSvc=[];stock=[];
-      svcMode='hair';
-      editingId=null;clientId=null;
-      viewDate=new Date();viewDate.setHours(12,0,0,0);
-      closeSheet('settingsModal');
-      showView('day');
+      try{localStorage.clear();}catch(e){
+        try{[APPTS,CLIENTS,CUSTOM,STOCK,PREFS,'cp_appts','cp_paid','cp_clients','cp_prefs'].forEach(function(k){localStorage.removeItem(k);});}catch(_e){}
+      }
       toast('Fresh start — all clear');
+      setTimeout(function(){try{(window.top||window).location.reload();}catch(_e){location.reload();}},400);
     },{title:'Last chance',yesLabel:'Erase everything',danger:true});
   },{title:'Start fresh?',yesLabel:'Continue',danger:true});
 }
