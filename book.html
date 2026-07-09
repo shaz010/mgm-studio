@@ -34,7 +34,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .svc-pill span.x:active{opacity:1}
 .chip:active{transform:scale(.93)}
 .chip,.hchip{user-select:none;-webkit-user-select:none}
-.svc-grp{margin-bottom:0;background:rgba(255,255,255,.025);border-radius:12px;border:1px solid rgba(255,255,255,.065);padding:8px 8px 10px}.svc-grp .chip{min-height:72px;font-size:11px;padding:8px 4px}.svc-grp .chip-price{font-size:11px;padding:2px 7px;margin-top:2px}.svc-grp .svc-grp-add-input{font-size:12px;padding:6px 8px}.svc-grp .svc-grp-add-btn{font-size:11px;padding:6px 10px}.svc-grp-hdr{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:900;color:var(--gold);text-transform:uppercase;letter-spacing:1.8px;padding:7px 0 7px;border-bottom:1px solid rgba(255,184,0,.18);cursor:pointer;user-select:none;-webkit-user-select:none}.svc-grp-body{margin-top:8px}.svc-grp-body.closed{display:none}#svcChips{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}@media(min-width:560px){#svcChips{grid-template-columns:repeat(3,1fr)}}
+.svc-grp{margin-bottom:0;background:rgba(255,255,255,.025);border-radius:12px;border:1px solid rgba(255,255,255,.065);padding:8px 8px 10px}.svc-grp .chips{grid-template-columns:repeat(3,1fr)}.svc-grp .chip{min-height:72px;font-size:11px;padding:8px 4px}.svc-grp .chip-price{font-size:11px;padding:2px 7px;margin-top:2px}.svc-grp .svc-grp-add-input{font-size:12px;padding:6px 8px}.svc-grp .svc-grp-add-btn{font-size:11px;padding:6px 10px}.svc-grp-hdr{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:900;color:var(--gold);text-transform:uppercase;letter-spacing:1.8px;padding:7px 0 7px;border-bottom:1px solid rgba(255,184,0,.18);cursor:pointer;user-select:none;-webkit-user-select:none}.svc-grp-body{margin-top:8px}.svc-grp-body.closed{display:none}#svcChips{display:flex;flex-direction:column;gap:8px}
 .svc-grp-hdr{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:900;color:var(--gold);text-transform:uppercase;letter-spacing:1.8px;padding:9px 0 8px;border-bottom:1px solid rgba(255,184,0,.18);cursor:pointer;user-select:none;-webkit-user-select:none}
 .grp-count{font-size:10px;font-weight:800;color:#a78bfa;background:rgba(167,139,250,.18);border-radius:20px;padding:2px 8px;flex-shrink:0}
 .svc-grp-body{margin-top:10px}
@@ -423,7 +423,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.24 · My Hair section redesign';
+var VERSION='book v3.25 · Services layout gaps fixed';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
