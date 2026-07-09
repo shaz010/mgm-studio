@@ -357,7 +357,7 @@ function renderDemoChips(){
   var hidden=(window._bookingHiddenSvcs&&window._bookingHiddenSvcs[curDemo])||[];
   var qpSvcs=(QUICK_PICKS[curDemo]||[]).filter(function(s){return hidden.indexOf(s)===-1;});
   function findGrpFor(s){var r={ic:'sparkles',cl:'var(--gold)'};Object.keys(grps).forEach(function(g){if((grps[g]||[]).indexOf(s)>-1){r={ic:GRP_ICONS[g]||'sparkles',cl:GRP_COLORS[g]||'var(--gold)'};}});return r;}
-  function makeQpTile(s){var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="qp-price">'+p+'</span>':'';var gf=findGrpFor(s);return '<div class="chip qp-tile" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+gf.ic+'" style="color:'+gf.cl+';font-size:20px;flex-shrink:0" aria-hidden="true"></i><div class="qp-info"><span class="qp-name">'+esc(s)+'</span>'+ph+'</div><i class="ti ti-grid-dots qp-dd" aria-hidden="true"></i></div>';}
+  function makeQpTile(s){var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="qp-price">'+p+'</span>':'';var gf=findGrpFor(s);var disp=esc((window._qpLabels&&window._qpLabels[s])||s);return '<div class="chip qp-tile" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+gf.ic+'" style="color:'+gf.cl+';font-size:20px;flex-shrink:0" aria-hidden="true"></i><div class="qp-info"><span class="qp-name">'+disp+'</span>'+ph+'</div><i class="ti ti-grid-dots qp-dd" aria-hidden="true"></i></div>';}
   var grpKeys=Object.keys(grps);
   var hint=grpKeys.slice(0,4).join(' · ')+(grpKeys.length>4?' · more':'');
   var html='<div class="qp-sec-lbl"><i class="ti ti-bolt" aria-hidden="true"></i> Quick picks</div>';
@@ -516,7 +516,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.28 · Landscape tiles everywhere + QP drag-reorder';
+var VERSION='book v3.29 · Landscape tiles + QP drag-reorder + rename labels';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -559,6 +559,7 @@ function init(){
       var fresh=doc.data();
       window._priceBook=fresh.priceBook||null;
       window._bookingHiddenSvcs=fresh.bookingHiddenSvcs||{};
+      try{var _lk='qpLabels_'+SALON_ID;window._qpLabels=Object.assign(JSON.parse(localStorage.getItem(_lk)||'{}'),fresh.qpLabels||{});}catch(x){window._qpLabels=fresh.qpLabels||{};}
       if(!_salonInited){
         _salonInited=true;
         info=fresh;
@@ -721,11 +722,39 @@ function initPillDrag(){
   });
 }
 function pickSvc(el){
+  // Double-tap on QP tile = rename label
+  if(el.classList.contains('qp-tile')){
+    var now=Date.now();
+    if(el._lastTap&&(now-el._lastTap)<380){el._lastTap=0;showQpRename(el);return;}
+    el._lastTap=now;
+  }
   var s=el.dataset.s;
   var i=selSvcArr.indexOf(s);
   if(i>=0){selSvcArr.splice(i,1);el.classList.remove('sel');}
   else{selSvcArr.push(s);el.classList.add('sel');}
   renderSvcPills();updateBtn();
+}
+function showQpRename(el){
+  var s=el.dataset.s;
+  var nm=el.querySelector('.qp-name');if(!nm)return;
+  var cur=nm.textContent;
+  var inp=document.createElement('input');
+  inp.value=cur;
+  inp.style.cssText='position:absolute;inset:0;width:100%;height:100%;padding:4px 10px;font-size:11px;font-weight:700;font-family:inherit;background:#111;border:2px solid #a78bfa;border-radius:13px;color:#fff;text-align:center;z-index:20;box-sizing:border-box;outline:none';
+  el.appendChild(inp);inp.focus();inp.select();
+  function commit(){
+    var v=inp.value.trim()||s;
+    try{inp.remove();}catch(x){}
+    if(!window._qpLabels)window._qpLabels={};
+    window._qpLabels[s]=v;
+    try{var lk='qpLabels_'+SALON_ID;var obj=JSON.parse(localStorage.getItem(lk)||'{}');obj[s]=v;localStorage.setItem(lk,JSON.stringify(obj));}catch(x){}
+    if(nm)nm.textContent=v;
+  }
+  inp.addEventListener('blur',commit);
+  inp.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){e.preventDefault();inp.blur();}
+    if(e.key==='Escape'){inp.value=cur;inp.blur();}
+  });
 }
 function removeSvc(s){
   var i=selSvcArr.indexOf(s);if(i>=0)selSvcArr.splice(i,1);
