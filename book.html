@@ -144,6 +144,12 @@ textarea{resize:vertical;min-height:60px}
 .more-svc-hint{margin-left:auto;font-size:10px;color:#6b5fa0;white-space:nowrap;font-weight:700}
 .cat-list{display:none;flex-direction:column;gap:6px}
 .cat-list.open{display:flex}
+.qp-grid .chip:last-child:nth-child(odd){grid-column:span 2}
+.svc-grp .qp-grid{margin-bottom:0}
+.qp-drag-src{opacity:.2!important;box-shadow:none!important;transition:opacity .1s}
+.qp-drag-over{outline:2px solid #a78bfa!important;outline-offset:2px;border-radius:14px}
+.qp-tile-ghost{position:fixed;z-index:9999;padding:8px 16px;border-radius:12px;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d) border-box;border:1.5px solid transparent;color:#fff;font-size:12px;font-weight:700;pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,.7);opacity:.93;white-space:nowrap;transform:rotate(-2deg)}
+.qp-dd{position:absolute;top:5px;right:6px;font-size:11px;color:rgba(255,255,255,.18);pointer-events:none;line-height:1}
 </style>
 </head>
 <body>
@@ -351,7 +357,7 @@ function renderDemoChips(){
   var hidden=(window._bookingHiddenSvcs&&window._bookingHiddenSvcs[curDemo])||[];
   var qpSvcs=(QUICK_PICKS[curDemo]||[]).filter(function(s){return hidden.indexOf(s)===-1;});
   function findGrpFor(s){var r={ic:'sparkles',cl:'var(--gold)'};Object.keys(grps).forEach(function(g){if((grps[g]||[]).indexOf(s)>-1){r={ic:GRP_ICONS[g]||'sparkles',cl:GRP_COLORS[g]||'var(--gold)'};}});return r;}
-  function makeQpTile(s){var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="qp-price">'+p+'</span>':'';var gf=findGrpFor(s);return '<div class="chip qp-tile" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+gf.ic+'" style="color:'+gf.cl+';font-size:20px;flex-shrink:0" aria-hidden="true"></i><div class="qp-info"><span class="qp-name">'+esc(s)+'</span>'+ph+'</div></div>';}
+  function makeQpTile(s){var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="qp-price">'+p+'</span>':'';var gf=findGrpFor(s);return '<div class="chip qp-tile" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+gf.ic+'" style="color:'+gf.cl+';font-size:20px;flex-shrink:0" aria-hidden="true"></i><div class="qp-info"><span class="qp-name">'+esc(s)+'</span>'+ph+'</div><i class="ti ti-grid-dots qp-dd" aria-hidden="true"></i></div>';}
   var grpKeys=Object.keys(grps);
   var hint=grpKeys.slice(0,4).join(' · ')+(grpKeys.length>4?' · more':'');
   var html='<div class="qp-sec-lbl"><i class="ti ti-bolt" aria-hidden="true"></i> Quick picks</div>';
@@ -364,7 +370,7 @@ function renderDemoChips(){
     var extra=allSvcs.slice(GRP_MAX_VIS);
     var gid='g'+curDemo+'_'+grpName.replace(/[^a-z0-9]/gi,'_');
     var ic=GRP_ICONS[grpName]||'sparkles';var cl=GRP_COLORS[grpName]||'var(--gold)';
-    function makeChip(s){var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="chip-price">'+p+'</span>':'';return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+ic+'" style="color:'+cl+'"></i><span class="chip-name">'+esc(s)+'</span>'+ph+'</div>';}
+    function makeChip(s){var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="qp-price">'+p+'</span>':'';return '<div class="chip qp-tile" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+ic+'" style="color:'+cl+';font-size:20px;flex-shrink:0" aria-hidden="true"></i><div class="qp-info"><span class="qp-name">'+esc(s)+'</span>'+ph+'</div></div>';}
     var h='<div class="svc-grp">';
     h+='<div class="svc-grp-hdr" onclick="toggleGrp(\''+gid+'\')">';
     h+='<i class="ti ti-chevron-down" id="chev_'+gid+'" style="transition:transform .2s;flex-shrink:0;transform:rotate(-90deg)"></i>';
@@ -372,8 +378,8 @@ function renderDemoChips(){
     h+='<span class="grp-count">'+allSvcs.length+'</span>';
     h+='</div>';
     h+='<div class="svc-grp-body closed" id="'+gid+'">';
-    h+='<div class="chips">'+primary.map(makeChip).join('')+'</div>';
-    if(extra.length){var mid='more_'+gid;h+='<button class="grp-more-btn" id="mbtn_'+mid+'" onclick="toggleGrpMore(\''+mid+'\')"><i class="ti ti-chevron-down" id="mico_'+mid+'" style="transition:transform .2s;font-size:13px"></i> '+extra.length+' more '+esc(grpName)+' services</button>';h+='<div class="grp-more-body" id="'+mid+'"><div class="chips">'+extra.map(makeChip).join('')+'</div></div>';}
+    h+='<div class="qp-grid">'+primary.map(makeChip).join('')+'</div>';
+    if(extra.length){var mid='more_'+gid;h+='<button class="grp-more-btn" id="mbtn_'+mid+'" onclick="toggleGrpMore(\''+mid+'\')"><i class="ti ti-chevron-down" id="mico_'+mid+'" style="transition:transform .2s;font-size:13px"></i> '+extra.length+' more '+esc(grpName)+' services</button>';h+='<div class="grp-more-body" id="'+mid+'"><div class="qp-grid">'+extra.map(makeChip).join('')+'</div></div>';}
     h+='</div></div>';
     return h;
   }
@@ -381,6 +387,59 @@ function renderDemoChips(){
   html+='</div>';
   el.innerHTML=html;
   syncSvcSel();_injectCustomChips();
+  initQpDrag();
+}
+function initQpDrag(){
+  var chips=$('svcChips');if(!chips)return;
+  var grid=chips.querySelector('.qp-grid');if(!grid)return;
+  var ghost=null,srcEl=null,holdTmr=null;
+  function gx(e){var t=e.touches&&e.touches.length?e.touches[0]:e.changedTouches&&e.changedTouches.length?e.changedTouches[0]:e;return t.clientX;}
+  function gy(e){var t=e.touches&&e.touches.length?e.touches[0]:e.changedTouches&&e.changedTouches.length?e.changedTouches[0]:e;return t.clientY;}
+  function cleanup(){
+    clearTimeout(holdTmr);holdTmr=null;
+    if(ghost&&ghost.parentNode)ghost.parentNode.removeChild(ghost);ghost=null;
+    if(srcEl)srcEl.classList.remove('qp-drag-src');
+    chips.querySelectorAll('.qp-drag-over').forEach(function(t){t.classList.remove('qp-drag-over');});
+    srcEl=null;
+  }
+  grid.addEventListener('touchstart',function(e){
+    var tile=e.target.closest&&e.target.closest('.chip');
+    if(!tile||!grid.contains(tile))return;
+    holdTmr=setTimeout(function(){
+      srcEl=tile;tile.classList.add('qp-drag-src');
+      try{if(navigator.vibrate)navigator.vibrate(18);}catch(x){}
+      ghost=document.createElement('div');ghost.className='qp-tile-ghost';
+      var nm=tile.querySelector('.qp-name');ghost.textContent=nm?nm.textContent:(tile.dataset.s||'');
+      ghost.style.left=(gx(e)-60)+'px';ghost.style.top=(gy(e)-26)+'px';
+      document.body.appendChild(ghost);
+    },300);
+  },{passive:true});
+  grid.addEventListener('touchmove',function(e){
+    if(holdTmr&&!ghost){clearTimeout(holdTmr);holdTmr=null;return;}
+    if(!ghost)return;
+    e.preventDefault();
+    ghost.style.left=(gx(e)-60)+'px';ghost.style.top=(gy(e)-26)+'px';
+    chips.querySelectorAll('.qp-drag-over').forEach(function(t){t.classList.remove('qp-drag-over');});
+    var el2=document.elementFromPoint(gx(e),gy(e));
+    if(el2){var tc=el2.closest&&el2.closest('#svcChips .qp-grid .chip');if(tc&&tc!==srcEl&&grid.contains(tc))tc.classList.add('qp-drag-over');}
+  },{passive:false});
+  function onEnd(e){
+    if(!ghost){cleanup();return;}
+    var cx=gx(e),cy=gy(e);
+    var el2=document.elementFromPoint(cx,cy);
+    if(el2&&srcEl){
+      var tc=el2.closest&&el2.closest('#svcChips .qp-grid .chip');
+      if(tc&&tc!==srcEl&&grid.contains(tc)){
+        var as=srcEl.dataset.s,at=tc.dataset.s,ai=srcEl.innerHTML,bi=tc.innerHTML;
+        srcEl.dataset.s=at;srcEl.innerHTML=bi;
+        tc.dataset.s=as;tc.innerHTML=ai;
+        syncSvcSel();
+      }
+    }
+    cleanup();
+  }
+  grid.addEventListener('touchend',onEnd);
+  grid.addEventListener('touchcancel',cleanup);
 }
 function toggleMoreSvc(){
   var cl=$('catList');var btn=$('moreSvcBtn');if(!cl||!btn)return;
@@ -457,7 +516,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.27 · Quick picks + collapsible More services';
+var VERSION='book v3.28 · Landscape tiles everywhere + QP drag-reorder';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
