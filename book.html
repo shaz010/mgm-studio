@@ -104,10 +104,17 @@ textarea{resize:vertical;min-height:60px}
 .returning-btn{font-size:13px;font-weight:700;color:var(--gold);background:transparent;border:1.5px solid var(--gold);border-radius:20px;padding:7px 13px;cursor:pointer;display:flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0}
 .returning-btn.on{color:var(--gold);border-color:var(--gold);background:var(--gold-dim)}
 #hairWrap.collapsed{display:none}
-.hair-hint{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 14px}
-.hair-row{margin-bottom:13px}
-.hair-lbl{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:7px}
-.hchip{display:flex;align-items:center;justify-content:center;padding:10px 8px;min-height:54px;border-radius:12px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.035);color:#e2e2ea;font-size:12.5px;font-weight:700;cursor:pointer;transition:transform .14s,border-color .2s,box-shadow .25s;-webkit-tap-highlight-color:transparent;text-align:center;line-height:1.25;word-break:break-word}
+.hair-hint-box{background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.18);border-radius:11px;padding:11px 13px;margin-bottom:18px}
+.hair-hint-line{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--text2);line-height:1.45}
+.hair-hint-line+.hair-hint-line{margin-top:8px}
+.hair-row{margin-bottom:16px}
+.hair-lbl{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;color:#9090b0;text-transform:uppercase;letter-spacing:.9px;margin-bottom:9px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.06)}
+.hair-lbl-warn{color:#d4af37!important}
+.hair-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.hair-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.hchip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;min-height:66px;border-radius:12px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.035);color:#e2e2ea;cursor:pointer;transition:transform .14s,border-color .2s,box-shadow .25s;-webkit-tap-highlight-color:transparent;text-align:center}
+.hchip-ic{font-size:18px;line-height:1}
+.hchip-nm{font-size:11.5px;font-weight:700;line-height:1.25;word-break:break-word}
 .hchip.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 12px rgba(167,139,250,.4)}
 .hchip:active{transform:scale(.93)}
 .spin{width:34px;height:34px;border:3px solid var(--border-bright);border-top-color:var(--gold);border-radius:50%;animation:sp 0.8s linear infinite}
@@ -207,46 +214,49 @@ textarea{resize:vertical;min-height:60px}
   </div>
   <div class="sec-body">
   <div id="hairWrap">
-    <p class="hair-hint"><b>First visit?</b> A quick picture of your hair helps your stylist set the right time &amp; price — tap all that apply. <b>Been here before?</b> Tap <i>"I've been here before"</i> above to skip this — your stylist already has you on file.</p>
+    <div class="hair-hint-box">
+      <div class="hair-hint-line"><span>🌟</span><span><b>First visit?</b> Tap all that apply — helps your stylist plan the right time &amp; price.</span></div>
+      <div class="hair-hint-line"><span>👋</span><span><b>Been here before?</b> Tap <em>"I've been here before"</em> above to skip this step.</span></div>
+    </div>
     <div class="hair-row">
-      <div class="hair-lbl">Length</div>
-      <div class="chips" data-hair="length">
-        <div class="hchip" onclick="toggleHair(this)">Short</div>
-        <div class="hchip" onclick="toggleHair(this)">Shoulder</div>
-        <div class="hchip" onclick="toggleHair(this)">Long</div>
-        <div class="hchip" onclick="toggleHair(this)">Extra long</div>
+      <div class="hair-lbl"><span>📏</span> Length</div>
+      <div class="hair-grid-4" data-hair="length">
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">✂️</span><span class="hchip-nm">Short</span></div>
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">〽️</span><span class="hchip-nm">Shoulder</span></div>
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">🌊</span><span class="hchip-nm">Long</span></div>
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">💫</span><span class="hchip-nm">Extra long</span></div>
       </div>
     </div>
     <div class="hair-row">
-      <div class="hair-lbl">Thickness</div>
-      <div class="chips" data-hair="thickness">
-        <div class="hchip" onclick="toggleHair(this)">Thick</div>
-        <div class="hchip" onclick="toggleHair(this)">Med-thick</div>
-        <div class="hchip" onclick="toggleHair(this)">Thin</div>
+      <div class="hair-lbl"><span>🧵</span> Thickness</div>
+      <div class="hair-grid-3" data-hair="thickness">
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">💪</span><span class="hchip-nm">Thick</span></div>
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">〰️</span><span class="hchip-nm">Med-thick</span></div>
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">🪶</span><span class="hchip-nm">Thin</span></div>
       </div>
     </div>
     <div class="hair-row">
-      <div class="hair-lbl">Colour now</div>
-      <div class="chips" data-hair="colour">
-        <div class="hchip" onclick="toggleHair(this)">Dark</div>
-        <div class="hchip" onclick="toggleHair(this)">Brown</div>
-        <div class="hchip" onclick="toggleHair(this)">Light</div>
+      <div class="hair-lbl"><span>🎨</span> Colour now</div>
+      <div class="hair-grid-3" data-hair="colour">
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">🌑</span><span class="hchip-nm">Dark</span></div>
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">🍂</span><span class="hchip-nm">Brown</span></div>
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">☀️</span><span class="hchip-nm">Light</span></div>
       </div>
     </div>
     <div class="hair-row">
-      <div class="hair-lbl">Grey</div>
-      <div class="chips" data-hair="grey">
-        <div class="hchip" onclick="toggleHair(this)">A little grey</div>
-        <div class="hchip" onclick="toggleHair(this)">Partially grey</div>
-        <div class="hchip" onclick="toggleHair(this)">Fully grey</div>
+      <div class="hair-lbl"><span>🌗</span> Grey</div>
+      <div class="hair-grid-3" data-hair="grey">
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">🌙</span><span class="hchip-nm">A little grey</span></div>
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">🌗</span><span class="hchip-nm">Partially grey</span></div>
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">⬜</span><span class="hchip-nm">Fully grey</span></div>
       </div>
     </div>
     <div class="hair-row">
-      <div class="hair-lbl">Previously had <span style="color:var(--muted);font-weight:400">(important)</span></div>
-      <div class="chips" data-hair="history">
-        <div class="hchip" onclick="toggleHair(this)">Coloured</div>
-        <div class="hchip" onclick="toggleHair(this)">Highlighted</div>
-        <div class="hchip" onclick="toggleHair(this)">Permed</div>
+      <div class="hair-lbl hair-lbl-warn"><span>⚠️</span> Previously had</div>
+      <div class="hair-grid-3" data-hair="history">
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">🎨</span><span class="hchip-nm">Coloured</span></div>
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">✨</span><span class="hchip-nm">Highlighted</span></div>
+        <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">〰️</span><span class="hchip-nm">Permed</span></div>
       </div>
     </div>
     <label>Anything else? <span style="color:var(--muted);font-weight:400">(optional)</span></label>
@@ -413,7 +423,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.23 · Per-group More expand button';
+var VERSION='book v3.24 · My Hair section redesign';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -715,7 +725,7 @@ function collectHair(){
   var parts=[];
   document.querySelectorAll('#hairWrap [data-hair]').forEach(function(row){
     var picks=[];
-    row.querySelectorAll('.hchip.sel').forEach(function(c){picks.push(c.textContent.trim());});
+    row.querySelectorAll('.hchip.sel').forEach(function(c){picks.push((c.querySelector('.hchip-nm')||c).textContent.trim());});
     if(picks.length)parts.push(cap(row.dataset.hair)+': '+picks.join(', '));
   });
   var extra=($('fHairNotes').value||'').trim();
@@ -728,7 +738,7 @@ function collectHairData(){
   var d={length:'',thickness:'',colour:'',grey:'',history:[]};
   document.querySelectorAll('#hairWrap [data-hair]').forEach(function(row){
     var key=row.dataset.hair,picks=[];
-    row.querySelectorAll('.hchip.sel').forEach(function(c){picks.push(c.textContent.trim());});
+    row.querySelectorAll('.hchip.sel').forEach(function(c){picks.push((c.querySelector('.hchip-nm')||c).textContent.trim());});
     if(!picks.length)return;
     if(key==='history'){d.history=picks;}else{d[key]=picks[0];}
   });
