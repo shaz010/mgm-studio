@@ -112,6 +112,9 @@ textarea{resize:vertical;min-height:60px}
 .passport-card .pc-hdr{font-size:10px;font-weight:800;color:#a78bfa;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:5px}
 .passport-card .pc-entry{font-size:12px;color:#9a9aaa;line-height:1.6}
 .passport-card .pc-svc{font-size:13px;font-weight:700;color:#e8e8f0;margin-top:4px}
+.passport-card .pc-history{margin-top:10px;border-top:1px solid rgba(167,139,250,.15);padding-top:8px}
+.passport-card .pc-prev{font-size:11px;color:#6a6a7a;line-height:1.8}
+.passport-card .pc-prev span{color:#9a8aaa;font-weight:600}
 .pay-sheet{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .25s}
 .pay-sheet.open{opacity:1;pointer-events:all}
 .pay-inner{background:#0d0d18;border-radius:22px 22px 0 0;padding:22px 20px 40px;max-height:90vh;overflow-y:auto;transform:translateY(30px);transition:transform .3s cubic-bezier(.2,0,.2,1)}
@@ -239,8 +242,9 @@ textarea{resize:vertical;min-height:60px}
   <a class="review-btn hidden" id="reviewBtn" target="_blank" rel="noopener noreferrer"><i class="ti ti-star-filled" style="color:#ffd24d"></i> Love your last visit? Leave a review</a>
   <div class="passport-card hidden" id="passportCard">
     <div class="pc-hdr"><i class="ti ti-notebook" style="font-size:12px"></i> Your Hair Passport</div>
-    <div class="pc-entry" id="passportEntry">Your stylist has this appointment on record. Show this screen at your next visit for priority recognition.</div>
+    <div class="pc-entry" id="passportEntry"></div>
     <div class="pc-svc" id="passportSvc"></div>
+    <div class="pc-history" id="passportHistory"></div>
   </div>
   <button class="book-btn" id="bookAnotherBtn" style="max-width:260px;margin-top:20px" onclick="resetForm()"><i class="ti ti-plus"></i> Book another</button>
 </div>
@@ -680,7 +684,7 @@ var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 var _stripe=null,_stripeElements=null,_stripePayEl=null,_pendingRec=null,_depositAmt=50;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.41 · confirm & book button · consent-aware label';
+var VERSION='book v3.42 · hair passport level 1 · device-local visit history';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -1090,11 +1094,51 @@ function updateBtn(){
   if(h){h.textContent=hint;h.classList.toggle('show',!ok);}
 }
 document.addEventListener('input',function(e){if(e.target&&e.target.id==='customTime')updateBtn();});
+/* ── Hair Passport (localStorage, device-local) ─────────────── */
+var PASSPORT_KEY='hairPassport_'+SALON_ID;
+function getPassport(){try{return JSON.parse(localStorage.getItem(PASSPORT_KEY)||'{"visits":[]}');}catch(e){return {visits:[]};}}
+function saveToPassport(rec){
+  try{
+    var p=getPassport();
+    p.visits.unshift({service:rec.service,date:rec.date,time:rec.time,savedAt:Date.now()});
+    p.visits=p.visits.slice(0,30);
+    localStorage.setItem(PASSPORT_KEY,JSON.stringify(p));
+  }catch(e){}
+}
+function renderPassportCard(r,when){
+  var pc=$('passportCard'),pe=$('passportEntry'),ps=$('passportSvc'),ph=$('passportHistory');
+  if(!pc)return;
+  pc.classList.remove('hidden');
+  var p=getPassport();
+  var total=p.visits.length;
+  var salonName=(info&&info.salonName)||'the salon';
+  if(ps)ps.textContent=(r.service||_lastBooking.svc||'')+(when?' · '+when:'');
+  if(pe){
+    if(total<=1){
+      pe.textContent='Welcome! Your hair journey at '+salonName+' starts here.';
+    } else {
+      pe.textContent='Visit #'+total+' at '+salonName+'. Good to have you back.';
+    }
+  }
+  if(ph){
+    if(total>1){
+      var prev=p.visits.slice(1,4);
+      var rows=prev.map(function(v){
+        var d=v.date?new Date(v.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+        return '<div class="pc-prev"><span>'+esc(v.service)+'</span>'+(d?' &middot; '+d:'')+'</div>';
+      }).join('');
+      ph.innerHTML='<div class="pc-prev" style="font-size:10px;color:#4a4a5a;font-weight:800;letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px">Previous visits</div>'+rows;
+    } else {
+      ph.innerHTML='';
+    }
+  }
+}
 /* ── Payment helpers ─────────────────────────────────────────── */
 function _sendRec(rec){
   db.collection('requests').add(rec).then(function(ref){
     _lastBooking={id:(ref&&ref.id)||'',date:rec.date,time:rec.time,svc:rec.service,salon:(info&&info.salonName)||'Salon',custom:!!rec.custom,customTime:rec.customTime||''};
     if(ref&&ref.id){watchRequest(ref.id);_waiting=true;wakeOn();}
+    saveToPassport(rec);
     var isCustom=rec.custom;
     var when=isCustom?(rec.customTime||'custom time'):(to12(rec.time)+' on '+new Date(rec.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}));
     $('doneSub').innerHTML='Your request for <b>'+esc(rec.service)+'</b> ('+esc(when)+') has been sent. You\'ll get a confirmation once it\'s approved.';
@@ -1270,9 +1314,7 @@ function onApproved(r){
     reviewBtn.classList.remove('hidden');
   }
   // Hair Passport card
-  var pc=$('passportCard'),ps=$('passportSvc');
-  if(pc){pc.classList.remove('hidden');}
-  if(ps){ps.textContent=(r.service||_lastBooking.svc||'')+(when?' · '+when:'');}
+  renderPassportCard(r,when);
 }
 function onDeclined(r){
   _waiting=false;wakeOff();
@@ -1326,6 +1368,8 @@ function resetForm(){
   if($('consentNotes'))$('consentNotes').value='';
   var rb=$('reviewBtn');if(rb)rb.classList.add('hidden');
   var pc=$('passportCard');if(pc)pc.classList.add('hidden');
+  var ph=$('passportHistory');if(ph)ph.innerHTML='';
+  var pe=$('passportEntry');if(pe)pe.textContent='';
   document.querySelectorAll('#svcChips .chip.sel').forEach(function(c){c.classList.remove('sel');});
   if($('svcPills'))$('svcPills').innerHTML='';
   $('fName').value='';$('fPhone').value='';$('fNotes').value='';$('customTime').value='';
