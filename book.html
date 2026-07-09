@@ -30,8 +30,9 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .svc-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
 .svc-pills:empty{display:none}
 .svc-pill{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;padding:7px 10px 7px 12px;border-radius:20px;background:var(--gold-dim);border:1.5px solid var(--gold);color:var(--gold)}
-.svc-pill span.x{cursor:pointer;font-weight:800;font-size:15px;line-height:1;opacity:.8}
-.svc-pill span.x:active{opacity:1}
+.svc-pill .x{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.28);margin-right:-7px;flex-shrink:0;-webkit-tap-highlight-color:transparent;opacity:.9}
+.svc-pill .x:active{opacity:1;background:rgba(0,0,0,.5)}
+.svc-pill .x i{font-size:14px;pointer-events:none}
 .chip:active{transform:scale(.93)}
 .chip,.hchip{user-select:none;-webkit-user-select:none}
 .svc-grp{margin-bottom:0;background:rgba(255,255,255,.025);border-radius:12px;border:1px solid rgba(255,255,255,.065);padding:8px 8px 10px}.svc-grp .chips{grid-template-columns:repeat(3,1fr)}.svc-grp .chip{min-height:72px;font-size:11px;padding:8px 4px}.svc-grp .chip-price{font-size:11px;padding:2px 7px;margin-top:2px}.svc-grp .svc-grp-add-input{font-size:12px;padding:6px 8px}.svc-grp .svc-grp-add-btn{font-size:11px;padding:6px 10px}.svc-grp-hdr{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:900;color:var(--gold);text-transform:uppercase;letter-spacing:1.8px;padding:7px 0 7px;border-bottom:1px solid rgba(255,184,0,.18);cursor:pointer;user-select:none;-webkit-user-select:none}.svc-grp-body{margin-top:8px}.svc-grp-body.closed{display:none}#svcChips{display:block}
@@ -368,7 +369,13 @@ function demoteQp(e){
   var s=chip.dataset.s;if(!s||!curDemo)return;
   var qp=getUserQP(curDemo);
   var idx=qp.indexOf(s);
-  if(idx>-1){qp.splice(idx,1);saveUserQP(curDemo);renderDemoChips();}
+  if(idx>-1){
+    qp.splice(idx,1);saveUserQP(curDemo);
+    // If it's a custom service, also remove it from the custom list and selection
+    var ci=_customSvcs.indexOf(s);
+    if(ci>-1){_customSvcs.splice(ci,1);var si=selSvcArr.indexOf(s);if(si>-1)selSvcArr.splice(si,1);}
+    renderDemoChips();renderSvcPills();updateBtn();
+  }
 }
 function pickDemo(demo,tab){
   if(curDemo===demo){curDemo=null;document.querySelectorAll('.demo-tab').forEach(function(t){t.classList.remove('sel');});}
@@ -546,7 +553,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.32 · tap More to add to QP · drag QP to reorder · ★ remove';
+var VERSION='book v3.33 · custom svcs in QP · drag to reorder · big × remove';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -695,7 +702,7 @@ function allSvcs(){
 function renderSvcPills(){
   var el=$('svcPills');if(!el)return;
   el.innerHTML=selSvcArr.map(function(s){
-    return '<span class="svc-pill" data-s="'+esc(s)+'">'+esc(s)+'<span class="x" onclick="removeSvc(\''+esc(s).replace(/'/g,"\\'")+'\')">&#215;</span></span>';
+    return '<span class="svc-pill" data-s="'+esc(s)+'">'+esc(s)+'<span class="x" onclick="removeSvc(\''+esc(s).replace(/'/g,"\\'")+'\')"><i class="ti ti-x"></i></span></span>';
   }).join('');
   initPillDrag();
 }
@@ -806,12 +813,21 @@ function addCustomSvc(){
   if(input)input.value='';
   if(_customSvcs.indexOf(val)===-1)_customSvcs.push(val);
   if(selSvcArr.indexOf(val)===-1)selSvcArr.push(val);
-  _injectCustomChips();
+  if(curDemo){
+    // Pin it to the front of Quick Picks so it's immediately visible and draggable
+    var qp=getUserQP(curDemo);
+    if(qp.indexOf(val)===-1){qp.unshift(val);saveUserQP(curDemo);}
+    renderDemoChips();
+    // Scroll QP into view
+    var qg=document.querySelector('#svcChips .qp-grid');
+    if(qg)setTimeout(function(){qg.scrollIntoView({behavior:'smooth',block:'nearest'});},80);
+  }else{
+    _injectCustomChips();
+  }
   renderSvcPills();updateBtn();
-  var pills=$('svcPills');
-  if(pills)setTimeout(function(){pills.scrollIntoView({behavior:'smooth',block:'nearest'});},80);
 }
 function _injectCustomChips(){
+  if(curDemo)return; // demo mode: custom services live in QP grid, no injection needed
   var el=$('svcChips');if(!el)return;
   _customSvcs.forEach(function(val){
     var exists=false;
