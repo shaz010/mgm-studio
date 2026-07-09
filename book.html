@@ -156,12 +156,17 @@ textarea{resize:vertical;min-height:60px}
 .qp-sec-hint{font-size:9px;font-weight:600;color:#3a3a4a;margin-left:8px;text-transform:none;letter-spacing:.2px}
 .qp-empty{text-align:center;color:#4a4a58;font-size:12px;font-weight:600;padding:16px;border:1.5px dashed #252530;border-radius:12px;margin-bottom:12px;line-height:1.5}
 .qp-grid.drag-accept{outline:2px solid rgba(167,139,250,.6);outline-offset:4px;border-radius:14px;background:rgba(167,139,250,.04)}
-#qpBar{position:sticky;top:62px;z-index:98;background:#0c0c14;border-bottom:1px solid rgba(255,255,255,.06);padding:7px 14px;gap:8px;align-items:center;display:none}
-.qpb-inner{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex:1;align-items:center;min-width:0}
-.qpb-inner::-webkit-scrollbar{display:none}
-.qpb-chip{font-size:10.5px;font-weight:700;color:#d4af37;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);border-radius:20px;padding:3px 9px;white-space:nowrap;flex-shrink:0}
-.qpb-empty{font-size:10.5px;color:#3a3a4a;font-weight:600;white-space:nowrap}
-.qpb-up{color:#555;font-size:14px;flex-shrink:0;cursor:pointer;padding:4px;-webkit-tap-highlight-color:transparent}
+#qpBar{position:sticky;top:62px;z-index:98;background:#0c0c14;border-bottom:1px solid rgba(255,255,255,.06);padding:8px 14px 10px;display:none;flex-direction:column;gap:5px}
+.qpb-hdr{font-size:9px;font-weight:800;color:#3a3a4a;letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between}
+.qpb-hdr i{font-size:11px;color:#d4af37;margin-right:4px}
+.qpb-up{font-size:12px;color:#404050;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:2px 0;display:flex;align-items:center;gap:3px;font-weight:700}
+.qpb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.qpb-tile{padding:7px 4px;border-radius:10px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.03);color:#8a8a8a;font-size:11px;font-weight:800;letter-spacing:.3px;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;gap:4px;overflow:hidden;transition:border-color .15s,color .15s}
+.qpb-tile i{font-size:12px;flex-shrink:0}
+.qpb-tile span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.qpb-tile.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite}
+.qpb-more{grid-column:span 1;padding:7px 4px;border-radius:10px;border:1.5px dashed #2a2a34;color:#404050;font-size:11px;font-weight:800;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.qpb-empty{font-size:11px;color:#3a3a4a;font-weight:700;text-align:center;padding:6px 0}
 </style>
 </head>
 <body>
@@ -486,19 +491,30 @@ function initQpDrag(){
   grid.addEventListener('touchend',onEnd);
   grid.addEventListener('touchcancel',cleanup);
 }
+function pickSvcByKey(s){
+  var i=selSvcArr.indexOf(s);
+  if(i>=0)selSvcArr.splice(i,1);else selSvcArr.push(s);
+  renderSvcPills();updateBtn();renderQpBar();
+}
 function renderQpBar(){
   var bar=$('qpBar');if(!bar)return;
   var qp=curDemo?getUserQP(curDemo):[];
-  var inner='<i class="ti ti-bolt" style="color:#d4af37;font-size:13px;flex-shrink:0"></i><div class="qpb-inner">';
+  var hdr='<div class="qpb-hdr"><span><i class="ti ti-bolt"></i>Quick picks</span><span class="qpb-up" onclick="scrollToQP()"><i class="ti ti-chevron-up"></i>Back</span></div>';
   if(!qp.length){
-    inner+='<span class="qpb-empty">No quick picks yet — tap below to add</span>';
-  }else{
-    inner+=qp.map(function(s){
-      return '<span class="qpb-chip">'+esc((window._qpLabels&&window._qpLabels[s])||s)+'</span>';
-    }).join('');
+    bar.innerHTML=hdr+'<div class="qpb-empty">Tap services below to add to quick picks</div>';
+    return;
   }
-  inner+='</div><i class="ti ti-chevron-up qpb-up" onclick="scrollToQP()" title="Back to Quick Picks"></i>';
-  bar.innerHTML=inner;
+  var MAX=6;
+  var visible=qp.slice(0,MAX);
+  var rest=qp.length-MAX;
+  var tiles=visible.map(function(s){
+    var sel=selSvcArr.indexOf(s)>=0;
+    var lbl=esc((window._qpLabels&&window._qpLabels[s])||s);
+    var gf=findGrpFor(s);
+    return '<div class="qpb-tile'+(sel?' sel':'')+'" onclick="pickSvcByKey(\''+esc(s).replace(/'/g,"\\'")+'\')"><i class="ti ti-'+gf.ic+'" style="color:'+gf.cl+'"></i><span>'+lbl+'</span></div>';
+  }).join('');
+  if(rest>0)tiles+='<div class="qpb-more" onclick="scrollToQP()">+'+rest+' more</div>';
+  bar.innerHTML=hdr+'<div class="qpb-grid">'+tiles+'</div>';
 }
 function scrollToQP(){
   var lbl=document.querySelector('#svcChips .qp-sec-lbl');
@@ -598,7 +614,7 @@ var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.34 · sticky QP bar while browsing More services';
+var VERSION='book v3.35 · QP anchor bar · tile grid matching Women/Men/Kids';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
