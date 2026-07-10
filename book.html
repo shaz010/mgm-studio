@@ -691,7 +691,7 @@ var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', cus
 var STRIPE_PK='pk_live_51Ti0soDvwJdoHdEZNZkU5qSjuHxIJlL3kqee3BBVWOYFtv9fPgW63hwTbVRCcJ79x7EMmceD9sbUQAAWJMOVqSaG00vBDF7xUc';
 var _stripe=null,_stripeElements=null,_stripePayEl=null,_stripeECEl=null,_pendingRec=null,_depositAmt=50;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.47 · express checkout Apple Pay';
+var VERSION='book v3.48 · no keyboard on card mount';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -1199,7 +1199,7 @@ function showPaymentStep(rec){
     });
     // Card input element
     _stripePayEl=_stripeElements.create('payment',{layout:'tabs'});
-    var container=$('stripeElement');if(container){container.innerHTML='';_stripePayEl.mount('#stripeElement');}
+    var container=$('stripeElement');if(container){container.innerHTML='';_stripePayEl.mount('#stripeElement');setTimeout(function(){if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();},80);}
   }
 }
 function closePaySheet(){
