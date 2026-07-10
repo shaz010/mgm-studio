@@ -2830,7 +2830,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.18 · OC default prices seed on fresh install';
+var VERSION='v5.19 · OC market prices all trades seeded';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3901,38 +3901,74 @@ window.addEventListener('message',function(ev){
     var cp=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
     if(cp.prices&&Object.keys(cp.prices).length)return; /* already have prices */
     cp.prices={
-      /* Women — Cuts */
+      /* ── HAIR — Women · Cuts ── */
       "Women's Haircut":85,"Bang Trim":25,"Trim / Dusting":55,"Bob Cut":90,
       "Layered Cut":95,"Pixie Cut":95,"Wolf Cut":95,"Blunt Cut":85,"Fringe Cut":70,
-      /* Women — Color */
+      /* HAIR — Women · Color */
       "Single Process Color":110,"Root Touch-Up":90,"Root Smudge":65,
       "Gray Coverage":110,"Toner / Gloss":65,"Vivid / Fashion Color":150,"Color Correction":275,
-      /* Women — Lights */
+      /* HAIR — Women · Highlights & Lightening */
       "Full Highlights":220,"Partial Highlights":165,"Balayage":200,"Babylights":220,
       "Face Frame":120,"Ombre / Sombre":185,"Bleach & Tone":195,"Bright Color Highlights":185,
-      /* Women — Styling */
+      /* HAIR — Women · Styling */
       "Blowout":65,"Brushing":55,"Silk Press":85,"Flat Iron Style":55,
       "Updo":120,"Bridal Style":175,"Braids / Box Braids":95,
-      /* Women — Treatments */
+      /* HAIR — Women · Treatments */
       "Deep Conditioning":45,"Keratin Treatment":275,"Brazilian Blowout":300,
       "Olaplex Treatment":55,"Scalp Treatment":55,"Gloss / Glaze":65,
-      /* Women — Texture */
-      "Perm":160,"Relaxer":145,"Japanese Straightening":350,
-      "Eyebrow Wax / Shape":22,
-      /* Men — Cuts */
+      /* HAIR — Women · Texture */
+      "Perm":160,"Relaxer":145,"Japanese Straightening":350,"Eyebrow Wax / Shape":22,
+      /* HAIR — Men · Cuts */
       "Men's Haircut":55,"Buzz Cut":35,"Crew Cut":45,"Taper Cut":55,
       "Fade":50,"Skin Fade":55,"High Fade":55,"Mid Fade":50,"Low Fade":50,
       "Textured Cut":60,"French Crop":55,"Scissor Cut":65,
-      /* Men — Beard */
+      /* HAIR — Men · Beard */
       "Beard Trim":25,"Line-up / Edge-up":20,"Beard Shape & Style":35,"Hot Towel Shave":45,
-      /* Men — Color */
+      /* HAIR — Men · Color */
       "Men's Color":85,"Beard Color":45,"Men's Highlights":115,
       "Men's Gray Coverage":90,"Bleach & Tone Men":130,
-      /* Men — Treatments */
-      "Scalp Treatment":45,"Keratin Treatment Men":220,
-      /* Kids */
+      /* HAIR — Men · Treatments */
+      "Keratin Treatment Men":220,
+      /* HAIR — Kids */
       "Kids Haircut":35,"Toddler / First Haircut":30,"Kids Fade":35,
-      "Kids Trim":30,"Kids Bang Trim":18,"Kids Highlights":95,"Kids Toner / Gloss":55
+      "Kids Trim":30,"Kids Bang Trim":18,"Kids Highlights":95,"Kids Toner / Gloss":55,
+
+      /* ── BARBER (OC 92653 market — EMS, Offshore, Hammer & Nails, Bishops) ── */
+      "Haircut":45,"Kids Cut":30,"Taper":45,"Head Shave":60,"Design / Pattern":60,
+      "Straight Razor Shave":60,
+
+      /* ── NAIL (OC 92653 — Zen Nail Lounge, The Nail Bar Irvine, Club Nails) ── */
+      "Manicure":35,"Gel Manicure":45,"Spa Manicure":47,"Dip Powder":55,
+      "Polish Change":20,"Pedicure":45,"Gel Pedicure":55,"Spa Pedicure":58,
+      "Acrylic Full Set":62,"Acrylic Fill":52,"Gel-X Extensions":70,
+      "Builder Gel":67,"Polygel":70,"Overlay":57,
+      "Nail Art":15,"French / Ombre":15,"Nail Repair":8,"Removal / Soak-Off":15,
+
+      /* ── LASH (OC 92653 — Lash Lounge LN, Hello Bailey MV, Henny Lash, Lash Lab OC) ── */
+      "Classic Set":175,"Hybrid Set":210,"Volume Set":250,"Mega Volume":300,
+      "Lash Fill":90,"Lash Removal":35,"Lash Lift":110,"Lash Tint":40,"Lash Bath / Clean":20,
+
+      /* ── BROW (OC 92653 — D'Modern Laguna Niguel, OC Brow Game, Britt INK) ── */
+      "Brow Shaping":40,"Brow Wax":35,"Brow Tint":40,"Brow Lamination":85,
+      "Henna Brows":65,"Threading":45,"Microblading":450,"Brow Tweeze":30,
+
+      /* ── ESTHETICIAN (OC 92653 — B Beautiful Med Spa LH, D'Modern LN, Wax Local, Soleil MV) ── */
+      "Facial":120,"Deep Cleanse Facial":145,"Chemical Peel":175,"Dermaplane":150,
+      "Microdermabrasion":155,"LED Therapy":75,
+      "Face Wax":45,"Lip / Chin Wax":20,"Body Wax":85,"Brazilian Wax":65,"Spray Tan":65,
+
+      /* ── MAKEUP (OC 92653 — Dollhaus Beauty, Flawless Faces, Kimberly Armstrong LH) ── */
+      "Makeup Application":150,"Bridal Makeup":225,"Glam Makeup":175,"Soft Glam":145,
+      "Special Occasion":150,"Strip Lashes":20,"Makeup Lesson":250,
+
+      /* ── MASSAGE (OC 92653 — Elements LN, Massage Heights MV, Soleil MV) ── */
+      "Swedish Massage":110,"Deep Tissue Massage":120,"Hot Stone Massage":130,
+      "Scalp Massage":65,"Aromatherapy Massage":120,"Sports Massage":110,"Relaxation Massage":100,
+
+      /* ── HAIR EXTENSIONS (OC 92653 — Silky Lengths, OC Extension Styles, Brivbeauty) ── */
+      "Tape-In Extensions":450,"Sew-In Weave":350,"Fusion / K-Tip Extensions":600,
+      "Hand-Tied Extensions":500,"Micro-Link Extensions":400,
+      "Move-Up / Maintenance":200,"Extension Removal":100
     };
     localStorage.setItem('cp_prefs',JSON.stringify(cp));
   }catch(e){}
