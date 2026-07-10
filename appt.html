@@ -937,7 +937,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 
       <div class="svc-label-row">
         <label>Service</label>
-        <span class="choose-svc-hint" id="chooseSvcHint" onclick="$('fService').focus()"><i class="ti ti-hand-finger" style="font-size:13px"></i> CHOOSE SERVICE(S)</span>
+        <span class="choose-svc-hint" id="chooseSvcHint" onclick="_revealClientFields()"><i class="ti ti-hand-finger" style="font-size:13px"></i> CHOOSE SERVICE(S)</span>
       </div>
       <input id="fService" placeholder="Tap services below to combine, or type your own…" oninput="syncChips()">
       <div id="svcSelected" class="svc-selected"></div>
@@ -1753,10 +1753,17 @@ function toggleSvcCat(head){
   head.classList.toggle('open',!open);
 }
 function _revealClientFields(){
-  var has=($('fService').value||'').trim().length>0;
+  /* Called by button tap (and edit path) — shows name+phone, hides button */
   var wrap=$('clientFieldsWrap'),hint=$('chooseSvcHint');
-  if(wrap)wrap.classList.toggle('cfw-show',has);
-  if(hint)hint.classList.toggle('hint-done',has);
+  if(wrap)wrap.classList.add('cfw-show');
+  if(hint)hint.classList.add('hint-done');
+  setTimeout(function(){try{$('fName').focus();}catch(e){}},720);
+}
+function _collapseClientFields(){
+  /* Called when all services are removed — collapse fields, bring button back */
+  var wrap=$('clientFieldsWrap'),hint=$('chooseSvcHint');
+  if(wrap)wrap.classList.remove('cfw-show');
+  if(hint)hint.classList.remove('hint-done');
 }
 function syncChips(){
   var have=servicesInField().map(function(s){return s.toLowerCase()});
@@ -1764,7 +1771,8 @@ function syncChips(){
     c.classList.toggle('sel',have.indexOf((c.dataset.name||'').toLowerCase())>=0);
   });
   renderSelectedSvc();
-  _revealClientFields();
+  /* Auto-collapse only — never auto-reveal (button tap does that) */
+  if(!($('fService').value||'').trim())_collapseClientFields();
 }
 function renderSelectedSvc(){
   var el=$('svcSelected');if(!el)return;
@@ -2240,6 +2248,7 @@ function editFromSheet(){
   $('conflictWarn').classList.remove('show');
   $('svcMore').style.display='none';$('svcMoreBtn').innerHTML='<i class="ti ti-chevron-down"></i> More services';
   svcMode=getMode();buildChips();
+  _revealClientFields(); /* editing — service already set, show fields immediately */
   showView('add');
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
 }
@@ -2889,7 +2898,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.24 · choose service hint gold pill more prominent';
+var VERSION='v5.25 · button tap reveals fields, deselect-all collapses them';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
