@@ -68,6 +68,7 @@
     background:linear-gradient(135deg,#FFB800,#ff8a00);
     color:#1a1208;font-size:16px;flex-shrink:0;
     box-shadow:0 0 12px rgba(255,184,0,.25);
+    transition:box-shadow .08s linear;
   }
   .brand-name{font-family:'DM Serif Display',Georgia,'Times New Roman',serif;font-size:17px;font-weight:400;letter-spacing:.4px;color:#FFB800;max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .brand-sub{font-size:10.5px;color:#6a6a78;font-weight:600;margin-top:1px;letter-spacing:.3px}
@@ -161,7 +162,7 @@
   <div class="shell-bar">
     <div class="toprow">
       <div class="brand">
-        <div class="brand-mark"><svg viewBox="0 0 100 100" width="78%" height="78%" style="display:block"><g fill="#1a1208"><polygon points="48,30.5 53.2,52 48,73.5 42.8,52"/><polygon points="26.5,52 48,46.8 69.5,52 48,57.2"/><polygon points="74,24.2 76.3,33 74,41.8 71.7,33"/><polygon points="65.2,33 74,30.7 82.8,33 74,35.3"/><polygon points="74,63.8 75.9,71 74,78.2 72.1,71"/><polygon points="66.8,71 74,69.1 81.2,71 74,72.9"/></g></svg></div>
+        <div class="brand-mark" id="brandGlowIcon"><svg viewBox="0 0 100 100" width="78%" height="78%" style="display:block"><g fill="#1a1208"><polygon points="48,30.5 53.2,52 48,73.5 42.8,52"/><polygon points="26.5,52 48,46.8 69.5,52 48,57.2"/><polygon points="74,24.2 76.3,33 74,41.8 71.7,33"/><polygon points="65.2,33 74,30.7 82.8,33 74,35.3"/><polygon points="74,63.8 75.9,71 74,78.2 72.1,71"/><polygon points="66.8,71 74,69.1 81.2,71 74,72.9"/></g></svg></div>
         <div>
           <div class="brand-name" id="brandName">Your Salon</div>
           <div class="brand-sub" id="brandSub">ONE APP · EARNINGS + APPOINTMENTS</div>
@@ -185,7 +186,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.21</div>
+    <div class="ver">salon v0.22</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -541,6 +542,76 @@
   }
 
   initAuth();
+
+/* ── Breathing Glow Engine — Your Salon brand mark ──
+   Reads same prefs as appt.html (cp_prefs.glowColour / glowSpeedIdx)
+   Controls live in appt.html Settings → Appearance              ── */
+(function(){
+  var COLOURS={
+    gold:  {hex:'#ffd166',glow:'255,193,68'},
+    purple:{hex:'#c77dff',glow:'180,90,255'},
+    rose:  {hex:'#ff6b9d',glow:'255,80,130'},
+    cyan:  {hex:'#06d6e0',glow:'6,214,224'}
+  };
+  var CYCLE=['gold','purple','rose','cyan'];
+  var SPEEDS=[20,12,8,5,3.5,2,1.2];
+  var gColour='auto',gSpeedIdx=4,gCycleIdx=0,gCycleTimer=null,gRaf=null,gStart=null;
+
+  function loadPrefs(){
+    try{
+      var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
+      if(p.glowColour!=null)gColour=p.glowColour;
+      if(p.glowSpeedIdx!=null)gSpeedIdx=Number(p.glowSpeedIdx);
+    }catch(e){}
+  }
+  function activeKey(){return gColour==='auto'?CYCLE[gCycleIdx]:gColour;}
+
+  function applyGlow(t){
+    var el=document.getElementById('brandGlowIcon');
+    if(!el)return;
+    if(gColour==='off'){el.style.boxShadow='0 0 12px rgba(255,184,0,.25)';return;}
+    var col=COLOURS[activeKey()];var g=col.glow;
+    el.style.boxShadow=
+      '0 0 '+(t*40)+'px '+(t*12)+'px rgba('+g+','+(t*.65)+'),'
+     +'0 0 '+(t*90)+'px '+(t*28)+'px rgba('+g+','+(t*.22)+'),'
+     +'inset 0 0 '+(t*14)+'px rgba('+g+','+(t*.12)+')';
+  }
+
+  function tick(ts){
+    if(!gStart)gStart=ts;
+    var s=SPEEDS[gSpeedIdx];
+    var r=((ts-gStart)/1000%s)/(s/2);
+    var raw=r<1?r:2-r;
+    var t=raw*raw*(3-2*raw);
+    applyGlow(t);
+    gRaf=requestAnimationFrame(tick);
+  }
+
+  function startBreath(){
+    if(gRaf)cancelAnimationFrame(gRaf);
+    gStart=null;
+    if(gColour==='off'){applyGlow(0);return;}
+    gRaf=requestAnimationFrame(tick);
+  }
+
+  function startCycle(){
+    if(gCycleTimer)clearInterval(gCycleTimer);
+    if(gColour!=='auto')return;
+    gCycleTimer=setInterval(function(){gCycleIdx=(gCycleIdx+1)%CYCLE.length;},SPEEDS[gSpeedIdx]*2000);
+  }
+
+  loadPrefs();startCycle();startBreath();
+
+  /* Live-update when appt.html settings panel saves new prefs */
+  window.addEventListener('storage',function(e){
+    if(e.key==='cp_prefs'){
+      if(gRaf)cancelAnimationFrame(gRaf);
+      if(gCycleTimer)clearInterval(gCycleTimer);
+      gStart=null;gCycleIdx=0;
+      loadPrefs();startCycle();startBreath();
+    }
+  });
+})();
 </script>
 </body>
 </html>
