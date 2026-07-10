@@ -481,10 +481,7 @@ function renderDemoChips(){
   function makeQpTile(s){var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="qp-price">'+p+'</span>':'';var gf=findGrpFor(s);var disp=esc((window._qpLabels&&window._qpLabels[s])||s);return '<div class="chip qp-tile" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+gf.ic+'" style="color:'+gf.cl+';font-size:20px;flex-shrink:0" aria-hidden="true"></i><div class="qp-info"><span class="qp-name">'+disp+'</span>'+ph+'</div><i class="ti ti-star-filled qp-star on" onclick="demoteQp(event)" aria-hidden="true"></i></div>';}
   var grpKeys=Object.keys(grps);
   var hint=grpKeys.slice(0,4).join(' · ')+(grpKeys.length>4?' · more':'');
-  var html='<div class="qp-sec-lbl"><i class="ti ti-bolt" aria-hidden="true"></i> Quick picks<span class="qp-sec-hint">tap below to add · hold &amp; drag to reorder · ★ to remove</span></div>';
-  html+=qpSvcs.length?'<div class="qp-grid">'+qpSvcs.map(makeQpTile).join('')+'</div>':'<div class="qp-empty"><i class="ti ti-star" style="font-size:14px;margin-right:5px;vertical-align:-2px;color:#3a3a4a"></i>Tap ★ on any service below to pin it here</div>';
-  html+='<button class="more-svc-btn" id="moreSvcBtn" onclick="toggleMoreSvc()"><i class="ti ti-chevron-down msb-ico" aria-hidden="true"></i> More services<span class="more-svc-hint">'+esc(hint)+'</span></button>';
-  html+='<div class="cat-list" id="catList">';
+  var html='<div class="cat-list open" id="catList">';
   function buildGrp(grpName){
     var allSvcs=(grps[grpName]||[]).filter(function(s){return hidden.indexOf(s)===-1&&getUserQP(curDemo).indexOf(s)===-1;});if(!allSvcs.length)return '';
     var primary=allSvcs.slice(0,GRP_MAX_VIS);
@@ -691,7 +688,7 @@ var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', cus
 var STRIPE_PK='pk_live_51Ti0soDvwJdoHdEZNZkU5qSjuHxIJlL3kqee3BBVWOYFtv9fPgW63hwTbVRCcJ79x7EMmceD9sbUQAAWJMOVqSaG00vBDF7xUc';
 var _stripe=null,_stripeElements=null,_stripePayEl=null,_stripeECEl=null,_pendingRec=null,_depositAmt=50;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.48 · no keyboard on card mount';
+var VERSION='book v3.49 · no QP section for clients, cats open directly';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
