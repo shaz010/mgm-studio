@@ -2830,7 +2830,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.12 · nuclear erase, enumerate all keys dynamically';
+var VERSION='v5.13 · fix forceUpdate + erase hard-nav reload';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -2920,7 +2920,15 @@ function applyTheme(){
 }
 function forceUpdate(){
   if(!confirm('Refresh the app to the latest version? This clears the local app cache (your saved data stays).'))return;
-  var done=function(){location.reload();};
+  /* location.reload() is blocked in iOS PWA iframes — use hard nav instead */
+  var done=function(){
+    try{
+      var t=window.top||window;
+      t.location.href=t.location.href.split('?')[0]+'?v='+Date.now();
+    }catch(_){
+      location.href=location.href.split('?')[0]+'?v='+Date.now();
+    }
+  };
   try{
     var jobs=[];
     if('caches' in window){jobs.push(caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k);}));}));}
