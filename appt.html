@@ -2427,9 +2427,17 @@ function bookAgain(){
 }
 function deleteClient(){
   if(!clientId)return;
-  if(!confirm('Delete this client? Their past appointments stay.'))return;
-  clients=clients.filter(function(c){return c.id!==clientId});save(CLIENTS,clients);
+  var c=clients.find(function(x){return x.id===clientId;});if(!c)return;
+  var apptCount=appts.filter(function(a){return sameClient(a,c);}).length;
+  var msg=apptCount>0
+    ?'Delete '+c.name+' AND their '+apptCount+' appointment'+(apptCount===1?'':'s')+'? This cannot be undone.'
+    :'Delete '+c.name+'?';
+  if(!confirm(msg))return;
+  clients=clients.filter(function(x){return x.id!==clientId;});
+  if(apptCount>0){appts=appts.filter(function(a){return !sameClient(a,c);});save(APPTS,appts);}
+  save(CLIENTS,clients);
   closeSheet('clientModal');renderClients();toast('Deleted');
+  if(typeof publishAvailability==='function')publishAvailability();
 }
 function openClientBookings(id){
   reload();
@@ -2814,7 +2822,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.01 · delete client uses native confirm';
+var VERSION='v5.02 · delete client removes appts too';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
