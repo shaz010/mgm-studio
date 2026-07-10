@@ -1184,9 +1184,15 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('importFile').click()"><i class="ti ti-download"></i> Import</button>
     </div>
     <input type="file" id="importFile" accept=".json,application/json,text/plain" style="display:none" onchange="importData(event)">
-    <div class="btn-row" style="margin-top:10px">
-      <button class="btn btn-ghost btn-sm" style="flex:1;border-color:var(--bred);color:var(--red)" onclick="closeSheet('settingsModal');openEraseModal()"><i class="ti ti-trash"></i> Erase / Reset&hellip;</button>
+
+    <div class=”set-sec adv-sec”>Erase / Reset</div>
+    <div class=”btn-row” style=”margin-top:0”>
+      <button class=”btn btn-danger” style=”width:100%;padding:14px 18px;font-size:15px” onclick=”deleteAllClients()”><i class=”ti ti-users-minus”></i> Delete all clients &amp; their appts</button>
     </div>
+    <div class=”btn-row” style=”margin-top:8px”>
+      <button class=”btn btn-danger” style=”width:100%;padding:14px 18px;font-size:15px” onclick=”startFresh()”><i class=”ti ti-trash”></i> Start fresh — erase everything</button>
+    </div>
+    <div style=”font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5”>”Start fresh” wipes all appointments, clients and your custom services on this device. Quick Picks reset to default. This can’t be undone.</div>
 
     <div class="set-sec adv-sec">Diagnostics</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Runs self-checks on trades, IDs and data. Tap <b>Copy report</b> in there to send an exact diagnostic instead of a screenshot.</div>
@@ -1242,20 +1248,6 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="btn-row">
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('confirmModal')">Cancel</button>
       <button class="btn btn-sm" id="cfYes" style="flex:1">Confirm</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal" id="eraseModal" onclick="if(event.target===this)closeSheet('eraseModal')" style="z-index:1200">
-  <div class="sheet" style="max-width:420px">
-    <div class="sheet-grip"></div>
-    <div class="sheet-title" style="color:var(--red)"><i class="ti ti-trash"></i> Erase / Reset</div>
-    <div class="sheet-sub" style="margin-bottom:22px;line-height:1.55">This device only. Your data lives in <b>localStorage</b> — erasing here is permanent and cannot be undone.</div>
-    <button class="btn btn-danger" style="width:100%;padding:18px 22px;font-size:17px;border-radius:13px;background:rgba(220,50,50,0.09);margin-bottom:12px" onclick="closeSheet('eraseModal');deleteAllClients()"><i class="ti ti-users-minus"></i> Delete all clients &amp; their appts</button>
-    <button class="btn btn-danger" style="width:100%;padding:18px 22px;font-size:17px;border-radius:13px;background:rgba(220,50,50,0.09)" onclick="closeSheet('eraseModal');startFresh()"><i class="ti ti-trash"></i> Start fresh — erase everything</button>
-    <div style="font-size:12px;color:var(--muted);margin-top:14px;line-height:1.5">"Start fresh" also wipes custom services and Quick Picks.</div>
-    <div class="btn-row" style="margin-top:18px">
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('eraseModal')">Cancel</button>
     </div>
   </div>
 </div>
@@ -1539,7 +1531,7 @@ function buildChips(){
   var favHere=favs.filter(function(n){return modeNames[n]});
   var shown=favHere; /* all faves in Quick Picks — no cap */
   var favRow=$('favRow');
-  favRow.innerHTML=shown.length?shown.map(function(n){return chipHTML(n,iconFor(n),true)}).join(''):'<div class="svc-empty">Tap a service under "More" to add it up here.</div>';
+  favRow.innerHTML=shown.length?shown.map(function(n){return chipHTML(n,iconFor(n),true)}).join(''):'<div class="svc-empty">Tap a service under “More” to add it up here.</div>';
   var more=$('svcMore');
   more.innerHTML=groups.map(function(g){
     var rest=g.s.filter(function(it){return shown.indexOf(it[0])===-1}).slice().sort(function(a,b){return a[0].localeCompare(b[0])});
@@ -2830,7 +2822,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.11 · hard-nav erase, fix inverted clear logic';
+var VERSION='v5.08 · remove clear this day from erase';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3106,8 +3098,6 @@ function clearDay(){
     closeSheet('settingsModal');renderDay();toast('Day cleared');
   },{title:'Clear this day',yesLabel:'Clear day',danger:true});
 }
-function openEraseModal(){$('eraseModal').classList.add('show');}
-/* dismiss all pending Firestore requests so they don't come back after erase */
 function clearFirestoreRequests(cb){
   if(!fbReady||!db){cb&&cb();return;}
   try{
@@ -3123,7 +3113,6 @@ function clearFirestoreRequests(cb){
   }catch(e){console.warn('clearFirestore',e);cb&&cb();}
 }
 function _hardReload(){
-  /* .reload() is blocked in iOS PWA iframes — hard href nav works instead */
   try{
     var t=window.top||window;
     t.location.href=t.location.href.split('?')[0]+'?erased='+Date.now();
@@ -3131,12 +3120,18 @@ function _hardReload(){
     location.href=location.href.split('?')[0]+'?erased='+Date.now();
   }
 }
+function _nukeStorage(){
+  var keys=[];
+  try{for(var i=0;i<localStorage.length;i++){keys.push(localStorage.key(i));}}catch(_){}
+  keys.forEach(function(k){try{localStorage.removeItem(k);}catch(_){}});
+  try{localStorage.clear();}catch(_){}
+}
 function deleteAllClients(){
   askConfirm('Delete ALL clients and ALL appointments on this device? Cannot be undone.',function(){
     closeSheet('settingsModal');
     if(_reqUnsub){_reqUnsub();_reqUnsub=null;}
     clearFirestoreRequests(function(){
-      ['ap_appts','ap_clients','cp_appts','cp_clients','cp_paid'].forEach(function(k){try{localStorage.removeItem(k);}catch(_){}});
+      _nukeStorage();
       toast('All cleared');
       setTimeout(_hardReload,600);
     });
@@ -3147,9 +3142,7 @@ function startFresh(){
     askConfirm('Really erase everything? This is permanent.',function(){
       if(_reqUnsub){_reqUnsub();_reqUnsub=null;}
       clearFirestoreRequests(function(){
-        /* key-by-key first (iOS may silently fail clear()), then clear() as belt-and-braces */
-        [APPTS,CLIENTS,CUSTOM,STOCK,PREFS,'cp_appts','cp_paid','cp_clients','cp_prefs','ap_view'].forEach(function(k){try{localStorage.removeItem(k);}catch(_){}});
-        try{localStorage.clear();}catch(_){}
+        _nukeStorage();
         toast('Fresh start — all clear');
         setTimeout(_hardReload,400);
       });
@@ -3385,7 +3378,7 @@ function initFB(){
     publishAvailability();
     listenRequests();
     return true;
-  }catch(e){console.warn('Firebase init failed',e);setConnState('off','Couldn\'t connect — try again later');return false;}
+  }catch(e){console.warn('Firebase init failed',e);setConnState('off','Couldn’t connect — try again later');return false;}
 }
 function setConnState(state,txt){
   var el=$('sbConn');if(!el)return;
@@ -3782,7 +3775,7 @@ function renderRequests(){
         '<div class="req-meta"><i class="ti ti-scissors"></i> '+esc(r.service||'—')+'<br>'+
         '<i class="ti ti-calendar"></i> '+fmtReqDate(r.date)+' · '+to12(r.time)+'<br>'+
         '<i class="ti ti-phone"></i> '+(r.phone?esc(r.phone):'<span style="color:#888">no number given</span>')+'</div>'+
-        (r.notes?'<div class="req-notes">"'+esc(r.notes)+'"</div>':'')+
+        (r.notes?'<div class="req-notes">“'+esc(r.notes)+'”</div>':'')+
         (r.hair?'<div class="req-hair"><i class="ti ti-windsock"></i> '+esc(r.hair)+'</div>':'')+
         (hp.base>0?'<div class="req-price">'+fmt$(hp.price)+(hp.applied&&hp.why.length?' <span class="req-why">auto · '+esc(hp.why.join(' · '))+'</span>':'')+'</div>':'')+
       '</div>'+pill+'</div>'+
@@ -3828,7 +3821,7 @@ function syncBookingToggle(){
   var on=bookingOpen();
   var row=$('sbSwitch')?$('sbSwitch').parentNode:null;
   if(row)row.classList.toggle('on',on);
-  var st=$('sbStatus');if(st)st.textContent=on?'On — clients can request bookings':'Off — your link won\'t accept bookings';
+  var st=$('sbStatus');if(st)st.textContent=on?'On — clients can request bookings':'Off — your link won’t accept bookings';
 }
 function copyBookingLink(){
   var link=bookingLink();
