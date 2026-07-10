@@ -2830,7 +2830,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.13 · fix forceUpdate + erase hard-nav reload';
+var VERSION='v5.14 · block Firestore re-entry after erase via sessionStorage flag';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3129,6 +3129,8 @@ function clearFirestoreRequests(cb){
   }catch(e){console.warn('clearFirestore',e);cb&&cb();}
 }
 function _hardReload(){
+  /* set a flag so listenRequests() on next load knows to suppress + re-dismiss */
+  try{(window.top||window).sessionStorage.setItem('_ap_erased','1');}catch(_){}
   try{
     var t=window.top||window;
     t.location.href=t.location.href.split('?')[0]+'?erased='+Date.now();
@@ -3515,6 +3517,14 @@ function bookableServices(){
 /* ---- live request inbox ---- */
 function listenRequests(){
   if(!fbReady)return;
+  /* if we just erased, dismiss anything Firestore sends back and bail */
+  var justErased=false;
+  try{justErased=!!(window.top||window).sessionStorage.getItem('_ap_erased');}catch(_){}
+  if(justErased){
+    try{(window.top||window).sessionStorage.removeItem('_ap_erased');}catch(_){}
+    clearFirestoreRequests(function(){});  /* re-attempt dismissal in case first try failed */
+    return;
+  }
   try{
     if(_reqUnsub)_reqUnsub();
     _reqUnsub=db.collection('requests')
