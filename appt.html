@@ -38,12 +38,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 .topbar{background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:10px;margin-bottom:14px;position:sticky;top:0;z-index:50}
 .topbar-brand{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
-html.in-shell .topbar-brand{display:flex}
-html.in-shell .topbar-brand>div:not(.topbar-icon){display:none}
+html.in-shell .topbar-brand{display:none}
 html.in-shell .topbar{background:var(--bg);border:none;border-radius:0;padding:8px 2px 10px;margin-bottom:8px;box-shadow:0 8px 18px -14px rgba(0,0,0,.75)}
 html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 .topbar-brand>div{min-width:0}
-.topbar-icon{width:38px;height:38px;background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px;flex-shrink:0;transition:box-shadow .08s linear,color .4s ease}
+.topbar-icon{width:38px;height:38px;background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px;flex-shrink:0}
 /* ── Breathing Glow controls (Appearance section) ── */
 .glow-chip-label{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin:14px 0 7px}
 .glow-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
@@ -853,7 +852,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 
   <div class="topbar">
     <div class="topbar-brand">
-      <div class="topbar-icon" id="topbarGlowIcon"><i class="ti ti-calendar-week"></i></div>
+      <div class="topbar-icon"><i class="ti ti-calendar-week"></i></div>
       <div>
         <div class="topbar-name"><span>Appointment</span>Pro</div>
         <div class="topbar-sub" id="brandSub">Your Salon</div>
@@ -2905,7 +2904,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.26 · name+phone rise up from above service pane spring animation';
+var VERSION='v5.27 · glow engine removed from appt, controls only — salon.html does the glow';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4048,106 +4047,34 @@ window.addEventListener('message',function(ev){
     localStorage.setItem('cp_prefs',JSON.stringify(cp));
   }catch(e){}
 })();
-/* ── Breathing Glow Engine — icon pulse (OC Salon PWA) ── */
+/* ── Glow settings panel — saves prefs, syncs chips, salon.html does the actual glow ── */
 (function(){
-  var COLOURS={
-    gold:  {hex:'#ffd166',glow:'255,193,68'},
-    purple:{hex:'#c77dff',glow:'180,90,255'},
-    rose:  {hex:'#ff6b9d',glow:'255,80,130'},
-    cyan:  {hex:'#06d6e0',glow:'6,214,224'}
-  };
-  var CYCLE=['gold','purple','rose','cyan'];
-  var SPEEDS=[20,12,8,5,3.5,2,1.2];
-  var gColour='auto',gSpeedIdx=4,gCycleIdx=0,gCycleTimer=null,gRaf=null,gStart=null;
-
-  function loadGlowPrefs(){
-    try{
-      var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
-      if(p.glowColour!=null)gColour=p.glowColour;
-      if(p.glowSpeedIdx!=null)gSpeedIdx=Number(p.glowSpeedIdx);
-    }catch(e){}
-  }
+  var gColour='auto',gSpeedIdx=4;
   function saveGlowPrefs(){
-    try{
-      var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
-      p.glowColour=gColour;p.glowSpeedIdx=gSpeedIdx;
-      localStorage.setItem('cp_prefs',JSON.stringify(p));
-    }catch(e){}
+    try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.glowColour=gColour;p.glowSpeedIdx=gSpeedIdx;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}
   }
-  function activeKey(){return gColour==='auto'?CYCLE[gCycleIdx]:gColour;}
-
-  function applyGlow(t){
-    var el=document.getElementById('topbarGlowIcon');
-    if(!el)return;
-    if(gColour==='off'){
-      el.style.boxShadow='none';
-      var ic=el.querySelector('i');
-      if(ic){ic.style.filter='';ic.style.opacity='';}
-      return;
-    }
-    var col=COLOURS[activeKey()];var g=col.glow;
-    el.style.boxShadow='0 0 '+(t*36)+'px '+(t*10)+'px rgba('+g+','+(t*.55)+'),0 0 '+(t*80)+'px '+(t*24)+'px rgba('+g+','+(t*.18)+'),inset 0 0 '+(t*18)+'px rgba('+g+','+(t*.08)+')';
-    var ic=el.querySelector('i');
-    if(ic){
-      ic.style.filter='drop-shadow(0 0 '+(t*12)+'px '+col.hex+') drop-shadow(0 0 '+(t*22)+'px rgba('+g+',.65))';
-      ic.style.opacity=String(0.38+t*0.62);
-    }
+  function loadGlowPrefs(){
+    try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');if(p.glowColour!=null)gColour=p.glowColour;if(p.glowSpeedIdx!=null)gSpeedIdx=Number(p.glowSpeedIdx);}catch(e){}
   }
-
-  function tick(ts){
-    if(!gStart)gStart=ts;
-    var s=SPEEDS[gSpeedIdx];
-    var r=(ts-gStart)/1000%s/(s/2);/* 0→2 */
-    var raw=r<1?r:2-r;/* triangle */
-    var t=raw*raw*(3-2*raw);/* smoothstep */
-    applyGlow(t);
-    gRaf=requestAnimationFrame(tick);
-  }
-
-  function startBreath(){
-    if(gRaf)cancelAnimationFrame(gRaf);
-    gStart=null;
-    if(gColour==='off'){applyGlow(0);return;}
-    gRaf=requestAnimationFrame(tick);
-  }
-  function stopCycle(){if(gCycleTimer){clearInterval(gCycleTimer);gCycleTimer=null;}}
-  function startCycle(){
-    stopCycle();
-    if(gColour!=='auto')return;
-    gCycleTimer=setInterval(function(){gCycleIdx=(gCycleIdx+1)%CYCLE.length;},SPEEDS[gSpeedIdx]*2000);
-  }
-
-  function syncChips(){
-    var colMap={auto:'gcAuto',gold:'gcGold',purple:'gcPurple',rose:'gcRose',cyan:'gcCyan',off:'gcOff'};
+  function syncGlowChips(){
+    var cm={auto:'gcAuto',gold:'gcGold',purple:'gcPurple',rose:'gcRose',cyan:'gcCyan',off:'gcOff'};
     document.querySelectorAll('#glowColourChips .glow-chip,#glowColourChips .glow-off-chip').forEach(function(b){b.classList.remove('gc-active');});
-    var cEl=document.getElementById(colMap[gColour]);
-    if(cEl)cEl.classList.add('gc-active');
+    var c=document.getElementById(cm[gColour]);if(c)c.classList.add('gc-active');
     document.querySelectorAll('#glowSpeedChips .glow-chip').forEach(function(b){b.classList.remove('gc-active');});
-    var sEl=document.getElementById('gs'+gSpeedIdx);
-    if(sEl)sEl.classList.add('gc-active');
+    var s=document.getElementById('gs'+gSpeedIdx);if(s)s.classList.add('gc-active');
   }
-
   window.glowSetColour=function(key,btn){
     document.querySelectorAll('#glowColourChips .glow-chip,#glowColourChips .glow-off-chip').forEach(function(b){b.classList.remove('gc-active');});
     if(btn)btn.classList.add('gc-active');
-    gColour=key;stopCycle();
-    if(key==='auto')startCycle();
-    saveGlowPrefs();startBreath();
+    gColour=key;saveGlowPrefs();
   };
   window.glowSetSpeed=function(idx,btn){
     document.querySelectorAll('#glowSpeedChips .glow-chip').forEach(function(b){b.classList.remove('gc-active');});
     if(btn)btn.classList.add('gc-active');
-    gSpeedIdx=idx;gStart=null;stopCycle();startCycle();
-    saveGlowPrefs();
+    gSpeedIdx=idx;saveGlowPrefs();
   };
-
-  function glowInit(){
-    loadGlowPrefs();syncChips();
-    if(gColour==='auto')startCycle();
-    startBreath();
-  }
-  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',glowInit);}
-  else{glowInit();}
+  function init(){loadGlowPrefs();syncGlowChips();}
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
 })();
 initFB();
 
