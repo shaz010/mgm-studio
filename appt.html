@@ -1018,6 +1018,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <div class="status-opt" data-s="cancelled" onclick="setStatus('cancelled')">Cancelled</div>
     </div>
     <div class="btn-row">
+      <button class="btn btn-danger btn-sm" style="flex:0 0 auto;padding:10px 14px" onclick="deleteFromSheet()"><i class="ti ti-trash"></i></button>
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="editFromSheet()"><i class="ti ti-pencil"></i> Edit</button>
       <button class="btn btn-sm" style="flex:1" onclick="closeSheet('apptModal')">Done</button>
     </div>
@@ -2092,6 +2093,14 @@ function commitSave(){
   if(typeof publishAvailability==='function')publishAvailability();
 }
 function cancelEdit(){editingId=null;showView('day')}
+function deleteFromSheet(){
+  if(!sheetId)return;
+  askConfirm('Delete this appointment?',function(){
+    appts=appts.filter(function(a){return a.id!==sheetId});save(APPTS,appts);
+    closeSheet('apptModal');sheetId=null;toast('Deleted');
+    if(typeof publishAvailability==='function')publishAvailability();
+  },{title:'Delete appointment',yesLabel:'Delete',danger:true});
+}
 function deleteAppt(){
   if(!editingId)return;
   askConfirm('Delete this appointment?',function(){
@@ -2806,7 +2815,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v4.99 · Erase truly clears all frames';
+var VERSION='v5.00 · trash btn on appt sheet';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
