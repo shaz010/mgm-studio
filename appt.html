@@ -914,6 +914,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <button class="tab" data-view="add" onclick="openAdd()"><i class="ti ti-calendar-plus"></i><span>Add</span></button>
     <button class="tab" data-view="clients" onclick="showView('clients')"><i class="ti ti-users"></i><span>Clients</span></button>
     <button class="tab" data-view="stock" onclick="showView('stock')"><i class="ti ti-package"></i><span>Inventory</span></button>
+    <button class="tab" data-view="colour" onclick="showView('colour')"><i class="ti ti-color-swatch"></i><span>Colour</span></button>
   </div>
 
   <!-- DAY VIEW -->
@@ -1063,6 +1064,53 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div id="reorderStrip"></div>
     <div class="inv-cats" id="invCats"></div>
     <div id="stockList"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       COLOUR WHEEL VIEW — Trichology / cosmetology ref
+       ═══════════════════════════════════════════════════ -->
+  <div class="view" id="view-colour">
+    <div style="padding:16px 16px 4px;display:flex;align-items:baseline;justify-content:space-between">
+      <div class="section-title" style="font-size:15px;letter-spacing:.2px">Colour Wheel</div>
+      <div style="font-size:10px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase">tap any segment</div>
+    </div>
+
+    <!-- The wheel -->
+    <div style="display:flex;justify-content:center;padding:10px 0 4px">
+      <canvas id="cwCanvas" width="280" height="280"
+              style="max-width:min(280px,90vw);height:auto;
+                     touch-action:manipulation;
+                     -webkit-tap-highlight-color:transparent;
+                     cursor:pointer">
+      </canvas>
+    </div>
+
+    <!-- Tapped-segment info card -->
+    <div id="cwInfoCard" style="margin:4px 16px 16px;padding:14px 16px;
+         background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);
+         border-radius:13px;min-height:70px;transition:border-color .25s">
+      <div id="cwInfoName" style="font-size:14px;font-weight:700;color:#777;letter-spacing:.2px">— tap a colour —</div>
+      <div id="cwInfoNeutraliser" style="font-size:12px;color:#555;margin-top:3px"></div>
+      <div id="cwInfoTip" style="font-size:12px;color:#555;margin-top:5px;line-height:1.55"></div>
+    </div>
+
+    <!-- Level / Underlying Pigment chart -->
+    <div style="margin:0 16px 10px">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;
+                  letter-spacing:.1em;margin-bottom:10px">Level / Underlying Pigment</div>
+      <div id="cwLevelChart" style="display:flex;flex-direction:column;gap:5px"></div>
+    </div>
+
+    <!-- Quick correction lookup -->
+    <div style="margin:14px 16px 32px">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;
+                  letter-spacing:.1em;margin-bottom:10px">Quick Correction</div>
+      <div style="font-size:12px;color:#555;margin-bottom:10px;line-height:1.5">
+        Select the <em style="color:#888;font-style:normal;font-weight:600">unwanted tone</em> on the wheel above —<br>
+        the highlighted opposite is your neutraliser.
+      </div>
+      <div id="cwCorrectionGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:7px"></div>
+    </div>
   </div>
 
 </div>
@@ -1611,6 +1659,7 @@ function showView(v){
   if(v==='day')renderDay();
   if(v==='clients')renderClients();
   if(v==='stock'){renderStock();var pp=getPrefs();if(!pp.tradesSetupDone){pp.tradesSetupDone=true;setPrefs(pp);setTimeout(openTrades,300);}}
+  if(v==='colour'){try{if(typeof _cwInit==='function')_cwInit();}catch(e){}}
   window.scrollTo(0,0);
 }
 
@@ -3027,7 +3076,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.30 · Empty state gold heartbeat button + starburst tap';
+var VERSION='v5.32 · Fix settings chips + Trichology Colour Wheel tab';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4174,7 +4223,14 @@ window.addEventListener('message',function(ev){
 (function(){
   var gColour='auto',gSpeedIdx=4;
   function saveGlowPrefs(){
-    try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.glowColour=gColour;p.glowSpeedIdx=gSpeedIdx;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}
+    try{
+      var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
+      p.glowColour=gColour;p.glowSpeedIdx=gSpeedIdx;
+      localStorage.setItem('cp_prefs',JSON.stringify(p));
+      /* iOS Safari doesn't reliably fire storage events in the parent from an iframe.
+         postMessage is the guaranteed cross-frame signal.                             */
+      try{window.parent.postMessage({cpPrefsChanged:true},'*');}catch(_){}
+    }catch(e){}
   }
   function loadGlowPrefs(){
     try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');if(p.glowColour!=null)gColour=p.glowColour;if(p.glowSpeedIdx!=null)gSpeedIdx=Number(p.glowSpeedIdx);}catch(e){}
@@ -4222,7 +4278,10 @@ window.addEventListener('message',function(ev){
     if(!cv){
       cv=document.createElement('canvas');
       cv.id='heartCanvas';
-      cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50';
+      /* z-index:2 keeps canvas below all UI (modal=1000, nav, sheets).
+         touch-action:none + the webkit props ensure iOS Safari in an iframe
+         never intercepts taps that should land on buttons above.           */
+      cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;pointer-events:none;touch-action:none;-webkit-user-select:none;-webkit-touch-callout:none;z-index:2';
       document.body.appendChild(cv);
     }
     ctx=cv.getContext('2d');
@@ -4327,7 +4386,7 @@ window.addEventListener('message',function(ev){
       p.waveIntensity=wIntensity;
       p.waveFreq=wFreq;
       localStorage.setItem('cp_prefs',JSON.stringify(p));
-      window.dispatchEvent(new StorageEvent('storage',{key:'cp_prefs'}));
+      try{window.parent.postMessage({cpPrefsChanged:true},'*');}catch(_){}
     }catch(e){}
   }
   function loadWavePrefs(){
@@ -4356,6 +4415,242 @@ window.addEventListener('message',function(ev){
   function init(){loadWavePrefs();syncWaveChips();}
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
 })();
+/* ══════════════════════════════════════════════════════════
+   TRICHOLOGY COLOUR WHEEL
+   12-position hair colour wheel with complementary pairs,
+   Level/Underlying Pigment chart, Quick Correction tips.
+   ══════════════════════════════════════════════════════════ */
+(function(){
+  /* The 12-position wheel. Order starts at top (12 o'clock = Red),
+     going clockwise — the standard cosmetology wheel orientation.  */
+  var SEGS=[
+    {n:'Red',            h:'#ff2424',ng:'Red',         comp:6,  tip:'Use: Green or ash toner to cool an unwanted red cast (common after bleach on darker hair).'},
+    {n:'Red-Orange',     h:'#ff5000',ng:'Red-Orange',  comp:7,  tip:'Use: Blue-Green / cool ash to cancel brassy copper-red tones.'},
+    {n:'Orange',         h:'#ff8000',ng:'Orange',      comp:8,  tip:'Use: Blue toner or blue-violet. The #1 brassiness fix after lifting levels 5–7.'},
+    {n:'Yellow-Orange',  h:'#ffaa00',ng:'Yel-Orange',  comp:9,  tip:'Use: Blue-Violet. Lifts that turn golden-orange at levels 7–8.'},
+    {n:'Yellow',         h:'#ffe000',ng:'Yellow',      comp:10, tip:'Use: Violet / Purple toner. The classic fix for level 9–10 pale yellow brassiness.'},
+    {n:'Yellow-Green',   h:'#b0d000',ng:'Yel-Green',   comp:11, tip:'Use: Red-Violet. Rare in hair — can appear in some colour-corrected or faded tints.'},
+    {n:'Green',          h:'#00bb44',ng:'Green',       comp:0,  tip:'Use: Red or copper filler. Green casts come from pool water, certain ash formulas on lifted hair, or faded blue-blacks.'},
+    {n:'Blue-Green',     h:'#00a888',ng:'Blue-Green',  comp:1,  tip:'Use: Red-Orange / copper. Faded blue-black or teal deposit often leaves blue-green.'},
+    {n:'Blue',           h:'#005fff',ng:'Blue',        comp:2,  tip:'Use: Orange / copper. Blue undertone in very dark natural hair; also faded blue tones.'},
+    {n:'Blue-Violet',    h:'#5500dd',ng:'Blue-Violet', comp:3,  tip:'Use: Yellow-Orange / gold. Over-toned platinum can go blue-violet; warm it with gold.'},
+    {n:'Violet',         h:'#8800bb',ng:'Violet',      comp:4,  tip:'Use: Yellow / Gold toner. Over-purple deposits from toners or faded fashion violet.'},
+    {n:'Red-Violet',     h:'#cc0077',ng:'Red-Violet',  comp:5,  tip:'Use: Yellow-Green. Faded red-violet from fashion colour; rare as an underlying pigment.'},
+  ];
+
+  var LEVELS=[
+    {lv:10,name:'Lightest Blonde', pig:'Pale Yellow',    ph:'#fff4a0'},
+    {lv:9, name:'Very Light Blonde',pig:'Yellow',        ph:'#ffe040'},
+    {lv:8, name:'Light Blonde',    pig:'Yellow-Orange',  ph:'#ffb820'},
+    {lv:7, name:'Blonde',          pig:'Orange-Yellow',  ph:'#ff8c00'},
+    {lv:6, name:'Dark Blonde',     pig:'Orange',         ph:'#e05000'},
+    {lv:5, name:'Light Brown',     pig:'Red-Orange',     ph:'#c02800'},
+    {lv:4, name:'Medium Brown',    pig:'Red',            ph:'#900000'},
+    {lv:3, name:'Dark Brown',      pig:'Red-Brown',      ph:'#5a0a00'},
+    {lv:2, name:'Darkest Brown',   pig:'Brown-Red',      ph:'#300600'},
+    {lv:1, name:'Black',           pig:'Black',          ph:'#120200'},
+  ];
+
+  var _built=false, _sel=-1;
+  var CX=140,CY=140,OR=122,IR=60;
+  var TAU=Math.PI*2;
+
+  /* Draw the 12-segment wheel */
+  function drawWheel(cv,sel){
+    var ctx=cv.getContext('2d');
+    var dpr=window.devicePixelRatio||1;
+    var size=Math.round(Math.min(parseInt(cv.style.maxWidth||280),cv.parentElement?cv.parentElement.offsetWidth:280));
+    if(size<100)size=280;
+    cv.width=size*dpr; cv.height=size*dpr;
+    cv.style.width=size+'px'; cv.style.height=size+'px';
+    ctx.scale(dpr,dpr);
+    var cx=size/2,cy=size/2;
+    var or=size*0.435,ir=size*0.215;
+    ctx.clearRect(0,0,size,size);
+
+    for(var i=0;i<12;i++){
+      var startA=(i*30-90)*Math.PI/180;
+      var endA  =((i+1)*30-90)*Math.PI/180;
+      var seg=SEGS[i];
+      var isSel=(i===sel);
+      var isComp=(sel>=0&&i===SEGS[sel].comp);
+
+      /* base fill */
+      ctx.beginPath();
+      ctx.moveTo(cx+or*Math.cos(startA),cy+or*Math.sin(startA));
+      ctx.arc(cx,cy,or,startA,endA);
+      ctx.arc(cx,cy,ir,endA,startA,true);
+      ctx.closePath();
+
+      if(isSel){
+        ctx.fillStyle=seg.h;
+        ctx.shadowColor=seg.h;
+        ctx.shadowBlur=18;
+      } else if(isComp){
+        ctx.fillStyle=SEGS[i].h;
+        ctx.shadowColor=SEGS[i].h;
+        ctx.shadowBlur=14;
+      } else {
+        /* dim unselected when something is selected */
+        ctx.fillStyle=sel>=0?hexAlpha(seg.h,0.30):seg.h;
+        ctx.shadowBlur=0;
+      }
+      ctx.fill();
+      ctx.shadowBlur=0;
+
+      /* segment border */
+      ctx.strokeStyle='rgba(0,0,0,.55)';
+      ctx.lineWidth=1.5;
+      ctx.stroke();
+
+      /* label — only draw on selected or complement, or when nothing selected */
+      var midA=(startA+endA)/2;
+      var labelR=(or+ir)/2;
+      var lx=cx+labelR*Math.cos(midA), ly=cy+labelR*Math.sin(midA);
+      ctx.save();
+      ctx.translate(lx,ly);
+      ctx.rotate(midA+Math.PI/2);
+      ctx.fillStyle=(isSel||isComp)?'#fff':(sel>=0?'rgba(255,255,255,.18)':'rgba(255,255,255,.72)');
+      ctx.font='bold '+(size*0.038)+'px -apple-system,sans-serif';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      /* abbreviate labels */
+      var short=seg.n.replace('Yellow','Y').replace('Orange','Or').replace('Violet','Vi').replace('Green','Gr').replace('Red','R').replace('Blue','B');
+      ctx.fillText(short,0,0);
+      ctx.restore();
+    }
+
+    /* centre dot */
+    ctx.beginPath();
+    ctx.arc(cx,cy,ir*.38,0,TAU);
+    ctx.fillStyle='#06060e';
+    ctx.fill();
+    /* centre "YS" mark */
+    ctx.fillStyle='rgba(255,184,0,0.55)';
+    ctx.font='bold '+(ir*.36)+'px -apple-system,sans-serif';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText('YS',cx,cy);
+  }
+
+  function hexAlpha(hex,a){
+    var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    return 'rgba('+r+','+g+','+b+','+a+')';
+  }
+
+  /* Build the level chart */
+  function buildLevelChart(){
+    var el=document.getElementById('cwLevelChart');
+    if(!el||el.childNodes.length)return;
+    var html='';
+    for(var i=0;i<LEVELS.length;i++){
+      var lv=LEVELS[i];
+      html+=
+        '<div style="display:flex;align-items:center;gap:9px;padding:6px 10px;'+
+            'background:rgba(255,255,255,.025);border-radius:8px;border:1px solid rgba(255,255,255,.055)">'+
+          '<div style="width:28px;height:28px;border-radius:6px;background:'+lv.ph+';flex-shrink:0;border:1px solid rgba(255,255,255,.1)"></div>'+
+          '<div style="font-size:17px;font-weight:800;color:rgba(255,255,255,.25);width:18px;flex-shrink:0">'+lv.lv+'</div>'+
+          '<div style="flex:1;min-width:0">'+
+            '<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+lv.name+'</div>'+
+            '<div style="font-size:11px;color:var(--muted)">Underlying pigment: <span style="color:rgba(255,255,255,.42)">'+lv.pig+'</span></div>'+
+          '</div>'+
+        '</div>';
+    }
+    el.innerHTML=html;
+  }
+
+  /* Build quick correction grid */
+  function buildCorrectionGrid(){
+    var el=document.getElementById('cwCorrectionGrid');
+    if(!el||el.childNodes.length)return;
+    var pairs=[
+      {prob:'Yellow brassiness',   fix:'Purple / Violet toner',  ph:'#ffe000',fh:'#8800bb'},
+      {prob:'Orange brassiness',   fix:'Blue toner',             ph:'#ff8000',fh:'#005fff'},
+      {prob:'Gold brassiness',     fix:'Blue-Violet toner',      ph:'#ffaa00',fh:'#5500dd'},
+      {prob:'Red cast',            fix:'Ash / Green toner',      ph:'#ff2424',fh:'#00bb44'},
+      {prob:'Copper-red tone',     fix:'Cool ash (blue-green)',  ph:'#ff5000',fh:'#00a888'},
+      {prob:'Green pool tone',     fix:'Red / Copper filler',    ph:'#00bb44',fh:'#ff2424'},
+    ];
+    var html='';
+    for(var i=0;i<pairs.length;i++){
+      var p=pairs[i];
+      html+=
+        '<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 11px;display:flex;flex-direction:column;gap:5px">'+
+          '<div style="display:flex;align-items:center;gap:6px">'+
+            '<div style="width:10px;height:10px;border-radius:50%;background:'+p.ph+';flex-shrink:0"></div>'+
+            '<div style="font-size:11px;color:rgba(255,255,255,.38);font-weight:600">Problem</div>'+
+          '</div>'+
+          '<div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.72)">'+p.prob+'</div>'+
+          '<div style="height:1px;background:rgba(255,255,255,.06);margin:1px 0"></div>'+
+          '<div style="display:flex;align-items:center;gap:6px">'+
+            '<div style="width:10px;height:10px;border-radius:50%;background:'+p.fh+';flex-shrink:0"></div>'+
+            '<div style="font-size:11px;color:rgba(255,255,255,.38);font-weight:600">Fix</div>'+
+          '</div>'+
+          '<div style="font-size:12px;font-weight:600;color:#FFB800">'+p.fix+'</div>'+
+        '</div>';
+    }
+    el.innerHTML=html;
+  }
+
+  /* Handle tap on wheel canvas */
+  function handleTap(e,cv){
+    e.preventDefault();
+    var rect=cv.getBoundingClientRect();
+    var clientX=e.touches?e.touches[0].clientX:(e.changedTouches?e.changedTouches[0].clientX:e.clientX);
+    var clientY=e.touches?e.touches[0].clientY:(e.changedTouches?e.changedTouches[0].clientY:e.clientY);
+    var x=clientX-rect.left, y=clientY-rect.top;
+    var size=rect.width;
+    var cx=size/2,cy=size/2,or=size*0.435,ir=size*0.215;
+    var dx=x-cx,dy=y-cy,dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<ir||dist>or){_sel=-1;}else{
+      var angle=Math.atan2(dy,dx)*180/Math.PI+90;
+      if(angle<0)angle+=360;
+      _sel=Math.floor(angle/30)%12;
+    }
+    drawWheel(cv,_sel);
+    updateInfo(_sel);
+  }
+
+  function updateInfo(sel){
+    var nm=document.getElementById('cwInfoName');
+    var ne=document.getElementById('cwInfoNeutraliser');
+    var nt=document.getElementById('cwInfoTip');
+    var card=document.getElementById('cwInfoCard');
+    if(!nm)return;
+    if(sel<0){
+      nm.textContent='— tap a colour —';
+      nm.style.color='#777';
+      ne.textContent='';
+      nt.textContent='';
+      if(card)card.style.borderColor='rgba(255,255,255,.08)';
+      return;
+    }
+    var seg=SEGS[sel];
+    var comp=SEGS[seg.comp];
+    nm.textContent=seg.n;
+    nm.style.color=seg.h;
+    ne.innerHTML='Neutraliser: <span style="color:'+comp.h+';font-weight:700">'+comp.n+'</span>';
+    nt.textContent=seg.tip;
+    if(card)card.style.borderColor=seg.h.replace('#','rgba(').replace(/(..)(..)(..)$/,function(_,r,g,b){return parseInt(r,16)+','+parseInt(g,16)+','+parseInt(b,16)+',.40)'});
+  }
+
+  /* _cwInit is called by showView('colour') each time the tab is opened */
+  window._cwInit=function(){
+    var cv=document.getElementById('cwCanvas');
+    if(!cv)return;
+    if(!_built){
+      _built=true;
+      cv.addEventListener('touchend',function(e){handleTap(e,cv);},{passive:false});
+      cv.addEventListener('click',function(e){handleTap(e,cv);});
+      buildLevelChart();
+      buildCorrectionGrid();
+    }
+    /* redraw at correct size every open (handles orientation changes) */
+    drawWheel(cv,_sel);
+    updateInfo(_sel);
+  };
+})();
+
 initFB();
 
 /* live status — refresh the Day view each minute so 'In progress' flips on its own */
