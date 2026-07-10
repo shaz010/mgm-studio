@@ -2825,7 +2825,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.05 · delete all close-first';
+var VERSION='v5.06 · delete all confirm-first';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3102,16 +3102,14 @@ function clearDay(){
   },{title:'Clear this day',yesLabel:'Clear day',danger:true});
 }
 function deleteAllClients(){
-  closeSheet('settingsModal');
-  setTimeout(function(){
-    askConfirm('Delete ALL clients and ALL appointments on this device? Cannot be undone.',function(){
-      try{
-        ['ap_appts','ap_clients','cp_appts','cp_clients','cp_paid'].forEach(function(k){localStorage.removeItem(k);});
-      }catch(e){}
-      toast('All cleared');
-      setTimeout(function(){try{(window.top||window).location.reload();}catch(_){location.reload();}},600);
-    },{title:'Delete everything?',yesLabel:'Delete all',danger:true});
-  },320);
+  askConfirm('Delete ALL clients and ALL appointments on this device? Cannot be undone.',function(){
+    closeSheet('settingsModal');
+    try{
+      ['ap_appts','ap_clients','cp_appts','cp_clients','cp_paid'].forEach(function(k){localStorage.removeItem(k);});
+    }catch(e){}
+    toast('All cleared');
+    setTimeout(function(){try{(window.top||window).location.reload();}catch(_){location.reload();}},600);
+  },{title:'Delete everything?',yesLabel:'Delete all',danger:true});
 }
 function startFresh(){
   askConfirm('This erases ALL appointments, clients and your custom services on this device. It cannot be undone.',function(){
