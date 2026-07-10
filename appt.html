@@ -2427,10 +2427,9 @@ function bookAgain(){
 }
 function deleteClient(){
   if(!clientId)return;
-  askConfirm('Delete this client? Their past appointments stay.',function(){
-    clients=clients.filter(function(c){return c.id!==clientId});save(CLIENTS,clients);
-    closeSheet('clientModal');renderClients();toast('Deleted');
-  },{title:'Delete client',yesLabel:'Delete client',danger:true});
+  if(!confirm('Delete this client? Their past appointments stay.'))return;
+  clients=clients.filter(function(c){return c.id!==clientId});save(CLIENTS,clients);
+  closeSheet('clientModal');renderClients();toast('Deleted');
 }
 function openClientBookings(id){
   reload();
@@ -2815,7 +2814,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.00 · trash btn on appt sheet';
+var VERSION='v5.01 · delete client uses native confirm';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
