@@ -2822,7 +2822,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.08 · remove clear this day from erase';
+var VERSION='v5.09 · erase clears Firestore pending requests';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3098,24 +3098,45 @@ function clearDay(){
     closeSheet('settingsModal');renderDay();toast('Day cleared');
   },{title:'Clear this day',yesLabel:'Clear day',danger:true});
 }
+/* dismiss all pending Firestore requests so they don't come back after erase */
+function clearFirestoreRequests(cb){
+  if(!fbReady||!db){cb&&cb();return;}
+  try{
+    db.collection('requests').where('salon','==',SALON_ID).where('status','==','pending').get()
+      .then(function(snap){
+        if(snap.empty){cb&&cb();return;}
+        var batch=db.batch();
+        snap.forEach(function(d){batch.update(d.ref,{status:'dismissed',dismissedAt:Date.now()});});
+        return batch.commit();
+      })
+      .then(function(){cb&&cb();})
+      .catch(function(e){console.warn('clearFirestore err',e);cb&&cb();});
+  }catch(e){console.warn('clearFirestore',e);cb&&cb();}
+}
 function deleteAllClients(){
   askConfirm('Delete ALL clients and ALL appointments on this device? Cannot be undone.',function(){
     closeSheet('settingsModal');
-    try{
-      ['ap_appts','ap_clients','cp_appts','cp_clients','cp_paid'].forEach(function(k){localStorage.removeItem(k);});
-    }catch(e){}
-    toast('All cleared');
-    setTimeout(function(){try{(window.top||window).location.reload();}catch(_){location.reload();}},600);
+    if(_reqUnsub){_reqUnsub();_reqUnsub=null;}
+    clearFirestoreRequests(function(){
+      try{
+        ['ap_appts','ap_clients','cp_appts','cp_clients','cp_paid'].forEach(function(k){localStorage.removeItem(k);});
+      }catch(e){}
+      toast('All cleared');
+      setTimeout(function(){try{(window.top||window).location.reload();}catch(_){location.reload();}},600);
+    });
   },{title:'Delete everything?',yesLabel:'Delete all',danger:true});
 }
 function startFresh(){
   askConfirm('This erases ALL appointments, clients and your custom services on this device. It cannot be undone.',function(){
     askConfirm('Really erase everything? This is permanent.',function(){
-      try{localStorage.clear();}catch(e){
-        try{[APPTS,CLIENTS,CUSTOM,STOCK,PREFS,'cp_appts','cp_paid','cp_clients','cp_prefs'].forEach(function(k){localStorage.removeItem(k);});}catch(_e){}
-      }
-      toast('Fresh start — all clear');
-      setTimeout(function(){try{(window.top||window).location.reload();}catch(_e){location.reload();}},400);
+      if(_reqUnsub){_reqUnsub();_reqUnsub=null;}
+      clearFirestoreRequests(function(){
+        try{localStorage.clear();}catch(e){
+          try{[APPTS,CLIENTS,CUSTOM,STOCK,PREFS,'cp_appts','cp_paid','cp_clients','cp_prefs'].forEach(function(k){localStorage.removeItem(k);});}catch(_e){}
+        }
+        toast('Fresh start — all clear');
+        setTimeout(function(){try{(window.top||window).location.reload();}catch(_e){location.reload();}},400);
+      });
     },{title:'Last chance',yesLabel:'Erase everything',danger:true});
   },{title:'Start fresh?',yesLabel:'Continue',danger:true});
 }
