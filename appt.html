@@ -155,6 +155,15 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 .ctitle i{color:var(--gold);font-size:15px}
 label{display:block;font-size:13px;color:var(--text2);margin-bottom:5px;margin-top:14px;font-weight:500}
 label:first-of-type{margin-top:0}
+/* ── Service-first flow: name+phone rise up after service chosen ── */
+.svc-label-row{display:flex;align-items:center;justify-content:space-between;margin-top:0;margin-bottom:5px}
+.svc-label-row label{margin:0;font-size:13px;color:var(--text2);font-weight:500}
+.choose-svc-hint{font-size:9.5px;font-weight:800;letter-spacing:1.8px;color:var(--gold);cursor:pointer;padding:5px 11px;border:1.5px solid rgba(255,184,0,.38);border-radius:50px;background:rgba(255,184,0,.07);-webkit-tap-highlight-color:transparent;white-space:nowrap;transition:opacity .35s ease,max-width .35s ease,padding .35s ease,border .35s ease;animation:hintGlow 2.6s ease-in-out infinite}
+.choose-svc-hint:active{transform:scale(.95)}
+.choose-svc-hint.hint-done{opacity:0;pointer-events:none;max-width:0;padding:0;border-width:0;overflow:hidden}
+@keyframes hintGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,184,0,0)}50%{box-shadow:0 0 10px 3px rgba(255,184,0,.22)}}
+.client-fields-wrap{overflow:hidden;max-height:0;opacity:0;transition:max-height .75s cubic-bezier(.4,0,.2,1),opacity .6s ease .15s}
+.client-fields-wrap.cfw-show{max-height:240px;opacity:1}
 input,select,textarea{width:100%;padding:10px 12px;background:#000;border:1.5px solid #3a3a44;border-radius:8px;color:#fff;font-size:16px;font-weight:500;outline:none;transition:border .2s;-webkit-appearance:none;font-family:inherit}
 input:focus,select:focus,textarea:focus{border-color:var(--gold);background:#1e1e1e}
 input::placeholder,textarea::placeholder{color:#555;font-weight:400}
@@ -926,14 +935,10 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="card">
       <div class="ctitle"><i class="ti ti-calendar-plus"></i><span id="addTitle">New appointment</span></div>
 
-      <label>Client name</label>
-      <input id="fName" list="clientList" placeholder="Start typing a name…" autocomplete="off" oninput="onNamePick()">
-      <datalist id="clientList"></datalist>
-
-      <label>Phone <span style="color:var(--gold);font-weight:400">(required)</span></label>
-      <input id="fPhone" type="tel" placeholder="(555) 123-4567" autocomplete="off">
-
-      <label>Service</label>
+      <div class="svc-label-row">
+        <label>Service</label>
+        <span class="choose-svc-hint" id="chooseSvcHint" onclick="$('fService').focus()">CHOOSE SERVICE(S)</span>
+      </div>
       <input id="fService" placeholder="Tap services below to combine, or type your own…" oninput="syncChips()">
       <div id="svcSelected" class="svc-selected"></div>
       <div class="svc-trade-row"><div class="svc-trade-label" id="svcTradeLabel"></div><button type="button" class="svc-trade-change" onclick="openTradePicker()"><i class="ti ti-arrows-exchange"></i> Change</button></div>
@@ -946,6 +951,15 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <div class="svc-add-row">
         <input id="fCustom" placeholder="Add your own service…" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustom()}">
         <button class="btn btn-ghost svc-add-btn" onclick="addCustom()"><i class="ti ti-plus"></i> Add</button>
+      </div>
+
+      <!-- Client name + phone rise up once a service is chosen -->
+      <div class="client-fields-wrap" id="clientFieldsWrap">
+        <label>Client name</label>
+        <input id="fName" list="clientList" placeholder="Start typing a name…" autocomplete="off" oninput="onNamePick()">
+        <datalist id="clientList"></datalist>
+        <label>Phone <span style="color:var(--gold);font-weight:400">(required)</span></label>
+        <input id="fPhone" type="tel" placeholder="(555) 123-4567" autocomplete="off">
       </div>
 
       <div class="row2" style="margin-top:16px">
@@ -1738,12 +1752,19 @@ function toggleSvcCat(head){
   body.style.display=open?'none':'block';
   head.classList.toggle('open',!open);
 }
+function _revealClientFields(){
+  var has=($('fService').value||'').trim().length>0;
+  var wrap=$('clientFieldsWrap'),hint=$('chooseSvcHint');
+  if(wrap)wrap.classList.toggle('cfw-show',has);
+  if(hint)hint.classList.toggle('hint-done',has);
+}
 function syncChips(){
   var have=servicesInField().map(function(s){return s.toLowerCase()});
   document.querySelectorAll('.svc-chip').forEach(function(c){
     c.classList.toggle('sel',have.indexOf((c.dataset.name||'').toLowerCase())>=0);
   });
   renderSelectedSvc();
+  _revealClientFields();
 }
 function renderSelectedSvc(){
   var el=$('svcSelected');if(!el)return;
@@ -2058,6 +2079,10 @@ function openAdd(){
   $('addTitle').textContent='New appointment';
   $('editExtra').style.display='none';
   $('fName').value='';$('fPhone').value='';$('fService').value='';$('fCustom').value='';
+  /* reset service-first reveal */
+  var _w=$('clientFieldsWrap'),_h=$('chooseSvcHint');
+  if(_w)_w.classList.remove('cfw-show');
+  if(_h)_h.classList.remove('hint-done');
   $('fDate').value=ymd(viewDate);$('fTime').value='';$('fDur').value='';$('fPrice').value='';$('fTip').value='';$('fNotes').value='';
   if(typeof apCalc==='function')apCalc();
   $('conflictWarn').classList.remove('show');
@@ -2864,7 +2889,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.22 · fix glow icon hidden by selector + robust init';
+var VERSION='v5.23 · service-first flow — name+phone rise up after service chosen';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
