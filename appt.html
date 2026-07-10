@@ -2830,7 +2830,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.14 · block Firestore re-entry after erase via sessionStorage flag';
+var VERSION='v5.15 · post-erase flag in localStorage blocks Firestore re-entry';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3129,8 +3129,6 @@ function clearFirestoreRequests(cb){
   }catch(e){console.warn('clearFirestore',e);cb&&cb();}
 }
 function _hardReload(){
-  /* set a flag so listenRequests() on next load knows to suppress + re-dismiss */
-  try{(window.top||window).sessionStorage.setItem('_ap_erased','1');}catch(_){}
   try{
     var t=window.top||window;
     t.location.href=t.location.href.split('?')[0]+'?erased='+Date.now();
@@ -3143,6 +3141,8 @@ function _nukeStorage(){
   try{for(var i=0;i<localStorage.length;i++){keys.push(localStorage.key(i));}}catch(_){}
   keys.forEach(function(k){try{localStorage.removeItem(k);}catch(_){}});
   try{localStorage.clear();}catch(_){}
+  /* write erased flag AFTER clearing — only key that survives into the next load */
+  try{localStorage.setItem('_ap_erased','1');}catch(_){}
 }
 function deleteAllClients(){
   askConfirm('Delete ALL clients and ALL appointments on this device? Cannot be undone.',function(){
@@ -3517,13 +3517,12 @@ function bookableServices(){
 /* ---- live request inbox ---- */
 function listenRequests(){
   if(!fbReady)return;
-  /* if we just erased, dismiss anything Firestore sends back and bail */
-  var justErased=false;
-  try{justErased=!!(window.top||window).sessionStorage.getItem('_ap_erased');}catch(_){}
+  /* if we just erased, the only surviving localStorage key is _ap_erased */
+  var justErased=!!localStorage.getItem('_ap_erased');
   if(justErased){
-    try{(window.top||window).sessionStorage.removeItem('_ap_erased');}catch(_){}
-    clearFirestoreRequests(function(){});  /* re-attempt dismissal in case first try failed */
-    return;
+    localStorage.removeItem('_ap_erased');
+    clearFirestoreRequests(function(){});  /* dismiss Firestore pending requests */
+    return;  /* do NOT subscribe — prevents clients walking back in */
   }
   try{
     if(_reqUnsub)_reqUnsub();
