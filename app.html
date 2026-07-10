@@ -1263,7 +1263,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
       <div class="reset-qp-hint">Restores the starting set of favourite services for both Hair and Nail. Your prices and client cards are not affected.</div>
     </div>
 
-    <div class="setup-section">
+    <div class="setup-section erase-sec">
       <div class="setup-section-title" style="color:#c98a93"><i class="ti ti-alert-triangle" style="margin-right:6px"></i>Reset &amp; erase</div>
       <button class="reset-app-btn" onclick="resetApp()"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Start fresh — erase all my data</button>
       <div class="reset-qp-hint" style="margin-top:7px">Wipes all bookings, client cards, prices and salon details on this device. Your purchase stays unlocked.</div>
@@ -2351,9 +2351,19 @@ function saveFavorites(arr){try{var p=JSON.parse(localStorage.getItem('cp_prefs'
 function resetApp(){ var m=document.getElementById('eraseModal'); if(m)m.classList.add('open'); }
 function closeEraseModal(){ var m=document.getElementById('eraseModal'); if(m)m.classList.remove('open'); }
 function confirmErase(){
-  try{ localStorage.clear(); }
-  catch(e){ try{['cp_appts','cp_paid','cp_clients','cp_prefs','ap_appts','ap_clients','ap_custom','ap_prefs','ap_stock'].forEach(function(k){localStorage.removeItem(k);});}catch(_e){} }
-  try{(window.top||window).location.reload();}catch(_e){location.reload();}
+  var keys=[];
+  try{for(var i=0;i<localStorage.length;i++){keys.push(localStorage.key(i));}}catch(_){}
+  keys.forEach(function(k){try{localStorage.removeItem(k);}catch(_){}});
+  try{localStorage.clear();}catch(_){}
+  var em=document.getElementById('eraseModal');if(em){var eg=em.querySelector('.erase-go');if(eg)eg.textContent='Erasing…';}
+  setTimeout(function(){
+    try{
+      var top=window.top||window;
+      top.location.href=top.location.href.split('?')[0]+'?erased='+Date.now();
+    }catch(_){
+      location.href=location.href.split('?')[0]+'?erased='+Date.now();
+    }
+  },600);
 }
 function exportData(){
   try{
@@ -3264,7 +3274,7 @@ function openSettings(){
   if(ri) ri.value = prefs.rate||60;
   _lockRate();
   const panel = document.getElementById('settingsPanel');
-  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); markBigText(); renderBackupStatus(); initBookLink(); try{renderSetTradeGrid();}catch(e){} try{document.querySelectorAll('#settingsPanel .setup-section').forEach(function(s){s.classList.add('collapsed');});var _sp=document.getElementById('settingsPanel');if(_sp)_sp.classList.remove('show-adv');var _at=document.getElementById('advToggle');if(_at)_at.innerHTML='<i class="ti ti-settings"></i> Show advanced settings ▾';}catch(e){} }
+  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); markBigText(); renderBackupStatus(); initBookLink(); try{renderSetTradeGrid();}catch(e){} try{document.querySelectorAll('#settingsPanel .setup-section').forEach(function(s){s.classList.add('collapsed');});var _es=document.querySelector('#settingsPanel .erase-sec');if(_es)_es.classList.remove('collapsed');var _sp=document.getElementById('settingsPanel');if(_sp)_sp.classList.remove('show-adv');var _at=document.getElementById('advToggle');if(_at)_at.innerHTML='<i class="ti ti-settings"></i> Show advanced settings ▾';}catch(e){} }
 }
 
 function closeSettings(){
@@ -3548,7 +3558,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.85 · erase always visible';
+var VERSION='app v1.88 · nuclear erase, enumerate all keys dynamically';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

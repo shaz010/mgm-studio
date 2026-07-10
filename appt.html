@@ -1185,14 +1185,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     </div>
     <input type="file" id="importFile" accept=".json,application/json,text/plain" style="display:none" onchange="importData(event)">
 
-    <div class=”set-sec adv-sec”>Erase / Reset</div>
-    <div class=”btn-row” style=”margin-top:0”>
-      <button class=”btn btn-danger” style=”width:100%;padding:14px 18px;font-size:15px” onclick=”deleteAllClients()”><i class=”ti ti-users-minus”></i> Delete all clients &amp; their appts</button>
-    </div>
-    <div class=”btn-row” style=”margin-top:8px”>
-      <button class=”btn btn-danger” style=”width:100%;padding:14px 18px;font-size:15px” onclick=”startFresh()”><i class=”ti ti-trash”></i> Start fresh — erase everything</button>
-    </div>
-    <div style=”font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5”>”Start fresh” wipes all appointments, clients and your custom services on this device. Quick Picks reset to default. This can’t be undone.</div>
+    <button class="btn" style="width:100%;margin-top:18px;border:1px solid var(--red);color:var(--red);background:transparent;border-radius:10px;padding:12px" onclick="openEraseModal()"><i class="ti ti-trash"></i> Erase / Reset…</button>
 
     <div class="set-sec adv-sec">Diagnostics</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Runs self-checks on trades, IDs and data. Tap <b>Copy report</b> in there to send an exact diagnostic instead of a screenshot.</div>
@@ -1248,6 +1241,20 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="btn-row">
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('confirmModal')">Cancel</button>
       <button class="btn btn-sm" id="cfYes" style="flex:1">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="eraseModal" onclick="if(event.target===this)closeSheet('eraseModal')" style="z-index:1200">
+  <div class="sheet" style="max-width:420px">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title" style="color:var(--red)"><i class="ti ti-trash"></i> Erase / Reset</div>
+    <div class="sheet-sub" style="margin-bottom:22px;line-height:1.55">This device only. Your data lives in <b>localStorage</b> — erasing here is permanent and cannot be undone.</div>
+    <button class="btn btn-danger" style="width:100%;padding:18px 22px;font-size:17px;border-radius:13px;background:rgba(220,50,50,0.09);margin-bottom:12px" onclick="closeSheet('eraseModal');deleteAllClients()"><i class="ti ti-users-minus"></i> Delete all clients &amp; their appts</button>
+    <button class="btn btn-danger" style="width:100%;padding:18px 22px;font-size:17px;border-radius:13px;background:rgba(220,50,50,0.09)" onclick="closeSheet('eraseModal');startFresh()"><i class="ti ti-trash"></i> Start fresh — erase everything</button>
+    <div style="font-size:12px;color:var(--muted);margin-top:14px;line-height:1.5">"Start fresh" also wipes custom services and Quick Picks.</div>
+    <div class="btn-row" style="margin-top:18px">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('eraseModal')">Cancel</button>
     </div>
   </div>
 </div>
@@ -2178,6 +2185,7 @@ function editFromSheet(){
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
 }
 function closeSheet(id){$(id).classList.remove('show')}
+function openEraseModal(){$('eraseModal').classList.add('show');}
 var _dbgReport='';
 function openDebug(){
   var L=[];
@@ -2822,7 +2830,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.08 · remove clear this day from erase';
+var VERSION='v5.12 · nuclear erase, enumerate all keys dynamically';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
