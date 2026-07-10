@@ -2830,7 +2830,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.15 · post-erase flag in localStorage blocks Firestore re-entry';
+var VERSION='v5.16 · clearFirestore 2s safety net so dead Firebase never blocks erase';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3115,18 +3115,22 @@ function clearDay(){
   },{title:'Clear this day',yesLabel:'Clear day',danger:true});
 }
 function clearFirestoreRequests(cb){
-  if(!fbReady||!db){cb&&cb();return;}
+  /* always fires cb — 2s safety net so a dead/deleted Firebase never blocks erase */
+  var done=false;
+  var safeCb=function(){if(!done){done=true;try{cb&&cb();}catch(_){}}};
+  setTimeout(safeCb,2000);
+  if(!fbReady||!db){safeCb();return;}
   try{
     db.collection('requests').where('salon','==',SALON_ID).where('status','==','pending').get()
       .then(function(snap){
-        if(snap.empty){cb&&cb();return;}
+        if(snap.empty){safeCb();return;}
         var batch=db.batch();
         snap.forEach(function(d){batch.update(d.ref,{status:'dismissed',dismissedAt:Date.now()});});
         return batch.commit();
       })
-      .then(function(){cb&&cb();})
-      .catch(function(e){console.warn('clearFirestore err',e);cb&&cb();});
-  }catch(e){console.warn('clearFirestore',e);cb&&cb();}
+      .then(safeCb)
+      .catch(safeCb);
+  }catch(e){safeCb();}
 }
 function _hardReload(){
   try{
