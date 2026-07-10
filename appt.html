@@ -2114,7 +2114,8 @@ function renderDay(){
   $('statNet').textContent=fmt$(active.reduce(function(s,a){return s+takeHome(a.price)+(+a.tip||0)},0));
 
   if(!list.length){
-    $('dayList').innerHTML='<div class="empty"><i class="ti ti-calendar-off"></i><div class="empty-t">No appointments '+(isToday?'today':'this day')+'</div><div class="empty-s">A clear chair. Tap Add to book someone in.</div><button class="btn btn-sm" style="margin:0 auto" onclick="openAdd()"><i class="ti ti-plus"></i> Add appointment</button></div>';
+    $('dayList').innerHTML='<div class="empty"><i class="ti ti-calendar-off"></i><div class="empty-t">No appointments '+(isToday?'today':'this day')+'</div><div class="empty-s">A clear chair. Tap Add to book someone in.</div><button id="emptyAddBtn" class="btn btn-sm" style="margin:0 auto;background:linear-gradient(135deg,#FFB800,#ff8a00);color:#160e00;font-weight:800;border:none;will-change:transform,box-shadow;transform-origin:center center;position:relative;overflow:hidden" onclick="openAdd()"><i class="ti ti-plus"></i> Add appointment</button></div>';
+    startEmptyHeart();
     return;
   }
   $('dayList').innerHTML=list.map(function(a){
@@ -2210,7 +2211,7 @@ function _starBurst(){
 }
 
 function openAdd(){
-  _starBurst();
+  try{if(typeof _emptyBtnBurst==='function')_emptyBtnBurst();}catch(e){}
   editingId=null;priceManual=false;
   $('addTitle').textContent='New appointment';
   $('editExtra').style.display='none';
@@ -3026,7 +3027,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.29 · Wave intensity + frequency controls in settings';
+var VERSION='v5.30 · Empty state gold heartbeat button + starburst tap';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4197,6 +4198,120 @@ window.addEventListener('message',function(ev){
   };
   function init(){loadGlowPrefs();syncGlowChips();}
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
+})();
+
+/* ══════════════════════════════════════════════════════
+   EMPTY-STATE HEARTBEAT — gold "Add appointment" button
+   Deep-sleep pace (28 BPM) — lub·dub double beat.
+   Canvas overlay for ring ripples + tap starburst.
+   ══════════════════════════════════════════════════════ */
+(function(){
+  var cv=null,ctx=null,btn=null;
+  var PERIOD=60/28; // deep sleep default
+  var t0=null,prevPhase=0,rings=[],parts=[];
+  var raf=null;
+
+  function gauss(x,c,w){var d=(x-c)/w;return Math.exp(-d*d*2);}
+  function heartSignal(t){
+    var phase=(t%PERIOD)/PERIOD;
+    return Math.max(gauss(phase,0.07,0.055), gauss(phase,0.22,0.045)*0.58);
+  }
+
+  function ensureCanvas(){
+    cv=document.getElementById('heartCanvas');
+    if(!cv){
+      cv=document.createElement('canvas');
+      cv.id='heartCanvas';
+      cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50';
+      document.body.appendChild(cv);
+    }
+    ctx=cv.getContext('2d');
+    cv.width=innerWidth; cv.height=innerHeight;
+  }
+
+  function loop(ts){
+    btn=document.getElementById('emptyAddBtn');
+    if(!btn){
+      /* button gone (day has bookings now) — clean up */
+      if(cv)cv.getContext('2d').clearRect(0,0,cv.width,cv.height);
+      raf=null; return;
+    }
+    if(!t0)t0=ts;
+    var t=(ts-t0)/1000;
+    var phase=(t%PERIOD)/PERIOD;
+    var hb=heartSignal(t);
+
+    /* ring fires */
+    var r2=btn.getBoundingClientRect();
+    var ox=r2.left+r2.width/2, oy=r2.top+r2.height/2;
+    if(prevPhase>0.9&&phase<0.1)
+      rings.push({x:ox,y:oy,r:0,maxR:r2.width*.9,life:1,spd:4.8,lw:1.4,col:'255,184,0',hb:true});
+    if(prevPhase<0.22&&phase>=0.22)
+      rings.push({x:ox,y:oy,r:0,maxR:r2.width*.65,life:1,spd:3.8,lw:.9,col:'255,184,0',hb:true});
+    prevPhase=phase;
+
+    /* button throb */
+    var sc=1+hb*0.09;
+    var spr=Math.round(10+hb*28);
+    btn.style.transform='scale('+sc.toFixed(4)+')';
+    btn.style.boxShadow='0 '+Math.round(3+hb*10)+'px '+spr+'px rgba(255,155,0,'+(0.30+hb*.42)+'),0 0 '+Math.round(4+hb*18)+'px rgba(255,220,80,'+(0.18+hb*.5)+')';
+
+    /* canvas */
+    ensureCanvas();
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.globalCompositeOperation='screen';
+
+    /* rings */
+    rings=rings.filter(function(rg){
+      if(rg.delay){rg.delay-=16;return true;}
+      rg.r=Math.min(rg.maxR,rg.r+rg.spd);
+      rg.life=Math.max(0,1-rg.r/rg.maxR);
+      if(rg.life<=0)return false;
+      ctx.beginPath();ctx.arc(rg.x,rg.y,rg.r,0,Math.PI*2);
+      ctx.strokeStyle='rgba('+rg.col+','+rg.life*.15+')';ctx.lineWidth=rg.lw*6;ctx.stroke();
+      ctx.strokeStyle='rgba('+rg.col+','+rg.life*.7+')';ctx.lineWidth=rg.lw;ctx.stroke();
+      return true;
+    });
+
+    /* tap particles */
+    parts=parts.filter(function(p){
+      p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.vx*=.975;
+      p.life-=p.decay;if(p.life<=0)return false;
+      var h=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*5);
+      h.addColorStop(0,'rgba('+p.col+','+Math.min(.9,p.life*.85)+')');
+      h.addColorStop(1,'rgba('+p.col+',0)');
+      ctx.fillStyle=h;ctx.beginPath();ctx.arc(p.x,p.y,p.r*5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,'+Math.min(1,p.life*1.1)+')';
+      ctx.beginPath();ctx.arc(p.x,p.y,Math.max(.2,p.r*.3),0,Math.PI*2);ctx.fill();
+      return true;
+    });
+
+    ctx.globalCompositeOperation='source-over';
+    raf=requestAnimationFrame(loop);
+  }
+
+  window.startEmptyHeart=function(){
+    t0=null;prevPhase=0;rings=[];parts=[];
+    if(raf)cancelAnimationFrame(raf);
+    raf=requestAnimationFrame(loop);
+  };
+
+  /* starburst on tap — called from openAdd() */
+  window._emptyBtnBurst=function(){
+    var b=document.getElementById('emptyAddBtn');
+    if(!b)return;
+    var r=b.getBoundingClientRect();
+    var ox=r.left+r.width/2,oy=r.top+r.height/2;
+    rings.push({x:ox,y:oy,r:0,maxR:130,life:1,spd:6.5,lw:2,col:'255,215,60'});
+    rings.push({x:ox,y:oy,r:0,maxR:100,life:1,spd:5.8,lw:1.2,col:'255,255,180',delay:55});
+    var COLS=['255,184,0','255,220,80','255,255,180','255,140,30','255,255,255'];
+    for(var i=0;i<65;i++){
+      var a=Math.random()*Math.PI*2,s=2.5+Math.random()*11;
+      parts.push({x:ox,y:oy,vx:Math.cos(a)*s,vy:Math.sin(a)*s-(Math.random()*2.5),
+        r:.8+Math.random()*3.2,life:1,decay:.010+Math.random()*.013,
+        col:COLS[Math.floor(Math.random()*COLS.length)],g:.22});
+    }
+  };
 })();
 
 /* ── Wave shoot-out settings — intensity & frequency ── */
