@@ -2830,7 +2830,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.16 · clearFirestore 2s safety net so dead Firebase never blocks erase';
+var VERSION='v5.17 · erase reloads iframe only via location.replace, no bfcache';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3133,11 +3133,11 @@ function clearFirestoreRequests(cb){
   }catch(e){safeCb();}
 }
 function _hardReload(){
+  /* reload THIS iframe only via replace() — avoids parent bfcache restoring old data */
   try{
-    var t=window.top||window;
-    t.location.href=t.location.href.split('?')[0]+'?erased='+Date.now();
+    location.replace(location.pathname+'?erased='+Date.now());
   }catch(_){
-    location.href=location.href.split('?')[0]+'?erased='+Date.now();
+    location.reload();
   }
 }
 function _nukeStorage(){
