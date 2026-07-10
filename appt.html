@@ -162,8 +162,15 @@ label:first-of-type{margin-top:0}
 .choose-svc-hint:active{transform:scale(.93)}
 .choose-svc-hint.hint-done{opacity:0;pointer-events:none;transform:scale(.7)}
 @keyframes hintPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,184,0,0)}50%{box-shadow:0 0 14px 4px rgba(255,184,0,.45)}}
-.client-fields-wrap{overflow:hidden;max-height:0;opacity:0;transition:max-height .75s cubic-bezier(.4,0,.2,1),opacity .6s ease .15s}
-.client-fields-wrap.cfw-show{max-height:240px;opacity:1}
+.client-fields-wrap{
+  overflow:hidden;max-height:0;opacity:0;
+  transform:translateY(36px);
+  transition:
+    max-height .8s cubic-bezier(.4,0,.2,1),
+    opacity .55s ease .1s,
+    transform .7s cubic-bezier(.34,1.4,.64,1) .05s;
+}
+.client-fields-wrap.cfw-show{max-height:240px;opacity:1;transform:translateY(0)}
 input,select,textarea{width:100%;padding:10px 12px;background:#000;border:1.5px solid #3a3a44;border-radius:8px;color:#fff;font-size:16px;font-weight:500;outline:none;transition:border .2s;-webkit-appearance:none;font-family:inherit}
 input:focus,select:focus,textarea:focus{border-color:var(--gold);background:#1e1e1e}
 input::placeholder,textarea::placeholder{color:#555;font-weight:400}
@@ -935,6 +942,15 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="card">
       <div class="ctitle"><i class="ti ti-calendar-plus"></i><span id="addTitle">New appointment</span></div>
 
+      <!-- Client name + phone hidden, rise up when CHOOSE SERVICE(S) is tapped -->
+      <div class="client-fields-wrap" id="clientFieldsWrap">
+        <label>Client name</label>
+        <input id="fName" list="clientList" placeholder="Start typing a name…" autocomplete="off" oninput="onNamePick()">
+        <datalist id="clientList"></datalist>
+        <label>Phone <span style="color:var(--gold);font-weight:400">(required)</span></label>
+        <input id="fPhone" type="tel" placeholder="(555) 123-4567" autocomplete="off">
+      </div>
+
       <div class="svc-label-row">
         <label>Service</label>
         <span class="choose-svc-hint" id="chooseSvcHint" onclick="_revealClientFields()"><i class="ti ti-hand-finger" style="font-size:13px"></i> CHOOSE SERVICE(S)</span>
@@ -951,15 +967,6 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <div class="svc-add-row">
         <input id="fCustom" placeholder="Add your own service…" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustom()}">
         <button class="btn btn-ghost svc-add-btn" onclick="addCustom()"><i class="ti ti-plus"></i> Add</button>
-      </div>
-
-      <!-- Client name + phone rise up once a service is chosen -->
-      <div class="client-fields-wrap" id="clientFieldsWrap">
-        <label>Client name</label>
-        <input id="fName" list="clientList" placeholder="Start typing a name…" autocomplete="off" oninput="onNamePick()">
-        <datalist id="clientList"></datalist>
-        <label>Phone <span style="color:var(--gold);font-weight:400">(required)</span></label>
-        <input id="fPhone" type="tel" placeholder="(555) 123-4567" autocomplete="off">
       </div>
 
       <div class="row2" style="margin-top:16px">
@@ -2898,7 +2905,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.25 · button tap reveals fields, deselect-all collapses them';
+var VERSION='v5.26 · name+phone rise up from above service pane spring animation';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
