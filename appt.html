@@ -2830,7 +2830,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.10 · erase in own modal, out of collapse system';
+var VERSION='v5.11 · hard-nav erase, fix inverted clear logic';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3122,16 +3122,23 @@ function clearFirestoreRequests(cb){
       .catch(function(e){console.warn('clearFirestore err',e);cb&&cb();});
   }catch(e){console.warn('clearFirestore',e);cb&&cb();}
 }
+function _hardReload(){
+  /* .reload() is blocked in iOS PWA iframes — hard href nav works instead */
+  try{
+    var t=window.top||window;
+    t.location.href=t.location.href.split('?')[0]+'?erased='+Date.now();
+  }catch(_){
+    location.href=location.href.split('?')[0]+'?erased='+Date.now();
+  }
+}
 function deleteAllClients(){
   askConfirm('Delete ALL clients and ALL appointments on this device? Cannot be undone.',function(){
     closeSheet('settingsModal');
     if(_reqUnsub){_reqUnsub();_reqUnsub=null;}
     clearFirestoreRequests(function(){
-      try{
-        ['ap_appts','ap_clients','cp_appts','cp_clients','cp_paid'].forEach(function(k){localStorage.removeItem(k);});
-      }catch(e){}
+      ['ap_appts','ap_clients','cp_appts','cp_clients','cp_paid'].forEach(function(k){try{localStorage.removeItem(k);}catch(_){}});
       toast('All cleared');
-      setTimeout(function(){try{(window.top||window).location.reload();}catch(_){location.reload();}},600);
+      setTimeout(_hardReload,600);
     });
   },{title:'Delete everything?',yesLabel:'Delete all',danger:true});
 }
@@ -3140,11 +3147,11 @@ function startFresh(){
     askConfirm('Really erase everything? This is permanent.',function(){
       if(_reqUnsub){_reqUnsub();_reqUnsub=null;}
       clearFirestoreRequests(function(){
-        try{localStorage.clear();}catch(e){
-          try{[APPTS,CLIENTS,CUSTOM,STOCK,PREFS,'cp_appts','cp_paid','cp_clients','cp_prefs'].forEach(function(k){localStorage.removeItem(k);});}catch(_e){}
-        }
+        /* key-by-key first (iOS may silently fail clear()), then clear() as belt-and-braces */
+        [APPTS,CLIENTS,CUSTOM,STOCK,PREFS,'cp_appts','cp_paid','cp_clients','cp_prefs','ap_view'].forEach(function(k){try{localStorage.removeItem(k);}catch(_){}});
+        try{localStorage.clear();}catch(_){}
         toast('Fresh start — all clear');
-        setTimeout(function(){try{(window.top||window).location.reload();}catch(_e){location.reload();}},400);
+        setTimeout(_hardReload,400);
       });
     },{title:'Last chance',yesLabel:'Erase everything',danger:true});
   },{title:'Start fresh?',yesLabel:'Continue',danger:true});
