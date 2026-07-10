@@ -1264,13 +1264,9 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
     </div>
 
     <div class="setup-section">
-      <details class="danger-details">
-        <summary class="danger-summary"><i class="ti ti-alert-triangle"></i> Reset &amp; erase options</summary>
-        <div class="danger-body">
-          <button class="reset-app-btn" onclick="resetApp()"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Start fresh — erase all my data</button>
-          <div class="reset-qp-hint" style="margin-top:7px">Wipes all bookings, client cards, prices and salon details on this device for a clean start. Back up first if unsure — your purchase stays unlocked.</div>
-        </div>
-      </details>
+      <div class="setup-section-title" style="color:#c98a93"><i class="ti ti-alert-triangle" style="margin-right:6px"></i>Reset &amp; erase</div>
+      <button class="reset-app-btn" onclick="resetApp()"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Start fresh — erase all my data</button>
+      <div class="reset-qp-hint" style="margin-top:7px">Wipes all bookings, client cards, prices and salon details on this device. Your purchase stays unlocked.</div>
     </div>
 
     <button class="adv-toggle" id="advToggle" onclick="toggleAdvSettings()"><i class="ti ti-settings"></i> Show advanced settings ▾</button>
@@ -3552,7 +3548,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.84 · erase btn in settings';
+var VERSION='app v1.85 · erase always visible';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
