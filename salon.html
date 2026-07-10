@@ -197,7 +197,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.28</div>
+    <div class="ver">salon v0.29</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -486,7 +486,7 @@
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.28';
+  var SHELL_V='v0.29';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{
@@ -672,6 +672,23 @@
   function activeGlow(){ return WAVE_COLOURS[activeColourKey()] || WAVE_COLOURS.gold; }
   function activeBoost(){ return WAVE_ALPHA_BOOST[activeColourKey()] || 1.0; }
 
+  /* Read intensity/freq prefs set by appt.html settings panel */
+  function waveIntensityMult(){
+    try{
+      var v=Number(JSON.parse(localStorage.getItem('cp_prefs')||'{}').waveIntensity);
+      /* 0=off  1=whisper(.4)  2=gentle(1.0 default)  3=vivid(2.2) */
+      return [0, 0.4, 1.0, 2.2][isNaN(v)?2:v] || 1.0;
+    }catch(e){return 1.0;}
+  }
+  /* Returns [minDelay, randomRange] in ms */
+  function waveFreqDelay(){
+    try{
+      var v=Number(JSON.parse(localStorage.getItem('cp_prefs')||'{}').waveFreq);
+      /* 0=rare  1=occasional(default)  2=regular */
+      return [[20000,25000],[8000,12000],[2500,6000]][isNaN(v)?1:v] || [8000,12000];
+    }catch(e){return [8000,12000];}
+  }
+
   function resize(){
     cv.width  = innerWidth;
     cv.height = innerHeight;
@@ -697,6 +714,9 @@
   var waves = [];
 
   function spawnWave(){
+    var fd=waveFreqDelay();
+    /* if intensity is off, keep rescheduling but don't spawn */
+    if(waveIntensityMult()===0){ setTimeout(spawnWave, fd[0]+Math.random()*fd[1]); return; }
     var el = document.getElementById('brandGlowIcon');
     if(!el){ setTimeout(spawnWave, 12000+Math.random()*16000); return; }
     var r   = el.getBoundingClientRect();
@@ -710,12 +730,12 @@
       dist:dist,
       glow: activeGlow(),                    /* colour at spawn time */
       belly:0.22+Math.random()*0.42,
-      alpha:(0.018+Math.random()*0.022)*activeBoost(), /* perceptual balance */
+      alpha:(0.018+Math.random()*0.022)*activeBoost()*waveIntensityMult(), /* perceptual balance */
       period:(10+Math.random()*12)*1000,     /* ms */
       hold:  (1+Math.random()*3)*1000,
       born:  performance.now()
     });
-    setTimeout(spawnWave, 8000+Math.random()*20000);
+    var fd=waveFreqDelay(); setTimeout(spawnWave, fd[0]+Math.random()*fd[1]);
   }
 
   setTimeout(spawnWave, 2000+Math.random()*3000);

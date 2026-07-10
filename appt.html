@@ -145,6 +145,37 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 .tab{padding:8px 14px;border-radius:7px;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;white-space:nowrap;font-weight:500;flex:1;text-align:center}
 .tab.active{background:var(--bg3);color:var(--gold);font-weight:600;border:1px solid var(--gold-border)}
 .tab i{font-size:14px;vertical-align:-2px;margin-right:5px}
+
+/* ── Add tab: gentle dance to invite first tap ── */
+@keyframes addTabDance{
+  0%,55%,100%{transform:translateY(0) rotate(0deg) scale(1)}
+  8%  {transform:translateY(-6px) rotate(-7deg) scale(1.13)}
+  18% {transform:translateY(-9px) rotate(6deg)  scale(1.16)}
+  27% {transform:translateY(-5px) rotate(-4deg) scale(1.10)}
+  37% {transform:translateY(-8px) rotate(5deg)  scale(1.14)}
+  46% {transform:translateY(-2px) rotate(-2deg) scale(1.05)}
+}
+@keyframes addIconSpin{
+  0%,55%,100%{transform:rotate(0deg)}
+  8%  {transform:rotate(-28deg)}
+  28% {transform:rotate(22deg)}
+  46% {transform:rotate(-9deg)}
+}
+.tab[data-view="add"]:not(.active){
+  animation:addTabDance 3.8s cubic-bezier(.36,1.2,.64,1) infinite;
+  transform-origin:center bottom;
+}
+.tab[data-view="add"]:not(.active) i{
+  display:inline-block;
+  animation:addIconSpin 3.8s cubic-bezier(.36,1.2,.64,1) infinite;
+}
+/* quick gold flash on tap */
+@keyframes addTabTap{
+  0%  {box-shadow:0 0 0 0 rgba(255,184,0,.85);transform:scale(1.2)}
+  70% {box-shadow:0 0 22px 10px rgba(255,184,0,.0);transform:scale(1.04)}
+  100%{transform:scale(1)}
+}
+.tab[data-view="add"].tapped{animation:addTabTap .42s cubic-bezier(.36,1.2,.64,1) forwards!important}
 @media(max-width:430px){.tab{padding:8px 6px;font-size:12px}.tab i{margin-right:4px;font-size:13px}}
 
 .view{display:none}.view.active{display:block}
@@ -1192,6 +1223,21 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <button class="glow-chip" id="gs6" onclick="glowSetSpeed(6,this)">Energetic<br><small style="opacity:.5">1.2 s</small></button>
     </div>
 
+    <!-- Colour wave shoot-out controls -->
+    <div class="glow-chip-label">✦ Colour wave — intensity</div>
+    <div class="glow-chips" id="waveIntensityChips">
+      <button class="glow-chip" id="wi0" onclick="waveSetIntensity(0,this)">Off</button>
+      <button class="glow-chip" id="wi1" onclick="waveSetIntensity(1,this)">Whisper</button>
+      <button class="glow-chip gc-active" id="wi2" onclick="waveSetIntensity(2,this)">Gentle</button>
+      <button class="glow-chip" id="wi3" onclick="waveSetIntensity(3,this)">Vivid</button>
+    </div>
+    <div class="glow-chip-label">✦ Colour wave — frequency</div>
+    <div class="glow-chips" id="waveFreqChips">
+      <button class="glow-chip" id="wf0" onclick="waveSetFreq(0,this)">Rare<br><small style="opacity:.5">~35 s</small></button>
+      <button class="glow-chip gc-active" id="wf1" onclick="waveSetFreq(1,this)">Occasional<br><small style="opacity:.5">~14 s</small></button>
+      <button class="glow-chip" id="wf2" onclick="waveSetFreq(2,this)">Regular<br><small style="opacity:.5">~6 s</small></button>
+    </div>
+
     <div class="set-sec adv-sec">My trade</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Tap your trade — it switches instantly. Your booking &amp; price screens tailor themselves to it.</div>
     <div class="set-trade-grid" id="setTradeGrid"></div>
@@ -2088,7 +2134,83 @@ function stLabel(s){return {confirmed:'Confirmed',done:'Done',noshow:'No-show',c
 /* ===== ADD / EDIT ===== */
 var editingId=null;
 var priceManual=false;
+/* ── Starburst: fires when + Add is tapped ──
+   Canvas overlay, gravity-driven particles, auto-removes. ── */
+function _starBurst(){
+  var btn=document.querySelector('.tab[data-view="add"]');
+  /* tap flash class */
+  if(btn){btn.classList.add('tapped');setTimeout(function(){btn.classList.remove('tapped');},500);}
+  var r=btn?btn.getBoundingClientRect():{left:innerWidth*.3,top:innerHeight*.88,width:60,height:36};
+  var ox=r.left+r.width/2, oy=r.top+r.height/2;
+  var cv=document.createElement('canvas');
+  cv.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:9998;';
+  cv.width=innerWidth;cv.height=innerHeight;
+  document.body.appendChild(cv);
+  var ctx=cv.getContext('2d');
+  var COLS=['#FFB800','#FF8A00','#67E8F9','#A78BFA','#F5A8FF','#34EFB5','#FF6B9D','#FFF176','#FFFFFF'];
+  var parts=[];
+  var N=72;
+  for(var i=0;i<N;i++){
+    var angle=(i/N)*Math.PI*2+Math.random()*.25;
+    var spd=4+Math.random()*11;
+    var isStar=Math.random()>.38;
+    parts.push({
+      x:ox,y:oy,
+      vx:Math.cos(angle)*spd,
+      vy:Math.sin(angle)*spd-Math.random()*4,/* slight upward bias */
+      r:isStar?(3+Math.random()*6):(2+Math.random()*4),
+      col:COLS[Math.floor(Math.random()*COLS.length)],
+      life:1,decay:.013+Math.random()*.016,
+      star:isStar,rot:Math.random()*Math.PI*2,
+      rotV:(Math.random()-.5)*.22,
+      trail:[]
+    });
+  }
+  function drawStar(cx2,cy2,r,rot){
+    ctx.save();ctx.translate(cx2,cy2);ctx.rotate(rot);
+    ctx.beginPath();
+    for(var p=0;p<5;p++){
+      var oa=(p/5)*Math.PI*2-Math.PI/2;
+      var ia=oa+Math.PI/5;
+      if(p===0)ctx.moveTo(Math.cos(oa)*r,Math.sin(oa)*r);
+      else ctx.lineTo(Math.cos(oa)*r,Math.sin(oa)*r);
+      ctx.lineTo(Math.cos(ia)*r*.42,Math.sin(ia)*r*.42);
+    }
+    ctx.closePath();ctx.restore();
+  }
+  var raf;
+  function tick(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    var alive=false;
+    parts.forEach(function(p){
+      p.x+=p.vx;p.y+=p.vy;
+      p.vy+=0.28;/* gravity */
+      p.vx*=.984;
+      p.life-=p.decay;
+      p.rot+=p.rotV;
+      if(p.life<=0)return;
+      alive=true;
+      ctx.globalAlpha=Math.max(0,p.life);
+      ctx.fillStyle=p.col;
+      if(p.star){
+        drawStar(p.x,p.y,p.r*(0.55+p.life*.45),p.rot);
+        ctx.fill();
+        /* inner white core */
+        ctx.fillStyle='rgba(255,255,255,'+Math.min(1,p.life*1.4)+')';
+        drawStar(p.x,p.y,p.r*.28,p.rot);ctx.fill();
+      }else{
+        ctx.beginPath();ctx.arc(p.x,p.y,p.r*(.4+p.life*.6),0,Math.PI*2);ctx.fill();
+      }
+    });
+    ctx.globalAlpha=1;
+    if(alive)raf=requestAnimationFrame(tick);
+    else{cancelAnimationFrame(raf);cv.remove();}
+  }
+  raf=requestAnimationFrame(tick);
+}
+
 function openAdd(){
+  _starBurst();
   editingId=null;priceManual=false;
   $('addTitle').textContent='New appointment';
   $('editExtra').style.display='none';
@@ -2904,7 +3026,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.27 · glow engine removed from appt, controls only — salon.html does the glow';
+var VERSION='v5.29 · Wave intensity + frequency controls in settings';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4074,6 +4196,49 @@ window.addEventListener('message',function(ev){
     gSpeedIdx=idx;saveGlowPrefs();
   };
   function init(){loadGlowPrefs();syncGlowChips();}
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
+})();
+
+/* ── Wave shoot-out settings — intensity & frequency ── */
+(function(){
+  /* 0=off  1=whisper  2=gentle(default)  3=vivid */
+  var wIntensity=2;
+  /* 0=rare  1=occasional(default)  2=regular */
+  var wFreq=1;
+
+  function saveWavePrefs(){
+    try{
+      var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
+      p.waveIntensity=wIntensity;
+      p.waveFreq=wFreq;
+      localStorage.setItem('cp_prefs',JSON.stringify(p));
+      window.dispatchEvent(new StorageEvent('storage',{key:'cp_prefs'}));
+    }catch(e){}
+  }
+  function loadWavePrefs(){
+    try{
+      var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
+      if(p.waveIntensity!=null)wIntensity=Number(p.waveIntensity);
+      if(p.waveFreq!=null)wFreq=Number(p.waveFreq);
+    }catch(e){}
+  }
+  function syncWaveChips(){
+    document.querySelectorAll('#waveIntensityChips .glow-chip').forEach(function(b){b.classList.remove('gc-active');});
+    var wi=document.getElementById('wi'+wIntensity);if(wi)wi.classList.add('gc-active');
+    document.querySelectorAll('#waveFreqChips .glow-chip').forEach(function(b){b.classList.remove('gc-active');});
+    var wf=document.getElementById('wf'+wFreq);if(wf)wf.classList.add('gc-active');
+  }
+  window.waveSetIntensity=function(idx,btn){
+    document.querySelectorAll('#waveIntensityChips .glow-chip').forEach(function(b){b.classList.remove('gc-active');});
+    if(btn)btn.classList.add('gc-active');
+    wIntensity=idx;saveWavePrefs();
+  };
+  window.waveSetFreq=function(idx,btn){
+    document.querySelectorAll('#waveFreqChips .glow-chip').forEach(function(b){b.classList.remove('gc-active');});
+    if(btn)btn.classList.add('gc-active');
+    wFreq=idx;saveWavePrefs();
+  };
+  function init(){loadWavePrefs();syncWaveChips();}
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
 })();
 initFB();
