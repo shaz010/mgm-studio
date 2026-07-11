@@ -2485,6 +2485,19 @@ function openDebug(){
     else{L.push('** _ap_prices EMPTY **');}
     var _se=localStorage.getItem('_ap_seedErr');
     if(_se){L.push('>> seed error: '+_se);}
+    /* Total localStorage size */
+    try{
+      var _ts=0;for(var _k in localStorage){if(Object.prototype.hasOwnProperty.call(localStorage,_k)){_ts+=(_k.length+(localStorage.getItem(_k)||'').length)*2;}}
+      L.push('total localStorage: '+Math.round(_ts/1024)+'KB');
+    }catch(_te){}
+    /* New-key write test (3KB payload — same size as price seed) */
+    try{
+      var _payload=new Array(1500).join('ab'); /* ~3KB */
+      localStorage.setItem('_ap_newKeyTest',_payload);
+      var _chk=localStorage.getItem('_ap_newKeyTest');
+      localStorage.removeItem('_ap_newKeyTest');
+      L.push('new-key write test (3KB): '+(_chk&&_chk.length===_payload.length?'OK':'read-back mismatch'));
+    }catch(_nke){L.push('new-key write test FAILED: '+_nke.message);}
   }catch(e){L.push('** error reading prices: '+e.message+' **');}
   L.push('');
   L.push('-- Trade state --');
@@ -3124,7 +3137,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.43 · Prices stored in dedicated _ap_prices key — immune to cp_prefs overwrites';
+var VERSION='v5.44 · Diagnostics: storage size + new-key write test';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
