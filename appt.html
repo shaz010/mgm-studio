@@ -3076,7 +3076,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.36 · Glow+wave chips wired via window.* onclick (bypasses iOS iframe display:none listener bug)';
+var VERSION='v5.37 · Price seed guard fixed (>=20 threshold); Force Update clears SW cache';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4147,7 +4147,7 @@ window.addEventListener('message',function(ev){
 (function seedPrices(){
   try{
     var cp=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
-    if(cp.prices&&Object.keys(cp.prices).length)return; /* already have prices */
+    if(cp.prices&&Object.keys(cp.prices).length>=20)return; /* already have a full price list */
     cp.prices={
       /* ── HAIR — Women · Cuts ── */
       "Women's Haircut":85,"Bang Trim":25,"Trim / Dusting":55,"Bob Cut":90,
