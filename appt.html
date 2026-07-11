@@ -48,16 +48,20 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 .topbar-icon{width:38px;height:38px;background:var(--gold-dim);border:1.5px solid var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px;flex-shrink:0}
 /* ── Breathing Glow controls (Appearance section) ── */
 .glow-chip-label{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin:14px 0 7px}
+.chip-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle;flex-shrink:0;opacity:.75}
+.glow-section-head{margin:20px 0 2px;padding:10px 0 7px;border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:8px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.28)}
+.glow-section-head::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.1),transparent)}
 .glow-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
-.glow-chip{padding:6px 14px;border-radius:50px;font-size:12px;font-weight:500;letter-spacing:.2px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);cursor:pointer;transition:all .18s;-webkit-tap-highlight-color:transparent;white-space:nowrap;line-height:1.35;text-align:center;font-family:inherit;touch-action:manipulation}
-.glow-chip:active{opacity:.65}
-.glow-chip.gc-active{background:rgba(255,255,255,.13);color:#fff;border-color:rgba(255,255,255,.3)}
-.glow-chip.gc-gold.gc-active{border-color:#ffd166;color:#ffd166;background:rgba(255,193,68,.13);box-shadow:0 0 10px rgba(255,193,68,.3)}
-.glow-chip.gc-purple.gc-active{border-color:#c77dff;color:#c77dff;background:rgba(180,90,255,.13);box-shadow:0 0 10px rgba(180,90,255,.3)}
-.glow-chip.gc-rose.gc-active{border-color:#ff6b9d;color:#ff6b9d;background:rgba(255,80,130,.13);box-shadow:0 0 10px rgba(255,80,130,.3)}
-.glow-chip.gc-cyan.gc-active{border-color:#06d6e0;color:#06d6e0;background:rgba(6,214,224,.13);box-shadow:0 0 10px rgba(6,214,224,.3)}
-.glow-off-chip{padding:6px 14px;border-radius:50px;font-size:12px;font-weight:500;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:rgba(255,255,255,.3);cursor:pointer;transition:all .18s;-webkit-tap-highlight-color:transparent;font-family:inherit}
-.glow-off-chip.gc-active{background:rgba(255,255,255,.09);color:#fff;border-color:rgba(255,255,255,.28)}
+.glow-chip{padding:7px 15px;border-radius:50px;font-size:12px;font-weight:500;letter-spacing:.2px;border:1.5px solid rgba(255,255,255,.12);background:linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.03));color:rgba(255,255,255,.5);cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);-webkit-tap-highlight-color:transparent;white-space:nowrap;line-height:1.35;text-align:center;font-family:inherit;touch-action:manipulation}
+.glow-chip:active{transform:scale(.94);opacity:.7}
+.glow-chip:not(.gc-active):hover{border-color:rgba(255,255,255,.22);color:rgba(255,255,255,.75)}
+.glow-chip.gc-active{background:linear-gradient(135deg,rgba(255,255,255,.2),rgba(255,255,255,.09));color:#fff;border-color:rgba(255,255,255,.38);transform:scale(1.05);box-shadow:0 3px 14px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.18)}
+.glow-chip.gc-gold.gc-active{background:linear-gradient(135deg,rgba(255,200,68,.32),rgba(255,140,0,.12));border-color:#ffd166;color:#ffd166;box-shadow:0 0 18px rgba(255,193,68,.45),0 3px 10px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,220,80,.25);transform:scale(1.05)}
+.glow-chip.gc-purple.gc-active{background:linear-gradient(135deg,rgba(180,90,255,.32),rgba(130,60,220,.12));border-color:#c77dff;color:#c77dff;box-shadow:0 0 18px rgba(180,90,255,.45),0 3px 10px rgba(0,0,0,.3),inset 0 1px 0 rgba(199,125,255,.25);transform:scale(1.05)}
+.glow-chip.gc-rose.gc-active{background:linear-gradient(135deg,rgba(255,80,130,.32),rgba(220,60,100,.12));border-color:#ff6b9d;color:#ff6b9d;box-shadow:0 0 18px rgba(255,80,130,.45),0 3px 10px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,160,190,.25);transform:scale(1.05)}
+.glow-chip.gc-cyan.gc-active{background:linear-gradient(135deg,rgba(6,214,224,.32),rgba(0,170,190,.12));border-color:#06d6e0;color:#06d6e0;box-shadow:0 0 18px rgba(6,214,224,.45),0 3px 10px rgba(0,0,0,.3),inset 0 1px 0 rgba(100,240,250,.25);transform:scale(1.05)}
+.glow-off-chip{padding:7px 15px;border-radius:50px;font-size:12px;font-weight:500;border:1.5px solid rgba(255,80,80,.18);background:rgba(255,50,50,.06);color:rgba(255,110,110,.45);cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);-webkit-tap-highlight-color:transparent;font-family:inherit}
+.glow-off-chip.gc-active{background:rgba(255,60,60,.18);color:#ff7070;border-color:rgba(255,80,80,.45);box-shadow:0 0 14px rgba(255,60,60,.25);transform:scale(1.05)}
 .topbar-name{font-family:'DM Serif Display',Georgia,'Times New Roman',serif;font-size:21px;font-weight:400;letter-spacing:.3px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.topbar-name span{color:var(--gold)}
 .topbar-sub{font-size:12px;color:var(--muted);margin-top:2px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sync-badge{font-size:12px;padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:6px;font-weight:500;background:#0a2a14;border:1.5px solid #2a7a3a;color:#5ddb7c}
@@ -1256,22 +1260,37 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <!-- Breathing glow controls -->
     <!-- _gc/_gs/_wi/_wf: standalone globals — no IIFE dependency, called directly from onclick -->
     <script>
+    /* ── Add button breathing controls (independent — do NOT affect salon.html) ── */
     function _gc(key,el){
-      var bs=document.querySelectorAll('#glowColourChips .glow-chip,#glowColourChips .glow-off-chip');
+      var bs=document.querySelectorAll('#heartColourChips .glow-chip,#heartColourChips .glow-off-chip');
+      for(var i=0;i<bs.length;i++)bs[i].classList.remove('gc-active');
+      el.classList.add('gc-active');
+      try{localStorage.setItem('ap_heartColour',key);}catch(e){}
+      try{if(typeof applyHeartGlowPrefs==='function')applyHeartGlowPrefs();}catch(e){}
+    }
+    function _gs(idx,el){
+      var bs=document.querySelectorAll('#heartSpeedChips .glow-chip');
+      for(var i=0;i<bs.length;i++)bs[i].classList.remove('gc-active');
+      el.classList.add('gc-active');
+      try{localStorage.setItem('ap_heartSpeedIdx',String(idx));}catch(e){}
+      try{if(typeof applyHeartGlowPrefs==='function')applyHeartGlowPrefs();}catch(e){}
+    }
+    /* ── Your Salon shell glow controls (affect salon.html via postMessage) ── */
+    function _ysCol(key,el){
+      var bs=document.querySelectorAll('#ysColourChips .glow-chip,#ysColourChips .glow-off-chip');
       for(var i=0;i<bs.length;i++)bs[i].classList.remove('gc-active');
       el.classList.add('gc-active');
       try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.glowColour=key;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}
       try{window.parent.postMessage({cpPrefsChanged:true,glowColour:key},'*');}catch(e){}
-      try{if(typeof applyHeartGlowPrefs==='function')applyHeartGlowPrefs();}catch(e){}
     }
-    function _gs(idx,el){
-      var bs=document.querySelectorAll('#glowSpeedChips .glow-chip');
+    function _ysSpd(idx,el){
+      var bs=document.querySelectorAll('#ysSpeedChips .glow-chip');
       for(var i=0;i<bs.length;i++)bs[i].classList.remove('gc-active');
       el.classList.add('gc-active');
       try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.glowSpeedIdx=idx;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}
       try{window.parent.postMessage({cpPrefsChanged:true,glowSpeedIdx:idx},'*');}catch(e){}
-      try{if(typeof applyHeartGlowPrefs==='function')applyHeartGlowPrefs();}catch(e){}
     }
+    /* ── Colour wave (Your Salon shell) ── */
     function _wi(idx,el){
       var bs=document.querySelectorAll('#waveIntensityChips .glow-chip');
       for(var i=0;i<bs.length;i++)bs[i].classList.remove('gc-active');
@@ -1287,17 +1306,19 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       try{window.parent.postMessage({cpPrefsChanged:true,waveFreq:idx},'*');}catch(e){}
     }
     </script>
-    <div class="glow-chip-label">✦ Breathing glow — colour</div>
-    <div class="glow-chips" id="glowColourChips">
-      <button type="button" class="glow-chip gc-active" id="gcAuto" onclick="_gc('auto',this)">✦ All colours</button>
-      <button type="button" class="glow-chip gc-gold" id="gcGold" onclick="_gc('gold',this)">Gold</button>
-      <button type="button" class="glow-chip gc-purple" id="gcPurple" onclick="_gc('purple',this)">Purple</button>
-      <button type="button" class="glow-chip gc-rose" id="gcRose" onclick="_gc('rose',this)">Rose</button>
-      <button type="button" class="glow-chip gc-cyan" id="gcCyan" onclick="_gc('cyan',this)">Cyan</button>
+    <!-- ── Add appointment button — breathing ── -->
+    <div class="glow-section-head">💛 Add appointment button</div>
+    <div class="glow-chip-label">Breathing colour</div>
+    <div class="glow-chips" id="heartColourChips">
+      <button type="button" class="glow-chip gc-active" id="gcAuto" onclick="_gc('auto',this)">✦ Auto</button>
+      <button type="button" class="glow-chip gc-gold" id="gcGold" onclick="_gc('gold',this)"><span class="chip-dot" style="background:#ffd166"></span>Gold</button>
+      <button type="button" class="glow-chip gc-purple" id="gcPurple" onclick="_gc('purple',this)"><span class="chip-dot" style="background:#c77dff"></span>Purple</button>
+      <button type="button" class="glow-chip gc-rose" id="gcRose" onclick="_gc('rose',this)"><span class="chip-dot" style="background:#ff6b9d"></span>Rose</button>
+      <button type="button" class="glow-chip gc-cyan" id="gcCyan" onclick="_gc('cyan',this)"><span class="chip-dot" style="background:#06d6e0"></span>Cyan</button>
       <button type="button" class="glow-off-chip" id="gcOff" onclick="_gc('off',this)">Off</button>
     </div>
-    <div class="glow-chip-label">✦ Breathing glow — speed</div>
-    <div class="glow-chips" id="glowSpeedChips">
+    <div class="glow-chip-label">Breathing speed</div>
+    <div class="glow-chips" id="heartSpeedChips">
       <button type="button" class="glow-chip" id="gs0" onclick="_gs(0,this)">Cosmic<br><small style="opacity:.5">20 s</small></button>
       <button type="button" class="glow-chip" id="gs1" onclick="_gs(1,this)">Meditation<br><small style="opacity:.5">12 s</small></button>
       <button type="button" class="glow-chip" id="gs2" onclick="_gs(2,this)">Really slow<br><small style="opacity:.5">8 s</small></button>
@@ -1307,15 +1328,35 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <button type="button" class="glow-chip" id="gs6" onclick="_gs(6,this)">Energetic<br><small style="opacity:.5">1.2 s</small></button>
     </div>
 
-    <!-- Colour wave shoot-out controls -->
-    <div class="glow-chip-label">✦ Colour wave — intensity</div>
+    <!-- ── Your Salon shell glow ── -->
+    <div class="glow-section-head">✦ Your Salon shell</div>
+    <div class="glow-chip-label">Glow colour</div>
+    <div class="glow-chips" id="ysColourChips">
+      <button type="button" class="glow-chip gc-active" id="ysColAuto" onclick="_ysCol('auto',this)">✦ Auto</button>
+      <button type="button" class="glow-chip gc-gold" id="ysColGold" onclick="_ysCol('gold',this)"><span class="chip-dot" style="background:#ffd166"></span>Gold</button>
+      <button type="button" class="glow-chip gc-purple" id="ysColPurple" onclick="_ysCol('purple',this)"><span class="chip-dot" style="background:#c77dff"></span>Purple</button>
+      <button type="button" class="glow-chip gc-rose" id="ysColRose" onclick="_ysCol('rose',this)"><span class="chip-dot" style="background:#ff6b9d"></span>Rose</button>
+      <button type="button" class="glow-chip gc-cyan" id="ysColCyan" onclick="_ysCol('cyan',this)"><span class="chip-dot" style="background:#06d6e0"></span>Cyan</button>
+      <button type="button" class="glow-off-chip" id="ysColOff" onclick="_ysCol('off',this)">Off</button>
+    </div>
+    <div class="glow-chip-label">Glow speed</div>
+    <div class="glow-chips" id="ysSpeedChips">
+      <button type="button" class="glow-chip" id="ysSpd0" onclick="_ysSpd(0,this)">Cosmic<br><small style="opacity:.5">20 s</small></button>
+      <button type="button" class="glow-chip" id="ysSpd1" onclick="_ysSpd(1,this)">Meditation<br><small style="opacity:.5">12 s</small></button>
+      <button type="button" class="glow-chip" id="ysSpd2" onclick="_ysSpd(2,this)">Really slow<br><small style="opacity:.5">8 s</small></button>
+      <button type="button" class="glow-chip" id="ysSpd3" onclick="_ysSpd(3,this)">Slow<br><small style="opacity:.5">5 s</small></button>
+      <button type="button" class="glow-chip gc-active" id="ysSpd4" onclick="_ysSpd(4,this)">Natural<br><small style="opacity:.5">3.5 s</small></button>
+      <button type="button" class="glow-chip" id="ysSpd5" onclick="_ysSpd(5,this)">Lively<br><small style="opacity:.5">2 s</small></button>
+      <button type="button" class="glow-chip" id="ysSpd6" onclick="_ysSpd(6,this)">Energetic<br><small style="opacity:.5">1.2 s</small></button>
+    </div>
+    <div class="glow-chip-label">Colour wave — intensity</div>
     <div class="glow-chips" id="waveIntensityChips">
       <button type="button" class="glow-chip" id="wi0" onclick="_wi(0,this)">Off</button>
       <button type="button" class="glow-chip" id="wi1" onclick="_wi(1,this)">Whisper</button>
       <button type="button" class="glow-chip gc-active" id="wi2" onclick="_wi(2,this)">Gentle</button>
       <button type="button" class="glow-chip" id="wi3" onclick="_wi(3,this)">Vivid</button>
     </div>
-    <div class="glow-chip-label">✦ Colour wave — frequency</div>
+    <div class="glow-chip-label">Colour wave — frequency</div>
     <div class="glow-chips" id="waveFreqChips">
       <button type="button" class="glow-chip" id="wf0" onclick="_wf(0,this)">Rare<br><small style="opacity:.5">~35 s</small></button>
       <button type="button" class="glow-chip gc-active" id="wf1" onclick="_wf(1,this)">Occasional<br><small style="opacity:.5">~14 s</small></button>
@@ -3139,7 +3180,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.47 · heartbeat guard fix — Add button now breathes on empty day';
+var VERSION='v5.48 · split controls — Add button breathing independent from Your Salon glow';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4216,46 +4257,41 @@ window.addEventListener('message',function(ev){
   }
 });
 /* seedPrices moved to own isolated <script> block below main IIFE */
-/* ── Glow settings panel — saves prefs, syncs chips, salon.html does the actual glow ── */
+/* ── Glow settings panel — separate keys for Add button vs Your Salon shell ── */
 (function(){
-  var gColour='auto',gSpeedIdx=4;
-  function saveGlowPrefs(){
+  /* --- Add button breathing prefs (stored in ap_heartColour / ap_heartSpeedIdx) --- */
+  var hColour='auto',hSpeedIdx=4;
+  function loadHeartPrefs(){
+    try{var c=localStorage.getItem('ap_heartColour');if(c!=null)hColour=c;}catch(e){}
+    try{var s=localStorage.getItem('ap_heartSpeedIdx');if(s!=null)hSpeedIdx=Number(s);}catch(e){}
+  }
+  function syncHeartChips(){
+    var cm={auto:'gcAuto',gold:'gcGold',purple:'gcPurple',rose:'gcRose',cyan:'gcCyan',off:'gcOff'};
+    document.querySelectorAll('#heartColourChips .glow-chip,#heartColourChips .glow-off-chip').forEach(function(b){b.classList.remove('gc-active');});
+    var c=document.getElementById(cm[hColour]);if(c)c.classList.add('gc-active');
+    document.querySelectorAll('#heartSpeedChips .glow-chip').forEach(function(b){b.classList.remove('gc-active');});
+    var s=document.getElementById('gs'+hSpeedIdx);if(s)s.classList.add('gc-active');
+  }
+  /* --- Your Salon shell prefs (stored in cp_prefs.glowColour / glowSpeedIdx) --- */
+  function syncYSChips(){
     try{
       var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
-      p.glowColour=gColour;p.glowSpeedIdx=gSpeedIdx;
-      localStorage.setItem('cp_prefs',JSON.stringify(p));
-      /* iOS Safari doesn't reliably fire storage events in the parent from an iframe.
-         postMessage is the guaranteed cross-frame signal. Values are included so
-         salon.html can apply them immediately without re-reading localStorage.      */
-      try{window.parent.postMessage({cpPrefsChanged:true,glowColour:gColour,glowSpeedIdx:gSpeedIdx},'*');}catch(_){}
+      var ysCol=p.glowColour||'auto';
+      var ysSpd=p.glowSpeedIdx!=null?Number(p.glowSpeedIdx):4;
+      var cm={auto:'ysColAuto',gold:'ysColGold',purple:'ysColPurple',rose:'ysColRose',cyan:'ysColCyan',off:'ysColOff'};
+      document.querySelectorAll('#ysColourChips .glow-chip,#ysColourChips .glow-off-chip').forEach(function(b){b.classList.remove('gc-active');});
+      var c=document.getElementById(cm[ysCol]);if(c)c.classList.add('gc-active');
+      document.querySelectorAll('#ysSpeedChips .glow-chip').forEach(function(b){b.classList.remove('gc-active');});
+      var s=document.getElementById('ysSpd'+ysSpd);if(s)s.classList.add('gc-active');
     }catch(e){}
   }
-  function loadGlowPrefs(){
-    try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');if(p.glowColour!=null)gColour=p.glowColour;if(p.glowSpeedIdx!=null)gSpeedIdx=Number(p.glowSpeedIdx);}catch(e){}
-  }
-  function syncGlowChips(){
-    var cm={auto:'gcAuto',gold:'gcGold',purple:'gcPurple',rose:'gcRose',cyan:'gcCyan',off:'gcOff'};
-    document.querySelectorAll('#glowColourChips .glow-chip,#glowColourChips .glow-off-chip').forEach(function(b){b.classList.remove('gc-active');});
-    var c=document.getElementById(cm[gColour]);if(c)c.classList.add('gc-active');
-    document.querySelectorAll('#glowSpeedChips .glow-chip').forEach(function(b){b.classList.remove('gc-active');});
-    var s=document.getElementById('gs'+gSpeedIdx);if(s)s.classList.add('gc-active');
-  }
-  window.glowSetColour=function(key,btn){
-    document.querySelectorAll('#glowColourChips .glow-chip,#glowColourChips .glow-off-chip').forEach(function(b){b.classList.remove('gc-active');});
-    if(btn)btn.classList.add('gc-active');
-    gColour=key;saveGlowPrefs();
-    try{if(typeof applyHeartGlowPrefs==='function')applyHeartGlowPrefs();}catch(e){}
-  };
-  window.glowSetSpeed=function(idx,btn){
-    document.querySelectorAll('#glowSpeedChips .glow-chip').forEach(function(b){b.classList.remove('gc-active');});
-    if(btn)btn.classList.add('gc-active');
-    gSpeedIdx=idx;saveGlowPrefs();
-    try{if(typeof applyHeartGlowPrefs==='function')applyHeartGlowPrefs();}catch(e){}
-  };
-  /* Called by openSettings() to keep chips in sync with saved prefs on every open */
-  window.apptSyncGlowPrefs=function(){loadGlowPrefs();syncGlowChips();};
-  /* Load saved prefs + sync chip active states on DOMContentLoaded */
-  function init(){loadGlowPrefs();syncGlowChips();}
+  /* Called by openSettings() to keep all chips in sync on every open */
+  window.apptSyncGlowPrefs=function(){loadHeartPrefs();syncHeartChips();syncYSChips();};
+  /* Legacy stubs (kept in case referenced elsewhere) */
+  window.glowSetColour=function(key){try{localStorage.setItem('ap_heartColour',key);}catch(e){}try{if(typeof applyHeartGlowPrefs==='function')applyHeartGlowPrefs();}catch(e){}};
+  window.glowSetSpeed=function(idx){try{localStorage.setItem('ap_heartSpeedIdx',String(idx));}catch(e){}try{if(typeof applyHeartGlowPrefs==='function')applyHeartGlowPrefs();}catch(e){}};
+  /* Init on DOMContentLoaded */
+  function init(){loadHeartPrefs();syncHeartChips();syncYSChips();}
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
 })();
 
@@ -4286,9 +4322,10 @@ window.addEventListener('message',function(ev){
 
   function readPrefs(){
     try{
-      var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
-      var key=p.glowColour||'auto';
-      var si=p.glowSpeedIdx!=null?Number(p.glowSpeedIdx):4;
+      /* Add button breathing uses its own independent keys */
+      var key=localStorage.getItem('ap_heartColour')||'auto';
+      var rawSi=localStorage.getItem('ap_heartSpeedIdx');
+      var si=rawSi!=null?Number(rawSi):4;
       PERIOD=SPEED_MAP[Math.max(0,Math.min(6,si))];
       if(key==='off'){heartOff=true;isAuto=false;}
       else if(key==='auto'){heartOff=false;isAuto=true;curPal=CPALS[AUTO_SEQ[autoIdx%4]];}
