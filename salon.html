@@ -197,7 +197,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.32</div>
+    <div class="ver">salon v0.33</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -486,7 +486,7 @@
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.32';
+  var SHELL_V='v0.33';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{
@@ -616,6 +616,17 @@
   }
 
   loadPrefs();startCycle();startBreath();
+
+  /* Pause glow RAF when tab goes to background — saves CPU/heat on iPhone */
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden){
+      if(gRaf){cancelAnimationFrame(gRaf);gRaf=null;}
+      if(gCycleTimer){clearInterval(gCycleTimer);gCycleTimer=null;}
+    } else {
+      gStart=null; /* reset so breath resumes smoothly */
+      startCycle();startBreath();
+    }
+  });
 
   /* Live-update when appt.html settings panel saves new prefs */
   window.addEventListener('storage',function(e){
@@ -834,6 +845,14 @@
       _waveRafOn=false;             /* nothing to draw — go idle, save CPU/heat */
     }
   }
+  /* Pause wave RAF when tab goes to background; drain active waves on return */
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden){
+      waves=[];      /* drop in-flight waves — clean slate when user returns */
+      _waveRafOn=false;
+    }
+    /* on return, spawnWave loop is already running via setTimeout — nothing to restart */
+  });
   /* Loop starts only when the first wave spawns (see spawnWave above) */
 })();
 </script>
