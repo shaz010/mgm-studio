@@ -46,7 +46,7 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 /* ── Breathing Glow controls (Appearance section) ── */
 .glow-chip-label{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin:14px 0 7px}
 .glow-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
-.glow-chip{padding:6px 14px;border-radius:50px;font-size:12px;font-weight:500;letter-spacing:.2px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);cursor:pointer;transition:all .18s;-webkit-tap-highlight-color:transparent;white-space:nowrap;line-height:1.35;text-align:center;font-family:inherit}
+.glow-chip{padding:6px 14px;border-radius:50px;font-size:12px;font-weight:500;letter-spacing:.2px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);cursor:pointer;transition:all .18s;-webkit-tap-highlight-color:transparent;white-space:nowrap;line-height:1.35;text-align:center;font-family:inherit;touch-action:manipulation}
 .glow-chip:active{opacity:.65}
 .glow-chip.gc-active{background:rgba(255,255,255,.13);color:#fff;border-color:rgba(255,255,255,.3)}
 .glow-chip.gc-gold.gc-active{border-color:#ffd166;color:#ffd166;background:rgba(255,193,68,.13);box-shadow:0 0 10px rgba(255,193,68,.3)}
@@ -3076,7 +3076,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.32 · Fix settings chips + Trichology Colour Wheel tab';
+var VERSION='v5.33 · Glow+wave chips always in sync on settings open';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3116,6 +3116,8 @@ function openSettings(){
   (function(){var parts=VERSION.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';$('setVersion').innerHTML='AppointmentPro · <span style="color:#f5f5fa;font-weight:800">'+ver+'</span>'+rest;})();
   renderHours(true);
   syncBookingToggle();renderReqBadge();applyTheme();syncAwakeUI();
+  try{if(typeof apptSyncGlowPrefs==='function')apptSyncGlowPrefs();}catch(e){}
+  try{if(typeof apptSyncWavePrefs==='function')apptSyncWavePrefs();}catch(e){}
   try{renderSetTradeGrid();}catch(e){}
   $('settingsModal').classList.remove('show-adv');
   $('settingsModal').classList.add('show');
@@ -4228,8 +4230,9 @@ window.addEventListener('message',function(ev){
       p.glowColour=gColour;p.glowSpeedIdx=gSpeedIdx;
       localStorage.setItem('cp_prefs',JSON.stringify(p));
       /* iOS Safari doesn't reliably fire storage events in the parent from an iframe.
-         postMessage is the guaranteed cross-frame signal.                             */
-      try{window.parent.postMessage({cpPrefsChanged:true},'*');}catch(_){}
+         postMessage is the guaranteed cross-frame signal. Values are included so
+         salon.html can apply them immediately without re-reading localStorage.      */
+      try{window.parent.postMessage({cpPrefsChanged:true,glowColour:gColour,glowSpeedIdx:gSpeedIdx},'*');}catch(_){}
     }catch(e){}
   }
   function loadGlowPrefs(){
@@ -4252,6 +4255,8 @@ window.addEventListener('message',function(ev){
     if(btn)btn.classList.add('gc-active');
     gSpeedIdx=idx;saveGlowPrefs();
   };
+  /* Called by openSettings() to keep chips in sync with saved prefs on every open */
+  window.apptSyncGlowPrefs=function(){loadGlowPrefs();syncGlowChips();};
   function init(){loadGlowPrefs();syncGlowChips();}
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
 })();
@@ -4386,7 +4391,7 @@ window.addEventListener('message',function(ev){
       p.waveIntensity=wIntensity;
       p.waveFreq=wFreq;
       localStorage.setItem('cp_prefs',JSON.stringify(p));
-      try{window.parent.postMessage({cpPrefsChanged:true},'*');}catch(_){}
+      try{window.parent.postMessage({cpPrefsChanged:true,waveIntensity:wIntensity,waveFreq:wFreq},'*');}catch(_){}
     }catch(e){}
   }
   function loadWavePrefs(){
@@ -4412,6 +4417,8 @@ window.addEventListener('message',function(ev){
     if(btn)btn.classList.add('gc-active');
     wFreq=idx;saveWavePrefs();
   };
+  /* Called by openSettings() to keep chips in sync with saved prefs on every open */
+  window.apptSyncWavePrefs=function(){loadWavePrefs();syncWaveChips();};
   function init(){loadWavePrefs();syncWaveChips();}
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
 })();
