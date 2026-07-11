@@ -153,8 +153,10 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 .tab.active{background:var(--bg3);color:var(--gold);font-weight:600;border:1px solid var(--gold-border)}
 .tab i{font-size:14px;vertical-align:-2px;margin-right:5px}
 
-/* ── Add tab: gentle dance to invite first tap ── */
-@keyframes addTabDance{
+/* ── Add tab: 4 rotating dance combos — JS cycles them every 8 s ── */
+.tab[data-view="add"]{transform-origin:center bottom}
+/* D1 jiggle bounce */
+@keyframes addD1{
   0%,55%,100%{transform:translateY(0) rotate(0deg) scale(1)}
   8%  {transform:translateY(-6px) rotate(-7deg) scale(1.13)}
   18% {transform:translateY(-9px) rotate(6deg)  scale(1.16)}
@@ -162,20 +164,77 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
   37% {transform:translateY(-8px) rotate(5deg)  scale(1.14)}
   46% {transform:translateY(-2px) rotate(-2deg) scale(1.05)}
 }
-@keyframes addIconSpin{
+/* D2 side shimmy */
+@keyframes addD2{
+  0%,52%,100%{transform:translateX(0) scale(1)}
+  7%  {transform:translateX(-8px) scale(1.08)}
+  17% {transform:translateX(9px)  scale(1.10)}
+  27% {transform:translateX(-6px) scale(1.06)}
+  37% {transform:translateX(5px)  scale(1.05)}
+  46% {transform:translateX(-2px) scale(1.02)}
+}
+/* D3 rubber band */
+@keyframes addD3{
+  0%,60%,100%{transform:scaleX(1) scaleY(1)}
+  10% {transform:scaleX(.74) scaleY(1.46)}
+  22% {transform:scaleX(1.36) scaleY(.72)}
+  33% {transform:scaleX(.9)  scaleY(1.18)}
+  43% {transform:scaleX(1.1) scaleY(.9)}
+  52% {transform:scaleX(.98) scaleY(1.03)}
+}
+/* D4 tada! */
+@keyframes addD4{
+  0%,60%,100%{transform:scale(1) rotate(0deg)}
+  4%  {transform:scale(.92) rotate(-3deg)}
+  10% {transform:scale(1.22) rotate(3deg)}
+  16% {transform:scale(1.22) rotate(-3deg)}
+  22% {transform:scale(1.22) rotate(3deg)}
+  28% {transform:scale(1.22) rotate(-3deg)}
+  34% {transform:scale(1.22) rotate(3deg)}
+  40% {transform:scale(1.12) rotate(0deg)}
+  50% {transform:scale(1.04) rotate(0deg)}
+}
+/* I1 tilt spin */
+@keyframes addI1{
   0%,55%,100%{transform:rotate(0deg)}
   8%  {transform:rotate(-28deg)}
   28% {transform:rotate(22deg)}
   46% {transform:rotate(-9deg)}
 }
-.tab[data-view="add"]:not(.active){
-  animation:addTabDance 3.8s cubic-bezier(.36,1.2,.64,1) infinite;
-  transform-origin:center bottom;
+/* I2 Y-axis flip */
+@keyframes addI2{
+  0%,52%,100%{transform:rotateY(0deg)}
+  14% {transform:rotateY(180deg)}
+  30% {transform:rotateY(360deg)}
+  40% {transform:rotateY(375deg)}
+  48% {transform:rotateY(360deg)}
 }
-.tab[data-view="add"]:not(.active) i{
-  display:inline-block;
-  animation:addIconSpin 3.8s cubic-bezier(.36,1.2,.64,1) infinite;
+/* I3 double heartbeat */
+@keyframes addI3{
+  0%,60%,100%{transform:scale(1)}
+  8%  {transform:scale(1.55)}
+  16% {transform:scale(1.1)}
+  24% {transform:scale(1.5)}
+  36% {transform:scale(1)}
+  48% {transform:scale(1.15)}
+  54% {transform:scale(1)}
 }
+/* I4 full 360 */
+@keyframes addI4{
+  0%,55%,100%{transform:rotate(0deg)}
+  15% {transform:rotate(360deg)}
+  30% {transform:rotate(360deg)}
+  40% {transform:rotate(390deg)}
+  48% {transform:rotate(360deg)}
+}
+.tab[data-view="add"]:not(.active).add-d1{animation:addD1 4s   cubic-bezier(.36,1.2,.64,1) infinite}
+.tab[data-view="add"]:not(.active).add-d2{animation:addD2 3.6s ease-in-out infinite}
+.tab[data-view="add"]:not(.active).add-d3{animation:addD3 3.8s ease-in-out infinite}
+.tab[data-view="add"]:not(.active).add-d4{animation:addD4 4.2s ease-in-out infinite}
+.tab[data-view="add"]:not(.active) i.add-i1{display:inline-block;animation:addI1 4s   cubic-bezier(.36,1.2,.64,1) infinite}
+.tab[data-view="add"]:not(.active) i.add-i2{display:inline-block;animation:addI2 3.6s ease-in-out infinite}
+.tab[data-view="add"]:not(.active) i.add-i3{display:inline-block;animation:addI3 3.8s ease-in-out infinite}
+.tab[data-view="add"]:not(.active) i.add-i4{display:inline-block;animation:addI4 4.2s ease-in-out infinite}
 /* quick gold flash on tap */
 @keyframes addTabTap{
   0%  {box-shadow:0 0 0 0 rgba(255,184,0,.85);transform:scale(1.2)}
@@ -3180,7 +3239,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.48 · split controls — Add button breathing independent from Your Salon glow';
+var VERSION='v5.49 · Add tab rotates 4 dance moves every 8 s';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4295,6 +4354,24 @@ window.addEventListener('message',function(ev){
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
 })();
 
+/* ── Add tab dance rotator — cycles 4 combos so the button never gets stale ── */
+(function(){
+  var COMBOS=[['d1','i1'],['d2','i2'],['d3','i3'],['d4','i4']];
+  var ci=0;
+  function applyDance(){
+    var tab=document.querySelector('.tab[data-view="add"]');
+    if(!tab)return;
+    COMBOS.forEach(function(c){tab.classList.remove('add-'+c[0]);});
+    var icon=tab.querySelector('i');
+    if(icon)COMBOS.forEach(function(c){icon.classList.remove('add-'+c[1]);});
+    tab.classList.add('add-'+COMBOS[ci][0]);
+    if(icon)icon.classList.add('add-'+COMBOS[ci][1]);
+    ci=(ci+1)%COMBOS.length;
+  }
+  function init(){applyDance();setInterval(applyDance,8000);}
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}
+  else{setTimeout(init,0);}
+})();
 /* ══════════════════════════════════════════════════════
    EMPTY-STATE HEARTBEAT — "Add appointment" button
    Speed + colour driven by breathing glow prefs.
