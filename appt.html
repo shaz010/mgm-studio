@@ -3239,7 +3239,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.51 · CW taps fixed + level chart shows true hair colours';
+var VERSION='v5.52 · phantom clients fixed — robust 60 s erase guard + clear all Firestore requests';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3526,17 +3526,24 @@ function clearDay(){
   },{title:'Clear this day',yesLabel:'Clear day',danger:true});
 }
 function clearFirestoreRequests(cb){
-  /* always fires cb — 2s safety net so a dead/deleted Firebase never blocks erase */
+  /* always fires cb — 2.5s safety net so a dead Firebase never blocks erase */
   var done=false;
   var safeCb=function(){if(!done){done=true;try{cb&&cb();}catch(_){}}};
-  setTimeout(safeCb,2000);
+  setTimeout(safeCb,2500);
   if(!fbReady||!db){safeCb();return;}
   try{
-    db.collection('requests').where('salon','==',SALON_ID).where('status','==','pending').get()
+    /* Dismiss ALL requests for this salon (not just pending) so no old approved/confirmed
+       requests can walk back in after a fresh erase. */
+    db.collection('requests').where('salon','==',SALON_ID).get()
       .then(function(snap){
         if(snap.empty){safeCb();return;}
         var batch=db.batch();
-        snap.forEach(function(d){batch.update(d.ref,{status:'dismissed',dismissedAt:Date.now()});});
+        snap.forEach(function(d){
+          var st=d.data().status;
+          if(st!=='dismissed'&&st!=='declined'){
+            batch.update(d.ref,{status:'dismissed',dismissedAt:Date.now()});
+          }
+        });
         return batch.commit();
       })
       .then(safeCb)
@@ -3556,8 +3563,9 @@ function _nukeStorage(){
   try{for(var i=0;i<localStorage.length;i++){keys.push(localStorage.key(i));}}catch(_){}
   keys.forEach(function(k){try{localStorage.removeItem(k);}catch(_){}});
   try{localStorage.clear();}catch(_){}
-  /* write erased flag AFTER clearing — only key that survives into the next load */
-  try{localStorage.setItem('_ap_erased','1');}catch(_){}
+  /* write erase TIMESTAMP after clearing — survives multiple reloads for 60 s,
+     so rapid reloads (update checks, room-switches) can't bypass the guard */
+  try{localStorage.setItem('_ap_erased',String(Date.now()));}catch(_){}
 }
 function deleteAllClients(){
   askConfirm('Delete ALL clients and ALL appointments on this device? Cannot be undone.',function(){
@@ -3941,12 +3949,21 @@ function bookableServices(){
 /* ---- live request inbox ---- */
 function listenRequests(){
   if(!fbReady)return;
-  /* if we just erased, the only surviving localStorage key is _ap_erased */
-  var justErased=!!localStorage.getItem('_ap_erased');
+  /* Erase guard: _ap_erased is a timestamp. Any erase within the last 60 s keeps the gate
+     shut across multiple reloads (update checks, room-switches, etc.) so nothing can sneak
+     back in. The guard expires naturally — no need to remove it manually. */
+  var justErased=false;
+  try{
+    var _e=localStorage.getItem('_ap_erased');
+    if(_e){
+      var _age=Date.now()-parseInt(_e||'0');
+      if(!isNaN(_age)&&_age<60000){justErased=true;}
+      else{try{localStorage.removeItem('_ap_erased');}catch(_){}} /* guard expired — clean up */
+    }
+  }catch(_){}
   if(justErased){
-    localStorage.removeItem('_ap_erased');
-    clearFirestoreRequests(function(){});  /* dismiss Firestore pending requests */
-    return;  /* do NOT subscribe — prevents clients walking back in */
+    clearFirestoreRequests(function(){});  /* dismiss ALL Firestore requests */
+    return;  /* do NOT subscribe */
   }
   try{
     if(_reqUnsub)_reqUnsub();
