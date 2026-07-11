@@ -3239,7 +3239,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.50 · colour wheel canvas fix — was invisible due to NaN width';
+var VERSION='v5.51 · CW taps fixed + level chart shows true hair colours';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4607,17 +4607,19 @@ window.addEventListener('message',function(ev){
     {n:'Red-Violet',     h:'#cc0077',ng:'Red-Violet',  comp:5,  tip:'Use: Yellow-Green. Faded red-violet from fashion colour; rare as an underlying pigment.'},
   ];
 
+  /* nh = natural hair colour (what the hair actually looks like at that level)
+     ph = underlying pigment colour (what's exposed on lift — used as small dot) */
   var LEVELS=[
-    {lv:10,name:'Lightest Blonde', pig:'Pale Yellow',    ph:'#fff4a0'},
-    {lv:9, name:'Very Light Blonde',pig:'Yellow',        ph:'#ffe040'},
-    {lv:8, name:'Light Blonde',    pig:'Yellow-Orange',  ph:'#ffb820'},
-    {lv:7, name:'Blonde',          pig:'Orange-Yellow',  ph:'#ff8c00'},
-    {lv:6, name:'Dark Blonde',     pig:'Orange',         ph:'#e05000'},
-    {lv:5, name:'Light Brown',     pig:'Red-Orange',     ph:'#c02800'},
-    {lv:4, name:'Medium Brown',    pig:'Red',            ph:'#900000'},
-    {lv:3, name:'Dark Brown',      pig:'Red-Brown',      ph:'#5a0a00'},
-    {lv:2, name:'Darkest Brown',   pig:'Brown-Red',      ph:'#300600'},
-    {lv:1, name:'Black',           pig:'Black',          ph:'#120200'},
+    {lv:10,name:'Lightest Blonde',  pig:'Pale Yellow',  ph:'#fff4a0', nh:'#ede0c0'},
+    {lv:9, name:'Very Light Blonde',pig:'Yellow',       ph:'#ffe040', nh:'#d4b55a'},
+    {lv:8, name:'Light Blonde',     pig:'Yellow-Orange',ph:'#ffb820', nh:'#b88a30'},
+    {lv:7, name:'Blonde',           pig:'Orange-Yellow',ph:'#ff8c00', nh:'#8c6420'},
+    {lv:6, name:'Dark Blonde',      pig:'Orange',       ph:'#e05000', nh:'#6b4418'},
+    {lv:5, name:'Light Brown',      pig:'Red-Orange',   ph:'#c02800', nh:'#5c3218'},
+    {lv:4, name:'Medium Brown',     pig:'Red',          ph:'#900000', nh:'#3e200e'},
+    {lv:3, name:'Dark Brown',       pig:'Red-Brown',    ph:'#5a0a00', nh:'#261408'},
+    {lv:2, name:'Darkest Brown',    pig:'Brown-Red',    ph:'#300600', nh:'#160c05'},
+    {lv:1, name:'Black',            pig:'Black',        ph:'#120200', nh:'#0a0504'},
   ];
 
   var _built=false, _sel=-1;
@@ -4719,11 +4721,17 @@ window.addEventListener('message',function(ev){
       html+=
         '<div style="display:flex;align-items:center;gap:9px;padding:6px 10px;'+
             'background:rgba(255,255,255,.025);border-radius:8px;border:1px solid rgba(255,255,255,.055)">'+
-          '<div style="width:28px;height:28px;border-radius:6px;background:'+lv.ph+';flex-shrink:0;border:1px solid rgba(255,255,255,.1)"></div>'+
+          /* big swatch = natural hair colour */
+          '<div style="width:28px;height:28px;border-radius:6px;background:'+lv.nh+';flex-shrink:0;border:1px solid rgba(255,255,255,.12)"></div>'+
           '<div style="font-size:17px;font-weight:800;color:rgba(255,255,255,.25);width:18px;flex-shrink:0">'+lv.lv+'</div>'+
           '<div style="flex:1;min-width:0">'+
             '<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+lv.name+'</div>'+
-            '<div style="font-size:11px;color:var(--muted)">Underlying pigment: <span style="color:rgba(255,255,255,.42)">'+lv.pig+'</span></div>'+
+            '<div style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px">'+
+              'Underlying: '+
+              /* small pigment dot */
+              '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+lv.ph+';flex-shrink:0;border:1px solid rgba(255,255,255,.15)"></span>'+
+              '<span style="color:rgba(255,255,255,.42)">'+lv.pig+'</span>'+
+            '</div>'+
           '</div>'+
         '</div>';
     }
@@ -4767,8 +4775,10 @@ window.addEventListener('message',function(ev){
   function handleTap(e,cv){
     e.preventDefault();
     var rect=cv.getBoundingClientRect();
-    var clientX=e.touches?e.touches[0].clientX:(e.changedTouches?e.changedTouches[0].clientX:e.clientX);
-    var clientY=e.touches?e.touches[0].clientY:(e.changedTouches?e.changedTouches[0].clientY:e.clientY);
+    /* On touchend e.touches is an EMPTY TouchList (still truthy) so e.touches[0] is undefined.
+       Must check .length before indexing. changedTouches holds the lifted finger on touchend. */
+    var clientX=(e.touches&&e.touches.length)?e.touches[0].clientX:(e.changedTouches&&e.changedTouches.length)?e.changedTouches[0].clientX:e.clientX;
+    var clientY=(e.touches&&e.touches.length)?e.touches[0].clientY:(e.changedTouches&&e.changedTouches.length)?e.changedTouches[0].clientY:e.clientY;
     var x=clientX-rect.left, y=clientY-rect.top;
     var size=rect.width;
     var cx=size/2,cy=size/2,or=size*0.435,ir=size*0.215;
