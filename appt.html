@@ -2480,8 +2480,12 @@ function openDebug(){
     var _cp=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
     var _pc=_cp.prices?Object.keys(_cp.prices).length:0;
     L.push('cp_prefs.prices: '+_pc+' entries  _seedDone:'+(_cp._seedDone?'yes':'no'));
+    var _cpRaw=localStorage.getItem('cp_prefs')||'{}';
+    L.push('cp_prefs raw size: '+_cpRaw.length+' chars');
     if(_pc>0){var _pk=Object.keys(_cp.prices).slice(0,3);L.push('sample: '+_pk.join(', ')+'…');}
     else{L.push('** EMPTY — seed did not run or localStorage is blocked **');}
+    var _se=localStorage.getItem('_ap_seedErr');
+    if(_se){L.push('>> seed error: '+_se);}else{L.push('seed error: none captured');}
   }catch(e){L.push('** error reading prices: '+e.message+' **');}
   L.push('');
   L.push('-- Trade state --');
@@ -3121,7 +3125,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.40 · Price seed split try-catch + Diagnostics shows price count; chips standalone globals';
+var VERSION='v5.41 · Diagnostics shows seed error message + cp_prefs raw size';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4267,7 +4271,10 @@ window.addEventListener('message',function(ev){
     };
     cp._seedDone=true;
     localStorage.setItem('cp_prefs',JSON.stringify(cp));
-  }catch(e){}
+  }catch(e){
+    /* Log error so Diagnostics can surface it */
+    try{localStorage.setItem('_ap_seedErr',(e&&e.message)||String(e));}catch(_){}
+  }
 })();
 /* ── Glow settings panel — saves prefs, syncs chips, salon.html does the actual glow ── */
 (function(){
