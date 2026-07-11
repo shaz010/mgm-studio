@@ -502,6 +502,8 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 
 /* auto-fill minmax: 2 cols on iPhone (≤430px), 4 cols on iPad — no media query needed */
 .day-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+/* 5th tile (TAKE-HOME) alone on last row → span full width so it's centred & hero */
+.day-stats>.dstat:last-child:nth-child(odd){grid-column:1/-1}
 .dstat{background:#111;border:1px solid var(--border-bright);border-radius:10px;padding:11px;text-align:center;min-width:0}
 .dstat-v{font-size:20px;font-weight:700;color:var(--gold)}
 #statRev{color:var(--green)}
@@ -3240,7 +3242,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.55 · auto-fill grid (no more left-drift) + SW v75 cache nuke';
+var VERSION='v5.56 · TAKE-HOME spans full row when alone (no left-orphan)';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
