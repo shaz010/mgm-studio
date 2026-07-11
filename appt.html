@@ -23,7 +23,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html{overflow-x:hidden;overflow-x:clip;width:100%;max-width:100%;-webkit-text-size-adjust:100%;background:#0a0a0a;overscroll-behavior-x:none}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#f0f0f0;min-height:100vh;overflow-x:hidden;overflow-x:clip;width:100%;max-width:100%;touch-action:pan-y;overscroll-behavior-x:none;position:relative}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#f0f0f0;min-height:100dvh;overflow-x:hidden;overflow-x:clip;width:100%;max-width:100%;touch-action:pan-y;overscroll-behavior-x:none;position:relative}
 :root{
   --bg:#0a0a0a;--bg2:#141414;--bg3:#1e1e1e;
   --border:#333;--border-bright:#444;
@@ -500,8 +500,9 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 .daybar-today{font-size:12.5px;color:var(--gold);cursor:pointer;font-weight:700;margin-top:5px;display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1.5px solid var(--gold-border);border-radius:20px;background:var(--gold-dim)}
 .daybar-today:active{background:#3a2c00}
 
-.day-stats{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
-.dstat{flex:1 1 calc(25% - 8px);min-width:104px;background:#111;border:1px solid var(--border-bright);border-radius:10px;padding:11px;text-align:center}
+.day-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:480px){.day-stats{grid-template-columns:repeat(2,1fr);gap:8px}}
+.dstat{background:#111;border:1px solid var(--border-bright);border-radius:10px;padding:11px;text-align:center;min-width:0}
 .dstat-v{font-size:20px;font-weight:700;color:var(--gold)}
 #statRev{color:var(--green)}
 #statNet{
@@ -3239,7 +3240,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.52 · phantom clients fixed — robust 60 s erase guard + clear all Firestore requests';
+var VERSION='v5.53 · iPhone dvh stretch + take-home tile grid (no left-drift)';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
