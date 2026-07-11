@@ -2200,7 +2200,7 @@ function renderDay(){
 
   if(!list.length){
     $('dayList').innerHTML='<div class="empty"><i class="ti ti-calendar-off"></i><div class="empty-t">No appointments '+(isToday?'today':'this day')+'</div><div class="empty-s">A clear chair. Tap Add to book someone in.</div><button id="emptyAddBtn" class="btn btn-sm" style="margin:0 auto;background:linear-gradient(135deg,#FFB800,#ff8a00);color:#160e00;font-weight:800;border:none;will-change:transform,box-shadow;transform-origin:center center;position:relative;overflow:hidden" onclick="openAdd()"><i class="ti ti-plus"></i> Add appointment</button></div>';
-    startEmptyHeart();
+    if(typeof startEmptyHeart==='function')startEmptyHeart();
     return;
   }
   $('dayList').innerHTML=list.map(function(a){
@@ -3139,7 +3139,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.46 · seedPrices in own isolated script block';
+var VERSION='v5.47 · heartbeat guard fix — Add button now breathes on empty day';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4403,6 +4403,9 @@ window.addEventListener('message',function(ev){
     if(raf)cancelAnimationFrame(raf);
     if(!heartOff)raf=requestAnimationFrame(loop);
   };
+  /* If the button was already rendered before this IIFE ran (today is empty on first load),
+     kick off the animation now that we're defined. */
+  if(document.getElementById('emptyAddBtn'))window.startEmptyHeart();
 
   /* starburst on tap — called from openAdd() */
   window._emptyBtnBurst=function(){
