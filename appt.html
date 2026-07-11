@@ -2475,6 +2475,15 @@ function openDebug(){
   L.push('Build: '+(typeof VERSION!=='undefined'?VERSION:'?'));
   L.push('When: '+new Date().toLocaleString());
   L.push('');
+  L.push('-- Price Book --');
+  try{
+    var _cp=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
+    var _pc=_cp.prices?Object.keys(_cp.prices).length:0;
+    L.push('cp_prefs.prices: '+_pc+' entries  _seedDone:'+(_cp._seedDone?'yes':'no'));
+    if(_pc>0){var _pk=Object.keys(_cp.prices).slice(0,3);L.push('sample: '+_pk.join(', ')+'…');}
+    else{L.push('** EMPTY — seed did not run or localStorage is blocked **');}
+  }catch(e){L.push('** error reading prices: '+e.message+' **');}
+  L.push('');
   L.push('-- Trade state --');
   var gm=getMode();
   L.push('svcMode:'+svcMode+'  getMode:'+gm+'  label:'+tradeLabel(gm));
@@ -3112,7 +3121,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.39 · Chips use standalone _gc/_gs/_wi/_wf globals + type=button; price seed uses _seedDone flag';
+var VERSION='v5.40 · Price seed split try-catch + Diagnostics shows price count; chips standalone globals';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4181,10 +4190,11 @@ window.addEventListener('message',function(ev){
 });
 /* ── Default OC prices (92653 market) — fires once on fresh install if no prices set ── */
 (function seedPrices(){
+  /* Split error handling: JSON.parse failure no longer silently aborts the whole seed */
+  var cp; try{cp=JSON.parse(localStorage.getItem('cp_prefs')||'{}');}catch(e){cp={};}
+  /* Skip only if seed has already run AND we have a full price list */
+  if(cp._seedDone&&cp.prices&&Object.keys(cp.prices).length>=20)return;
   try{
-    var cp=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
-    /* Skip only if user already has a healthy price list (20+ entries) */
-    if(cp._seedDone&&cp.prices&&Object.keys(cp.prices).length>=20)return;
     cp.prices={
       /* ── HAIR — Women · Cuts ── */
       "Women's Haircut":85,"Bang Trim":25,"Trim / Dusting":55,"Bob Cut":90,
