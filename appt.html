@@ -504,6 +504,28 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 .day-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:14px}
 /* 5th tile (TAKE-HOME) alone on last row → span full width so it's centred & hero */
 .day-stats>.dstat:last-child:nth-child(odd){grid-column:1/-1}
+/* ── Demo banner ── */
+#demoBanner{display:none;background:linear-gradient(110deg,rgba(103,232,249,.1),rgba(167,139,250,.12),rgba(245,168,255,.08));border:1px solid rgba(167,139,250,.35);border-radius:14px;padding:14px 16px;margin:0 0 14px}
+#demoBanner.show{display:block}
+.demo-title{font-size:14px;font-weight:700;color:#e0e0e0;margin-bottom:4px}
+.demo-sub{font-size:12.5px;color:#999;line-height:1.55;margin-bottom:12px}
+.demo-clear{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(167,139,250,.5);background:rgba(167,139,250,.15);color:#a78bfa;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent}
+.demo-clear:active{opacity:.7}
+/* ── Coach marks tour ── */
+#coachOverlay{position:fixed;inset:0;z-index:800;pointer-events:none;transition:opacity .3s;opacity:0}
+#coachOverlay.show{pointer-events:all;opacity:1}
+.coach-hole-el{position:relative!important;z-index:801!important;box-shadow:0 0 0 5px rgba(167,139,250,.7),0 0 0 9999px rgba(0,0,0,.82)!important;border-radius:10px!important;transition:box-shadow .25s}
+#coachTooltip{position:fixed;z-index:802;background:#13131f;border:1px solid rgba(167,139,250,.45);border-radius:14px;padding:16px 18px;max-width:280px;width:calc(100vw - 40px);box-shadow:0 8px 32px rgba(0,0,0,.7)}
+.coach-step-lbl{font-size:10px;font-weight:800;color:#a78bfa;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.coach-title{font-size:15px;font-weight:700;color:#f0f0f0;margin-bottom:6px;line-height:1.3}
+.coach-body{font-size:13px;color:#888;line-height:1.6;margin-bottom:14px}
+.coach-foot{display:flex;align-items:center;justify-content:space-between}
+.coach-skip{font-size:12px;color:#444;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0}
+.coach-next{background:linear-gradient(110deg,#a78bfa,#67e8f9);color:#050507;border:none;border-radius:20px;padding:8px 20px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}
+.coach-prog{font-size:11px;color:#444}
+/* pulsing ring around target */
+.coach-ring{position:fixed;z-index:803;border-radius:12px;border:2px solid rgba(167,139,250,.8);pointer-events:none;animation:coachRing 1.2s ease-out infinite}
+@keyframes coachRing{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.3)}}
 .dstat{background:#111;border:1px solid var(--border-bright);border-radius:10px;padding:11px;text-align:center;min-width:0}
 .dstat-v{font-size:20px;font-weight:700;color:var(--gold)}
 #statRev{color:var(--green)}
@@ -988,6 +1010,15 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 
   <!-- DAY VIEW -->
   <div class="view active" id="view-day">
+    <!-- First-run demo banner — hidden until demo data is active -->
+    <div id="demoBanner">
+      <div class="demo-title">✨ Welcome to Your Salon</div>
+      <div class="demo-sub">This is sample data so you can see everything in action — appointments, earnings, take-home splits. Explore freely. Take the tour to see exactly how it all works.</div>
+      <div style="display:flex;gap:8px;margin-top:2px">
+        <button class="demo-clear" style="flex:1" onclick="startCoachTour()"><i class="ti ti-player-play"></i> Take the tour</button>
+        <button class="demo-clear" style="flex:1;background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);color:#666" onclick="clearDemoData()"><i class="ti ti-trash"></i> Clear &amp; start</button>
+      </div>
+    </div>
     <div class="seg" id="daySeg">
       <button class="seg-btn on" data-m="day" onclick="setDayMode('day')"><i class="ti ti-calendar"></i> Day</button>
       <button class="seg-btn" data-m="week" onclick="setDayMode('week')"><i class="ti ti-calendar-week"></i> Week</button>
@@ -1738,6 +1769,60 @@ function jsq(n){return String(n).replace(/'/g,"\\'");}
 var appts=load(APPTS,[]);
 var clients=load(CLIENTS,[]);
 var customSvc=load(CUSTOM,[]);   /* [{name,mode}] your own services, kept forever */
+
+/* ===== FIRST-RUN DEMO DATA ===========================================
+   Fires once, only when the app has zero appointments and has never been
+   seen before. Writes 6 realistic bookings so every panel looks alive.
+   Cleared by the banner button → _ys_demo_seen flag blocks re-injection.
+   ===================================================================== */
+(function(){
+  if(localStorage.getItem('_ys_demo_seen'))return;
+  if(appts.length>0){localStorage.setItem('_ys_demo_seen','1');return;}
+  function relDay(n){var d=new Date();d.setDate(d.getDate()+n);d.setHours(12,0,0,0);return d.toISOString().split('T')[0];}
+  var demoClients=[
+    {id:'dc1',name:'Jessica Miller', phone:'555-0101',email:'',notes:''},
+    {id:'dc2',name:'Sarah Thompson', phone:'555-0102',email:'',notes:''},
+    {id:'dc3',name:'Amanda Chen',    phone:'555-0103',email:'',notes:''},
+    {id:'dc4',name:'Rachel Torres',  phone:'555-0104',email:'',notes:''},
+    {id:'dc5',name:'Lisa Park',      phone:'555-0105',email:'',notes:''},
+    {id:'dc6',name:'Emma Wilson',    phone:'555-0106',email:'',notes:''}
+  ];
+  var demoAppts=[
+    {id:'da1',name:'Jessica Miller', phone:'555-0101',service:'Colour & Balayage',  date:relDay(-4),time:'10:00',dur:120,price:285,tip:40,notes:'',          status:'done',     cid:'dc1'},
+    {id:'da2',name:'Sarah Thompson', phone:'555-0102',service:'Cut & Style',        date:relDay(-3),time:'11:30',dur:60, price:95, tip:15,notes:'',          status:'done',     cid:'dc2'},
+    {id:'da3',name:'Amanda Chen',    phone:'555-0103',service:'Full Highlights',    date:relDay(-2),time:'09:00',dur:150,price:220,tip:30,notes:'Foils only', status:'done',     cid:'dc3'},
+    {id:'da4',name:'Rachel Torres',  phone:'555-0104',service:'Blowout & Style',    date:relDay(-1),time:'14:00',dur:45, price:75, tip:10,notes:'',          status:'done',     cid:'dc4'},
+    {id:'da5',name:'Lisa Park',      phone:'555-0105',service:'Cut & Colour',       date:relDay(0), time:'10:30',dur:90, price:175,tip:0, notes:'',          status:'confirmed',cid:'dc5'},
+    {id:'da6',name:'Emma Wilson',    phone:'555-0106',service:'Root Touch-Up',      date:relDay(1), time:'13:00',dur:60, price:120,tip:0, notes:'',          status:'confirmed',cid:'dc6'}
+  ];
+  try{
+    localStorage.setItem('ap_appts',   JSON.stringify(demoAppts));
+    localStorage.setItem('ap_clients', JSON.stringify(demoClients));
+    localStorage.setItem('_ys_demo_active','1');
+    appts=demoAppts; clients=demoClients;
+  }catch(e){}
+})();
+
+function clearDemoData(){
+  try{
+    localStorage.removeItem('ap_appts');
+    localStorage.removeItem('ap_clients');
+    localStorage.removeItem('_ys_demo_active');
+    localStorage.setItem('_ys_demo_seen','1');
+    appts=[];clients=[];
+    var b=document.getElementById('demoBanner');
+    if(b)b.classList.remove('show');
+    renderDay();
+    toast("You're all set — add your first real appointment!");
+  }catch(e){}
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  if(localStorage.getItem('_ys_demo_active')){
+    var b=document.getElementById('demoBanner');
+    if(b)b.classList.add('show');
+  }
+});
 var stock=load(STOCK,[]);        /* [{id,name,qty,min,unit,used}] inventory */
 function reload(){appts=load(APPTS,[]);clients=load(CLIENTS,[]);customSvc=load(CUSTOM,[]);stock=load(STOCK,[]);}
 
@@ -3242,7 +3327,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.56 · TAKE-HOME spans full row when alone (no left-orphan)';
+var VERSION='v5.58 · coach marks tour + guide link';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5003,6 +5088,149 @@ document.addEventListener('click',function(e){
   }catch(e){
     try{localStorage.setItem('_ap_seedLog','isolated-block-ERR:'+e.message);}catch(_){}
   }
+})();
+</script>
+
+<!-- ===== COACH MARKS TOUR ===== -->
+<div id="coachOverlay"></div>
+<div id="coachTooltip" style="display:none">
+  <div class="coach-step-lbl" id="ctStepLbl"></div>
+  <div class="coach-title" id="ctTitle"></div>
+  <div class="coach-body" id="ctBody"></div>
+  <div class="coach-foot">
+    <button class="coach-skip" onclick="endCoachTour()">Skip tour</button>
+    <span class="coach-prog" id="ctProg"></span>
+    <button class="coach-next" id="ctNext" onclick="coachNext()">Next →</button>
+  </div>
+</div>
+<div class="coach-ring" id="coachRing" style="display:none"></div>
+
+<script>
+/* ── Coach marks tour ── */
+(function(){
+  /* Steps: {sel, title, body, pos:'top'|'bottom'|'center', action:fn} */
+  var STEPS=[
+    {sel:null, title:'Welcome — let\'s take a quick tour',
+     body:'I\'ll show you exactly where to tap, step by step. Takes about 60 seconds.',
+     pos:'center'},
+    {sel:'.tab[data-view="add"]', title:'This is your Add button',
+     body:'Tap the ✦ Add tab to book any appointment. It\'s always in your bottom bar.',
+     pos:'top', action:function(){showView('add');}},
+    {sel:'#fName', title:'Start with your client\'s name',
+     body:'Type a name — if the client exists, they\'ll appear for quick fill. Or enter a new name to create a profile.',
+     pos:'bottom'},
+    {sel:'#fService', title:'Choose the service',
+     body:'Tap one of the service chips below, or type your own. You can combine multiple services in one booking.',
+     pos:'bottom'},
+    {sel:'#fPrice', title:'Enter the price',
+     body:'Type what you\'re charging. The commission split calculates the moment you type — no button to press.',
+     pos:'bottom'},
+    {sel:'#fTip', title:'Add the tip — it\'s always 100% yours',
+     body:'Tips are never split with the salon. They land directly in your take-home total, tracked separately.',
+     pos:'bottom'},
+    {sel:'.btn[onclick="saveAppt()"]', title:'Tap Save to book them in',
+     body:'That\'s it. Your earnings update instantly. Switch to Earnings at the top to see your take-home.',
+     pos:'top'},
+    {sel:null, title:'You\'re ready! 🎉',
+     body:'Now explore freely using the sample data. When you\'re ready to go live, tap "Clear & start" on the welcome banner.',
+     pos:'center'}
+  ];
+
+  var cur=0, prevEl=null, ringEl=null;
+
+  function getEl(step){
+    if(!step.sel)return null;
+    return document.querySelector(step.sel);
+  }
+
+  function positionTooltip(el,pos){
+    var tt=document.getElementById('coachTooltip');
+    var ring=document.getElementById('coachRing');
+    tt.style.display='block';
+
+    if(!el||pos==='center'){
+      /* centred on screen */
+      tt.style.left='50%';tt.style.top='50%';
+      tt.style.transform='translate(-50%,-50%)';
+      ring.style.display='none';
+      return;
+    }
+    tt.style.transform='none';
+
+    var r=el.getBoundingClientRect();
+    var vw=window.innerWidth, vh=window.innerHeight;
+    var tw=Math.min(280,vw-40), th=160;
+
+    /* position ring */
+    var pad=6;
+    ring.style.display='block';
+    ring.style.left=(r.left-pad)+'px';ring.style.top=(r.top-pad)+'px';
+    ring.style.width=(r.width+pad*2)+'px';ring.style.height=(r.height+pad*2)+'px';
+
+    /* position tooltip */
+    var left=Math.max(20,Math.min(r.left,vw-tw-20));
+    if(pos==='top'){
+      var top=r.top-th-16;
+      if(top<60)top=r.bottom+16;
+      tt.style.top=top+'px';
+    } else {
+      var top2=r.bottom+16;
+      if(top2+th>vh-20)top2=r.top-th-16;
+      tt.style.top=top2+'px';
+    }
+    tt.style.left=left+'px';
+  }
+
+  function showStep(n){
+    /* remove previous highlight */
+    if(prevEl){prevEl.classList.remove('coach-hole-el');}
+    prevEl=null;
+
+    var step=STEPS[n];
+    var el=getEl(step);
+
+    /* run action (e.g. switch view) */
+    if(step.action)step.action();
+
+    /* highlight target */
+    if(el){
+      el.classList.add('coach-hole-el');
+      prevEl=el;
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+
+    /* update overlay */
+    var ov=document.getElementById('coachOverlay');
+    ov.classList.add('show');
+
+    /* update text */
+    document.getElementById('ctStepLbl').textContent='Step '+(n+1)+' of '+STEPS.length;
+    document.getElementById('ctTitle').textContent=step.title;
+    document.getElementById('ctBody').textContent=step.body;
+    document.getElementById('ctProg').textContent=(n+1)+'/'+STEPS.length;
+    document.getElementById('ctNext').textContent=n===STEPS.length-1?'Done ✓':'Next →';
+
+    setTimeout(function(){positionTooltip(el,step.pos||'bottom');},el?350:0);
+  }
+
+  window.startCoachTour=function(){
+    cur=0;
+    showStep(cur);
+  };
+
+  window.coachNext=function(){
+    cur++;
+    if(cur>=STEPS.length){endCoachTour();return;}
+    showStep(cur);
+  };
+
+  window.endCoachTour=function(){
+    if(prevEl){prevEl.classList.remove('coach-hole-el');prevEl=null;}
+    var ov=document.getElementById('coachOverlay');
+    ov.classList.remove('show');
+    document.getElementById('coachTooltip').style.display='none';
+    document.getElementById('coachRing').style.display='none';
+  };
 })();
 </script>
 </body>
