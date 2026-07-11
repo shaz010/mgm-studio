@@ -2482,10 +2482,21 @@ function openDebug(){
     L.push('cp_prefs.prices: '+_pc+' entries  _seedDone:'+(_cp._seedDone?'yes':'no'));
     var _cpRaw=localStorage.getItem('cp_prefs')||'{}';
     L.push('cp_prefs raw size: '+_cpRaw.length+' chars');
+    L.push('cp_prefs content: '+_cpRaw.substring(0,200));
     if(_pc>0){var _pk=Object.keys(_cp.prices).slice(0,3);L.push('sample: '+_pk.join(', ')+'…');}
     else{L.push('** EMPTY — seed did not run or localStorage is blocked **');}
     var _se=localStorage.getItem('_ap_seedErr');
     if(_se){L.push('>> seed error: '+_se);}else{L.push('seed error: none captured');}
+    /* Live write test */
+    try{
+      var _wt=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
+      _wt._writeTest=Date.now();
+      localStorage.setItem('cp_prefs',JSON.stringify(_wt));
+      var _wt2=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
+      L.push('write test: '+(_wt2._writeTest===_wt._writeTest?'OK — writes persist':'FAIL — writes lost'));
+      /* Clean up test flag */
+      delete _wt2._writeTest;localStorage.setItem('cp_prefs',JSON.stringify(_wt2));
+    }catch(_we){L.push('write test error: '+_we.message);}
   }catch(e){L.push('** error reading prices: '+e.message+' **');}
   L.push('');
   L.push('-- Trade state --');
@@ -3125,7 +3136,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.41 · Diagnostics shows seed error message + cp_prefs raw size';
+var VERSION='v5.42 · Diagnostics: cp_prefs content + live write test';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
