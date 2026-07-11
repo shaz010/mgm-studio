@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How to Use Your Salon</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100dvh;-webkit-font-smoothing:antialiased}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid #1a1a1a;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{font-size:17px;font-weight:700;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-link{font-size:13px;color:#666;text-decoration:none;border:1px solid #2a2a2a;border-radius:20px;padding:6px 14px;transition:border-color .2s,color .2s}
+.nav-link:hover{border-color:#a78bfa;color:#a78bfa}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:64px 24px 48px;max-width:680px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#a78bfa;letter-spacing:.8px;text-transform:uppercase;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:20px;padding:5px 14px;margin-bottom:20px}
+.hero h1{font-size:clamp(28px,6vw,42px);font-weight:800;line-height:1.15;margin-bottom:14px;letter-spacing:-.5px}
+.hero h1 span{background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:16px;color:#888;line-height:1.65;max-width:480px;margin:0 auto 32px}
+.hero-cta{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);color:#000;font-size:14px;font-weight:800;padding:13px 28px;border-radius:30px;text-decoration:none;letter-spacing:.2px}
+
+/* ── SECTIONS ── */
+.sections{max-width:720px;margin:0 auto;padding:0 20px 80px}
+
+.section{margin-bottom:56px;scroll-margin-top:70px}
+.section-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid #1c1c1c}
+.section-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.section-num{font-size:11px;font-weight:800;color:#444;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px}
+.section-title{font-size:19px;font-weight:800;color:#f0f0f0;line-height:1.2}
+.section-intro{font-size:15px;color:#999;line-height:1.7;margin-bottom:20px}
+
+/* ── STEPS ── */
+.steps{display:flex;flex-direction:column;gap:12px}
+.step{display:flex;gap:14px;align-items:flex-start}
+.step-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;margin-top:1px}
+.step-body{}
+.step-label{font-size:14px;font-weight:700;color:#e0e0e0;margin-bottom:3px}
+.step-desc{font-size:13.5px;color:#888;line-height:1.6}
+
+/* ── CALLOUT CARDS ── */
+.callout{background:#111;border-radius:14px;padding:18px 20px;margin-top:18px;border-left:3px solid}
+.callout.gold{border-color:#f59e0b}
+.callout.purple{border-color:#a78bfa}
+.callout.cyan{border-color:#67e8f9}
+.callout.green{border-color:#4ade80}
+.callout.pink{border-color:#f472b6}
+.callout-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.callout.gold .callout-title{color:#f59e0b}
+.callout.purple .callout-title{color:#a78bfa}
+.callout.cyan .callout-title{color:#67e8f9}
+.callout.green .callout-title{color:#4ade80}
+.callout.pink .callout-title{color:#f472b6}
+.callout p{font-size:13.5px;color:#999;line-height:1.65}
+
+/* ── PILL LIST ── */
+.pill-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.pill{font-size:12.5px;font-weight:600;padding:5px 13px;border-radius:20px;background:#1a1a1a;border:1px solid #2a2a2a;color:#bbb}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:linear-gradient(90deg,transparent,#2a2a2a,transparent);margin:0 0 56px}
+
+/* ── ICON COLOURS ── */
+.ic-gold{background:rgba(245,158,11,.12)}
+.ic-purple{background:rgba(167,139,250,.12)}
+.ic-cyan{background:rgba(103,232,249,.12)}
+.ic-green{background:rgba(74,222,128,.12)}
+.ic-pink{background:rgba(244,114,182,.12)}
+.ic-blue{background:rgba(96,165,250,.12)}
+.ic-orange{background:rgba(251,146,60,.12)}
+.ic-red{background:rgba(248,113,113,.12)}
+
+/* ── FOOTER ── */
+footer{text-align:center;padding:32px 20px;font-size:12.5px;color:#444;border-top:1px solid #1a1a1a}
+footer a{color:#666;text-decoration:none}
+footer a:hover{color:#a78bfa}
+
+@media(max-width:480px){
+  .hero{padding:44px 20px 36px}
+  .section-title{font-size:17px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">✨ Your Salon</span>
+  <a class="nav-link" href="./salon.html">Open app</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">Complete guide</div>
+  <h1>Everything you need to know about <span>Your Salon</span></h1>
+  <p class="hero-sub">Built for every beauty professional. Step-by-step, feature by feature — so you can focus on your craft, not the admin.</p>
+  <a class="hero-cta" href="./salon.html">Open Your Salon →</a>
+</div>
+
+<div class="sections">
+
+  <!-- 1. YOUR MONEY -->
+  <div class="section" id="money">
+    <div class="section-header">
+      <div class="section-icon ic-gold">💰</div>
+      <div>
+        <div class="section-num">Section 01</div>
+        <div class="section-title">Your money — accurate, every time</div>
+      </div>
+    </div>
+    <p class="section-intro">Your Salon calculates your take-home the moment you log a booking. No mental maths, no spreadsheets, no end-of-week guessing. Your split is set once and applied automatically to every single appointment.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" style="background:rgba(245,158,11,.15);color:#f59e0b">1</div>
+        <div class="step-body">
+          <div class="step-label">Set your commission rate</div>
+          <div class="step-desc">Go to Settings → Commission %. Enter the exact percentage your salon pays you — 60%, 55%, 45%, whatever your agreement. Every calculation from that point on uses your real number.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(245,158,11,.15);color:#f59e0b">2</div>
+        <div class="step-body">
+          <div class="step-label">Log a booking with price</div>
+          <div class="step-desc">Add a client, pick a service, enter the charge. That's it. Your Salon instantly shows you the salon cut, your cut, and your take-home — before the client even sits down.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(245,158,11,.15);color:#f59e0b">3</div>
+        <div class="step-body">
+          <div class="step-label">Add the tip</div>
+          <div class="step-desc">Tips are 100% yours — they are never split with the salon. Log them separately in the booking and they are added on top of your commission, not blended into it.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(245,158,11,.15);color:#f59e0b">4</div>
+        <div class="step-body">
+          <div class="step-label">Check your Earnings room</div>
+          <div class="step-desc">Switch to Earnings at the top. See total charged, salon's share, your share, tips, and take-home across any time period — today, this week, this month, or all time.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout gold">
+      <div class="callout-title">Cloud safe</div>
+      <p>Your bookings are stored securely in the cloud. Lose your phone, break your tablet, switch devices — log back in and every appointment, every figure is exactly where you left it.</p>
+    </div>
+
+    <div class="callout gold" style="margin-top:10px">
+      <div class="callout-title">One price. Yours forever.</div>
+      <p>No subscription. No monthly fee. No feature unlocks. Pay once and Your Salon is yours — every update, every new feature, at no extra cost.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 2. CLIENT SELF-BOOKING -->
+  <div class="section" id="booking">
+    <div class="section-header">
+      <div class="section-icon ic-cyan">📲</div>
+      <div>
+        <div class="section-num">Section 02</div>
+        <div class="section-title">Clients book themselves — no app required</div>
+      </div>
+    </div>
+    <p class="section-intro">Your clients do not need to download anything. No third-party app, no account, no friction. You share one link — they tap it, pick a time, and the request lands in your inbox for approval.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" style="background:rgba(103,232,249,.12);color:#67e8f9">1</div>
+        <div class="step-body">
+          <div class="step-label">Find your booking link</div>
+          <div class="step-desc">In Appointments → Settings, tap "My Booking Link." Your personal link is ready the moment you sign up — no setup required.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(103,232,249,.12);color:#67e8f9">2</div>
+        <div class="step-body">
+          <div class="step-label">Share it anywhere</div>
+          <div class="step-desc">Put it in your Instagram bio, text it to clients, add it to your email signature. One link works everywhere — it opens in any browser on any phone.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(103,232,249,.12);color:#67e8f9">3</div>
+        <div class="step-body">
+          <div class="step-label">Approve requests</div>
+          <div class="step-desc">A notification badge appears the moment a client submits a booking. Open it, review the request, and tap Approve or Decline. Approved bookings drop straight into your calendar.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout cyan">
+      <div class="callout-title">Your client's experience</div>
+      <p>They tap your link, see your available services and prices, pick a date and time, enter their name and phone number — done. No login, no app download, no hassle. Just a booking.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 3. HAIR PASSPORT -->
+  <div class="section" id="passport">
+    <div class="section-header">
+      <div class="section-icon ic-purple">🪪</div>
+      <div>
+        <div class="section-num">Section 03</div>
+        <div class="section-title">Hair Passport — your client's complete history</div>
+      </div>
+    </div>
+    <p class="section-intro">Every client gets a digital profile that travels with you. Every appointment, every service, every note — in one place. A new client today has a full history by next visit.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" style="background:rgba(167,139,250,.12);color:#a78bfa">1</div>
+        <div class="step-body">
+          <div class="step-label">Clients are created automatically</div>
+          <div class="step-desc">The moment you save a booking with a name and phone number, a client card is created. You never need to manage a separate contact list — it builds itself.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(167,139,250,.12);color:#a78bfa">2</div>
+        <div class="step-body">
+          <div class="step-label">View full history</div>
+          <div class="step-desc">Tap any client in the Clients tab to see every appointment they have ever had with you — service, price, date, notes. Instantly recall what you did last time without asking.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(167,139,250,.12);color:#a78bfa">3</div>
+        <div class="step-body">
+          <div class="step-label">Add notes that matter</div>
+          <div class="step-desc">Record anything important on a booking — formula used, allergies, preferences, what they asked for next time. It stays with that appointment permanently.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout purple">
+      <div class="callout-title">Why it builds trust</div>
+      <p>Remembering a client's history without asking feels like magic to them. That personal touch — "last time we used 7N with a splash of 9G" — is the difference between a client who comes back and one who doesn't.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 4. COLOUR WHEEL -->
+  <div class="section" id="colour">
+    <div class="section-header">
+      <div class="section-icon ic-pink">🎨</div>
+      <div>
+        <div class="section-num">Section 04</div>
+        <div class="section-title">Colour wheel — professional correction in your pocket</div>
+      </div>
+    </div>
+    <p class="section-intro">The colour wheel is one of the most powerful tools in a colourist's kit — and one of the most under-used. Years of training distilled into a tap. No trichology textbook, no guesswork, no waiting until you remember.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" style="background:rgba(244,114,182,.1);color:#f472b6">1</div>
+        <div class="step-body">
+          <div class="step-label">Open the colour wheel</div>
+          <div class="step-desc">Tap the colour palette icon in your toolbar. The full professional colour wheel opens — primary, secondary, and tertiary colours with their relationships mapped visually.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(244,114,182,.1);color:#f472b6">2</div>
+        <div class="step-body">
+          <div class="step-label">Identify the unwanted tone</div>
+          <div class="step-desc">Tap the colour you are seeing in the hair — brassiness, orange, red, green. The wheel instantly shows you the exact neutralising colour directly opposite it.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(244,114,182,.1);color:#f472b6">3</div>
+        <div class="step-body">
+          <div class="step-label">Apply with confidence</div>
+          <div class="step-desc">Use the complementary colour to neutralise the unwanted tone. No more trial and error. What takes years of instinct to develop is now a two-second reference check.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout pink">
+      <div class="callout-title">Why this matters</div>
+      <p>Colour correction mistakes are expensive — in product, in time, and in client confidence. Having the colour wheel in your pocket during a consultation or correction is the same as having your most experienced mentor standing next to you.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 5. INVENTORY -->
+  <div class="section" id="inventory">
+    <div class="section-header">
+      <div class="section-icon ic-green">📦</div>
+      <div>
+        <div class="section-num">Section 05</div>
+        <div class="section-title">Inventory — always know what you have</div>
+      </div>
+    </div>
+    <p class="section-intro">Running out of a product mid-service is one of the most avoidable frustrations in the salon. Your Salon tracks everything you carry — stock levels, low-stock alerts, and usage history — always on you.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" style="background:rgba(74,222,128,.1);color:#4ade80">1</div>
+        <div class="step-body">
+          <div class="step-label">Add your products</div>
+          <div class="step-desc">Go to the Inventory tab. Tap the + button and add each product — name, quantity on hand, the minimum level before you get a low-stock alert, and the unit (tubes, bottles, grams).</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(74,222,128,.1);color:#4ade80">2</div>
+        <div class="step-body">
+          <div class="step-label">Mark usage after each service</div>
+          <div class="step-desc">After a colour service, tap the product and log how much you used. Your remaining stock updates instantly. No counting shelves at the end of the week.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(74,222,128,.1);color:#4ade80">3</div>
+        <div class="step-body">
+          <div class="step-label">Spot low stock at a glance</div>
+          <div class="step-desc">Items below your minimum level are flagged. You see exactly what needs reordering before you run out — not after.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-title">Always with you</div>
+      <p>Whether you work in one salon or move between locations, your inventory data lives in the cloud. Check stock levels from anywhere — before a shift, between clients, or while placing an order.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 6. REPORTS & TAX -->
+  <div class="section" id="reports">
+    <div class="section-header">
+      <div class="section-icon ic-blue">📊</div>
+      <div>
+        <div class="section-num">Section 06</div>
+        <div class="section-title">Reports, search &amp; tax — your business at a glance</div>
+      </div>
+    </div>
+    <p class="section-intro">Every appointment you log builds a searchable, filterable record of your business. When tax season arrives, or when you need to understand a slow week, the answers are already there.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" style="background:rgba(96,165,250,.12);color:#60a5fa">1</div>
+        <div class="step-body">
+          <div class="step-label">Search any client or service</div>
+          <div class="step-desc">Tap the search icon in Appointments. Type a client name, a service, or a date. Results appear instantly across your entire history — no filter menus, no date ranges to set.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(96,165,250,.12);color:#60a5fa">2</div>
+        <div class="step-body">
+          <div class="step-label">View earnings by period</div>
+          <div class="step-desc">In the Earnings room, switch between Today, This Week, This Month, and All Time. Your totals recalculate instantly. Compare periods to understand your busiest times and highest-earning services.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(96,165,250,.12);color:#60a5fa">3</div>
+        <div class="step-body">
+          <div class="step-label">Tax time — when you choose</div>
+          <div class="step-desc">Your complete income record is always there. When you're ready to prepare for tax, every charge, every tip, and every date is logged and filterable. Hand your accountant a complete picture in minutes, not days.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout" style="border-color:#60a5fa;background:#111">
+      <div class="callout-title" style="color:#60a5fa">Your decision, your timing</div>
+      <p>Tax reporting is a capability, not a requirement. Use it when it suits you. The data is always there when you need it — you are never locked into a particular workflow.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 7. PROTECTION & POLICY -->
+  <div class="section" id="protection">
+    <div class="section-header">
+      <div class="section-icon ic-orange">🛡️</div>
+      <div>
+        <div class="section-num">Section 07</div>
+        <div class="section-title">Your protection — backed by policy</div>
+      </div>
+    </div>
+    <p class="section-intro">Every client booking made through Your Salon carries a consent acknowledgement. Before they confirm, they agree to your terms — giving you a clear, documented record of their agreement to proceed.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" style="background:rgba(251,146,60,.1);color:#fb923c">1</div>
+        <div class="step-body">
+          <div class="step-label">Consent is built in</div>
+          <div class="step-desc">The client booking page includes a consent acknowledgement clients must agree to before submitting. This creates a timestamped record of their agreement — no extra paperwork on your end.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(251,146,60,.1);color:#fb923c">2</div>
+        <div class="step-body">
+          <div class="step-label">Best-effort promise</div>
+          <div class="step-desc">Your Salon is built and maintained to the highest standard of care. Every update, every fix, every new feature is delivered with your business in mind — conscientiously, and without compromise on quality.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(251,146,60,.1);color:#fb923c">3</div>
+        <div class="step-body">
+          <div class="step-label">Cloud backup protects you</div>
+          <div class="step-desc">If you lose your device, your data does not go with it. Everything is stored securely in the cloud. Sign in on any device and pick up exactly where you left off.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout" style="border-color:#fb923c;background:#111">
+      <div class="callout-title" style="color:#fb923c">No refund policy — clearly communicated</div>
+      <p>The consent flow on client bookings sets clear expectations upfront. Clients know what they are agreeing to before they arrive. Disputes become easier to navigate when the record is already there.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 8. EVERY TRADE -->
+  <div class="section" id="trades">
+    <div class="section-header">
+      <div class="section-icon ic-purple">💅</div>
+      <div>
+        <div class="section-num">Section 08</div>
+        <div class="section-title">Built for every beauty trade</div>
+      </div>
+    </div>
+    <p class="section-intro">Your Salon is not just for hair stylists. It is built for every professional on the salon floor — and adapts to your specific trade the moment you choose it.</p>
+
+    <div class="pill-list">
+      <span class="pill">✂️ Hair</span>
+      <span class="pill">💈 Barber</span>
+      <span class="pill">💅 Nails</span>
+      <span class="pill">👁️ Lash</span>
+      <span class="pill">🤨 Brow</span>
+      <span class="pill">🌿 Esthetics</span>
+      <span class="pill">💆 Massage</span>
+      <span class="pill">💄 Makeup</span>
+      <span class="pill">🌟 Extensions</span>
+    </div>
+
+    <div class="steps" style="margin-top:20px">
+      <div class="step">
+        <div class="step-num" style="background:rgba(167,139,250,.12);color:#a78bfa">1</div>
+        <div class="step-body">
+          <div class="step-label">Choose your trade</div>
+          <div class="step-desc">In Settings → My Trade, tap your profession. The app adapts — service categories, price book suggestions, and terminology all shift to match your work.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(167,139,250,.12);color:#a78bfa">2</div>
+        <div class="step-body">
+          <div class="step-label">Switch anytime</div>
+          <div class="step-desc">Changed roles? Expanded your services? Tap a different trade and the app updates instantly. Your existing data is never affected.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout purple">
+      <div class="callout-title">One app, your whole career</div>
+      <p>As your career evolves — new skills, new trades, new salon — Your Salon evolves with you. The same reliable core, always adapted to where you are right now.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 9. INSTALL -->
+  <div class="section" id="install">
+    <div class="section-header">
+      <div class="section-icon ic-cyan">📱</div>
+      <div>
+        <div class="section-num">Section 09</div>
+        <div class="section-title">Install it like a native app — no App Store</div>
+      </div>
+    </div>
+    <p class="section-intro">Your Salon installs straight from your browser. No App Store, no lengthy download, no account required to install. Two taps and it lives on your home screen like any other app.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" style="background:rgba(103,232,249,.12);color:#67e8f9">1</div>
+        <div class="step-body">
+          <div class="step-label">Open in Safari (iPhone) or Chrome (Android)</div>
+          <div class="step-desc">Navigate to <strong style="color:#e0e0e0">getcommissionpro.com/salon.html</strong> in your mobile browser.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(103,232,249,.12);color:#67e8f9">2</div>
+        <div class="step-body">
+          <div class="step-label">Tap Share → Add to Home Screen</div>
+          <div class="step-desc">On iPhone: tap the Share button (the box with an arrow) at the bottom of Safari, then scroll down and tap "Add to Home Screen." On Android: tap the three-dot menu → "Add to Home Screen."</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(103,232,249,.12);color:#67e8f9">3</div>
+        <div class="step-body">
+          <div class="step-label">Open from your home screen</div>
+          <div class="step-desc">Tap the ✨ Your Salon icon. It opens full-screen, with no browser bar — exactly like a native app. Works offline for core features once installed.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout cyan">
+      <div class="callout-title">Why no App Store?</div>
+      <p>App stores add friction — for you and your clients. Your Salon installs instantly, updates silently in the background, and never asks you to "update to the latest version." It is always current the next time you open it.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 10. THE EXPERIENCE -->
+  <div class="section" id="experience">
+    <div class="section-header">
+      <div class="section-icon ic-gold">✨</div>
+      <div>
+        <div class="section-num">Section 10</div>
+        <div class="section-title">Comfortable, smart, and a pleasure to use</div>
+      </div>
+    </div>
+    <p class="section-intro">Your Salon is designed to feel as good as it works. A dark, elegant interface that is easy on the eyes during a long shift. Interactions that are fast, forgiving, and satisfying — because the app you use every day should be one you enjoy opening.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" style="background:rgba(245,158,11,.15);color:#f59e0b">1</div>
+        <div class="step-body">
+          <div class="step-label">Personalise your colours and animations</div>
+          <div class="step-desc">In Settings, choose your glow colour and breathing speed. Make the app feel like yours. Small touches that make the difference between a tool you tolerate and one you look forward to using.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(245,158,11,.15);color:#f59e0b">2</div>
+        <div class="step-body">
+          <div class="step-label">Years of salon experience, one affordable price</div>
+          <div class="step-desc">What used to require a bookkeeper, a spreadsheet, a separate booking system, and a stock management tool now lives in one app. A fraction of the old cost. All in your pocket.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(245,158,11,.15);color:#f59e0b">3</div>
+        <div class="step-body">
+          <div class="step-label">Minimum effort, maximum reliability</div>
+          <div class="step-desc">Log a booking in 20 seconds. Check your week in one tap. Share your booking link in two. Your Salon does the heavy lifting so you can stay focused on what you do best — your craft.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /sections -->
+
+<footer>
+  <p style="margin-bottom:8px">✨ Your Salon — built for beauty professionals, by one.</p>
+  <p><a href="./privacy.html">Privacy Policy</a> &nbsp;·&nbsp; <a href="./salon.html">Open App</a> &nbsp;·&nbsp; <a href="mailto:chabokchamejun@gmail.com">Contact</a></p>
+</footer>
+
+</body>
+</html>

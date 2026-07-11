@@ -156,6 +156,27 @@
   #shellReqBanner.show{display:flex}
   @keyframes reqShimmer{to{background-position:200% 0}}
 
+  /* ===== Onboarding slides ===== */
+  #onboardOv{position:fixed;inset:0;z-index:200;background:#050507;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-end;opacity:0;pointer-events:none;transition:opacity .35s}
+  #onboardOv.show{opacity:1;pointer-events:all}
+  .ob-skip{position:absolute;top:calc(14px + env(safe-area-inset-top));right:16px;font-size:13px;color:#555;background:none;border:none;cursor:pointer;padding:6px 2px;font-family:inherit}
+  .ob-slides{flex:1;display:flex;align-items:center;justify-content:center;padding:0 28px;padding-top:calc(40px + env(safe-area-inset-top))}
+  .ob-slide{display:none;text-align:center;max-width:380px;width:100%}
+  .ob-slide.active{display:block}
+  .ob-icon{font-size:56px;margin-bottom:22px;line-height:1}
+  .ob-title{font-size:22px;font-weight:800;color:#f0f0f0;line-height:1.2;margin-bottom:14px;letter-spacing:-.3px}
+  .ob-title span{background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .ob-body{font-size:14.5px;color:#888;line-height:1.7}
+  .ob-body strong{color:#ccc;font-weight:600}
+  .ob-foot{padding:24px 28px calc(28px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:16px}
+  .ob-dots{display:flex;gap:7px}
+  .ob-dot{width:6px;height:6px;border-radius:3px;background:#2a2a2a;transition:background .25s,width .25s}
+  .ob-dot.active{background:linear-gradient(110deg,#67e8f9,#a78bfa);width:20px}
+  .ob-next{width:100%;max-width:320px;padding:15px;border-radius:14px;border:none;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);color:#050507;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:.2px;transition:opacity .15s}
+  .ob-next:active{opacity:.8}
+  .ob-guide-link{font-size:13px;color:#555;text-decoration:none}
+  .ob-guide-link:hover{color:#a78bfa}
+
   /* ===== Prismatic burst canvas ===== */
 
   #waveCanvas{
@@ -197,7 +218,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.33</div>
+    <div class="ver">salon v0.34</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -219,6 +240,10 @@
         <div class="auth-title">You're synced</div>
         <div class="auth-sub">Signed in as <b id="meEmail" style="color:#cfcfe0"></b></div>
         <button class="auth-btn" onclick="doSignOut()">Sign out</button>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <a href="./guide.html" target="_blank" class="auth-btn" style="flex:1;text-align:center;text-decoration:none;font-size:13px">📖 App Guide</a>
+          <button class="auth-btn" style="flex:1;font-size:13px" onclick="closeAuth();replayOnboarding()">▶ Replay intro</button>
+        </div>
       </div>
     </div>
   </div>
@@ -332,7 +357,7 @@
       try{ fdb=firebase.firestore(); }catch(e){ console.warn('firestore init',e); }
       fa.onAuthStateChanged(function(u){
         renderAuth(u);
-        if(u){ startUserSync(u.uid); } else { stopUserSync(); }
+        if(u){ startUserSync(u.uid); if(typeof _ysShowOnboardingIfNeeded==='function')_ysShowOnboardingIfNeeded(); } else { stopUserSync(); }
       });
     }catch(e){console.warn('auth init failed',e);}
   }
@@ -486,7 +511,7 @@
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.33';
+  var SHELL_V='v0.34';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{
@@ -854,6 +879,120 @@
     /* on return, spawnWave loop is already running via setTimeout — nothing to restart */
   });
   /* Loop starts only when the first wave spawns (see spawnWave above) */
+})();
+</script>
+
+<!-- ===== ONBOARDING OVERLAY ===== -->
+<div id="onboardOv">
+  <button class="ob-skip" onclick="dismissOnboarding()">Skip</button>
+  <div class="ob-slides">
+
+    <div class="ob-slide active" data-i="0">
+      <div class="ob-icon">✨</div>
+      <div class="ob-title">Welcome to <span>Your Salon</span></div>
+      <div class="ob-body">Everything you need to run your business — bookings, earnings, clients, inventory, colour — in one beautifully simple app. Built for every beauty professional.</div>
+    </div>
+
+    <div class="ob-slide" data-i="1">
+      <div class="ob-icon">💰</div>
+      <div class="ob-title">Your money, <span>always right</span></div>
+      <div class="ob-body">Set your commission rate once. Every booking instantly calculates your cut, the salon's cut, and your take-home. <strong>Tips are 100% yours</strong> — tracked separately, never shared. If you ever lose your device, every figure is safe in the cloud.</div>
+    </div>
+
+    <div class="ob-slide" data-i="2">
+      <div class="ob-icon">📲</div>
+      <div class="ob-title">Clients book <span>themselves</span></div>
+      <div class="ob-body">Share your personal booking link — in your Instagram bio, a text, anywhere. Your client taps it, picks a time, and the request arrives in your inbox. <strong>No app for them to download. No account to create. No friction.</strong></div>
+    </div>
+
+    <div class="ob-slide" data-i="3">
+      <div class="ob-icon">🪪</div>
+      <div class="ob-title">Hair Passport — <span>never forget a client</span></div>
+      <div class="ob-body">Every client gets a digital profile — every service, every note, every visit. <strong>Recall exactly what you did last time</strong> without asking. That kind of personal touch is what turns a one-time client into a loyal regular.</div>
+    </div>
+
+    <div class="ob-slide" data-i="4">
+      <div class="ob-icon">🎨</div>
+      <div class="ob-title">Colour wheel — <span>in your pocket</span></div>
+      <div class="ob-body">The professional colour wheel, always with you. Identify an unwanted tone, tap it, and instantly see the exact colour to neutralise it. <strong>What used to take years of instinct is now a two-second reference.</strong> No textbook. No guesswork.</div>
+    </div>
+
+    <div class="ob-slide" data-i="5">
+      <div class="ob-icon">📦</div>
+      <div class="ob-title">Inventory — <span>always know your stock</span></div>
+      <div class="ob-body">Track every product you carry. Log usage after each service. Get low-stock alerts before you run out — not after. <strong>Available on every device, everywhere you work.</strong></div>
+    </div>
+
+    <div class="ob-slide" data-i="6">
+      <div class="ob-icon">📊</div>
+      <div class="ob-title">Reports &amp; tax — <span>your business at a glance</span></div>
+      <div class="ob-body">Search any client, service, or date in seconds. View earnings by day, week, month, or all time. When tax season arrives, <strong>your complete income record is already there</strong> — no scrambling, no receipts to chase.</div>
+    </div>
+
+    <div class="ob-slide" data-i="7">
+      <div class="ob-icon">🛡️</div>
+      <div class="ob-title">You are <span>covered</span></div>
+      <div class="ob-body">Client bookings include a <strong>built-in consent acknowledgement</strong>. Your data is encrypted and cloud-backed. Works for every beauty trade. One purchase — yours forever, every future update included. <strong>What used to cost hundreds a year now fits in your pocket.</strong></div>
+    </div>
+
+  </div>
+  <div class="ob-foot">
+    <div class="ob-dots" id="obDots"></div>
+    <button class="ob-next" id="obNext" onclick="obAdvance()">Next</button>
+    <a class="ob-guide-link" href="./guide.html" target="_blank">Read the full guide →</a>
+  </div>
+</div>
+
+<script>
+/* ===== ONBOARDING ===== */
+(function(){
+  var slides=document.querySelectorAll('.ob-slide');
+  var dots=document.getElementById('obDots');
+  var nextBtn=document.getElementById('obNext');
+  var cur=0;
+
+  /* Build dots */
+  slides.forEach(function(_,i){
+    var d=document.createElement('div');
+    d.className='ob-dot'+(i===0?' active':'');
+    dots.appendChild(d);
+  });
+
+  function goTo(n){
+    slides[cur].classList.remove('active');
+    dots.querySelectorAll('.ob-dot')[cur].classList.remove('active');
+    cur=n;
+    slides[cur].classList.add('active');
+    dots.querySelectorAll('.ob-dot')[cur].classList.add('active');
+    nextBtn.textContent=cur===slides.length-1?'Get started':'Next';
+  }
+
+  window.obAdvance=function(){
+    if(cur<slides.length-1){goTo(cur+1);}
+    else{dismissOnboarding();}
+  };
+
+  window.dismissOnboarding=function(){
+    var ov=document.getElementById('onboardOv');
+    if(ov){ov.classList.remove('show');setTimeout(function(){ov.style.display='none';},400);}
+    try{localStorage.setItem('_ys_onboarded','1');}catch(e){}
+  };
+
+  window.replayOnboarding=function(){
+    cur=0;
+    slides.forEach(function(s,i){s.classList.toggle('active',i===0);});
+    dots.querySelectorAll('.ob-dot').forEach(function(d,i){d.classList.toggle('active',i===0);});
+    nextBtn.textContent='Next';
+    var ov=document.getElementById('onboardOv');
+    if(ov){ov.style.display='flex';requestAnimationFrame(function(){ov.classList.add('show');});}
+  };
+
+  /* Show on first login */
+  window._ysShowOnboardingIfNeeded=function(){
+    if(localStorage.getItem('_ys_onboarded'))return;
+    var ov=document.getElementById('onboardOv');
+    if(ov){ov.style.display='flex';requestAnimationFrame(function(){ov.classList.add('show');});}
+  };
 })();
 </script>
 </body>
