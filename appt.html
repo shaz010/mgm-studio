@@ -1254,39 +1254,72 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     </div>
 
     <!-- Breathing glow controls -->
+    <!-- _gc/_gs/_wi/_wf: standalone globals — no IIFE dependency, called directly from onclick -->
+    <script>
+    function _gc(key,el){
+      var bs=document.querySelectorAll('#glowColourChips .glow-chip,#glowColourChips .glow-off-chip');
+      for(var i=0;i<bs.length;i++)bs[i].classList.remove('gc-active');
+      el.classList.add('gc-active');
+      try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.glowColour=key;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}
+      try{window.parent.postMessage({cpPrefsChanged:true,glowColour:key},'*');}catch(e){}
+      try{if(typeof applyHeartGlowPrefs==='function')applyHeartGlowPrefs();}catch(e){}
+    }
+    function _gs(idx,el){
+      var bs=document.querySelectorAll('#glowSpeedChips .glow-chip');
+      for(var i=0;i<bs.length;i++)bs[i].classList.remove('gc-active');
+      el.classList.add('gc-active');
+      try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.glowSpeedIdx=idx;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}
+      try{window.parent.postMessage({cpPrefsChanged:true,glowSpeedIdx:idx},'*');}catch(e){}
+      try{if(typeof applyHeartGlowPrefs==='function')applyHeartGlowPrefs();}catch(e){}
+    }
+    function _wi(idx,el){
+      var bs=document.querySelectorAll('#waveIntensityChips .glow-chip');
+      for(var i=0;i<bs.length;i++)bs[i].classList.remove('gc-active');
+      el.classList.add('gc-active');
+      try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.waveIntensity=idx;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}
+      try{window.parent.postMessage({cpPrefsChanged:true,waveIntensity:idx},'*');}catch(e){}
+    }
+    function _wf(idx,el){
+      var bs=document.querySelectorAll('#waveFreqChips .glow-chip');
+      for(var i=0;i<bs.length;i++)bs[i].classList.remove('gc-active');
+      el.classList.add('gc-active');
+      try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.waveFreq=idx;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}
+      try{window.parent.postMessage({cpPrefsChanged:true,waveFreq:idx},'*');}catch(e){}
+    }
+    </script>
     <div class="glow-chip-label">✦ Breathing glow — colour</div>
     <div class="glow-chips" id="glowColourChips">
-      <button class="glow-chip gc-active" id="gcAuto" onclick="window.glowSetColour('auto',this)">✦ All colours</button>
-      <button class="glow-chip gc-gold" id="gcGold" onclick="window.glowSetColour('gold',this)">Gold</button>
-      <button class="glow-chip gc-purple" id="gcPurple" onclick="window.glowSetColour('purple',this)">Purple</button>
-      <button class="glow-chip gc-rose" id="gcRose" onclick="window.glowSetColour('rose',this)">Rose</button>
-      <button class="glow-chip gc-cyan" id="gcCyan" onclick="window.glowSetColour('cyan',this)">Cyan</button>
-      <button class="glow-off-chip" id="gcOff" onclick="window.glowSetColour('off',this)">Off</button>
+      <button type="button" class="glow-chip gc-active" id="gcAuto" onclick="_gc('auto',this)">✦ All colours</button>
+      <button type="button" class="glow-chip gc-gold" id="gcGold" onclick="_gc('gold',this)">Gold</button>
+      <button type="button" class="glow-chip gc-purple" id="gcPurple" onclick="_gc('purple',this)">Purple</button>
+      <button type="button" class="glow-chip gc-rose" id="gcRose" onclick="_gc('rose',this)">Rose</button>
+      <button type="button" class="glow-chip gc-cyan" id="gcCyan" onclick="_gc('cyan',this)">Cyan</button>
+      <button type="button" class="glow-off-chip" id="gcOff" onclick="_gc('off',this)">Off</button>
     </div>
     <div class="glow-chip-label">✦ Breathing glow — speed</div>
     <div class="glow-chips" id="glowSpeedChips">
-      <button class="glow-chip" id="gs0" onclick="window.glowSetSpeed(0,this)">Cosmic<br><small style="opacity:.5">20 s</small></button>
-      <button class="glow-chip" id="gs1" onclick="window.glowSetSpeed(1,this)">Meditation<br><small style="opacity:.5">12 s</small></button>
-      <button class="glow-chip" id="gs2" onclick="window.glowSetSpeed(2,this)">Really slow<br><small style="opacity:.5">8 s</small></button>
-      <button class="glow-chip" id="gs3" onclick="window.glowSetSpeed(3,this)">Slow<br><small style="opacity:.5">5 s</small></button>
-      <button class="glow-chip gc-active" id="gs4" onclick="window.glowSetSpeed(4,this)">Natural<br><small style="opacity:.5">3.5 s</small></button>
-      <button class="glow-chip" id="gs5" onclick="window.glowSetSpeed(5,this)">Lively<br><small style="opacity:.5">2 s</small></button>
-      <button class="glow-chip" id="gs6" onclick="window.glowSetSpeed(6,this)">Energetic<br><small style="opacity:.5">1.2 s</small></button>
+      <button type="button" class="glow-chip" id="gs0" onclick="_gs(0,this)">Cosmic<br><small style="opacity:.5">20 s</small></button>
+      <button type="button" class="glow-chip" id="gs1" onclick="_gs(1,this)">Meditation<br><small style="opacity:.5">12 s</small></button>
+      <button type="button" class="glow-chip" id="gs2" onclick="_gs(2,this)">Really slow<br><small style="opacity:.5">8 s</small></button>
+      <button type="button" class="glow-chip" id="gs3" onclick="_gs(3,this)">Slow<br><small style="opacity:.5">5 s</small></button>
+      <button type="button" class="glow-chip gc-active" id="gs4" onclick="_gs(4,this)">Natural<br><small style="opacity:.5">3.5 s</small></button>
+      <button type="button" class="glow-chip" id="gs5" onclick="_gs(5,this)">Lively<br><small style="opacity:.5">2 s</small></button>
+      <button type="button" class="glow-chip" id="gs6" onclick="_gs(6,this)">Energetic<br><small style="opacity:.5">1.2 s</small></button>
     </div>
 
     <!-- Colour wave shoot-out controls -->
     <div class="glow-chip-label">✦ Colour wave — intensity</div>
     <div class="glow-chips" id="waveIntensityChips">
-      <button class="glow-chip" id="wi0" onclick="window.waveSetIntensity(0,this)">Off</button>
-      <button class="glow-chip" id="wi1" onclick="window.waveSetIntensity(1,this)">Whisper</button>
-      <button class="glow-chip gc-active" id="wi2" onclick="window.waveSetIntensity(2,this)">Gentle</button>
-      <button class="glow-chip" id="wi3" onclick="window.waveSetIntensity(3,this)">Vivid</button>
+      <button type="button" class="glow-chip" id="wi0" onclick="_wi(0,this)">Off</button>
+      <button type="button" class="glow-chip" id="wi1" onclick="_wi(1,this)">Whisper</button>
+      <button type="button" class="glow-chip gc-active" id="wi2" onclick="_wi(2,this)">Gentle</button>
+      <button type="button" class="glow-chip" id="wi3" onclick="_wi(3,this)">Vivid</button>
     </div>
     <div class="glow-chip-label">✦ Colour wave — frequency</div>
     <div class="glow-chips" id="waveFreqChips">
-      <button class="glow-chip" id="wf0" onclick="window.waveSetFreq(0,this)">Rare<br><small style="opacity:.5">~35 s</small></button>
-      <button class="glow-chip gc-active" id="wf1" onclick="window.waveSetFreq(1,this)">Occasional<br><small style="opacity:.5">~14 s</small></button>
-      <button class="glow-chip" id="wf2" onclick="window.waveSetFreq(2,this)">Regular<br><small style="opacity:.5">~6 s</small></button>
+      <button type="button" class="glow-chip" id="wf0" onclick="_wf(0,this)">Rare<br><small style="opacity:.5">~35 s</small></button>
+      <button type="button" class="glow-chip gc-active" id="wf1" onclick="_wf(1,this)">Occasional<br><small style="opacity:.5">~14 s</small></button>
+      <button type="button" class="glow-chip" id="wf2" onclick="_wf(2,this)">Regular<br><small style="opacity:.5">~6 s</small></button>
     </div>
 
     <div class="set-sec adv-sec">My trade</div>
@@ -3079,7 +3112,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.38 · SW update-check on load; price seed guard >=20; chips via window.* onclick';
+var VERSION='v5.39 · Chips use standalone _gc/_gs/_wi/_wf globals + type=button; price seed uses _seedDone flag';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4150,7 +4183,8 @@ window.addEventListener('message',function(ev){
 (function seedPrices(){
   try{
     var cp=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
-    if(cp.prices&&Object.keys(cp.prices).length>=20)return; /* already have a full price list */
+    /* Skip only if user already has a healthy price list (20+ entries) */
+    if(cp._seedDone&&cp.prices&&Object.keys(cp.prices).length>=20)return;
     cp.prices={
       /* ── HAIR — Women · Cuts ── */
       "Women's Haircut":85,"Bang Trim":25,"Trim / Dusting":55,"Bob Cut":90,
@@ -4221,6 +4255,7 @@ window.addEventListener('message',function(ev){
       "Hand-Tied Extensions":500,"Micro-Link Extensions":400,
       "Move-Up / Maintenance":200,"Extension Removal":100
     };
+    cp._seedDone=true;
     localStorage.setItem('cp_prefs',JSON.stringify(cp));
   }catch(e){}
 })();
