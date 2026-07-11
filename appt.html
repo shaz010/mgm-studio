@@ -3240,7 +3240,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.53 · iPhone dvh stretch + take-home tile grid (no left-drift)';
+var VERSION='v5.54 · permanent erase wall blocks pre-erase Firestore ghosts';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3566,7 +3566,11 @@ function _nukeStorage(){
   try{localStorage.clear();}catch(_){}
   /* write erase TIMESTAMP after clearing — survives multiple reloads for 60 s,
      so rapid reloads (update checks, room-switches) can't bypass the guard */
-  try{localStorage.setItem('_ap_erased',String(Date.now()));}catch(_){}
+  var _eraseNow=Date.now();
+  try{localStorage.setItem('_ap_erased',String(_eraseNow));}catch(_){}
+  /* permanent erase wall — requests created BEFORE this time are refused forever,
+     even if Firestore clear fails or is slow.  Never removed.               */
+  try{localStorage.setItem('_ap_eraseTime',String(_eraseNow));}catch(_){}
 }
 function deleteAllClients(){
   askConfirm('Delete ALL clients and ALL appointments on this device? Cannot be undone.',function(){
@@ -3971,8 +3975,16 @@ function listenRequests(){
     _reqUnsub=db.collection('requests')
       .where('salon','==',SALON_ID).where('status','==','pending')
       .onSnapshot(function(snap){
+        /* Hard wall: any request born before the last startFresh is silently dropped,
+           even if Firestore clear was slow or failed.  _ap_eraseTime is permanent. */
+        var _eraseWall=0;
+        try{var _ew=localStorage.getItem('_ap_eraseTime');if(_ew)_eraseWall=parseInt(_ew)||0;}catch(_){}
         pendingReqs=[];
-        snap.forEach(function(d){var r=d.data();r._id=d.id;pendingReqs.push(r);});
+        snap.forEach(function(d){
+          var r=d.data();r._id=d.id;
+          if(_eraseWall && (r.createdAt||0) < _eraseWall) return; /* pre-erase ghost — ignore */
+          pendingReqs.push(r);
+        });
         pendingReqs.sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0);});
         // auto-confirm trusted clients (still conflict-checked)
         pendingReqs.forEach(function(r){ if(isTrustedPhone(r.phone)&&!reqConflict(r)){autoApprove(r);} });
