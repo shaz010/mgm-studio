@@ -3076,7 +3076,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.33 · Glow+wave chips always in sync on settings open';
+var VERSION='v5.34 · Breathing glow colour+speed now drive the Add button animation';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4249,11 +4249,13 @@ window.addEventListener('message',function(ev){
     document.querySelectorAll('#glowColourChips .glow-chip,#glowColourChips .glow-off-chip').forEach(function(b){b.classList.remove('gc-active');});
     if(btn)btn.classList.add('gc-active');
     gColour=key;saveGlowPrefs();
+    try{if(typeof applyHeartGlowPrefs==='function')applyHeartGlowPrefs();}catch(e){}
   };
   window.glowSetSpeed=function(idx,btn){
     document.querySelectorAll('#glowSpeedChips .glow-chip').forEach(function(b){b.classList.remove('gc-active');});
     if(btn)btn.classList.add('gc-active');
     gSpeedIdx=idx;saveGlowPrefs();
+    try{if(typeof applyHeartGlowPrefs==='function')applyHeartGlowPrefs();}catch(e){}
   };
   /* Called by openSettings() to keep chips in sync with saved prefs on every open */
   window.apptSyncGlowPrefs=function(){loadGlowPrefs();syncGlowChips();};
@@ -4262,15 +4264,41 @@ window.addEventListener('message',function(ev){
 })();
 
 /* ══════════════════════════════════════════════════════
-   EMPTY-STATE HEARTBEAT — gold "Add appointment" button
-   Deep-sleep pace (28 BPM) — lub·dub double beat.
+   EMPTY-STATE HEARTBEAT — "Add appointment" button
+   Speed + colour driven by breathing glow prefs.
    Canvas overlay for ring ripples + tap starburst.
    ══════════════════════════════════════════════════════ */
 (function(){
   var cv=null,ctx=null,btn=null;
-  var PERIOD=60/28; // deep sleep default
+  /* Speed map: Cosmic→Energetic, seconds per breath cycle */
+  var SPEED_MAP=[20,12,8,5,3.5,2,1.2];
+  var PERIOD=3.5; // Natural default
+  /* Colour palettes: ring RGB + two shadow RGBs */
+  var CPALS={
+    gold:  {r:'255,184,0',   s1:'255,155,0',  s2:'255,220,80'},
+    purple:{r:'180,90,255',  s1:'150,60,220', s2:'199,125,255'},
+    rose:  {r:'255,107,157', s1:'255,80,130', s2:'255,160,190'},
+    cyan:  {r:'6,214,224',   s1:'6,180,200',  s2:'100,240,250'}
+  };
+  var AUTO_SEQ=['gold','purple','rose','cyan'];
+  var autoIdx=0;
+  var curPal=CPALS.gold;
+  var isAuto=false;
+  var heartOff=false;
   var t0=null,prevPhase=0,rings=[],parts=[];
   var raf=null;
+
+  function readPrefs(){
+    try{
+      var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
+      var key=p.glowColour||'auto';
+      var si=p.glowSpeedIdx!=null?Number(p.glowSpeedIdx):4;
+      PERIOD=SPEED_MAP[Math.max(0,Math.min(6,si))];
+      if(key==='off'){heartOff=true;isAuto=false;}
+      else if(key==='auto'){heartOff=false;isAuto=true;curPal=CPALS[AUTO_SEQ[autoIdx%4]];}
+      else{heartOff=false;isAuto=false;curPal=CPALS[key]||CPALS.gold;}
+    }catch(e){}
+  }
 
   function gauss(x,c,w){var d=(x-c)/w;return Math.exp(-d*d*2);}
   function heartSignal(t){
@@ -4305,20 +4333,22 @@ window.addEventListener('message',function(ev){
     var phase=(t%PERIOD)/PERIOD;
     var hb=heartSignal(t);
 
-    /* ring fires */
+    /* ring fires — on lub beat advance auto colour cycle */
     var r2=btn.getBoundingClientRect();
     var ox=r2.left+r2.width/2, oy=r2.top+r2.height/2;
-    if(prevPhase>0.9&&phase<0.1)
-      rings.push({x:ox,y:oy,r:0,maxR:r2.width*.9,life:1,spd:4.8,lw:1.4,col:'255,184,0',hb:true});
+    if(prevPhase>0.9&&phase<0.1){
+      if(isAuto){autoIdx++;curPal=CPALS[AUTO_SEQ[autoIdx%4]];}
+      rings.push({x:ox,y:oy,r:0,maxR:r2.width*.9,life:1,spd:4.8,lw:1.4,col:curPal.r,hb:true});
+    }
     if(prevPhase<0.22&&phase>=0.22)
-      rings.push({x:ox,y:oy,r:0,maxR:r2.width*.65,life:1,spd:3.8,lw:.9,col:'255,184,0',hb:true});
+      rings.push({x:ox,y:oy,r:0,maxR:r2.width*.65,life:1,spd:3.8,lw:.9,col:curPal.r,hb:true});
     prevPhase=phase;
 
     /* button throb */
     var sc=1+hb*0.09;
     var spr=Math.round(10+hb*28);
     btn.style.transform='scale('+sc.toFixed(4)+')';
-    btn.style.boxShadow='0 '+Math.round(3+hb*10)+'px '+spr+'px rgba(255,155,0,'+(0.30+hb*.42)+'),0 0 '+Math.round(4+hb*18)+'px rgba(255,220,80,'+(0.18+hb*.5)+')';
+    btn.style.boxShadow='0 '+Math.round(3+hb*10)+'px '+spr+'px rgba('+curPal.s1+','+(0.30+hb*.42)+'),0 0 '+Math.round(4+hb*18)+'px rgba('+curPal.s2+','+(0.18+hb*.5)+')';
 
     /* canvas */
     ensureCanvas();
@@ -4354,10 +4384,28 @@ window.addEventListener('message',function(ev){
     raf=requestAnimationFrame(loop);
   }
 
+  /* Called by glow settings chips for live updates */
+  window.applyHeartGlowPrefs=function(){
+    readPrefs();
+    if(heartOff){
+      if(raf){cancelAnimationFrame(raf);raf=null;}
+      var b=document.getElementById('emptyAddBtn');
+      if(b){b.style.transform='';b.style.boxShadow='';}
+      if(cv)cv.getContext('2d').clearRect(0,0,cv.width,cv.height);
+      return;
+    }
+    /* Restart loop with new prefs if button is currently on screen */
+    if(document.getElementById('emptyAddBtn')){
+      t0=null;prevPhase=0;rings=[];
+      if(!raf)raf=requestAnimationFrame(loop);
+    }
+  };
+
   window.startEmptyHeart=function(){
-    t0=null;prevPhase=0;rings=[];parts=[];
+    readPrefs();
+    t0=null;prevPhase=0;rings=[];parts=[];autoIdx=0;
     if(raf)cancelAnimationFrame(raf);
-    raf=requestAnimationFrame(loop);
+    if(!heartOff)raf=requestAnimationFrame(loop);
   };
 
   /* starburst on tap — called from openAdd() */
