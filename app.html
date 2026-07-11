@@ -542,8 +542,8 @@ body.theme-light .ins-sub{color:#666}
 .fbtn:hover{border-color:#666;color:#eee}
 
 /* SUMMARY ROW */
-.sum-row{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:18px}
-@media(max-width:520px){.sum-row{grid-template-columns:repeat(2,1fr)}}
+.sum-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px;margin-bottom:18px}
+.sum-row>.sum-c:last-child:nth-child(odd){grid-column:1/-1}
 .sum-c{background:#111;border:1px solid #333;border-radius:9px;padding:12px;text-align:center}
 .sum-lbl{font-size:10px;color:#777;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;font-weight:600}
 .sum-val{font-size:19px;font-weight:700}
@@ -3558,7 +3558,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.89 · Take-home stripe bleeds full card width';
+var VERSION='app v1.90 · TAKE-HOME spans full row on iPhone (no left-orphan)';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
