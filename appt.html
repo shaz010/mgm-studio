@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<script>try{if(window.self!==window.top)document.documentElement.classList.add('in-shell');}catch(e){document.documentElement.classList.add('in-shell');}</script>
+<script>try{if(window.self!==window.top)document.documentElement.classList.add('in-shell');}catch(e){document.documentElement.classList.add('in-shell');}
+/* Force the service worker to update itself so uploads are never served stale */
+if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.update();});});}
+</script>
 <title>AppointmentPro</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -3076,7 +3079,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.37 · Price seed guard fixed (>=20 threshold); Force Update clears SW cache';
+var VERSION='v5.38 · SW update-check on load; price seed guard >=20; chips via window.* onclick';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

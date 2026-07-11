@@ -131,7 +131,7 @@ body.a11y-big .client-card{font-size:15px}
 /* ROW BOXES */
 .row-box{margin-top:10px;border-radius:9px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
 .tip-rb{background:rgba(245,158,214,.10);border:1.5px solid rgba(245,158,214,.34)}
-.total-rb{background:var(--gold-dim);border:1.5px solid var(--gold-border)}
+.total-rb{background:var(--gold-dim);border-top:1.5px solid var(--gold-border);border-bottom:1.5px solid var(--gold-border);border-left:none;border-right:none;border-radius:0;margin-left:-18px;margin-right:-18px;padding-left:18px;padding-right:18px}
 .box-lbl{font-size:13px;color:#ccc;font-weight:500}
 .tip-v{font-size:20px;font-weight:700;color:#f59ed6}
 .total-v{font-size:22px;font-weight:700;color:var(--gold)}
@@ -3558,7 +3558,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.88 · nuclear erase, enumerate all keys dynamically';
+var VERSION='app v1.89 · Take-home stripe bleeds full card width';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
