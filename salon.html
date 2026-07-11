@@ -197,7 +197,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.30</div>
+    <div class="ver">salon v0.31</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -486,7 +486,7 @@
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.30';
+  var SHELL_V='v0.31';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{
@@ -588,7 +588,11 @@
      +'inset 0 0 '+(t*14)+'px rgba('+g+','+(t*.12)+')';
   }
 
+  var _gLastTick=0;
   function tick(ts){
+    /* Throttle to ~20 fps — breathing is slow, phone doesn't need 60 fps for it */
+    if(ts-_gLastTick<50){gRaf=requestAnimationFrame(tick);return;}
+    _gLastTick=ts;
     if(!gStart)gStart=ts;
     var s=SPEEDS[gSpeedIdx];
     var r=((ts-gStart)/1000%s)/(s/2);
@@ -704,7 +708,7 @@
     return opts[Math.floor(Math.random()*opts.length)]();
   }
 
-  var waves = [];
+  var waves = [], _waveRafOn = false;
 
   function spawnWave(){
     var fd=waveFreqDelay();
@@ -728,6 +732,8 @@
       born:  performance.now(),
       exit:  EXIT_MODES[Math.floor(Math.random()*EXIT_MODES.length)]
     });
+    /* Kick the draw loop only if it went idle */
+    if(!_waveRafOn){_waveRafOn=true;requestAnimationFrame(draw);}
     fd=waveFreqDelay(); setTimeout(spawnWave, fd[0]+Math.random()*fd[1]);
   }
 
@@ -822,9 +828,13 @@
       return true;
     });
     ctx.globalCompositeOperation='source-over';
-    requestAnimationFrame(draw);
+    if(waves.length>0){
+      requestAnimationFrame(draw);  /* keep looping while waves are alive */
+    } else {
+      _waveRafOn=false;             /* nothing to draw — go idle, save CPU/heat */
+    }
   }
-  requestAnimationFrame(draw);
+  /* Loop starts only when the first wave spawns (see spawnWave above) */
 })();
 </script>
 </body>
