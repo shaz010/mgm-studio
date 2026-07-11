@@ -19,7 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;background:#000;overflow:hidden}
+  html{height:100dvh}body{height:100%;background:#000;overflow:hidden}
   body{
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     color:#f0f0f0;
@@ -197,7 +197,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.31</div>
+    <div class="ver">salon v0.32</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -486,7 +486,7 @@
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.31';
+  var SHELL_V='v0.32';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{
