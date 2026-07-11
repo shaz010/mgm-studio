@@ -2483,6 +2483,8 @@ function openDebug(){
     L.push('_ap_prices: '+_apc+' entries');
     if(_apc>0){L.push('sample: '+Object.keys(_apPr).slice(0,3).join(', ')+'…');}
     else{L.push('** _ap_prices EMPTY **');}
+    var _sl=localStorage.getItem('_ap_seedLog');
+    L.push('seed log: '+(_sl||'NONE — IIFE never ran'));
     var _se=localStorage.getItem('_ap_seedErr');
     if(_se){L.push('>> seed error: '+_se);}
     /* Total localStorage size */
@@ -3137,7 +3139,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.44 · Diagnostics: storage size + new-key write test';
+var VERSION='v5.45 · seedPrices step-by-step log';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4216,9 +4218,13 @@ window.addEventListener('message',function(ev){
 /* ── Default OC prices (92653 market) — fires once on fresh install if no prices set ──
    Uses dedicated key _ap_prices so cp_prefs writes from app.html can never clobber it. */
 (function seedPrices(){
-  /* Skip if seed already ran and we have a full list */
-  try{var _ex=localStorage.getItem('_ap_prices');if(_ex){var _ep=JSON.parse(_ex);if(_ep&&Object.keys(_ep).length>=20)return;}}catch(e){}
+  var _L=[];
   try{
+    _L.push('A');
+    var _ex=localStorage.getItem('_ap_prices');
+    _L.push('B:'+(typeof _ex)+':'+(_ex?_ex.length:'null'));
+    if(_ex){var _ep=JSON.parse(_ex);if(_ep&&Object.keys(_ep).length>=20){_L.push('GUARD');localStorage.setItem('_ap_seedLog',_L.join(','));return;}}
+    _L.push('C');
     var prices={
       /* ── HAIR — Women · Cuts ── */
       "Women's Haircut":85,"Bang Trim":25,"Trim / Dusting":55,"Bob Cut":90,
@@ -4289,12 +4295,17 @@ window.addEventListener('message',function(ev){
       "Hand-Tied Extensions":500,"Micro-Link Extensions":400,
       "Move-Up / Maintenance":200,"Extension Removal":100
     };
+    _L.push('D:'+Object.keys(prices).length);
     localStorage.setItem('_ap_prices',JSON.stringify(prices));
+    _L.push('E');
     /* Also mirror into cp_prefs.prices for app.html compatibility */
     try{var _cp2=JSON.parse(localStorage.getItem('cp_prefs')||'{}');_cp2.prices=prices;localStorage.setItem('cp_prefs',JSON.stringify(_cp2));}catch(_){}
+    _L.push('F');
   }catch(e){
+    _L.push('ERR:'+((e&&e.message)||String(e)));
     try{localStorage.setItem('_ap_seedErr',(e&&e.message)||String(e));}catch(_){}
   }
+  try{localStorage.setItem('_ap_seedLog',_L.join(','));}catch(_){}
 })();
 /* ── Glow settings panel — saves prefs, syncs chips, salon.html does the actual glow ── */
 (function(){
