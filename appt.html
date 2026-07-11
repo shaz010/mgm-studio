@@ -3239,7 +3239,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.49 · Add tab rotates 4 dance moves every 8 s';
+var VERSION='v5.50 · colour wheel canvas fix — was invisible due to NaN width';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4628,7 +4628,9 @@ window.addEventListener('message',function(ev){
   function drawWheel(cv,sel){
     var ctx=cv.getContext('2d');
     var dpr=window.devicePixelRatio||1;
-    var size=Math.round(Math.min(parseInt(cv.style.maxWidth||280),cv.parentElement?cv.parentElement.offsetWidth:280));
+    /* cv.offsetWidth gives the true rendered px width after CSS (max-width:min(280px,90vw)) is applied.
+       parseInt(cv.style.maxWidth) was returning NaN for the CSS min() function → canvas.width=0 → invisible. */
+    var size=cv.offsetWidth||280;
     if(size<100)size=280;
     cv.width=size*dpr; cv.height=size*dpr;
     cv.style.width=size+'px'; cv.style.height=size+'px';
