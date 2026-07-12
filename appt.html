@@ -569,11 +569,11 @@ body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85)
 #witTooltip .wit-body{font-size:12px;color:rgba(240,230,200,.88);line-height:1.5}
 #witTooltip .wit-tip{font-size:11px;color:rgba(255,184,0,.5);margin-top:6px}
 /* zoomed state */
-#witTooltip.zoomed{max-width:min(320px,calc(100vw - 24px))}
-#witTooltip.zoomed .wit-title{font-size:18px}
-#witTooltip.zoomed .wit-body{font-size:16px;line-height:1.6}
-#witTooltip.zoomed .wit-tip{font-size:13px}
-#witBanner{position:fixed;bottom:calc(env(safe-area-inset-bottom,0) + 90px);
+#witTooltip.zoomed{max-width:min(340px,calc(100vw - 24px));padding:16px 18px}
+#witTooltip.zoomed .wit-title{font-size:20px;margin-bottom:8px}
+#witTooltip.zoomed .wit-body{font-size:17px;line-height:1.65}
+#witTooltip.zoomed .wit-tip{font-size:13px;margin-top:10px}
+#witBanner{position:fixed;top:calc(env(safe-area-inset-top,0) + 54px);
   right:16px;left:auto;transform:none;z-index:998;
   display:none;width:max-content;max-width:calc(100vw - 32px);
   background:rgba(60,35,0,.92);border:1px solid rgba(255,184,0,.35);
@@ -3417,7 +3417,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.83 · WIT touchend-only + element-relative tooltip positioning';
+var VERSION='v5.84 · WIT banner top-right, zoom hint, bigger zoomed card';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5188,7 +5188,7 @@ document.addEventListener('click',function(e){
 <div id="witBanner">❓ Tap any button to learn what it does &nbsp;·&nbsp; tap <strong>🟡</strong> to exit</div>
 
 <!-- What Is This tooltip -->
-<div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap this card or anywhere else to dismiss</div></div>
+<div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap card to zoom · tap again to dismiss</div></div>
 
 <!-- Section help explanation sheet (Mode B) -->
 <div class="modal" id="sectionHelpSheet" onclick="if(event.target===this)closeSectionHelp()">
