@@ -1036,20 +1036,18 @@ body.tut-at-hidden #tutAt{display:none}
 /* WIT mode */
 body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85);
   box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 5px rgba(255,184,0,.18),0 0 18px rgba(255,184,0,.25)}
-#witBanner{position:fixed;
-  top:calc(env(safe-area-inset-top,0) + 96px);
-  right:6px;
-  z-index:998;display:none;
-  max-width:110px;
+#witBanner{display:none;
+  margin-left:auto;align-self:center;
+  max-width:96px;
   background:rgba(60,35,0,.92);
-  border:1px solid rgba(255,184,0,.35);
-  border-radius:12px;
-  padding:6px 9px;
-  font-size:10px;line-height:1.5;
-  color:rgba(255,220,100,.9);
+  border:1px solid rgba(255,184,0,.4);
+  border-radius:10px;
+  padding:5px 8px;
+  font-size:10px;line-height:1.45;
+  color:rgba(255,220,100,.95);
   white-space:normal;text-align:center;
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  box-shadow:0 2px 10px rgba(0,0,0,.5);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  box-shadow:0 2px 8px rgba(0,0,0,.5);
   pointer-events:none}
 body.wit-on #witBanner{display:block}
 #witTooltip{position:fixed;z-index:9999;max-width:260px;pointer-events:auto;cursor:pointer;
@@ -1398,6 +1396,7 @@ body.wit-on #witBanner{display:block}
     <button class="tab active" onclick="newBooking()"><i class="ti ti-calendar-plus" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>New booking</button>
     <button class="tab" onclick="showTab('hist')"><i class="ti ti-list" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Appointments</button>
     <button class="tab" onclick="showTab('mgm')"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Salon owes me</button>
+    <div id="witBanner">❓ Tap any button to learn · tap <strong>🟡</strong> to exit</div>
   </div>
 
   <!-- SEARCH OVERLAY -->
@@ -3625,7 +3624,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.96 · WIT banner compact right pocket next to tab row';
+var VERSION='app v1.97 · WIT banner lives inside tabs flex row';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3687,8 +3686,6 @@ setInterval(checkForUpdate,60000);
 
 <!-- AssistiveTouch bubble -->
 <div id="tutAt" role="button" aria-label="Tutorial guide" tabindex="0"><i class="ti ti-school" aria-hidden="true"></i></div>
-<!-- WIT banner -->
-<div id="witBanner">❓ Tap any button to learn · tap <strong>🟡</strong> to exit</div>
 <!-- WIT tooltip -->
 <div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap this card or anywhere else to dismiss</div></div>
 
