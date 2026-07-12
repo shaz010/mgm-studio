@@ -3417,7 +3417,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.73 · WIT top bar buttons individually mapped';
+var VERSION='v5.74 · AT snap-zone: park anywhere, edge-snap only near edges';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5228,7 +5228,7 @@ document.addEventListener('click',function(e){
    * left/top ever touches layout.
    */
   var el, tx=0, ty=0;
-  var PAD=16, SIZE=52;
+  var PAD=22, SIZE=52;
   var active=false, moved=false, tid=-1;
   var startCX=0, startCY=0, startTX=0, startTY=0;
   var rafId=null, pendX=0, pendY=0;
@@ -5238,8 +5238,17 @@ document.addEventListener('click',function(e){
   function loadPos(){try{var p=JSON.parse(localStorage.getItem('ap_tutAt'));if(p)return p;}catch(e){}return null;}
   function applyXY(x,y){tx=x;ty=y;el.style.transform='translate3d('+x+'px,'+y+'px,0)';}
   function snapEdge(x,y){
-    var vw=window.innerWidth,vh=window.innerHeight;
-    return{x:x+SIZE/2<vw/2?PAD:vw-SIZE-PAD, y:clamp(y,PAD,vh-SIZE-PAD)};
+    var vw=window.innerWidth, vh=window.innerHeight;
+    var zone=vw*0.28;           /* within 28% of an edge → snap to it */
+    var snappedX;
+    if(x<=zone){
+      snappedX=PAD;             /* near left  → snap left  */
+    } else if(x>=vw-SIZE-zone){
+      snappedX=vw-SIZE-PAD;    /* near right → snap right */
+    } else {
+      snappedX=x;              /* middle zone → stay exactly where dropped */
+    }
+    return{x:snappedX, y:clamp(y,PAD,vh-SIZE-PAD)};
   }
   function getTouch(list,id){
     for(var i=0;i<list.length;i++)if(list[i].identifier===id)return list[i];

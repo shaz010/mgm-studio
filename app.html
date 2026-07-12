@@ -998,6 +998,48 @@ body.theme-noir .tour-card{border:1px solid transparent;background:linear-gradie
 .svc-customchip{border-color:#4a3a5e!important}
 body.theme-noir .svc-addsvc-btn{color:#cbd5ff;border-color:#33334a}
 body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5e!important}
+/* ── AssistiveTouch bubble ── */
+#tutAt{position:fixed;left:0;top:0;width:52px;height:52px;border-radius:50%;
+  background:rgba(30,18,50,.82);border:2px solid rgba(167,139,250,.6);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(220,210,255,.95);font-size:22px;z-index:799;cursor:grab;
+  user-select:none;-webkit-user-select:none;
+  touch-action:none;-webkit-tap-highlight-color:transparent;
+  will-change:transform;
+  transition:opacity .25s,background .2s,border-color .2s,box-shadow .2s;
+  box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 4px rgba(167,139,250,.12)}
+#tutAt.dragging{cursor:grabbing;transition:none;
+  background:rgba(60,30,90,.9);border-color:rgba(167,139,250,.9);
+  box-shadow:0 8px 28px rgba(0,0,0,.7),0 0 0 6px rgba(167,139,250,.2)}
+#tutAt.snapping{transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s,background .2s}
+#tutAt.idle{opacity:.78}
+body.tut-at-hidden #tutAt{display:none}
+/* WIT mode */
+body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85);
+  box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 5px rgba(255,184,0,.18),0 0 18px rgba(255,184,0,.25)}
+#witBanner{position:fixed;top:calc(env(safe-area-inset-top,0) + 8px);
+  left:50%;transform:translateX(-50%);z-index:998;
+  display:none;width:max-content;max-width:calc(100vw - 32px);
+  background:rgba(60,35,0,.92);border:1px solid rgba(255,184,0,.35);
+  border-radius:20px;padding:6px 14px;
+  font-size:12px;color:rgba(255,220,100,.9);white-space:nowrap;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 2px 12px rgba(0,0,0,.5)}
+body.wit-on #witBanner{display:block}
+#witTooltip{position:fixed;z-index:9999;max-width:260px;pointer-events:auto;cursor:pointer;
+  background:rgba(18,12,0,.94);border:1.5px solid rgba(255,184,0,.55);
+  border-radius:14px;padding:12px 14px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 6px 28px rgba(0,0,0,.7);opacity:0;transition:opacity .18s;
+  transform:translate(-50%,-100%) translateY(-12px)}
+#witTooltip.show{opacity:1}
+#witTooltip .wit-title{font-size:13px;font-weight:700;color:#FFB800;margin-bottom:4px;line-height:1.3}
+#witTooltip .wit-body{font-size:12px;color:rgba(240,230,200,.88);line-height:1.5}
+#witTooltip .wit-tip{font-size:11px;color:rgba(255,184,0,.5);margin-top:6px}
+#witTooltip.zoomed{max-width:min(320px,calc(100vw - 24px))}
+#witTooltip.zoomed .wit-title{font-size:18px}
+#witTooltip.zoomed .wit-body{font-size:16px;line-height:1.6}
+#witTooltip.zoomed .wit-tip{font-size:13px}
 </style>
 </head>
 <body>
@@ -3615,6 +3657,197 @@ setInterval(checkForUpdate,60000);
       if(r.bottom>vh*0.55||r.top<8){ el.scrollIntoView({block:'center',behavior:'smooth'}); }
     }catch(_){} },300);
   });
+})();
+</script>
+
+<!-- AssistiveTouch bubble -->
+<div id="tutAt" role="button" aria-label="Tutorial guide" tabindex="0"><i class="ti ti-school" aria-hidden="true"></i></div>
+<!-- WIT banner -->
+<div id="witBanner">❓ Tap any button to learn what it does &nbsp;·&nbsp; tap <strong>🟡</strong> to exit</div>
+<!-- WIT tooltip -->
+<div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap this card or anywhere else to dismiss</div></div>
+
+<script>
+/* ── AssistiveTouch + WIT for CommissionPro (app.html) ── */
+(function(){
+  var el, tx=0, ty=0;
+  var PAD=22, SIZE=52;
+  var active=false, moved=false, tid=-1;
+  var startCX=0, startCY=0, startTX=0, startTY=0;
+  var rafId=null, pendX=0, pendY=0;
+
+  function clamp(v,a,b){return v<a?a:v>b?b:v;}
+  function savePos(x,y){try{localStorage.setItem('cp_tutAt',JSON.stringify({x:x,y:y}));}catch(e){}}
+  function loadPos(){try{var p=JSON.parse(localStorage.getItem('cp_tutAt'));if(p)return p;}catch(e){}return null;}
+  function applyXY(x,y){tx=x;ty=y;el.style.transform='translate3d('+x+'px,'+y+'px,0)';}
+  function snapEdge(x,y){
+    var vw=window.innerWidth,vh=window.innerHeight;
+    var zone=vw*0.28;
+    var snappedX;
+    if(x<=zone){snappedX=PAD;}
+    else if(x>=vw-SIZE-zone){snappedX=vw-SIZE-PAD;}
+    else{snappedX=x;}
+    return{x:snappedX,y:clamp(y,PAD,vh-SIZE-PAD)};
+  }
+  function getTouch(list,id){for(var i=0;i<list.length;i++)if(list[i].identifier===id)return list[i];return null;}
+
+  function onTS(e){
+    if(active)return;
+    e.preventDefault();
+    var t=e.changedTouches[0];
+    tid=t.identifier;active=true;moved=false;
+    startCX=t.clientX;startCY=t.clientY;startTX=tx;startTY=ty;
+    el.classList.add('dragging');el.classList.remove('idle','snapping');
+  }
+  function onTM(e){
+    if(!active)return;
+    e.preventDefault();
+    var t=getTouch(e.changedTouches,tid);if(!t)return;
+    var dx=t.clientX-startCX,dy=t.clientY-startCY;
+    if(!moved&&(Math.abs(dx)>6||Math.abs(dy)>6))moved=true;
+    pendX=clamp(startTX+dx,PAD,window.innerWidth-SIZE-PAD);
+    pendY=clamp(startTY+dy,PAD,window.innerHeight-SIZE-PAD);
+    if(!rafId)rafId=requestAnimationFrame(commit);
+  }
+  function commit(){rafId=null;applyXY(pendX,pendY);}
+  function onTE(e){
+    if(!active)return;
+    var t=getTouch(e.changedTouches,tid);if(!t)return;
+    active=false;tid=-1;
+    if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+    el.classList.remove('dragging');
+    if(!moved){
+      if(witActive){deactivateWIT();return;}
+      openWITPicker();
+      setTimeout(function(){el.classList.add('idle');},500);
+      return;
+    }
+    var s=snapEdge(tx,ty);
+    el.classList.add('snapping');
+    applyXY(s.x,s.y);
+    savePos(s.x,s.y);
+    setTimeout(function(){el.classList.remove('snapping');el.classList.add('idle');},380);
+  }
+
+  document.addEventListener('DOMContentLoaded',function(){
+    el=document.getElementById('tutAt');
+    if(!el)return;
+    var saved=loadPos();
+    var initX=saved?saved.x:window.innerWidth-SIZE-PAD;
+    var initY=saved?saved.y:window.innerHeight-SIZE-100;
+    applyXY(initX,initY);
+    setTimeout(function(){el.classList.add('idle');},1200);
+    el.addEventListener('touchstart',onTS,{passive:false});
+    el.addEventListener('touchmove',onTM,{passive:false});
+    el.addEventListener('touchend',onTE,{passive:false});
+    el.addEventListener('touchcancel',onTE,{passive:false});
+  });
+
+  /* ── Mini picker (WIT only — no tours in Earnings room yet) ── */
+  function openWITPicker(){
+    activateWIT();
+  }
+
+  /* ── WIT engine ── */
+  var WIT_MAP=[
+    /* Top bar */
+    {sel:'button[onclick="eyeRestFull()"]',    title:'Eye rest',      body:'Dims the screen for a gentler look during a long shift. Tap again to return to normal.'},
+    {sel:'button[onclick="openEarnSearch()"]', title:'Search',        body:'Search across all your earnings — find any booking by client name, service, or date.'},
+    {sel:'button[onclick="openInsights()"]',   title:'Insights',      body:'Charts and stats on your earnings — weekly trends, best days, top services, and more.'},
+    {sel:'button[onclick="openClients()"]',    title:'Client cards',  body:'Your client address book. Tap any client to see their visit history and total spend with you.'},
+    {sel:'button[onclick="openPrices()"]',     title:'Price book',    body:'Your service price list. Set what you charge per service — used to pre-fill bookings.'},
+    {sel:'button[onclick="openSettings()"]',   title:'Settings',      body:'All your preferences — name, commission %, theme, backup, and more.'},
+    /* Tabs */
+    {sel:'button.tab[onclick="newBooking()"]',         title:'New booking',    body:'Open the form to log a new appointment — service, price, tip, and client name.'},
+    {sel:'button.tab[onclick*="showTab(\'hist\')"]',   title:'Appointments',   body:'Your full appointment history. Filter by week, month, or scroll back through your past bookings.'},
+    {sel:'button.tab[onclick*="showTab(\'mgm\')"]',    title:'Salon owes me',  body:'Tracks what your salon still owes you — the gap between what clients paid and what you\'ve been handed.'},
+    /* Form fields */
+    {sel:'#clientName,input[name="clientName"]', title:'Client name',   body:'Type your client\'s name. Saved to your client book after the first booking.'},
+    {sel:'#svcName,input[name="svcName"]',       title:'Service',       body:'What service you performed. Pulls from your price book or type a custom one.'},
+    {sel:'#price,input[name="price"]',           title:'Price charged', body:'The full amount the client paid for the service.'},
+    {sel:'#tip,input[name="tip"]',               title:'Tip',           body:'Any tip received. Tracked separately — tips come straight to you before the commission split.'},
+    {sel:'#commRate,input[name="commRate"]',     title:'Commission %',  body:'Your cut of the service price. Set once in Settings — but you can override it per booking here.'},
+    /* AT bubble */
+    {sel:'#tutAt', title:'Tutorial bubble', body:'Tap to activate "What does this do?" mode, then tap any button to learn what it does. Drag to park me anywhere on screen.'},
+  ];
+
+  var witActive=false;
+  var witTipEl,witTitleEl,witBodyEl,witTipTimeout;
+
+  function getWitEl(){
+    if(!witTipEl){
+      witTipEl=document.getElementById('witTooltip');
+      witTitleEl=document.getElementById('witTitle');
+      witBodyEl=document.getElementById('witBody');
+    }
+  }
+
+  function activateWIT(){
+    witActive=true;
+    document.body.classList.add('wit-on');
+    if(el)el.innerHTML='<i class="ti ti-help-circle" aria-hidden="true"></i>';
+    document.addEventListener('touchstart',witIntercept,{capture:true,passive:false});
+    document.addEventListener('click',witIntercept,true);
+  }
+  function deactivateWIT(){
+    witActive=false;
+    document.body.classList.remove('wit-on');
+    if(el)el.innerHTML='<i class="ti ti-school" aria-hidden="true"></i>';
+    document.removeEventListener('touchstart',witIntercept,{capture:true,passive:false});
+    document.removeEventListener('click',witIntercept,true);
+    hideWITTip();
+  }
+
+  function witIntercept(e){
+    var target=e.target;
+    if(el&&(el===target||el.contains(target))){
+      e.preventDefault();e.stopPropagation();
+      deactivateWIT();return;
+    }
+    getWitEl();
+    if(witTipEl&&(witTipEl===target||witTipEl.contains(target))){
+      e.preventDefault();e.stopPropagation();
+      if(witTipEl.classList.contains('zoomed')){
+        witTipEl.classList.remove('zoomed');hideWITTip();
+      } else {
+        witTipEl.classList.add('zoomed');
+        clearTimeout(witTipTimeout);witTipTimeout=setTimeout(hideWITTip,15000);
+      }
+      return;
+    }
+    var match=null,node=target;
+    while(node&&node!==document.body){
+      for(var i=0;i<WIT_MAP.length;i++){
+        try{if(node.matches(WIT_MAP[i].sel)){match=WIT_MAP[i];break;}}catch(err){}
+      }
+      if(match)break;
+      node=node.parentElement;
+    }
+    if(!match){hideWITTip();return;}
+    e.preventDefault();e.stopPropagation();
+    var cx,cy;
+    if(e.touches&&e.touches.length){cx=e.touches[0].clientX;cy=e.touches[0].clientY;}
+    else{cx=e.clientX;cy=e.clientY;}
+    showWITTip(match.title,match.body,cx,cy);
+  }
+
+  function showWITTip(title,body,cx,cy){
+    getWitEl();if(!witTipEl)return;
+    witTitleEl.textContent=title;witBodyEl.textContent=body;
+    var vw=window.innerWidth;
+    var tipW=Math.min(260,vw-32);
+    var left=Math.max(tipW/2+8,Math.min(vw-tipW/2-8,cx));
+    var top=cy-16;
+    if(cy<160){witTipEl.style.transform='translate(-50%,12px)';top=cy+32;}
+    else{witTipEl.style.transform='translate(-50%,-100%) translateY(-12px)';}
+    witTipEl.style.left=left+'px';witTipEl.style.top=top+'px';
+    witTipEl.style.maxWidth=tipW+'px';
+    witTipEl.classList.add('show');
+    clearTimeout(witTipTimeout);witTipTimeout=setTimeout(hideWITTip,15000);
+  }
+  function hideWITTip(){
+    getWitEl();if(witTipEl)witTipEl.classList.remove('show','zoomed');
+  }
 })();
 </script>
 </body>
