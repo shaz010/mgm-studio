@@ -3417,7 +3417,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.82 · WIT banner moved bottom-right (clear of top bar)';
+var VERSION='v5.83 · WIT touchend-only + element-relative tooltip positioning';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5855,10 +5855,10 @@ document.addEventListener('click',function(e){
   window.activateWIT=function(){
     witActive=true;
     document.body.classList.add('wit-on');
-    /* change AT bubble icon to question mark */
     var at=document.getElementById('tutAt');
     if(at)at.innerHTML='<i class="ti ti-help-circle" aria-hidden="true"></i>';
-    document.addEventListener('touchstart',witIntercept,{capture:true,passive:false});
+    /* touchend only — no touchstart. touchstart preventDefault leaves buttons
+       stuck in a pressed state; touchend still blocks the real action cleanly. */
     document.addEventListener('touchend',witIntercept,{capture:true,passive:false});
     document.addEventListener('click',witIntercept,true);
   };
@@ -5868,7 +5868,6 @@ document.addEventListener('click',function(e){
     document.body.classList.remove('wit-on');
     var at=document.getElementById('tutAt');
     if(at)at.innerHTML='<i class="ti ti-school" aria-hidden="true"></i>';
-    document.removeEventListener('touchstart',witIntercept,{capture:true,passive:false});
     document.removeEventListener('touchend',witIntercept,{capture:true,passive:false});
     document.removeEventListener('click',witIntercept,true);
     hideWITTip();
@@ -5876,7 +5875,7 @@ document.addEventListener('click',function(e){
 
   function witIntercept(e){
     var target=e.target;
-    /* tapping AT bubble while in WIT → exit WIT and reopen picker */
+    /* AT bubble → exit WIT and reopen picker */
     var at=document.getElementById('tutAt');
     if(at&&(at===target||at.contains(target))){
       e.preventDefault();e.stopPropagation();
@@ -5884,66 +5883,70 @@ document.addEventListener('click',function(e){
       setTimeout(function(){_origAtTap();},120);
       return;
     }
-    /* tapping the tooltip toggles zoom; second tap dismisses */
+    /* tooltip tap → zoom first tap, dismiss second */
     getWitEl();
     if(witTipEl&&(witTipEl===target||witTipEl.contains(target))){
       e.preventDefault();e.stopPropagation();
       if(witTipEl.classList.contains('zoomed')){
-        witTipEl.classList.remove('zoomed');
-        hideWITTip();
+        witTipEl.classList.remove('zoomed');hideWITTip();
       } else {
         witTipEl.classList.add('zoomed');
-        /* reset the timer so they get full 15s to read the big version */
-        clearTimeout(witTipTimeout);
-        witTipTimeout=setTimeout(hideWITTip,15000);
+        clearTimeout(witTipTimeout);witTipTimeout=setTimeout(hideWITTip,15000);
       }
       return;
     }
-    /* find matching entry walking up the DOM */
-    var match=null;
-    var el=target;
-    while(el&&el!==document.body){
+    /* walk up DOM to find a WIT_MAP match */
+    var match=null,node=target;
+    while(node&&node!==document.body){
       for(var i=0;i<WIT_MAP.length;i++){
-        try{if(el.matches(WIT_MAP[i].sel)){match=WIT_MAP[i];break;}}catch(err){}
+        try{if(node.matches(WIT_MAP[i].sel)){match=WIT_MAP[i];break;}}catch(err){}
       }
       if(match)break;
-      el=el.parentElement;
+      node=node.parentElement;
     }
-    if(!match){
-      /* unknown element — dismiss any open tip and let tap through */
-      hideWITTip();
-      return;
-    }
+    if(!match){hideWITTip();return;}
     /* block the real action */
-    e.preventDefault();
-    e.stopPropagation();
-    /* get position from touch or mouse */
-    var cx,cy;
-    if(e.touches&&e.touches.length){cx=e.touches[0].clientX;cy=e.touches[0].clientY;}
-    else{cx=e.clientX;cy=e.clientY;}
-    showWITTip(match.title,match.body,cx,cy);
+    e.preventDefault();e.stopPropagation();
+    showWITTip(match.title,match.body,node);
   }
 
-  function showWITTip(title,body,cx,cy){
+  function showWITTip(title,body,targetEl){
     getWitEl();
     if(!witTipEl)return;
     witTitleEl.textContent=title;
     witBodyEl.textContent=body;
-    /* position: above finger, horizontally centred on tap */
     var vw=window.innerWidth, vh=window.innerHeight;
     var tipW=Math.min(260,vw-32);
-    var left=Math.max(tipW/2+8,Math.min(vw-tipW/2-8,cx));
-    var top=cy-16; /* sits above finger; CSS transform pulls it up further */
-    /* if near top, flip below */
-    if(cy<160){
-      witTipEl.style.transform='translate(-50%,12px)';
-      top=cy+32;
+    /* measure real height while hidden */
+    witTipEl.style.maxWidth=tipW+'px';
+    witTipEl.style.visibility='hidden';
+    witTipEl.style.left='0';witTipEl.style.top='0';
+    witTipEl.style.transform='none';
+    var th=witTipEl.scrollHeight||180;
+    witTipEl.style.visibility='';
+    /* position relative to element bounds — never relative to finger */
+    var r=targetEl?targetEl.getBoundingClientRect():{left:vw/2,right:vw/2,top:vh/2,bottom:vh/2,width:0,height:0};
+    var cx=r.left+r.width/2;
+    var safeTop=60,safeBot=84;
+    var spaceAbove=r.top-safeTop;
+    var spaceBelow=vh-safeBot-r.bottom;
+    /* centre horizontally on element, clamped to viewport */
+    var left=Math.max(tipW/2+12,Math.min(vw-tipW/2-12,cx));
+    var top;
+    if(spaceBelow>=th+12){
+      top=r.bottom+12;
+      witTipEl.style.transform='translateX(-50%)';
+    } else if(spaceAbove>=th+12){
+      top=r.top-th-12;
+      witTipEl.style.transform='translateX(-50%)';
     } else {
-      witTipEl.style.transform='translate(-50%,-100%) translateY(-12px)';
+      /* neither fits — float in the biggest gap */
+      top=(spaceAbove>spaceBelow)?safeTop:Math.max(safeTop,vh-safeBot-th);
+      witTipEl.style.transform='translateX(-50%)';
     }
+    top=Math.max(safeTop,Math.min(top,vh-safeBot-th));
     witTipEl.style.left=left+'px';
     witTipEl.style.top=top+'px';
-    witTipEl.style.maxWidth=tipW+'px';
     witTipEl.classList.add('show');
     clearTimeout(witTipTimeout);
     witTipTimeout=setTimeout(hideWITTip,15000);
