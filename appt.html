@@ -540,10 +540,19 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 .tour-step-num{font-size:11px;font-weight:700;min-width:22px;flex-shrink:0}
 .tour-step-title{font-size:13px;color:#c8c8d8;flex:1;line-height:1.3}
 .tour-step-cur-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-/* floating tutorial access button */
-#tourFab{position:fixed;bottom:22px;right:14px;z-index:799;display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:20px;border:1px solid rgba(167,139,250,.22);background:rgba(10,10,18,.72);color:rgba(167,139,250,.55);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;letter-spacing:.2px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:color .2s,border-color .2s,opacity .2s}
-#tourFab:active{color:rgba(167,139,250,.9);border-color:rgba(167,139,250,.5)}
-#tourFab i{font-size:13px}
+/* ── AssistiveTouch tutorial bubble ── */
+#tutAt{position:fixed;width:52px;height:52px;border-radius:50%;background:rgba(167,139,250,.28);border:1.5px solid rgba(167,139,250,.35);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;color:rgba(220,210,255,.75);font-size:22px;z-index:799;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;transition:background .2s,opacity .3s,border-color .2s;box-shadow:0 4px 18px rgba(0,0,0,.45)}
+#tutAt:active,#tutAt.dragging{background:rgba(167,139,250,.5);border-color:rgba(167,139,250,.7)}
+#tutAt.idle{opacity:.45}
+body.tut-at-hidden #tutAt{display:none}
+/* ── Mode B — section help buttons ── */
+.sec-help-btn{display:none;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(167,139,250,.4);background:rgba(167,139,250,.1);color:rgba(167,139,250,.8);font-size:11px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;transition:background .15s}
+.sec-help-btn:active{background:rgba(167,139,250,.3)}
+body.section-help-on .sec-help-btn{display:flex}
+/* inline variant — sits next to a label or title */
+.sec-help-inline{display:none;align-items:center;gap:3px;font-size:10px;font-weight:700;color:rgba(167,139,250,.65);background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.25);border-radius:12px;padding:2px 8px;cursor:pointer;-webkit-tap-highlight-color:transparent;vertical-align:middle;margin-left:6px;transition:background .15s;line-height:1.5}
+.sec-help-inline:active{background:rgba(167,139,250,.22)}
+body.section-help-on .sec-help-inline{display:inline-flex}
 /* tour level picker buttons */
 .tour-level-btn{width:100%;padding:16px 18px;border-radius:13px;border:1.5px solid #1e1e28;background:#0d0d13;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px;text-align:left;display:flex;align-items:center;gap:14px;font-family:inherit;-webkit-tap-highlight-color:transparent;transition:transform .12s}
 .tour-level-btn:active{transform:scale(.97)}
@@ -1048,6 +1057,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="seg" id="daySeg">
       <button class="seg-btn on" data-m="day" onclick="setDayMode('day')"><i class="ti ti-calendar"></i> Day</button>
       <button class="seg-btn" data-m="week" onclick="setDayMode('week')"><i class="ti ti-calendar-week"></i> Week</button>
+      <button type="button" class="sec-help-inline" onclick="showSectionHelp('Your day view','This is your schedule. Each card is one appointment. Tap any card to open it — you can edit the price, change the status (Done, No-show), add a tip, or delete it. Swipe the date strip to navigate between days. Toggle Week to see seven days at a glance.',2,1)">? day view</button>
       <button class="seg-btn" data-m="month" onclick="setDayMode('month')"><i class="ti ti-calendar-month"></i> Month</button>
     </div>
     <div class="weekstrip" id="weekStrip"></div>
@@ -1097,7 +1107,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
   <!-- ADD/EDIT VIEW -->
   <div class="view" id="view-add">
     <div class="card">
-      <div class="ctitle"><i class="ti ti-calendar-plus"></i><span id="addTitle">New appointment</span></div>
+      <div class="ctitle"><i class="ti ti-calendar-plus"></i><span id="addTitle">New appointment</span><button type="button" class="sec-help-inline" onclick="showSectionHelp('Adding an appointment','This form books any appointment. Start by tapping a service chip — that unlocks the client name and phone fields. Fill in the price (your split calculates live), add any tip, then tap Save. The appointment lands in Day view instantly.',1,4)">? how this works</button></div>
 
       <!-- Client name + phone hidden, rise up when CHOOSE SERVICE(S) is tapped -->
       <div class="client-fields-wrap" id="clientFieldsWrap">
@@ -1116,7 +1126,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <div id="svcSelected" class="svc-selected"></div>
       <div class="svc-trade-row"><div class="svc-trade-label" id="svcTradeLabel"></div><button type="button" class="svc-trade-change" onclick="openTradePicker()"><i class="ti ti-arrows-exchange"></i> Change</button></div>
       <div class="svc-panel">
-        <div class="svc-cat" style="color:var(--gold)">Quick picks <span class="qp-hint">— tap to toggle · hold &amp; drag to reorder · ★ to unpin</span></div>
+        <div class="svc-cat" style="color:var(--gold)">Quick picks <span class="qp-hint">— tap to toggle · hold &amp; drag to reorder · ★ to unpin</span> <button type="button" class="sec-help-inline" onclick="showSectionHelp('Service chips','Tap any chip to add that service to the booking. Tap multiple to combine services in one appointment — prices add up automatically. Hold and drag to reorder them. Tap ★ to pin a favourite to the top. Can\'t find yours? Type it in the custom field below.',1,5)">? help</button></div>
         <div class="svc-row" id="favRow"></div>
         <button type="button" class="svc-more-btn" id="svcMoreBtn" onclick="toggleMore()"><i class="ti ti-chevron-down"></i> More services</button>
         <div id="svcMore" style="display:none;margin-top:10px"></div>
@@ -1137,7 +1147,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <div><label>Tip received ($) <button type="button" class="tour-help-chip" onclick="tourHelp(1,8)">? help</button></label><input id="fTip" type="number" inputmode="decimal" placeholder="0" oninput="apCalc()"></div>
 
       <div class="ap-breakdown">
-        <div class="ap-bk-title"><i class="ti ti-calculator"></i> Earnings breakdown</div>
+        <div class="ap-bk-title"><i class="ti ti-calculator"></i> Earnings breakdown <button type="button" class="sec-help-inline" onclick="showSectionHelp('Earnings breakdown','This updates live as you type the price. Salon = your employer\'s share of the service charge. You = your commission percentage. Tip is always 100% yours — it never gets split. My total take-home = your commission + your tip, the amount that lands in your pocket.',1,7)">? help</button></div>
         <div class="ap-split">
           <div class="ap-sc ap-sc-salon"><div class="ap-sc-lbl">Salon</div><div class="ap-sc-pct" id="apSalonPct">40% of charge</div><div class="ap-sc-amt" id="apSalon">$0</div></div>
           <div class="ap-sc ap-sc-you"><div class="ap-sc-lbl">You</div><div class="ap-sc-pct" id="apYouPct">60% of charge</div><div class="ap-sc-amt" id="apYou">$0</div></div>
@@ -1164,7 +1174,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
   <!-- CLIENTS VIEW -->
   <div class="view" id="view-clients">
     <div class="section-head">
-      <div class="section-title">Clients <span id="clientCount" style="color:var(--muted);font-weight:600;font-size:14px"></span> <button type="button" class="tour-help-chip" onclick="tourHelp(2,8)">? help</button></div>
+      <div class="section-title">Clients <span id="clientCount" style="color:var(--muted);font-weight:600;font-size:14px"></span> <button type="button" class="tour-help-chip" onclick="tourHelp(2,8)">? help</button> <button type="button" class="sec-help-inline" onclick="showSectionHelp('Clients','Every person you book builds a profile here automatically. Tap a client to see their full booking history, contact info, and hair profile (length, thickness, colour history). The hair profile feeds into by-hair auto-pricing on the Add screen.',2,8)">? about clients</button></div>
       <button class="btn btn-ghost btn-sm" onclick="openClientSheet()"><i class="ti ti-user-plus"></i> Add</button>
     </div>
     <div class="clients-cols">
@@ -1180,7 +1190,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
   <div class="view" id="view-stock">
     <div class="inv-seg" id="invTrades"></div>
     <div class="inv-head">
-      <div class="section-title">Inventory <button type="button" class="tour-help-chip" onclick="tourHelp(2,10)">? help</button></div>
+      <div class="section-title">Inventory <button type="button" class="tour-help-chip" onclick="tourHelp(2,10)">? help</button> <button type="button" class="sec-help-inline" onclick="showSectionHelp('Inventory','Track the professional products you use in your work. Add each item with its current stock level and set a low-stock threshold. Use the + and − buttons to log usage. Items running low are flagged so you reorder before you run out.',3,4)">? about inventory</button></div>
       <div style="display:flex;gap:6px">
         <button class="btn btn-ghost btn-sm" onclick="openTrades()"><i class="ti ti-adjustments"></i> Trades</button>
         <button class="btn btn-ghost btn-sm" onclick="openStockSheet()"><i class="ti ti-plus"></i> Add</button>
@@ -1197,7 +1207,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
        ═══════════════════════════════════════════════════ -->
   <div class="view" id="view-colour">
     <div style="padding:16px 16px 4px;display:flex;align-items:baseline;justify-content:space-between">
-      <div class="section-title" style="font-size:15px;letter-spacing:.2px">Colour Wheel <button type="button" class="tour-help-chip" onclick="tourHelp(3,3)">? help</button></div>
+      <div class="section-title" style="font-size:15px;letter-spacing:.2px">Colour Wheel <button type="button" class="tour-help-chip" onclick="tourHelp(3,3)">? help</button> <button type="button" class="sec-help-inline" onclick="showSectionHelp('Colour Wheel','A colour theory reference built for the chair. Tap any colour on the wheel to instantly see its complement — the opposite colour that neutralises or balances it. Great for identifying the right toner or neutraliser during a colour correction conversation with your client.',3,3)">? about this tool</button></div>
       <div style="font-size:10px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase">tap any segment</div>
     </div>
 
@@ -1359,6 +1369,23 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-sm" style="flex:1" onclick="saveSplit()"><i class="ti ti-check"></i> Save pay</button>
     </div>
+
+    <div class="set-sec">Tutorial</div>
+    <div class="sb-toggle-row" onclick="toggleTutAt()">
+      <div>
+        <div class="sb-tt">Tutorial guide button</div>
+        <div class="sb-ts" id="tutAtStatus">On — floating ✦ bubble visible</div>
+      </div>
+      <div class="sb-switch" id="tutAtSwitch"><span></span></div>
+    </div>
+    <div class="sb-toggle-row" onclick="toggleSectionHelp()">
+      <div>
+        <div class="sb-tt">Section help mode</div>
+        <div class="sb-ts" id="sectionHelpStatus">Off — tap to show ? on every section</div>
+      </div>
+      <div class="sb-switch" id="sectionHelpSwitch"><span></span></div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin:6px 0 14px;line-height:1.55">Section help mode places a <b style="color:#a78bfa">?</b> on every part of the app. Tap any <b style="color:#a78bfa">?</b> for an explanation of that section — great for new users.</div>
 
     <div class="set-sec adv-sec">Appearance</div>
     <div class="sb-toggle-row" onclick="toggleNoir()">
@@ -3353,7 +3380,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.61 · tutorial step order fix + floating tutorial button + level-done sheet';
+var VERSION='v5.62 · AT bubble + Mode B section help + tutorial settings toggles';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5117,8 +5144,22 @@ document.addEventListener('click',function(e){
 })();
 </script>
 
-<!-- Floating tutorial access button — always visible, subtle -->
-<button id="tourFab" onclick="openTourPicker()" aria-label="Tutorial"><i class="ti ti-school" aria-hidden="true"></i> Tutorial</button>
+<!-- AssistiveTouch tutorial bubble -->
+<div id="tutAt" role="button" aria-label="Tutorial guide" tabindex="0"><i class="ti ti-school" aria-hidden="true"></i></div>
+
+<!-- Section help explanation sheet (Mode B) -->
+<div class="modal" id="sectionHelpSheet" onclick="if(event.target===this)closeSectionHelp()">
+  <div class="sheet">
+    <div class="sheet-head"><div class="sheet-title" id="shTitle"></div><button class="sheet-x" onclick="closeSectionHelp()">✕</button></div>
+    <div style="padding:4px 20px 28px">
+      <div id="shBody" style="font-size:14px;color:#aaa;line-height:1.7;margin-bottom:20px"></div>
+      <div id="shTourLink" style="display:none;margin-bottom:12px">
+        <button class="btn btn-ghost btn-sm" id="shTourBtn" style="width:100%"></button>
+      </div>
+      <button class="btn btn-sm" style="width:100%" onclick="closeSectionHelp()">Got it</button>
+    </div>
+  </div>
+</div>
 
 <!-- Level-done sheet — shown when a level completes naturally -->
 <div class="modal" id="tourLevelDoneSheet" onclick="if(event.target===this)closeTourLevelDone()">
@@ -5131,6 +5172,131 @@ document.addEventListener('click',function(e){
     </div>
   </div>
 </div>
+
+<script>
+/* ── AssistiveTouch Tutorial Bubble ── */
+(function(){
+  var el, startX, startY, moved, posX, posY;
+  var PAD=16, SIZE=52;
+
+  function savePos(x,y){ try{localStorage.setItem('ap_tutAt',JSON.stringify({x:x,y:y}));}catch(e){} }
+  function loadPos(){ try{var p=JSON.parse(localStorage.getItem('ap_tutAt'));if(p)return p;}catch(e){}return null; }
+  function snapToEdge(x,y){
+    var vw=window.innerWidth,vh=window.innerHeight;
+    /* snap to nearest horizontal edge */
+    return x+SIZE/2 < vw/2 ? {x:PAD, y:clamp(y,PAD,vh-SIZE-PAD)} : {x:vw-SIZE-PAD, y:clamp(y,PAD,vh-SIZE-PAD)};
+  }
+  function clamp(v,mn,mx){return Math.max(mn,Math.min(mx,v));}
+  function applyPos(x,y){ el.style.left=x+'px'; el.style.top=y+'px'; el.style.right=''; el.style.bottom=''; }
+
+  function onStart(e){
+    if(!el)return;
+    moved=false;
+    var t=e.touches?e.touches[0]:e;
+    var r=el.getBoundingClientRect();
+    startX=t.clientX-r.left; startY=t.clientY-r.top;
+    el.classList.add('dragging'); el.classList.remove('idle');
+    document.addEventListener('touchmove',onMove,{passive:false});
+    document.addEventListener('touchend',onEnd);
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onEnd);
+  }
+  function onMove(e){
+    if(!el)return;
+    if(e.cancelable)e.preventDefault();
+    var t=e.touches?e.touches[0]:e;
+    var nx=t.clientX-startX, ny=t.clientY-startY;
+    if(Math.abs(nx-(posX||0))>6||Math.abs(ny-(posY||0))>6)moved=true;
+    posX=clamp(nx,PAD,window.innerWidth-SIZE-PAD);
+    posY=clamp(ny,PAD,window.innerHeight-SIZE-PAD);
+    applyPos(posX,posY);
+  }
+  function onEnd(){
+    document.removeEventListener('touchmove',onMove);
+    document.removeEventListener('touchend',onEnd);
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('mouseup',onEnd);
+    if(!el)return;
+    el.classList.remove('dragging');
+    if(!moved){ openTourPicker(); setTimeout(function(){el.classList.add('idle');},400); return; }
+    var snapped=snapToEdge(posX,posY);
+    posX=snapped.x; posY=snapped.y;
+    applyPos(posX,posY);
+    savePos(posX,posY);
+    setTimeout(function(){el.classList.add('idle');},800);
+  }
+
+  document.addEventListener('DOMContentLoaded',function(){
+    el=document.getElementById('tutAt');
+    if(!el)return;
+    var saved=loadPos();
+    if(saved){posX=saved.x;posY=saved.y;applyPos(posX,posY);}
+    else{posX=window.innerWidth-SIZE-PAD;posY=window.innerHeight-SIZE-100;applyPos(posX,posY);}
+    setTimeout(function(){el.classList.add('idle');},1200);
+    el.addEventListener('touchstart',onStart,{passive:true});
+    el.addEventListener('mousedown',onStart);
+  });
+
+  /* settings toggles */
+  window.toggleTutAt=function(){
+    var hidden=document.body.classList.toggle('tut-at-hidden');
+    try{var p=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');p.tutAtHidden=hidden;localStorage.setItem('ap_prefs2',JSON.stringify(p));}catch(e){}
+    var sw=document.getElementById('tutAtSwitch');
+    if(sw)sw.classList.toggle('on',!hidden);
+    var st=document.getElementById('tutAtStatus');
+    if(st)st.textContent=hidden?'Off — tap here to restore it':'On — floating ✦ bubble visible';
+  };
+
+  window.toggleSectionHelp=function(){
+    var on=document.body.classList.toggle('section-help-on');
+    try{var p=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');p.sectionHelp=on;localStorage.setItem('ap_prefs2',JSON.stringify(p));}catch(e){}
+    var sw=document.getElementById('sectionHelpSwitch');
+    if(sw)sw.classList.toggle('on',on);
+    var st=document.getElementById('sectionHelpStatus');
+    if(st)st.textContent=on?'On — ? shown on every section':'Off — tap to show ? on every section';
+  };
+
+  /* section help sheet */
+  window.showSectionHelp=function(title,body,tourLevel,tourStep){
+    document.getElementById('shTitle').textContent=title;
+    document.getElementById('shBody').textContent=body;
+    var linkRow=document.getElementById('shTourLink');
+    var linkBtn=document.getElementById('shTourBtn');
+    if(tourLevel&&tourStep!==undefined){
+      linkRow.style.display='block';
+      linkBtn.textContent='Show me in the tutorial →';
+      linkBtn.onclick=function(){closeSectionHelp();setTimeout(function(){window.jumpToTourStep(tourLevel,tourStep);},320);};
+    } else {
+      linkRow.style.display='none';
+    }
+    var sh=document.getElementById('sectionHelpSheet');
+    if(sh)sh.classList.add('show');
+  };
+  window.closeSectionHelp=function(){
+    var sh=document.getElementById('sectionHelpSheet');
+    if(sh)sh.classList.remove('show');
+  };
+
+  /* load saved prefs on boot */
+  document.addEventListener('DOMContentLoaded',function(){
+    try{
+      var p=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');
+      if(p.tutAtHidden){
+        document.body.classList.add('tut-at-hidden');
+        var sw=document.getElementById('tutAtSwitch');if(sw)sw.classList.remove('on');
+        var st=document.getElementById('tutAtStatus');if(st)st.textContent='Off — tap here to restore it';
+      } else {
+        var sw2=document.getElementById('tutAtSwitch');if(sw2)sw2.classList.add('on');
+      }
+      if(p.sectionHelp){
+        document.body.classList.add('section-help-on');
+        var sw3=document.getElementById('sectionHelpSwitch');if(sw3)sw3.classList.add('on');
+        var st2=document.getElementById('sectionHelpStatus');if(st2)st2.textContent='On — ? shown on every section';
+      }
+    }catch(e){}
+  });
+})();
+</script>
 
 <!-- ===== COACH MARKS TOUR ===== -->
 <div id="coachOverlay"></div>
