@@ -573,8 +573,8 @@ body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85)
 #witTooltip.zoomed .wit-title{font-size:18px}
 #witTooltip.zoomed .wit-body{font-size:16px;line-height:1.6}
 #witTooltip.zoomed .wit-tip{font-size:13px}
-#witBanner{position:fixed;top:calc(env(safe-area-inset-top,0) + 8px);
-  left:50%;transform:translateX(-50%);z-index:998;
+#witBanner{position:fixed;bottom:calc(env(safe-area-inset-bottom,0) + 90px);
+  right:16px;left:auto;transform:none;z-index:998;
   display:none;width:max-content;max-width:calc(100vw - 32px);
   background:rgba(60,35,0,.92);border:1px solid rgba(255,184,0,.35);
   border-radius:20px;padding:6px 14px;
@@ -3417,7 +3417,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.80 · index exit button + tap current step to exit tour';
+var VERSION='v5.82 · WIT banner moved bottom-right (clear of top bar)';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5472,13 +5472,13 @@ document.addEventListener('click',function(e){
        title:'Choose the service first',
        body:'Tap any chip below to pick a service — this unlocks the rest of the form. The client name and phone fields slide in automatically once you make a selection.',
        action:function(){try{_revealClientFields();}catch(e){}}},
-      {sel:'#fName',pos:'bottom',
+      {sel:'#fName',pos:'top',
        title:'Now enter the client\'s name',
        body:'Type your client\'s name. If they\'re already in your list they auto-fill with their details. A brand-new name creates their profile automatically.'},
-      {sel:'#fPrice',pos:'bottom',
+      {sel:'#fPrice',pos:'top',
        title:'Set the price',
        body:'Type what you\'re charging. Your commission split calculates live as you type — no extra button, no calculator.'},
-      {sel:'#fTip',pos:'bottom',
+      {sel:'#fTip',pos:'top',
        title:'Add the tip — it\'s always 100% yours',
        body:'Tips are never split with the salon. They land directly in your take-home total, tracked separately from service income.'},
       {sel:'.btn[onclick="saveAppt()"]',pos:'top',
@@ -5599,28 +5599,35 @@ document.addEventListener('click',function(e){
     var vw=window.innerWidth,vh=window.innerHeight;
     var tw=Math.min(292,vw-40);
     var pad=6;
-    /* Measure actual rendered height — avoids the 190px guess that clips on iPhone */
+    /* Measure real height: render visible but transparent at final width,
+       then read scrollHeight which works even before layout is committed */
     tt.style.width=tw+'px';
-    tt.style.left='-9999px';tt.style.top='0';  /* off-screen for measurement */
-    var th=tt.getBoundingClientRect().height||190;
-    /* Safe zones: 60px top (notch/status), 80px bottom (home indicator + tab bar) */
-    var safeTop=60, safeBot=80;
+    tt.style.visibility='hidden';
+    tt.style.top='0'; tt.style.left='0';
+    var th=tt.scrollHeight||tt.offsetHeight||220;
+    tt.style.visibility='';
+    /* Safe zones */
+    var safeTop=64, safeBot=90;
+    var spaceAbove=r.top-safeTop;
+    var spaceBelow=vh-safeBot-r.bottom;
     ring.style.display='block';
     ring.style.left=(r.left-pad)+'px';ring.style.top=(r.top-pad)+'px';
     ring.style.width=(r.width+pad*2)+'px';ring.style.height=(r.height+pad*2)+'px';
-    var left=Math.max(16,Math.min(r.left,vw-tw-16));
+    var left=Math.max(16,Math.min(r.left+(r.width/2)-(tw/2),vw-tw-16));
     var top;
-    /* prefer requested position, fall back to the other side if it doesn't fit */
-    if(pos==='top'){
-      top=r.top-th-16;
-      if(top<safeTop) top=r.bottom+16;
+    /* pick the side that has more room, respecting the step's hint */
+    var wantTop=(pos==='top');
+    if(wantTop){
+      if(spaceAbove>=th+16)      { top=r.top-th-16; }
+      else if(spaceBelow>=th+16) { top=r.bottom+16; }
+      else                       { top=safeTop; }           /* float at safe top */
     } else {
-      top=r.bottom+16;
-      if(top+th>vh-safeBot) top=r.top-th-16;
+      if(spaceBelow>=th+16)      { top=r.bottom+16; }
+      else if(spaceAbove>=th+16) { top=r.top-th-16; }
+      else                       { top=Math.max(safeTop,vh-safeBot-th); } /* best fit */
     }
-    /* last-resort: if still clipping, centre vertically */
-    if(top<safeTop) top=safeTop;
-    if(top+th>vh-safeBot) top=Math.max(safeTop, vh-safeBot-th);
+    /* hard clamp — never clip either edge */
+    top=Math.max(safeTop, Math.min(top, vh-safeBot-th));
     tt.style.top=top+'px';
     tt.style.left=left+'px';
   }
