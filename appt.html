@@ -3417,7 +3417,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.75 · WIT intercepts touchend to block sync badge action';
+var VERSION='v5.76 · AT tap while WIT active = exit WIT + reopen picker';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5826,11 +5826,12 @@ document.addEventListener('click',function(e){
 
   function witIntercept(e){
     var target=e.target;
-    /* tapping AT bubble exits mode */
+    /* tapping AT bubble while in WIT → exit WIT and reopen picker */
     var at=document.getElementById('tutAt');
     if(at&&(at===target||at.contains(target))){
       e.preventDefault();e.stopPropagation();
       deactivateWIT();
+      setTimeout(function(){_origAtTap();},120);
       return;
     }
     /* tapping the tooltip toggles zoom; second tap dismisses */

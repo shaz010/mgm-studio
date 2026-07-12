@@ -3601,7 +3601,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.92 · WIT intercepts touchend, sync badge no longer fires through';
+var VERSION='app v1.93 · AT tap while WIT active = exit + confirmation toast';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3806,7 +3806,11 @@ setInterval(checkForUpdate,60000);
     var target=e.target;
     if(el&&(el===target||el.contains(target))){
       e.preventDefault();e.stopPropagation();
-      deactivateWIT();return;
+      deactivateWIT();
+      /* brief confirmation so it doesn't feel like nothing happened */
+      showWITTip('Explain mode off','Tap the 🎓 bubble any time to turn it back on.',
+        window.innerWidth/2, window.innerHeight-120);
+      return;
     }
     getWitEl();
     if(witTipEl&&(witTipEl===target||witTipEl.contains(target))){
