@@ -1036,14 +1036,18 @@ body.tut-at-hidden #tutAt{display:none}
 /* WIT mode */
 body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85);
   box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 5px rgba(255,184,0,.18),0 0 18px rgba(255,184,0,.25)}
-#witBanner{position:fixed;bottom:calc(env(safe-area-inset-bottom,0) + 90px);
-  right:16px;left:auto;transform:none;z-index:998;
-  display:none;width:max-content;max-width:calc(100vw - 32px);
-  background:rgba(60,35,0,.92);border:1px solid rgba(255,184,0,.35);
-  border-radius:20px;padding:6px 14px;
-  font-size:12px;color:rgba(255,220,100,.9);white-space:nowrap;
+#witBanner{position:fixed;right:0;top:50%;
+  transform:translateY(-50%);
+  writing-mode:vertical-rl;
+  z-index:998;display:none;
+  background:rgba(60,35,0,.92);
+  border:1px solid rgba(255,184,0,.35);border-right:none;
+  border-radius:16px 0 0 16px;
+  padding:16px 7px;
+  font-size:11px;color:rgba(255,220,100,.9);white-space:nowrap;
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  box-shadow:0 2px 12px rgba(0,0,0,.5)}
+  box-shadow:-2px 0 12px rgba(0,0,0,.4);
+  pointer-events:none}
 body.wit-on #witBanner{display:block}
 #witTooltip{position:fixed;z-index:9999;max-width:260px;pointer-events:auto;cursor:pointer;
   background:rgba(18,12,0,.94);border:1.5px solid rgba(255,184,0,.55);
@@ -3618,7 +3622,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.94 · CP picker, WIT banner bottom-right, WIT_MAP real IDs';
+var VERSION='app v1.95 · WIT banner vertical right-edge strip';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

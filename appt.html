@@ -545,7 +545,7 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
   background:rgba(30,18,50,.82);border:2px solid rgba(167,139,250,.6);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   display:flex;align-items:center;justify-content:center;
-  color:rgba(220,210,255,.95);font-size:22px;z-index:799;cursor:grab;
+  color:rgba(220,210,255,.95);font-size:22px;z-index:903;cursor:grab;
   user-select:none;-webkit-user-select:none;
   touch-action:none;-webkit-tap-highlight-color:transparent;
   will-change:transform;
@@ -556,7 +556,7 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
   box-shadow:0 8px 28px rgba(0,0,0,.7),0 0 0 6px rgba(167,139,250,.2)}
 #tutAt.snapping{transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s,background .2s}
 #tutAt.idle{opacity:.78}
-body.tut-at-hidden #tutAt{display:none}
+body.tut-at-hidden #tutAt{display:none!important}
 /* ── What Is This mode ── */
 body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85);
   box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 5px rgba(255,184,0,.18),0 0 18px rgba(255,184,0,.25)}
@@ -573,14 +573,18 @@ body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85)
 #witTooltip.zoomed .wit-title{font-size:20px;margin-bottom:8px}
 #witTooltip.zoomed .wit-body{font-size:17px;line-height:1.65}
 #witTooltip.zoomed .wit-tip{font-size:13px;margin-top:10px}
-#witBanner{position:fixed;top:calc(env(safe-area-inset-top,0) + 54px);
-  right:16px;left:auto;transform:none;z-index:998;
-  display:none;width:max-content;max-width:calc(100vw - 32px);
-  background:rgba(60,35,0,.92);border:1px solid rgba(255,184,0,.35);
-  border-radius:20px;padding:6px 14px;
-  font-size:12px;color:rgba(255,220,100,.9);white-space:nowrap;
+#witBanner{position:fixed;right:0;top:50%;
+  transform:translateY(-50%);
+  writing-mode:vertical-rl;
+  z-index:998;display:none;
+  background:rgba(60,35,0,.92);
+  border:1px solid rgba(255,184,0,.35);border-right:none;
+  border-radius:16px 0 0 16px;
+  padding:16px 7px;
+  font-size:11px;color:rgba(255,220,100,.9);white-space:nowrap;
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  box-shadow:0 2px 12px rgba(0,0,0,.5)}
+  box-shadow:-2px 0 12px rgba(0,0,0,.4);
+  pointer-events:none}
 body.wit-on #witBanner{display:block}
 /* ── Mode B — section help buttons ── */
 .sec-help-btn{display:none;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(167,139,250,.4);background:rgba(167,139,250,.1);color:rgba(167,139,250,.8);font-size:11px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;transition:background .15s}
@@ -3417,7 +3421,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.84 · WIT banner top-right, zoom hint, bigger zoomed card';
+var VERSION='v5.86 · WIT banner vertical right-edge strip, AT z-index 903';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5681,7 +5685,8 @@ document.addEventListener('click',function(e){
 
   function clearCoachUI(){
     if(prevHighEl){prevHighEl.classList.remove('coach-hole-el');prevHighEl=null;}
-    document.getElementById('coachOverlay').classList.remove('show');
+    var ov=document.getElementById('coachOverlay');
+    if(ov){ov.classList.remove('show');ov.style.pointerEvents='none';}
     document.getElementById('coachTooltip').style.display='none';
     document.getElementById('coachRing').style.display='none';
   }
