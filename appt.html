@@ -573,17 +573,20 @@ body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85)
 #witTooltip.zoomed .wit-title{font-size:20px;margin-bottom:8px}
 #witTooltip.zoomed .wit-body{font-size:17px;line-height:1.65}
 #witTooltip.zoomed .wit-tip{font-size:13px;margin-top:10px}
-#witBanner{position:fixed;right:0;top:50%;
-  transform:translateY(-50%);
-  writing-mode:vertical-rl;
+#witBanner{position:fixed;
+  top:calc(env(safe-area-inset-top,0) + 96px);
+  right:6px;
   z-index:998;display:none;
+  max-width:110px;
   background:rgba(60,35,0,.92);
-  border:1px solid rgba(255,184,0,.35);border-right:none;
-  border-radius:16px 0 0 16px;
-  padding:16px 7px;
-  font-size:11px;color:rgba(255,220,100,.9);white-space:nowrap;
+  border:1px solid rgba(255,184,0,.35);
+  border-radius:12px;
+  padding:6px 9px;
+  font-size:10px;line-height:1.5;
+  color:rgba(255,220,100,.9);
+  white-space:normal;text-align:center;
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  box-shadow:-2px 0 12px rgba(0,0,0,.4);
+  box-shadow:0 2px 10px rgba(0,0,0,.5);
   pointer-events:none}
 body.wit-on #witBanner{display:block}
 /* ── Mode B — section help buttons ── */
@@ -3421,7 +3424,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.86 · WIT banner vertical right-edge strip, AT z-index 903';
+var VERSION='v5.87 · WIT banner compact right pocket next to tab row';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5189,7 +5192,7 @@ document.addEventListener('click',function(e){
 <div id="tutAt" role="button" aria-label="Tutorial guide" tabindex="0"><i class="ti ti-school" aria-hidden="true"></i></div>
 
 <!-- What Is This banner -->
-<div id="witBanner">❓ Tap any button to learn what it does &nbsp;·&nbsp; tap <strong>🟡</strong> to exit</div>
+<div id="witBanner">❓ Tap any button to learn · tap <strong>🟡</strong> to exit</div>
 
 <!-- What Is This tooltip -->
 <div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap card to zoom · tap again to dismiss</div></div>
