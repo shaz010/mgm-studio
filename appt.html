@@ -514,15 +514,37 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 /* ── Coach marks tour ── */
 #coachOverlay{position:fixed;inset:0;z-index:800;pointer-events:none;transition:opacity .3s;opacity:0}
 #coachOverlay.show{pointer-events:all;opacity:1}
-.coach-hole-el{position:relative!important;z-index:801!important;box-shadow:0 0 0 5px rgba(167,139,250,.7),0 0 0 9999px rgba(0,0,0,.82)!important;border-radius:10px!important;transition:box-shadow .25s}
+.coach-hole-el{position:relative!important;z-index:801!important;box-shadow:0 0 0 5px rgba(167,139,250,.7),0 0 0 9999px rgba(0,0,0,.52)!important;border-radius:10px!important;transition:box-shadow .25s}
 #coachTooltip{position:fixed;z-index:802;background:#13131f;border:1px solid rgba(167,139,250,.45);border-radius:14px;padding:16px 18px;max-width:280px;width:calc(100vw - 40px);box-shadow:0 8px 32px rgba(0,0,0,.7)}
 .coach-step-lbl{font-size:10px;font-weight:800;color:#a78bfa;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
 .coach-title{font-size:15px;font-weight:700;color:#f0f0f0;margin-bottom:6px;line-height:1.3}
 .coach-body{font-size:13px;color:#888;line-height:1.6;margin-bottom:14px}
-.coach-foot{display:flex;align-items:center;justify-content:space-between}
-.coach-skip{font-size:12px;color:#444;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0}
-.coach-next{background:linear-gradient(110deg,#a78bfa,#67e8f9);color:#050507;border:none;border-radius:20px;padding:8px 20px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}
-.coach-prog{font-size:11px;color:#444}
+.coach-foot{display:flex;flex-direction:column;gap:10px}
+.coach-foot-top{display:flex;align-items:center;gap:8px}
+.coach-foot-bot{display:flex;align-items:center;justify-content:space-between}
+.coach-skip{font-size:12px;color:#444;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0;-webkit-tap-highlight-color:transparent}
+.coach-prev{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#888;border-radius:20px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;transition:opacity .15s}
+.coach-prev:disabled{opacity:.3;cursor:default}
+.coach-next{background:linear-gradient(110deg,#a78bfa,#67e8f9);color:#050507;border:none;border-radius:20px;padding:8px 20px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;flex:1;-webkit-tap-highlight-color:transparent}
+.coach-prog{font-size:11px;color:#555;text-align:center;min-width:36px}
+.coach-index-btn{background:none;border:1px solid rgba(255,255,255,.1);border-radius:20px;color:#666;font-size:11px;font-weight:700;cursor:pointer;padding:6px 10px;font-family:inherit;-webkit-tap-highlight-color:transparent;white-space:nowrap}
+.coach-index-btn:active{color:#a78bfa;border-color:#a78bfa}
+/* contextual ? help chips */
+.tour-help-chip{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:#484858;background:rgba(255,255,255,.03);border:1px solid #222;border-radius:12px;padding:2px 7px;cursor:pointer;-webkit-tap-highlight-color:transparent;vertical-align:middle;margin-left:5px;transition:color .15s,border-color .15s;line-height:1.5}
+.tour-help-chip:active{color:#a78bfa;border-color:rgba(167,139,250,.5)}
+/* tour index sheet rows */
+.tour-level-sec{border-bottom:1px solid #151515}
+.tour-level-head{padding:14px 20px 8px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
+.tour-step-row{display:flex;align-items:center;gap:12px;padding:11px 20px;cursor:pointer;border-bottom:1px solid #0f0f0f;-webkit-tap-highlight-color:transparent}
+.tour-step-row:active{background:rgba(255,255,255,.04)}
+.tour-step-num{font-size:11px;font-weight:700;min-width:22px;flex-shrink:0}
+.tour-step-title{font-size:13px;color:#c8c8d8;flex:1;line-height:1.3}
+.tour-step-cur-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+/* tour level picker buttons */
+.tour-level-btn{width:100%;padding:16px 18px;border-radius:13px;border:1.5px solid #1e1e28;background:#0d0d13;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px;text-align:left;display:flex;align-items:center;gap:14px;font-family:inherit;-webkit-tap-highlight-color:transparent;transition:transform .12s}
+.tour-level-btn:active{transform:scale(.97)}
+.tour-level-btn .tlb-name{flex:1;color:#e0e0ee}
+.tour-level-btn .tlb-count{font-size:12px;color:#444;font-weight:500}
 /* pulsing ring around target */
 .coach-ring{position:fixed;z-index:803;border-radius:12px;border:2px solid rgba(167,139,250,.8);pointer-events:none;animation:coachRing 1.2s ease-out infinite}
 @keyframes coachRing{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.3)}}
@@ -1015,7 +1037,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <div class="demo-title">✨ Welcome to Your Salon</div>
       <div class="demo-sub">This is sample data so you can see everything in action — appointments, earnings, take-home splits. Explore freely. Take the tour to see exactly how it all works.</div>
       <div style="display:flex;gap:8px;margin-top:2px">
-        <button class="demo-clear" style="flex:1" onclick="startCoachTour()"><i class="ti ti-player-play"></i> Take the tour</button>
+        <button class="demo-clear" style="flex:1" onclick="openTourPicker()"><i class="ti ti-player-play"></i> Take the tour</button>
         <button class="demo-clear" style="flex:1;background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);color:#666" onclick="clearDemoData()"><i class="ti ti-trash"></i> Clear &amp; start</button>
       </div>
     </div>
@@ -1075,7 +1097,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 
       <!-- Client name + phone hidden, rise up when CHOOSE SERVICE(S) is tapped -->
       <div class="client-fields-wrap" id="clientFieldsWrap">
-        <label>Client name</label>
+        <label>Client name <button type="button" class="tour-help-chip" onclick="tourHelp(1,5)">? help</button></label>
         <input id="fName" list="clientList" placeholder="Start typing a name…" autocomplete="off" oninput="onNamePick()">
         <datalist id="clientList"></datalist>
         <label>Phone <span style="color:var(--gold);font-weight:400">(required)</span></label>
@@ -1083,7 +1105,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       </div>
 
       <div class="svc-label-row">
-        <label>Service</label>
+        <label>Service <button type="button" class="tour-help-chip" onclick="tourHelp(1,6)">? help</button></label>
         <span class="choose-svc-hint" id="chooseSvcHint" onclick="_revealClientFields()"><i class="ti ti-hand-finger" style="font-size:13px"></i> CHOOSE SERVICE(S)</span>
       </div>
       <input id="fService" placeholder="Tap services below to combine, or type your own…" oninput="syncChips()">
@@ -1106,9 +1128,9 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       </div>
       <div class="row2">
         <div><label>Duration (min)</label><input id="fDur" type="number" inputmode="numeric" placeholder="60" oninput="checkConflict()"></div>
-        <div><label>Price ($)</label><input id="fPrice" type="number" inputmode="decimal" placeholder="0" oninput="priceManual=true;apCalc()"></div>
+        <div><label>Price ($) <button type="button" class="tour-help-chip" onclick="tourHelp(1,7)">? help</button></label><input id="fPrice" type="number" inputmode="decimal" placeholder="0" oninput="priceManual=true;apCalc()"></div>
       </div>
-      <div><label>Tip received ($)</label><input id="fTip" type="number" inputmode="decimal" placeholder="0" oninput="apCalc()"></div>
+      <div><label>Tip received ($) <button type="button" class="tour-help-chip" onclick="tourHelp(1,8)">? help</button></label><input id="fTip" type="number" inputmode="decimal" placeholder="0" oninput="apCalc()"></div>
 
       <div class="ap-breakdown">
         <div class="ap-bk-title"><i class="ti ti-calculator"></i> Earnings breakdown</div>
@@ -1138,7 +1160,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
   <!-- CLIENTS VIEW -->
   <div class="view" id="view-clients">
     <div class="section-head">
-      <div class="section-title">Clients <span id="clientCount" style="color:var(--muted);font-weight:600;font-size:14px"></span></div>
+      <div class="section-title">Clients <span id="clientCount" style="color:var(--muted);font-weight:600;font-size:14px"></span> <button type="button" class="tour-help-chip" onclick="tourHelp(2,8)">? help</button></div>
       <button class="btn btn-ghost btn-sm" onclick="openClientSheet()"><i class="ti ti-user-plus"></i> Add</button>
     </div>
     <div class="clients-cols">
@@ -1154,7 +1176,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
   <div class="view" id="view-stock">
     <div class="inv-seg" id="invTrades"></div>
     <div class="inv-head">
-      <div class="section-title">Inventory</div>
+      <div class="section-title">Inventory <button type="button" class="tour-help-chip" onclick="tourHelp(2,10)">? help</button></div>
       <div style="display:flex;gap:6px">
         <button class="btn btn-ghost btn-sm" onclick="openTrades()"><i class="ti ti-adjustments"></i> Trades</button>
         <button class="btn btn-ghost btn-sm" onclick="openStockSheet()"><i class="ti ti-plus"></i> Add</button>
@@ -1171,7 +1193,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
        ═══════════════════════════════════════════════════ -->
   <div class="view" id="view-colour">
     <div style="padding:16px 16px 4px;display:flex;align-items:baseline;justify-content:space-between">
-      <div class="section-title" style="font-size:15px;letter-spacing:.2px">Colour Wheel</div>
+      <div class="section-title" style="font-size:15px;letter-spacing:.2px">Colour Wheel <button type="button" class="tour-help-chip" onclick="tourHelp(3,3)">? help</button></div>
       <div style="font-size:10px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase">tap any segment</div>
     </div>
 
@@ -3327,7 +3349,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.58 · coach marks tour + guide link';
+var VERSION='v5.60 · 3-level tutorial · prev/next/index nav · contextual ? chips';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5098,46 +5120,195 @@ document.addEventListener('click',function(e){
   <div class="coach-title" id="ctTitle"></div>
   <div class="coach-body" id="ctBody"></div>
   <div class="coach-foot">
-    <button class="coach-skip" onclick="endCoachTour()">Skip tour</button>
-    <span class="coach-prog" id="ctProg"></span>
-    <button class="coach-next" id="ctNext" onclick="coachNext()">Next →</button>
+    <div class="coach-foot-top">
+      <button class="coach-prev" id="ctPrev" onclick="coachPrev()">← Back</button>
+      <span class="coach-prog" id="ctProg"></span>
+      <button class="coach-next" id="ctNext" onclick="coachNext()">Next →</button>
+    </div>
+    <div class="coach-foot-bot">
+      <button class="coach-skip" onclick="endCoachTour()">Skip tour</button>
+      <button class="coach-index-btn" onclick="openTourIndex()">≡ All steps</button>
+    </div>
   </div>
 </div>
 <div class="coach-ring" id="coachRing" style="display:none"></div>
 
+<!-- Tour level picker sheet -->
+<div class="modal" id="tourPickerSheet" onclick="if(event.target===this)closeTourPicker()">
+  <div class="sheet">
+    <div class="sheet-head"><div class="sheet-title">Choose a tutorial level</div><button class="sheet-x" onclick="closeTourPicker()">✕</button></div>
+    <div style="padding:16px 20px 24px">
+      <button class="tour-level-btn" style="border-color:rgba(34,197,94,.2)" onclick="closeTourPicker();startCoachTour(1)">
+        <i class="ti ti-rocket" style="font-size:22px;color:#22c55e" aria-hidden="true"></i>
+        <span class="tlb-name">Level 1 — Quick start</span>
+        <span class="tlb-count">12 steps · 2 min</span>
+      </button>
+      <button class="tour-level-btn" style="border-color:rgba(59,130,246,.2)" onclick="closeTourPicker();startCoachTour(2)">
+        <i class="ti ti-tools" style="font-size:22px;color:#3b82f6" aria-hidden="true"></i>
+        <span class="tlb-name">Level 2 — Know your tools</span>
+        <span class="tlb-count">12 steps · 3 min</span>
+      </button>
+      <button class="tour-level-btn" style="border-color:rgba(167,139,250,.2)" onclick="closeTourPicker();startCoachTour(3)">
+        <i class="ti ti-stars" style="font-size:22px;color:#a78bfa" aria-hidden="true"></i>
+        <span class="tlb-name">Level 3 — Pro mode</span>
+        <span class="tlb-count">10 steps · 3 min</span>
+      </button>
+      <button class="tour-level-btn" style="border-color:rgba(255,184,0,.2)" onclick="closeTourPicker();openTourIndex()">
+        <i class="ti ti-list-search" style="font-size:22px;color:#FFB800" aria-hidden="true"></i>
+        <span class="tlb-name">Jump to any step</span>
+        <span class="tlb-count">all levels · full index</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Tour full index sheet -->
+<div class="modal" id="tourIndexSheet" onclick="if(event.target===this)closeTourIndex()">
+  <div class="sheet" style="max-height:88vh;display:flex;flex-direction:column">
+    <div class="sheet-head" style="flex-shrink:0"><div class="sheet-title">All tutorial steps</div><button class="sheet-x" onclick="closeTourIndex()">✕</button></div>
+    <div id="tourIndexBody" style="overflow-y:auto;flex:1;padding-bottom:16px"></div>
+  </div>
+</div>
+
 <script>
-/* ── Coach marks tour ── */
+/* ── 3-Level Coach Tour ── */
 (function(){
-  /* Steps: {sel, title, body, pos:'top'|'bottom'|'center', action:fn} */
-  var STEPS=[
-    {sel:null, title:'Welcome — let\'s take a quick tour',
-     body:'I\'ll show you exactly where to tap, step by step. Takes about 60 seconds.',
-     pos:'center'},
-    {sel:'.tab[data-view="add"]', title:'This is your Add button',
-     body:'Tap the ✦ Add tab to book any appointment. It\'s always in your bottom bar.',
-     pos:'top', action:function(){showView('add');}},
-    {sel:'#fName', title:'Start with your client\'s name',
-     body:'Type a name — if the client exists, they\'ll appear for quick fill. Or enter a new name to create a profile.',
-     pos:'bottom'},
-    {sel:'#fService', title:'Choose the service',
-     body:'Tap one of the service chips below, or type your own. You can combine multiple services in one booking.',
-     pos:'bottom'},
-    {sel:'#fPrice', title:'Enter the price',
-     body:'Type what you\'re charging. The commission split calculates the moment you type — no button to press.',
-     pos:'bottom'},
-    {sel:'#fTip', title:'Add the tip — it\'s always 100% yours',
-     body:'Tips are never split with the salon. They land directly in your take-home total, tracked separately.',
-     pos:'bottom'},
-    {sel:'.btn[onclick="saveAppt()"]', title:'Tap Save to book them in',
-     body:'That\'s it. Your earnings update instantly. Switch to Earnings at the top to see your take-home.',
-     pos:'top'},
-    {sel:null, title:'You\'re ready! 🎉',
-     body:'Now explore freely using the sample data. When you\'re ready to go live, tap "Clear & start" on the welcome banner.',
-     pos:'center'}
-  ];
 
-  var cur=0, prevEl=null, ringEl=null;
+  /* ═══════════════════════════════════════
+     TOUR DATA  — 3 levels, all steps
+  ═══════════════════════════════════════ */
+  var TOUR={
+    1:{name:'Quick start',color:'#22c55e',steps:[
+      {sel:null,pos:'center',
+       title:'Welcome — your salon, your way',
+       body:'This 2-minute tour shows you exactly where everything lives. You\'ll feel at home before your first real client.'},
+      {sel:'button[onclick="openSettings()"]',pos:'bottom',
+       title:'First — set your trade',
+       body:'Tap Settings → choose what you do (Hair, Barber, Nails, Lash…). Your service list updates to match yours immediately.'},
+      {sel:'.tabs',pos:'top',
+       title:'Your bottom bar — five tabs, one app',
+       body:'Day = your schedule. Add = new booking. Clients = your people. Inventory = products. Colour = colour wheel tool.'},
+      {sel:'.topbar-actions',pos:'bottom',
+       title:'Top bar tools',
+       body:'Search finds any booking or client instantly. $ opens your price book. The eye icon softens the screen for late-night use. ⚙ is Settings.'},
+      {sel:'.tab[data-view="add"]',pos:'top',
+       title:'The Add button — your most-used key',
+       body:'Every appointment starts here. Tap it now — the booking form opens.',
+       action:function(){openAdd();}},
+      {sel:'#fName',pos:'bottom',
+       title:'Start with a name',
+       body:'Type your client\'s name. If they\'re already in your list, they auto-fill. A brand-new name creates their profile automatically.'},
+      {sel:'#fService',pos:'bottom',
+       title:'Choose the service',
+       body:'Tap the chips below to add services. Combine as many as you like in one booking — prices add up as you go.'},
+      {sel:'#fPrice',pos:'bottom',
+       title:'Set the price',
+       body:'Type what you\'re charging. Your commission split calculates live as you type — no extra button, no calculator.'},
+      {sel:'#fTip',pos:'bottom',
+       title:'Add the tip — it\'s always 100% yours',
+       body:'Tips are never split with the salon. They land directly in your take-home total, tracked separately from service income.'},
+      {sel:'.btn[onclick="saveAppt()"]',pos:'top',
+       title:'Tap Save to book them in',
+       body:'Done. The appointment lands in Day view and your earnings update instantly. Switch to Earnings at the top to see your take-home.'},
+      {sel:null,pos:'center',
+       title:'Install the app — takes 5 seconds',
+       body:'In Safari: tap the Share button (box with arrow) → "Add to Home Screen". It opens like a real app, works offline, and loads instantly every time.'},
+      {sel:null,pos:'center',
+       title:'You\'re all set 🎉',
+       body:'Explore freely with the sample data. When you\'re ready to go live, tap "Clear & start" on the welcome banner above.'}
+    ]},
+    2:{name:'Know your tools',color:'#3b82f6',steps:[
+      {sel:null,pos:'center',
+       title:'Level 2 — know your tools',
+       body:'The features you\'ll use every single day. Deeper into your schedule, clients, pricing, and inventory.'},
+      {sel:'#daySeg',pos:'bottom',
+       title:'Day vs Week view',
+       body:'Switch between Day (one column, full detail) and Week (7 days at a glance). Tap either button in the segment to toggle.',
+       action:function(){showView('day');}},
+      {sel:'.wstrip',pos:'bottom',
+       title:'Week strip — slide to any day',
+       body:'Swipe left or right on the date strip to move through the week. Tap any date to jump straight to it.',
+       action:function(){showView('day');}},
+      {sel:'.tab[data-view="day"]',pos:'top',
+       title:'Tap any appointment card',
+       body:'Every card in Day view is tappable. Open it to edit price, change status, add a tip, or delete — right there inline.',
+       action:function(){showView('day');}},
+      {sel:null,pos:'center',
+       title:'Booking status chips',
+       body:'Inside any open appointment: tap In Progress, Done, or No-show. The status shows on the card in Day view so you always know where things stand.'},
+      {sel:'#fService',pos:'bottom',
+       title:'Multi-service bookings',
+       body:'When adding a booking, tap more than one service chip. Prices combine automatically. Perfect for colour + cut combos.',
+       action:function(){openAdd();}},
+      {sel:'button[onclick="openPrices()"]',pos:'bottom',
+       title:'Price book — set it once',
+       body:'Tap the $ icon. Set your standard price per service. Next time you pick that service in Add, the price pre-fills — no typing needed.'},
+      {sel:'.svc-trade-row',pos:'bottom',
+       title:'By-hair auto-pricing',
+       body:'In Price book, tap "By hair" next to a service. Price adjusts automatically by length, thickness, and treatment history — great for colour work.',
+       action:function(){openAdd();}},
+      {sel:'.tab[data-view="clients"]',pos:'top',
+       title:'Clients tab',
+       body:'Every client you\'ve booked builds a profile here. Tap any client to see their full history, contact info, and hair profile.',
+       action:function(){showView('clients');}},
+      {sel:'#clientsList',pos:'top',
+       title:'Client hair profile',
+       body:'Inside a client card, set their hair length, thickness, and colour history. This feeds directly into by-hair auto-pricing on the Add screen.'},
+      {sel:'.tab[data-view="stock"]',pos:'top',
+       title:'Inventory tab',
+       body:'Track every product you use. Log usage with + and − buttons. Spot what\'s running low at a glance before you run out.',
+       action:function(){showView('stock');}},
+      {sel:null,pos:'center',
+       title:'Switching to Earnings',
+       body:'The ✨ Your Salon toggle at the very top switches between Appointments and Earnings — same data, money lens. Your take-home is always live.'}
+    ]},
+    3:{name:'Pro mode',color:'#a78bfa',steps:[
+      {sel:null,pos:'center',
+       title:'Level 3 — pro mode',
+       body:'Power features for full control. Commission rates, colour tools, backup, diagnostics, and more.'},
+      {sel:'button[onclick="openSettings()"]',pos:'bottom',
+       title:'Commission rate',
+       body:'Settings → Commission % — change your split percentage. Every past and future calculation updates immediately across the whole app.'},
+      {sel:'button[onclick="openSettings()"]',pos:'bottom',
+       title:'Service categories',
+       body:'Settings → scroll down to Services — reorder, rename, or hide any category that doesn\'t apply to your trade. Your add screen stays clean.'},
+      {sel:'.tab[data-view="colour"]',pos:'top',
+       title:'Colour wheel tool',
+       body:'Tap any shade to instantly see its complementary colour and neutraliser. Great for colour correction conversations right at the chair.',
+       action:function(){showView('colour');}},
+      {sel:'.tab[data-view="stock"]',pos:'top',
+       title:'Stock level alerts',
+       body:'In Inventory, set a low threshold for each product. When stock drops below it, the item highlights so you reorder before you run out.',
+       action:function(){showView('stock');}},
+      {sel:'.gear-btn.er-btn',pos:'bottom',
+       title:'Eye rest mode',
+       body:'The eye icon in the top bar switches to a warm, low-contrast theme — perfect for end-of-day when your eyes are tired.'},
+      {sel:'button[onclick="openSettings()"]',pos:'bottom',
+       title:'Noir / holographic theme',
+       body:'Settings → Noir toggle — turns on the signature iridescent holographic theme. Looks incredible on OLED screens.'},
+      {sel:'button[onclick="openSettings()"]',pos:'bottom',
+       title:'Backup & restore',
+       body:'Settings → scroll to the bottom — Export saves all your data as a file. Import it on a new phone or iPad to pick up exactly where you left off.'},
+      {sel:'button[onclick="openSettings()"]',pos:'bottom',
+       title:'Run diagnostics',
+       body:'Settings → Run diagnostics — checks your data for anything inconsistent and reports app health. Use it if anything ever feels off.'},
+      {sel:null,pos:'center',
+       title:'You know the whole app 🎉',
+       body:'Every feature, every button — you\'re a pro now. Go make some money.'}
+    ]}
+  };
 
+  /* ═══════════════════════════════════════
+     STATE
+  ═══════════════════════════════════════ */
+  var curLevel=1, curStep=0, prevHighEl=null;
+
+  function steps(){ return TOUR[curLevel].steps; }
+  function levelColor(){ return TOUR[curLevel].color; }
+
+  /* ═══════════════════════════════════════
+     ELEMENT LOOKUP + POSITIONING
+  ═══════════════════════════════════════ */
   function getEl(step){
     if(!step.sel)return null;
     return document.querySelector(step.sel);
@@ -5147,90 +5318,140 @@ document.addEventListener('click',function(e){
     var tt=document.getElementById('coachTooltip');
     var ring=document.getElementById('coachRing');
     tt.style.display='block';
-
     if(!el||pos==='center'){
-      /* centred on screen */
-      tt.style.left='50%';tt.style.top='50%';
-      tt.style.transform='translate(-50%,-50%)';
+      tt.style.left='50%';tt.style.top='50%';tt.style.transform='translate(-50%,-50%)';
       ring.style.display='none';
       return;
     }
     tt.style.transform='none';
-
     var r=el.getBoundingClientRect();
-    var vw=window.innerWidth, vh=window.innerHeight;
-    var tw=Math.min(280,vw-40), th=160;
-
-    /* position ring */
+    var vw=window.innerWidth,vh=window.innerHeight;
+    var tw=Math.min(292,vw-40),th=190;
     var pad=6;
     ring.style.display='block';
     ring.style.left=(r.left-pad)+'px';ring.style.top=(r.top-pad)+'px';
     ring.style.width=(r.width+pad*2)+'px';ring.style.height=(r.height+pad*2)+'px';
-
-    /* position tooltip */
     var left=Math.max(20,Math.min(r.left,vw-tw-20));
     if(pos==='top'){
-      var top=r.top-th-16;
-      if(top<60)top=r.bottom+16;
+      var top=r.top-th-16; if(top<60)top=r.bottom+16;
       tt.style.top=top+'px';
     } else {
-      var top2=r.bottom+16;
-      if(top2+th>vh-20)top2=r.top-th-16;
+      var top2=r.bottom+16; if(top2+th>vh-20)top2=r.top-th-16;
       tt.style.top=top2+'px';
     }
     tt.style.left=left+'px';
   }
 
+  /* ═══════════════════════════════════════
+     RENDER A STEP
+  ═══════════════════════════════════════ */
   function showStep(n){
-    /* remove previous highlight */
-    if(prevEl){prevEl.classList.remove('coach-hole-el');}
-    prevEl=null;
-
-    var step=STEPS[n];
+    if(prevHighEl){prevHighEl.classList.remove('coach-hole-el');prevHighEl=null;}
+    var ss=steps();
+    var step=ss[n];
     var el=getEl(step);
-
-    /* run action (e.g. switch view) */
     if(step.action)step.action();
-
-    /* highlight target */
     if(el){
       el.classList.add('coach-hole-el');
-      prevEl=el;
+      prevHighEl=el;
       el.scrollIntoView({behavior:'smooth',block:'center'});
     }
-
-    /* update overlay */
-    var ov=document.getElementById('coachOverlay');
-    ov.classList.add('show');
-
-    /* update text */
-    document.getElementById('ctStepLbl').textContent='Step '+(n+1)+' of '+STEPS.length;
+    document.getElementById('coachOverlay').classList.add('show');
+    /* step label: level name + step count */
+    var lv=TOUR[curLevel];
+    document.getElementById('ctStepLbl').textContent='L'+curLevel+' · '+lv.name+'   '+( n+1)+' / '+ss.length;
     document.getElementById('ctTitle').textContent=step.title;
     document.getElementById('ctBody').textContent=step.body;
-    document.getElementById('ctProg').textContent=(n+1)+'/'+STEPS.length;
-    document.getElementById('ctNext').textContent=n===STEPS.length-1?'Done ✓':'Next →';
-
+    document.getElementById('ctProg').textContent=(n+1)+'/'+ss.length;
+    /* prev button disabled on step 0 */
+    var pb=document.getElementById('ctPrev');
+    if(pb){pb.disabled=(n===0);}
+    document.getElementById('ctNext').textContent=(n===ss.length-1)?'Done ✓':'Next →';
     setTimeout(function(){positionTooltip(el,step.pos||'bottom');},el?350:0);
   }
 
-  window.startCoachTour=function(){
-    cur=0;
-    showStep(cur);
+  /* ═══════════════════════════════════════
+     PUBLIC API
+  ═══════════════════════════════════════ */
+  window.startCoachTour=function(level){
+    curLevel=level||1; curStep=0; showStep(0);
   };
 
   window.coachNext=function(){
-    cur++;
-    if(cur>=STEPS.length){endCoachTour();return;}
-    showStep(cur);
+    curStep++;
+    if(curStep>=steps().length){endCoachTour();return;}
+    showStep(curStep);
+  };
+
+  window.coachPrev=function(){
+    if(curStep<=0)return;
+    curStep--;
+    showStep(curStep);
   };
 
   window.endCoachTour=function(){
-    if(prevEl){prevEl.classList.remove('coach-hole-el');prevEl=null;}
-    var ov=document.getElementById('coachOverlay');
-    ov.classList.remove('show');
+    if(prevHighEl){prevHighEl.classList.remove('coach-hole-el');prevHighEl=null;}
+    document.getElementById('coachOverlay').classList.remove('show');
     document.getElementById('coachTooltip').style.display='none';
     document.getElementById('coachRing').style.display='none';
   };
+
+  /* jump from index sheet */
+  window.jumpToTourStep=function(level,stepIdx){
+    closeTourIndex();
+    curLevel=level; curStep=stepIdx;
+    setTimeout(function(){showStep(stepIdx);},300);
+  };
+
+  /* contextual ? chip entry point */
+  window.tourHelp=function(level,stepIdx){
+    endCoachTour();
+    setTimeout(function(){window.jumpToTourStep(level,stepIdx);},60);
+  };
+
+  /* ═══════════════════════════════════════
+     TOUR PICKER SHEET
+  ═══════════════════════════════════════ */
+  window.openTourPicker=function(){
+    var sh=document.getElementById('tourPickerSheet');
+    if(sh)sh.classList.add('show');
+  };
+  window.closeTourPicker=function(){
+    var sh=document.getElementById('tourPickerSheet');
+    if(sh)sh.classList.remove('show');
+  };
+
+  /* ═══════════════════════════════════════
+     FULL INDEX SHEET
+  ═══════════════════════════════════════ */
+  window.openTourIndex=function(){
+    var body=document.getElementById('tourIndexBody');
+    if(!body)return;
+    var html='';
+    [1,2,3].forEach(function(lv){
+      var t=TOUR[lv];
+      var clr=t.color;
+      html+='<div class="tour-level-sec">';
+      html+='<div class="tour-level-head" style="color:'+clr+'">Level '+lv+' &mdash; '+t.name+'</div>';
+      t.steps.forEach(function(s,i){
+        var isCur=(lv===curLevel&&i===curStep);
+        html+='<div class="tour-step-row" onclick="jumpToTourStep('+lv+','+i+')">';
+        html+='<span class="tour-step-num" style="color:'+clr+'">'+(i+1)+'</span>';
+        html+='<span class="tour-step-title"'+(isCur?' style="color:'+clr+';font-weight:700"':'')+'>'+s.title+'</span>';
+        if(isCur)html+='<span class="tour-step-cur-dot" style="background:'+clr+'"></span>';
+        html+='</div>';
+      });
+      html+='</div>';
+    });
+    body.innerHTML=html;
+    var sh=document.getElementById('tourIndexSheet');
+    if(sh)sh.classList.add('show');
+  };
+  window.closeTourIndex=function(){
+    var sh=document.getElementById('tourIndexSheet');
+    if(sh)sh.classList.remove('show');
+  };
+
 })();
 </script>
 </body>
