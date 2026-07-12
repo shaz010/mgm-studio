@@ -3417,7 +3417,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.77 · WIT_MAP real IDs (fName fPhone fPrice fTip fService)';
+var VERSION='v5.78 · fix AT bubble tap (ReferenceError on witActive/deactivateWIT)';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5231,7 +5231,6 @@ document.addEventListener('click',function(e){
   var PAD=22, SIZE=52;
   var active=false, moved=false, tid=-1;
   var startCX=0, startCY=0, startTX=0, startTY=0;
-  var lastTapTime=0;
   var rafId=null, pendX=0, pendY=0;
 
   function clamp(v,a,b){return v<a?a:v>b?b:v;}
@@ -5286,22 +5285,10 @@ document.addEventListener('click',function(e){
     if(rafId){cancelAnimationFrame(rafId);rafId=null;}
     el.classList.remove('dragging');
     if(!moved){
-      var now=Date.now();
-      var dbl=now-lastTapTime<320;
-      lastTapTime=now;
-      if(dbl){
-        /* double-tap → always open picker regardless of current mode */
-        if(witActive)deactivateWIT();
-        setTimeout(function(){_origAtTap();},80);
-      } else {
-        /* single tap → context-aware */
-        if(witActive){
-          deactivateWIT();
-          setTimeout(function(){_origAtTap();},120);
-        } else {
-          openTourPicker();
-        }
-      }
+      /* WIT intercept (in the WIT IIFE) handles taps when WIT is active
+         via capture-phase stopPropagation, so this code only runs when
+         WIT is NOT active. Just open the picker. */
+      window.openTourPicker();
       setTimeout(function(){el.classList.add('idle');},500);
       return;
     }
