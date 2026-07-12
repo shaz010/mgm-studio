@@ -541,9 +541,20 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 .tour-step-title{font-size:13px;color:#c8c8d8;flex:1;line-height:1.3}
 .tour-step-cur-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 /* ── AssistiveTouch tutorial bubble ── */
-#tutAt{position:fixed;left:0;top:0;width:52px;height:52px;border-radius:50%;background:rgba(30,18,50,.82);border:2px solid rgba(167,139,250,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;color:rgba(220,210,255,.95);font-size:22px;z-index:799;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;will-change:transform;transition:opacity .25s,background .2s,border-color .2s,box-shadow .2s;box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 4px rgba(167,139,250,.12)}
-#tutAt.dragging{cursor:grabbing;background:rgba(60,30,90,.9);border-color:rgba(167,139,250,.9);transition:opacity .1s;box-shadow:0 8px 28px rgba(0,0,0,.7),0 0 0 6px rgba(167,139,250,.2)}
-#tutAt.snapping{transition:transform .22s cubic-bezier(.25,1.4,.5,1),opacity .25s,background .2s}
+#tutAt{position:fixed;left:0;top:0;width:52px;height:52px;border-radius:50%;
+  background:rgba(30,18,50,.82);border:2px solid rgba(167,139,250,.6);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(220,210,255,.95);font-size:22px;z-index:799;cursor:grab;
+  user-select:none;-webkit-user-select:none;
+  touch-action:none;-webkit-tap-highlight-color:transparent;
+  will-change:transform;
+  transition:opacity .25s,background .2s,border-color .2s,box-shadow .2s;
+  box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 4px rgba(167,139,250,.12)}
+#tutAt.dragging{cursor:grabbing;transition:none;
+  background:rgba(60,30,90,.9);border-color:rgba(167,139,250,.9);
+  box-shadow:0 8px 28px rgba(0,0,0,.7),0 0 0 6px rgba(167,139,250,.2)}
+#tutAt.snapping{transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s,background .2s}
 #tutAt.idle{opacity:.78}
 body.tut-at-hidden #tutAt{display:none}
 /* ── What Is This mode ── */
@@ -3402,7 +3413,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.69 · WIT tap-to-zoom, tap-again-to-dismiss';
+var VERSION='v5.70 · AT bubble pointer-capture drag, silky smooth';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5204,59 +5215,66 @@ document.addEventListener('click',function(e){
 <script>
 /* ── AssistiveTouch Tutorial Bubble ── */
 (function(){
-  var el, moved, tx, ty, startCX, startCY, startTX, startTY;
-  var PAD=16, SIZE=52, rafId=null, pendTX=0, pendTY=0;
+  /* ── Pointer-capture drag (silky smooth, no scroll interference) ── */
+  var el, tx=0, ty=0;
+  var PAD=16, SIZE=52;
+  var dragging=false, moved=false;
+  var startCX=0, startCY=0, startTX=0, startTY=0;
+  var rafId=null, pendX=0, pendY=0;
 
   function clamp(v,mn,mx){return Math.max(mn,Math.min(mx,v));}
   function savePos(x,y){try{localStorage.setItem('ap_tutAt',JSON.stringify({x:x,y:y}));}catch(e){}}
   function loadPos(){try{var p=JSON.parse(localStorage.getItem('ap_tutAt'));if(p)return p;}catch(e){}return null;}
-  function setXY(x,y){tx=x;ty=y;el.style.transform='translate3d('+x+'px,'+y+'px,0)';}
-  function snapToEdge(x,y){
-    var vw=window.innerWidth,vh=window.innerHeight;
-    return {x:x+SIZE/2<vw/2?PAD:vw-SIZE-PAD, y:clamp(y,PAD,vh-SIZE-PAD)};
+
+  function setXY(x,y){
+    tx=x; ty=y;
+    el.style.transform='translate3d('+x+'px,'+y+'px,0)';
+  }
+  function snapEdge(x,y){
+    var vw=window.innerWidth, vh=window.innerHeight;
+    return {x: x+SIZE/2 < vw/2 ? PAD : vw-SIZE-PAD,
+            y: clamp(y, PAD, vh-SIZE-PAD)};
   }
 
-  function onStart(e){
-    if(!el)return;
-    moved=false;
-    var t=e.touches?e.touches[0]:e;
-    startCX=t.clientX; startCY=t.clientY;
+  function onPointerDown(e){
+    if(e.button&&e.button!==0)return;
+    dragging=true; moved=false;
+    startCX=e.clientX; startCY=e.clientY;
     startTX=tx; startTY=ty;
+    el.setPointerCapture(e.pointerId); /* all future events route here — no stealing */
     el.classList.add('dragging');
     el.classList.remove('idle','snapping');
-    document.addEventListener('touchmove',onMove,{passive:false});
-    document.addEventListener('touchend',onEnd);
-    document.addEventListener('mousemove',onMove);
-    document.addEventListener('mouseup',onEnd);
+    e.preventDefault();
   }
-  function onMove(e){
-    if(!el)return;
-    if(e.cancelable)e.preventDefault();
-    var t=e.touches?e.touches[0]:e;
-    var dx=t.clientX-startCX, dy=t.clientY-startCY;
-    if(Math.abs(dx)>4||Math.abs(dy)>4)moved=true;
-    pendTX=clamp(startTX+dx,PAD,window.innerWidth-SIZE-PAD);
-    pendTY=clamp(startTY+dy,PAD,window.innerHeight-SIZE-PAD);
-    if(!rafId)rafId=requestAnimationFrame(commitMove);
+  function onPointerMove(e){
+    if(!dragging)return;
+    var dx=e.clientX-startCX, dy=e.clientY-startCY;
+    if(!moved&&(Math.abs(dx)>3||Math.abs(dy)>3))moved=true;
+    pendX=clamp(startTX+dx, PAD, window.innerWidth-SIZE-PAD);
+    pendY=clamp(startTY+dy, PAD, window.innerHeight-SIZE-PAD);
+    if(!rafId)rafId=requestAnimationFrame(commitDrag);
   }
-  function commitMove(){
+  function commitDrag(){
     rafId=null;
-    setXY(pendTX,pendTY);
+    setXY(pendX,pendY);
   }
-  function onEnd(){
+  function onPointerUp(e){
+    if(!dragging)return;
+    dragging=false;
     if(rafId){cancelAnimationFrame(rafId);rafId=null;}
-    document.removeEventListener('touchmove',onMove);
-    document.removeEventListener('touchend',onEnd);
-    document.removeEventListener('mousemove',onMove);
-    document.removeEventListener('mouseup',onEnd);
-    if(!el)return;
+    el.releasePointerCapture(e.pointerId);
     el.classList.remove('dragging');
-    if(!moved){openTourPicker();setTimeout(function(){el.classList.add('idle');},600);return;}
-    var s=snapToEdge(tx,ty);
+    if(!moved){
+      /* it was a tap */
+      openTourPicker();
+      setTimeout(function(){el.classList.add('idle');},600);
+      return;
+    }
+    var s=snapEdge(tx,ty);
     el.classList.add('snapping');
     setXY(s.x,s.y);
     savePos(s.x,s.y);
-    setTimeout(function(){el.classList.remove('snapping');el.classList.add('idle');},350);
+    setTimeout(function(){el.classList.remove('snapping');el.classList.add('idle');},380);
   }
 
   document.addEventListener('DOMContentLoaded',function(){
@@ -5267,8 +5285,10 @@ document.addEventListener('click',function(e){
     var initY=saved?saved.y:window.innerHeight-SIZE-100;
     setXY(initX,initY);
     setTimeout(function(){el.classList.add('idle');},1200);
-    el.addEventListener('touchstart',onStart,{passive:true});
-    el.addEventListener('mousedown',onStart);
+    el.addEventListener('pointerdown',onPointerDown);
+    el.addEventListener('pointermove',onPointerMove);
+    el.addEventListener('pointerup',onPointerUp);
+    el.addEventListener('pointercancel',onPointerUp);
   });
 
   /* settings toggles */
