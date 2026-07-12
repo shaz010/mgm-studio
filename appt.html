@@ -540,6 +540,10 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 .tour-step-num{font-size:11px;font-weight:700;min-width:22px;flex-shrink:0}
 .tour-step-title{font-size:13px;color:#c8c8d8;flex:1;line-height:1.3}
 .tour-step-cur-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+/* floating tutorial access button */
+#tourFab{position:fixed;bottom:22px;right:14px;z-index:799;display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:20px;border:1px solid rgba(167,139,250,.22);background:rgba(10,10,18,.72);color:rgba(167,139,250,.55);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;letter-spacing:.2px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:color .2s,border-color .2s,opacity .2s}
+#tourFab:active{color:rgba(167,139,250,.9);border-color:rgba(167,139,250,.5)}
+#tourFab i{font-size:13px}
 /* tour level picker buttons */
 .tour-level-btn{width:100%;padding:16px 18px;border-radius:13px;border:1.5px solid #1e1e28;background:#0d0d13;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px;text-align:left;display:flex;align-items:center;gap:14px;font-family:inherit;-webkit-tap-highlight-color:transparent;transition:transform .12s}
 .tour-level-btn:active{transform:scale(.97)}
@@ -1097,7 +1101,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 
       <!-- Client name + phone hidden, rise up when CHOOSE SERVICE(S) is tapped -->
       <div class="client-fields-wrap" id="clientFieldsWrap">
-        <label>Client name <button type="button" class="tour-help-chip" onclick="tourHelp(1,5)">? help</button></label>
+        <label>Client name <button type="button" class="tour-help-chip" onclick="tourHelp(1,6)">? help</button></label>
         <input id="fName" list="clientList" placeholder="Start typing a name…" autocomplete="off" oninput="onNamePick()">
         <datalist id="clientList"></datalist>
         <label>Phone <span style="color:var(--gold);font-weight:400">(required)</span></label>
@@ -1105,7 +1109,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       </div>
 
       <div class="svc-label-row">
-        <label>Service <button type="button" class="tour-help-chip" onclick="tourHelp(1,6)">? help</button></label>
+        <label>Service <button type="button" class="tour-help-chip" onclick="tourHelp(1,5)">? help</button></label>
         <span class="choose-svc-hint" id="chooseSvcHint" onclick="_revealClientFields()"><i class="ti ti-hand-finger" style="font-size:13px"></i> CHOOSE SERVICE(S)</span>
       </div>
       <input id="fService" placeholder="Tap services below to combine, or type your own…" oninput="syncChips()">
@@ -3349,7 +3353,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.60 · 3-level tutorial · prev/next/index nav · contextual ? chips';
+var VERSION='v5.61 · tutorial step order fix + floating tutorial button + level-done sheet';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5113,6 +5117,21 @@ document.addEventListener('click',function(e){
 })();
 </script>
 
+<!-- Floating tutorial access button — always visible, subtle -->
+<button id="tourFab" onclick="openTourPicker()" aria-label="Tutorial"><i class="ti ti-school" aria-hidden="true"></i> Tutorial</button>
+
+<!-- Level-done sheet — shown when a level completes naturally -->
+<div class="modal" id="tourLevelDoneSheet" onclick="if(event.target===this)closeTourLevelDone()">
+  <div class="sheet">
+    <div class="sheet-head"><div class="sheet-title" id="tldTitle"></div><button class="sheet-x" onclick="closeTourLevelDone()">✕</button></div>
+    <div style="padding:4px 20px 28px">
+      <div id="tldBody" style="font-size:13.5px;color:#888;line-height:1.6;margin-bottom:18px"></div>
+      <button id="tldContinue" class="btn" style="width:100%;margin-bottom:10px" onclick="tldContinueAction()"></button>
+      <button class="btn btn-ghost" style="width:100%" onclick="closeTourLevelDone()">I'll explore on my own</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== COACH MARKS TOUR ===== -->
 <div id="coachOverlay"></div>
 <div id="coachTooltip" style="display:none">
@@ -5195,12 +5214,13 @@ document.addEventListener('click',function(e){
        title:'The Add button — your most-used key',
        body:'Every appointment starts here. Tap it now — the booking form opens.',
        action:function(){openAdd();}},
-      {sel:'#fName',pos:'bottom',
-       title:'Start with a name',
-       body:'Type your client\'s name. If they\'re already in your list, they auto-fill. A brand-new name creates their profile automatically.'},
       {sel:'#fService',pos:'bottom',
-       title:'Choose the service',
-       body:'Tap the chips below to add services. Combine as many as you like in one booking — prices add up as you go.'},
+       title:'Choose the service first',
+       body:'Tap any chip below to pick a service — this unlocks the rest of the form. The client name and phone fields slide in automatically once you make a selection.',
+       action:function(){try{_revealClientFields();}catch(e){}}},
+      {sel:'#fName',pos:'bottom',
+       title:'Now enter the client\'s name',
+       body:'Type your client\'s name. If they\'re already in your list they auto-fill with their details. A brand-new name creates their profile automatically.'},
       {sel:'#fPrice',pos:'bottom',
        title:'Set the price',
        body:'Type what you\'re charging. Your commission split calculates live as you type — no extra button, no calculator.'},
@@ -5379,7 +5399,7 @@ document.addEventListener('click',function(e){
 
   window.coachNext=function(){
     curStep++;
-    if(curStep>=steps().length){endCoachTour();return;}
+    if(curStep>=steps().length){endCoachTour(true);return;}
     showStep(curStep);
   };
 
@@ -5389,11 +5409,44 @@ document.addEventListener('click',function(e){
     showStep(curStep);
   };
 
-  window.endCoachTour=function(){
+  function clearCoachUI(){
     if(prevHighEl){prevHighEl.classList.remove('coach-hole-el');prevHighEl=null;}
     document.getElementById('coachOverlay').classList.remove('show');
     document.getElementById('coachTooltip').style.display='none';
     document.getElementById('coachRing').style.display='none';
+  }
+
+  window.endCoachTour=function(completed){
+    clearCoachUI();
+    if(completed) showLevelDone(curLevel);
+  };
+
+  /* level-done sheet */
+  var _tldNextLevel=null;
+  function showLevelDone(level){
+    var titles={1:'Level 1 complete 🎉',2:'Level 2 complete 🎉',3:'You know the whole app 🏆'};
+    var bodies={
+      1:'You\'ve got the basics down — booking a client, setting a price, tracking your tip. Ready to go deeper into your daily tools?',
+      2:'You now know your schedule, clients, pricing, and inventory inside out. Want to unlock the power features?',
+      3:'Every feature, every button — you\'re a pro. The whole app is yours now.'
+    };
+    var btnLabels={1:'Continue to Level 2 →',2:'Continue to Level 3 →',3:'Back to the app'};
+    _tldNextLevel=level<3?level+1:null;
+    document.getElementById('tldTitle').textContent=titles[level]||'Level complete';
+    document.getElementById('tldBody').textContent=bodies[level]||'';
+    document.getElementById('tldContinue').textContent=btnLabels[level]||'Done';
+    var sh=document.getElementById('tourLevelDoneSheet');
+    if(sh)sh.classList.add('show');
+  }
+
+  window.tldContinueAction=function(){
+    closeTourLevelDone();
+    if(_tldNextLevel){setTimeout(function(){startCoachTour(_tldNextLevel);},320);}
+  };
+
+  window.closeTourLevelDone=function(){
+    var sh=document.getElementById('tourLevelDoneSheet');
+    if(sh)sh.classList.remove('show');
   };
 
   /* jump from index sheet */
