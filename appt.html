@@ -546,6 +546,22 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 #tutAt.snapping{transition:transform .22s cubic-bezier(.25,1.4,.5,1),opacity .25s,background .2s}
 #tutAt.idle{opacity:.78}
 body.tut-at-hidden #tutAt{display:none}
+/* ── What Is This mode ── */
+body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85);
+  box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 5px rgba(255,184,0,.18),0 0 18px rgba(255,184,0,.25)}
+#witTooltip{position:fixed;z-index:9999;max-width:260px;pointer-events:none;
+  background:rgba(18,12,0,.94);border:1.5px solid rgba(255,184,0,.55);
+  border-radius:14px;padding:12px 14px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 6px 28px rgba(0,0,0,.7);opacity:0;transition:opacity .18s;transform:translate(-50%,-100%) translateY(-12px)}
+#witTooltip.show{opacity:1}
+#witTooltip .wit-title{font-size:13px;font-weight:700;color:#FFB800;margin-bottom:4px;line-height:1.3}
+#witTooltip .wit-body{font-size:12px;color:rgba(240,230,200,.88);line-height:1.5}
+#witTooltip .wit-tip{font-size:11px;color:rgba(255,184,0,.5);margin-top:6px}
+#witBanner{position:fixed;top:env(safe-area-inset-top,0);left:0;right:0;z-index:998;
+  background:rgba(60,35,0,.92);border-bottom:1px solid rgba(255,184,0,.3);
+  padding:8px 16px;text-align:center;font-size:12px;color:rgba(255,220,100,.9);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none}
+body.wit-on #witBanner{display:block}
 /* ── Mode B — section help buttons ── */
 .sec-help-btn{display:none;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(167,139,250,.4);background:rgba(167,139,250,.1);color:rgba(167,139,250,.8);font-size:11px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;transition:background .15s}
 .sec-help-btn:active{background:rgba(167,139,250,.3)}
@@ -3381,7 +3397,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.65 · Commission rate moved to L1 step 3';
+var VERSION='v5.66 · What Is This? tap-to-explain mode';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5148,6 +5164,12 @@ document.addEventListener('click',function(e){
 <!-- AssistiveTouch tutorial bubble -->
 <div id="tutAt" role="button" aria-label="Tutorial guide" tabindex="0"><i class="ti ti-school" aria-hidden="true"></i></div>
 
+<!-- What Is This banner -->
+<div id="witBanner">❓ Tap any button to learn what it does &nbsp;·&nbsp; tap <strong>🟡</strong> to exit</div>
+
+<!-- What Is This tooltip -->
+<div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap anywhere else to dismiss</div></div>
+
 <!-- Section help explanation sheet (Mode B) -->
 <div class="modal" id="sectionHelpSheet" onclick="if(event.target===this)closeSectionHelp()">
   <div class="sheet">
@@ -5349,6 +5371,11 @@ document.addEventListener('click',function(e){
         <i class="ti ti-list-search" style="font-size:22px;color:#FFB800" aria-hidden="true"></i>
         <span class="tlb-name">Jump to any step</span>
         <span class="tlb-count">all levels · full index</span>
+      </button>
+      <button class="tour-level-btn" style="border-color:rgba(255,184,0,.35);margin-top:4px" onclick="closeTourPicker();activateWIT()">
+        <i class="ti ti-help-circle" style="font-size:22px;color:#FFB800" aria-hidden="true"></i>
+        <span class="tlb-name">What does this do?</span>
+        <span class="tlb-count">tap any button to explain it</span>
       </button>
     </div>
   </div>
@@ -5676,6 +5703,153 @@ document.addEventListener('click',function(e){
   window.closeTourIndex=function(){
     var sh=document.getElementById('tourIndexSheet');
     if(sh)sh.classList.remove('show');
+  };
+
+  /* ═══════════════════════════════════════
+     WHAT IS THIS? MODE (WIT)
+     Tap any element → intercept → explain it.
+     Tap AT bubble again (amber) → exit.
+  ═══════════════════════════════════════ */
+  var WIT_MAP=[
+    /* ── Bottom nav tabs ── */
+    {sel:'.tab[data-view="day"]',          title:'Day view',             body:'Your appointment timeline. See every booking for the day in one glance — tap any slot to view or edit it.'},
+    {sel:'.tab[data-view="clients"]',      title:'Clients',              body:'Your client address book. Tracks visit history, contact details, and notes for every person you\'ve worked on.'},
+    {sel:'.tab[data-view="stock"]',        title:'Inventory',            body:'Stock tracker. Add products, set low-stock thresholds, and get alerts before you run out of anything.'},
+    {sel:'.tab[data-view="colour"]',       title:'Colour wheel tool',    body:'Tap any shade to instantly see its complementary colour and neutraliser. Great for colour correction chat at the chair.'},
+    {sel:'.tab[data-view="settings"],.tab[onclick*="settings"]', title:'Settings', body:'All your app preferences — trade, commission %, theme, backup, and more.'},
+    /* ── Top bar ── */
+    {sel:'button[onclick="openSettings()"],.gear-btn:not(.er-btn)', title:'Settings',  body:'Opens your Settings — set your trade, commission rate, theme, and other preferences.'},
+    {sel:'.er-btn,.gear-btn.er-btn',       title:'Eye rest mode',        body:'Dims the screen and reduces brightness to protect your eyes during a long shift. Tap again to exit.'},
+    /* ── Add / form area ── */
+    {sel:'button[onclick*="addAppt"],button[onclick*="openAdd"],.add-btn', title:'Add appointment', body:'Open the form to book a new appointment. Choose a service first — that unlocks the client name and phone fields.'},
+    {sel:'.svc-chip,.svc-cat button',      title:'Service chip',         body:'Tap to select a service for this booking. Choosing a service also reveals the client name and phone number fields.'},
+    {sel:'input[name="cname"],#cname',     title:'Client name',          body:'Type your client\'s name here. This field appears after you choose a service.'},
+    {sel:'input[name="phone"],#cphone',    title:'Client phone',         body:'Optional phone number. Stored in your client book and auto-fills next time.'},
+    {sel:'input[name="price"],#aprice',    title:'Service price',        body:'The charge for this appointment. Used to calculate your take-home after commission and tip.'},
+    {sel:'input[name="tip"],#atip',        title:'Tip',                  body:'Enter any tip your client added. It\'s tracked separately and added to your total earnings for the day.'},
+    {sel:'input[name="notes"],#anotes',    title:'Notes',                body:'Private notes for this appointment — colour formula, client preferences, anything useful for next time.'},
+    {sel:'button[onclick*="saveAppt"],button[onclick*="save"].primary', title:'Save appointment', body:'Saves this booking to your day. You\'ll see it in the timeline and it counts toward your daily earnings total.'},
+    /* ── Day view ── */
+    {sel:'.day-seg,.ap-card',             title:'Appointment slot',     body:'A booked appointment. Tap to see full details, edit the price or tip, or delete it.'},
+    {sel:'.ap-bk,.ap-breakdown',          title:'Earnings breakdown',   body:'Your running totals for the day — service income, tips, commission split, and your actual take-home.'},
+    {sel:'button[onclick*="prevDay"],button[onclick*="nextDay"],.day-nav', title:'Day navigation', body:'Move between days to check past bookings or plan ahead.'},
+    /* ── Clients tab ── */
+    {sel:'.client-card,.cl-row',          title:'Client record',        body:'Tap to open this client\'s full history — past visits, totals spent, and your notes about them.'},
+    {sel:'button[onclick*="addClient"],button[onclick*="newClient"]', title:'Add client', body:'Add a new entry to your client book manually.'},
+    /* ── Stock tab ── */
+    {sel:'.stock-item,.sk-row',           title:'Stock item',           body:'A product in your inventory. Tap to edit quantity, price, or set a low-stock alert threshold.'},
+    {sel:'button[onclick*="addStock"],button[onclick*="newStock"]', title:'Add product', body:'Add a new product to your inventory tracker.'},
+    /* ── AT bubble itself ── */
+    {sel:'#tutAt',                        title:'Tutorial bubble',      body:'Your tutorial launcher. Tap to open the tutorial menu — choose a level, jump to any step, or use "What does this do?" mode. Drag to reposition it anywhere on screen.'},
+  ];
+
+  var witActive=false;
+  var witTipEl, witTitleEl, witBodyEl, witTipTimeout;
+
+  function getWitEl(){
+    if(!witTipEl){
+      witTipEl=document.getElementById('witTooltip');
+      witTitleEl=document.getElementById('witTitle');
+      witBodyEl=document.getElementById('witBody');
+    }
+  }
+
+  window.activateWIT=function(){
+    witActive=true;
+    document.body.classList.add('wit-on');
+    /* change AT bubble icon to question mark */
+    var at=document.getElementById('tutAt');
+    if(at)at.innerHTML='<i class="ti ti-help-circle" aria-hidden="true"></i>';
+    document.addEventListener('touchstart',witIntercept,{capture:true,passive:false});
+    document.addEventListener('click',witIntercept,true);
+  };
+
+  window.deactivateWIT=function(){
+    witActive=false;
+    document.body.classList.remove('wit-on');
+    var at=document.getElementById('tutAt');
+    if(at)at.innerHTML='<i class="ti ti-school" aria-hidden="true"></i>';
+    document.removeEventListener('touchstart',witIntercept,{capture:true,passive:false});
+    document.removeEventListener('click',witIntercept,true);
+    hideWITTip();
+  };
+
+  function witIntercept(e){
+    var target=e.target;
+    /* tapping AT bubble exits mode */
+    var at=document.getElementById('tutAt');
+    if(at&&(at===target||at.contains(target))){
+      e.preventDefault();e.stopPropagation();
+      deactivateWIT();
+      return;
+    }
+    /* tapping the tooltip itself dismisses it */
+    getWitEl();
+    if(witTipEl&&(witTipEl===target||witTipEl.contains(target))){
+      e.preventDefault();e.stopPropagation();
+      hideWITTip();
+      return;
+    }
+    /* find matching entry walking up the DOM */
+    var match=null;
+    var el=target;
+    while(el&&el!==document.body){
+      for(var i=0;i<WIT_MAP.length;i++){
+        try{if(el.matches(WIT_MAP[i].sel)){match=WIT_MAP[i];break;}}catch(err){}
+      }
+      if(match)break;
+      el=el.parentElement;
+    }
+    if(!match){
+      /* unknown element — dismiss any open tip and let tap through */
+      hideWITTip();
+      return;
+    }
+    /* block the real action */
+    e.preventDefault();
+    e.stopPropagation();
+    /* get position from touch or mouse */
+    var cx,cy;
+    if(e.touches&&e.touches.length){cx=e.touches[0].clientX;cy=e.touches[0].clientY;}
+    else{cx=e.clientX;cy=e.clientY;}
+    showWITTip(match.title,match.body,cx,cy);
+  }
+
+  function showWITTip(title,body,cx,cy){
+    getWitEl();
+    if(!witTipEl)return;
+    witTitleEl.textContent=title;
+    witBodyEl.textContent=body;
+    /* position: above finger, horizontally centred on tap */
+    var vw=window.innerWidth, vh=window.innerHeight;
+    var tipW=Math.min(260,vw-32);
+    var left=Math.max(tipW/2+8,Math.min(vw-tipW/2-8,cx));
+    var top=cy-16; /* sits above finger; CSS transform pulls it up further */
+    /* if near top, flip below */
+    if(cy<160){
+      witTipEl.style.transform='translate(-50%,12px)';
+      top=cy+32;
+    } else {
+      witTipEl.style.transform='translate(-50%,-100%) translateY(-12px)';
+    }
+    witTipEl.style.left=left+'px';
+    witTipEl.style.top=top+'px';
+    witTipEl.style.maxWidth=tipW+'px';
+    witTipEl.classList.add('show');
+    clearTimeout(witTipTimeout);
+    witTipTimeout=setTimeout(hideWITTip,4000);
+  }
+
+  function hideWITTip(){
+    getWitEl();
+    if(witTipEl)witTipEl.classList.remove('show');
+  }
+
+  /* If WIT is active when AT bubble is tapped via its own tap handler, exit WIT */
+  var _origAtTap=window.openTourPicker;
+  window.openTourPicker=function(){
+    if(witActive){deactivateWIT();return;}
+    _origAtTap();
   };
 
 })();
