@@ -3417,7 +3417,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.76 · AT tap while WIT active = exit WIT + reopen picker';
+var VERSION='v5.77 · WIT_MAP real IDs (fName fPhone fPrice fTip fService)';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5231,6 +5231,7 @@ document.addEventListener('click',function(e){
   var PAD=22, SIZE=52;
   var active=false, moved=false, tid=-1;
   var startCX=0, startCY=0, startTX=0, startTY=0;
+  var lastTapTime=0;
   var rafId=null, pendX=0, pendY=0;
 
   function clamp(v,a,b){return v<a?a:v>b?b:v;}
@@ -5285,7 +5286,22 @@ document.addEventListener('click',function(e){
     if(rafId){cancelAnimationFrame(rafId);rafId=null;}
     el.classList.remove('dragging');
     if(!moved){
-      openTourPicker();
+      var now=Date.now();
+      var dbl=now-lastTapTime<320;
+      lastTapTime=now;
+      if(dbl){
+        /* double-tap → always open picker regardless of current mode */
+        if(witActive)deactivateWIT();
+        setTimeout(function(){_origAtTap();},80);
+      } else {
+        /* single tap → context-aware */
+        if(witActive){
+          deactivateWIT();
+          setTimeout(function(){_origAtTap();},120);
+        } else {
+          openTourPicker();
+        }
+      }
       setTimeout(function(){el.classList.add('idle');},500);
       return;
     }
@@ -5771,10 +5787,11 @@ document.addEventListener('click',function(e){
     /* ── Add / form area ── */
     {sel:'button[onclick*="addAppt"],button[onclick*="openAdd"],.add-btn', title:'Add appointment', body:'Open the form to book a new appointment. Choose a service first — that unlocks the client name and phone fields.'},
     {sel:'.svc-chip,.svc-cat button',      title:'Service chip',         body:'Tap to select a service for this booking. Choosing a service also reveals the client name and phone number fields.'},
-    {sel:'input[name="cname"],#cname',     title:'Client name',          body:'Type your client\'s name here. This field appears after you choose a service.'},
-    {sel:'input[name="phone"],#cphone',    title:'Client phone',         body:'Optional phone number. Stored in your client book and auto-fills next time.'},
-    {sel:'input[name="price"],#aprice',    title:'Service price',        body:'The charge for this appointment. Used to calculate your take-home after commission and tip.'},
-    {sel:'input[name="tip"],#atip',        title:'Tip',                  body:'Enter any tip your client added. It\'s tracked separately and added to your total earnings for the day.'},
+    {sel:'#fName',   title:'Client name',   body:'Type your client\'s name here. This field appears after you choose a service.'},
+    {sel:'#fPhone',  title:'Client phone',  body:'Optional phone number. Stored in your client book and auto-fills next time.'},
+    {sel:'#fPrice',  title:'Service price', body:'The charge for this appointment. Used to calculate your take-home after commission and tip.'},
+    {sel:'#fTip',    title:'Tip',           body:'Enter any tip your client added. It\'s tracked separately and added to your total earnings for the day.'},
+    {sel:'#fService',title:'Service field', body:'Type or select the service performed. Choosing a service also reveals the client name and phone fields.'},
     {sel:'input[name="notes"],#anotes',    title:'Notes',                body:'Private notes for this appointment — colour formula, client preferences, anything useful for next time.'},
     {sel:'button[onclick*="saveAppt"],button[onclick*="save"].primary', title:'Save appointment', body:'Saves this booking to your day. You\'ll see it in the timeline and it counts toward your daily earnings total.'},
     /* ── Day view ── */

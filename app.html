@@ -999,6 +999,23 @@ body.theme-noir .tour-card{border:1px solid transparent;background:linear-gradie
 .svc-customchip{border-color:#4a3a5e!important}
 body.theme-noir .svc-addsvc-btn{color:#cbd5ff;border-color:#33334a}
 body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5e!important}
+/* ── CP Picker sheet ── */
+#cpPickerSheet{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.6);
+  display:flex!important;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+#cpPickerSheet .sheet{width:100%;max-width:480px;background:#141420;
+  border-radius:20px 20px 0 0;border-top:1px solid #2a2a3a}
+#cpPickerSheet .sheet-head{display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px 0}
+#cpPickerSheet .sheet-title{font-size:16px;font-weight:700;color:#f0f0fa}
+#cpPickerSheet .sheet-x{background:none;border:none;color:#888;font-size:20px;
+  cursor:pointer;padding:4px 8px;line-height:1}
+.cp-tour-btn{display:flex;align-items:center;gap:14px;width:100%;
+  background:#1a1a28;border:1.5px solid rgba(255,184,0,.35);border-radius:14px;
+  padding:14px 16px;cursor:pointer;text-align:left;transition:background .15s}
+.cp-tour-btn:active{background:#22223a}
+.cp-tlb-name{font-size:15px;font-weight:700;color:#f0f0fa;display:block}
+.cp-tlb-count{font-size:12px;color:#888;display:block;margin-top:2px}
 /* ── AssistiveTouch bubble ── */
 #tutAt{position:fixed;left:0;top:0;width:52px;height:52px;border-radius:50%;
   background:rgba(30,18,50,.82);border:2px solid rgba(167,139,250,.6);
@@ -1019,8 +1036,8 @@ body.tut-at-hidden #tutAt{display:none}
 /* WIT mode */
 body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85);
   box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 5px rgba(255,184,0,.18),0 0 18px rgba(255,184,0,.25)}
-#witBanner{position:fixed;top:calc(env(safe-area-inset-top,0) + 8px);
-  left:50%;transform:translateX(-50%);z-index:998;
+#witBanner{position:fixed;bottom:calc(env(safe-area-inset-bottom,0) + 90px);
+  right:16px;left:auto;transform:none;z-index:998;
   display:none;width:max-content;max-width:calc(100vw - 32px);
   background:rgba(60,35,0,.92);border:1px solid rgba(255,184,0,.35);
   border-radius:20px;padding:6px 14px;
@@ -3601,7 +3618,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.93 · AT tap while WIT active = exit + confirmation toast';
+var VERSION='app v1.94 · CP picker, WIT banner bottom-right, WIT_MAP real IDs';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3668,6 +3685,22 @@ setInterval(checkForUpdate,60000);
 <!-- WIT tooltip -->
 <div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap this card or anywhere else to dismiss</div></div>
 
+<!-- AT Picker sheet -->
+<div class="modal" id="cpPickerSheet" onclick="if(event.target===this)closeCPPicker()" style="display:none;opacity:0;transition:opacity .2s">
+  <div class="sheet" style="padding-bottom:env(safe-area-inset-bottom,16px)">
+    <div class="sheet-head">
+      <div class="sheet-title">Tutorial</div>
+      <button class="sheet-x" onclick="closeCPPicker()">✕</button>
+    </div>
+    <div style="padding:16px 20px 24px;display:flex;flex-direction:column;gap:10px">
+      <button class="cp-tour-btn" onclick="closeCPPicker();activateWIT()">
+        <i class="ti ti-help-circle" style="font-size:22px;color:#FFB800"></i>
+        <span><span class="cp-tlb-name">What does this do?</span><span class="cp-tlb-count">tap any button to explain it</span></span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ── AssistiveTouch + WIT for CommissionPro (app.html) ── */
 (function(){
@@ -3676,6 +3709,7 @@ setInterval(checkForUpdate,60000);
   var active=false, moved=false, tid=-1;
   var startCX=0, startCY=0, startTX=0, startTY=0;
   var rafId=null, pendX=0, pendY=0;
+  var lastTapTime=0;
 
   function clamp(v,a,b){return v<a?a:v>b?b:v;}
   function savePos(x,y){try{localStorage.setItem('cp_tutAt',JSON.stringify({x:x,y:y}));}catch(e){}}
@@ -3718,8 +3752,20 @@ setInterval(checkForUpdate,60000);
     if(rafId){cancelAnimationFrame(rafId);rafId=null;}
     el.classList.remove('dragging');
     if(!moved){
-      if(witActive){deactivateWIT();return;}
-      openWITPicker();
+      var now=Date.now();
+      var dbl=now-lastTapTime<320;
+      lastTapTime=now;
+      if(witActive){
+        /* any tap while WIT active → exit WIT + open picker */
+        deactivateWIT();
+        setTimeout(openCPPicker,120);
+      } else if(dbl){
+        /* double-tap → always picker */
+        openCPPicker();
+      } else {
+        /* single tap, nothing active → picker */
+        openCPPicker();
+      }
       setTimeout(function(){el.classList.add('idle');},500);
       return;
     }
@@ -3744,10 +3790,19 @@ setInterval(checkForUpdate,60000);
     el.addEventListener('touchcancel',onTE,{passive:false});
   });
 
-  /* ── Mini picker (WIT only — no tours in Earnings room yet) ── */
-  function openWITPicker(){
-    activateWIT();
+  /* ── CP Picker sheet ── */
+  function openCPPicker(){
+    var sh=document.getElementById('cpPickerSheet');
+    if(!sh)return;
+    sh.style.display='flex';
+    requestAnimationFrame(function(){sh.style.opacity='1';});
   }
+  window.closeCPPicker=function(){
+    var sh=document.getElementById('cpPickerSheet');
+    if(!sh)return;
+    sh.style.opacity='0';
+    setTimeout(function(){sh.style.display='none';},200);
+  };
 
   /* ── WIT engine ── */
   var WIT_MAP=[
@@ -3764,11 +3819,10 @@ setInterval(checkForUpdate,60000);
     {sel:'button.tab[onclick*="showTab(\'hist\')"]',   title:'Appointments',   body:'Your full appointment history. Filter by week, month, or scroll back through your past bookings.'},
     {sel:'button.tab[onclick*="showTab(\'mgm\')"]',    title:'Salon owes me',  body:'Tracks what your salon still owes you — the gap between what clients paid and what you\'ve been handed.'},
     /* Form fields */
-    {sel:'#clientName,input[name="clientName"]', title:'Client name',   body:'Type your client\'s name. Saved to your client book after the first booking.'},
-    {sel:'#svcName,input[name="svcName"]',       title:'Service',       body:'What service you performed. Pulls from your price book or type a custom one.'},
-    {sel:'#price,input[name="price"]',           title:'Price charged', body:'The full amount the client paid for the service.'},
-    {sel:'#tip,input[name="tip"]',               title:'Tip',           body:'Any tip received. Tracked separately — tips come straight to you before the commission split.'},
-    {sel:'#commRate,input[name="commRate"]',     title:'Commission %',  body:'Your cut of the service price. Set once in Settings — but you can override it per booking here.'},
+    {sel:'#cName',   title:'Client name',   body:'Type your client\'s name. Saved to your client book after the first booking.'},
+    {sel:'#cCat',    title:'Service',       body:'What service you performed. Pulls from your price book or type a custom one.'},
+    {sel:'#cCharge', title:'Price charged', body:'The full amount the client paid for the service.'},
+    {sel:'#cTip',    title:'Tip',           body:'Any tip received. Tracked separately — tips come straight to you before the commission split.'},
     /* AT bubble */
     {sel:'#tutAt', title:'Tutorial bubble', body:'Tap to activate "What does this do?" mode, then tap any button to learn what it does. Drag to park me anywhere on screen.'},
   ];
@@ -3807,9 +3861,7 @@ setInterval(checkForUpdate,60000);
     if(el&&(el===target||el.contains(target))){
       e.preventDefault();e.stopPropagation();
       deactivateWIT();
-      /* brief confirmation so it doesn't feel like nothing happened */
-      showWITTip('Explain mode off','Tap the 🎓 bubble any time to turn it back on.',
-        window.innerWidth/2, window.innerHeight-120);
+      setTimeout(openCPPicker,120);
       return;
     }
     getWitEl();
