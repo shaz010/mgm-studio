@@ -541,9 +541,10 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 .tour-step-title{font-size:13px;color:#c8c8d8;flex:1;line-height:1.3}
 .tour-step-cur-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 /* ── AssistiveTouch tutorial bubble ── */
-#tutAt{position:fixed;width:52px;height:52px;border-radius:50%;background:rgba(167,139,250,.28);border:1.5px solid rgba(167,139,250,.35);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;color:rgba(220,210,255,.75);font-size:22px;z-index:799;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;transition:background .2s,opacity .3s,border-color .2s;box-shadow:0 4px 18px rgba(0,0,0,.45)}
-#tutAt:active,#tutAt.dragging{background:rgba(167,139,250,.5);border-color:rgba(167,139,250,.7)}
-#tutAt.idle{opacity:.45}
+#tutAt{position:fixed;width:52px;height:52px;border-radius:50%;background:rgba(30,18,50,.82);border:2px solid rgba(167,139,250,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;color:rgba(220,210,255,.95);font-size:22px;z-index:799;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;will-change:left,top;transition:background .2s,opacity .25s,border-color .2s,box-shadow .2s;box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 4px rgba(167,139,250,.12)}
+#tutAt.dragging{cursor:grabbing;background:rgba(60,30,90,.9);border-color:rgba(167,139,250,.9);transition:none;box-shadow:0 8px 28px rgba(0,0,0,.7),0 0 0 6px rgba(167,139,250,.2)}
+#tutAt.idle{opacity:.78}
+#tutAt:not(.idle):not(.dragging){opacity:1}
 body.tut-at-hidden #tutAt{display:none}
 /* ── Mode B — section help buttons ── */
 .sec-help-btn{display:none;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(167,139,250,.4);background:rgba(167,139,250,.1);color:rgba(167,139,250,.8);font-size:11px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;transition:background .15s}
@@ -3380,7 +3381,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.62 · AT bubble + Mode B section help + tutorial settings toggles';
+var VERSION='v5.63 · AT bubble smoother drag + better contrast opacity';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5189,6 +5190,8 @@ document.addEventListener('click',function(e){
   function clamp(v,mn,mx){return Math.max(mn,Math.min(mx,v));}
   function applyPos(x,y){ el.style.left=x+'px'; el.style.top=y+'px'; el.style.right=''; el.style.bottom=''; }
 
+  var rafId=null, pendX=0, pendY=0;
+
   function onStart(e){
     if(!el)return;
     moved=false;
@@ -5205,25 +5208,31 @@ document.addEventListener('click',function(e){
     if(!el)return;
     if(e.cancelable)e.preventDefault();
     var t=e.touches?e.touches[0]:e;
-    var nx=t.clientX-startX, ny=t.clientY-startY;
-    if(Math.abs(nx-(posX||0))>6||Math.abs(ny-(posY||0))>6)moved=true;
-    posX=clamp(nx,PAD,window.innerWidth-SIZE-PAD);
-    posY=clamp(ny,PAD,window.innerHeight-SIZE-PAD);
+    var nx=clamp(t.clientX-startX,PAD,window.innerWidth-SIZE-PAD);
+    var ny=clamp(t.clientY-startY,PAD,window.innerHeight-SIZE-PAD);
+    if(Math.abs(nx-posX)>4||Math.abs(ny-posY)>4)moved=true;
+    pendX=nx; pendY=ny;
+    if(!rafId)rafId=requestAnimationFrame(commitMove);
+  }
+  function commitMove(){
+    rafId=null;
+    posX=pendX; posY=pendY;
     applyPos(posX,posY);
   }
   function onEnd(){
+    if(rafId){cancelAnimationFrame(rafId);rafId=null;}
     document.removeEventListener('touchmove',onMove);
     document.removeEventListener('touchend',onEnd);
     document.removeEventListener('mousemove',onMove);
     document.removeEventListener('mouseup',onEnd);
     if(!el)return;
     el.classList.remove('dragging');
-    if(!moved){ openTourPicker(); setTimeout(function(){el.classList.add('idle');},400); return; }
+    if(!moved){ openTourPicker(); setTimeout(function(){el.classList.add('idle');},600); return; }
     var snapped=snapToEdge(posX,posY);
     posX=snapped.x; posY=snapped.y;
     applyPos(posX,posY);
     savePos(posX,posY);
-    setTimeout(function(){el.classList.add('idle');},800);
+    setTimeout(function(){el.classList.add('idle');},1000);
   }
 
   document.addEventListener('DOMContentLoaded',function(){
