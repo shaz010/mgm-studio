@@ -549,7 +549,7 @@ body.tut-at-hidden #tutAt{display:none}
 /* ── What Is This mode ── */
 body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85);
   box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 5px rgba(255,184,0,.18),0 0 18px rgba(255,184,0,.25)}
-#witTooltip{position:fixed;z-index:9999;max-width:260px;pointer-events:none;
+#witTooltip{position:fixed;z-index:9999;max-width:260px;pointer-events:auto;cursor:pointer;
   background:rgba(18,12,0,.94);border:1.5px solid rgba(255,184,0,.55);
   border-radius:14px;padding:12px 14px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   box-shadow:0 6px 28px rgba(0,0,0,.7);opacity:0;transition:opacity .18s;transform:translate(-50%,-100%) translateY(-12px)}
@@ -3397,7 +3397,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.66 · What Is This? tap-to-explain mode';
+var VERSION='v5.67 · WIT tooltip 10s + tap to dismiss';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5168,7 +5168,7 @@ document.addEventListener('click',function(e){
 <div id="witBanner">❓ Tap any button to learn what it does &nbsp;·&nbsp; tap <strong>🟡</strong> to exit</div>
 
 <!-- What Is This tooltip -->
-<div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap anywhere else to dismiss</div></div>
+<div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap this card or anywhere else to dismiss</div></div>
 
 <!-- Section help explanation sheet (Mode B) -->
 <div class="modal" id="sectionHelpSheet" onclick="if(event.target===this)closeSectionHelp()">
@@ -5837,7 +5837,7 @@ document.addEventListener('click',function(e){
     witTipEl.style.maxWidth=tipW+'px';
     witTipEl.classList.add('show');
     clearTimeout(witTipTimeout);
-    witTipTimeout=setTimeout(hideWITTip,4000);
+    witTipTimeout=setTimeout(hideWITTip,10000);
   }
 
   function hideWITTip(){
