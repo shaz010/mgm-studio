@@ -3417,7 +3417,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.78 · fix AT bubble tap (ReferenceError on witActive/deactivateWIT)';
+var VERSION='v5.80 · index exit button + tap current step to exit tour';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5430,10 +5430,13 @@ document.addEventListener('click',function(e){
 </div>
 
 <!-- Tour full index sheet -->
-<div class="modal" id="tourIndexSheet" onclick="if(event.target===this)closeTourIndex()">
+<div class="modal" id="tourIndexSheet">
   <div class="sheet" style="max-height:88vh;display:flex;flex-direction:column">
     <div class="sheet-head" style="flex-shrink:0"><div class="sheet-title">All tutorial steps</div><button class="sheet-x" onclick="closeTourIndex()">✕</button></div>
-    <div id="tourIndexBody" style="overflow-y:auto;flex:1;padding-bottom:16px"></div>
+    <div style="flex-shrink:0;padding:0 16px 12px">
+      <button onclick="closeTourIndex();endCoachTour()" style="width:100%;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.12);border-radius:20px;color:#888;font-size:13px;font-weight:700;padding:10px 0;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent">✕ Exit tutorial</button>
+    </div>
+    <div id="tourIndexBody" style="overflow-y:auto;flex:1;padding-bottom:16px;overscroll-behavior:contain"></div>
   </div>
 </div>
 
@@ -5594,19 +5597,31 @@ document.addEventListener('click',function(e){
     tt.style.transform='none';
     var r=el.getBoundingClientRect();
     var vw=window.innerWidth,vh=window.innerHeight;
-    var tw=Math.min(292,vw-40),th=190;
+    var tw=Math.min(292,vw-40);
     var pad=6;
+    /* Measure actual rendered height — avoids the 190px guess that clips on iPhone */
+    tt.style.width=tw+'px';
+    tt.style.left='-9999px';tt.style.top='0';  /* off-screen for measurement */
+    var th=tt.getBoundingClientRect().height||190;
+    /* Safe zones: 60px top (notch/status), 80px bottom (home indicator + tab bar) */
+    var safeTop=60, safeBot=80;
     ring.style.display='block';
     ring.style.left=(r.left-pad)+'px';ring.style.top=(r.top-pad)+'px';
     ring.style.width=(r.width+pad*2)+'px';ring.style.height=(r.height+pad*2)+'px';
-    var left=Math.max(20,Math.min(r.left,vw-tw-20));
+    var left=Math.max(16,Math.min(r.left,vw-tw-16));
+    var top;
+    /* prefer requested position, fall back to the other side if it doesn't fit */
     if(pos==='top'){
-      var top=r.top-th-16; if(top<60)top=r.bottom+16;
-      tt.style.top=top+'px';
+      top=r.top-th-16;
+      if(top<safeTop) top=r.bottom+16;
     } else {
-      var top2=r.bottom+16; if(top2+th>vh-20)top2=r.top-th-16;
-      tt.style.top=top2+'px';
+      top=r.bottom+16;
+      if(top+th>vh-safeBot) top=r.top-th-16;
     }
+    /* last-resort: if still clipping, centre vertically */
+    if(top<safeTop) top=safeTop;
+    if(top+th>vh-safeBot) top=Math.max(safeTop, vh-safeBot-th);
+    tt.style.top=top+'px';
     tt.style.left=left+'px';
   }
 
@@ -5699,6 +5714,12 @@ document.addEventListener('click',function(e){
 
   /* jump from index sheet */
   window.jumpToTourStep=function(level,stepIdx){
+    /* tapping the step you're already on = exit the tour */
+    if(level===curLevel && stepIdx===curStep){
+      closeTourIndex();
+      endCoachTour();
+      return;
+    }
     closeTourIndex();
     curLevel=level; curStep=stepIdx;
     setTimeout(function(){showStep(stepIdx);},300);
@@ -5725,9 +5746,24 @@ document.addEventListener('click',function(e){
   /* ═══════════════════════════════════════
      FULL INDEX SHEET
   ═══════════════════════════════════════ */
+  /* Wire index sheet backdrop dismiss via touchend (more reliable than onclick on iOS) */
+  (function(){
+    var ix=document.getElementById('tourIndexSheet');
+    if(!ix)return;
+    ix.addEventListener('touchend',function(e){
+      if(e.target===ix){e.preventDefault();closeTourIndex();}
+    },{passive:false});
+    ix.addEventListener('click',function(e){
+      if(e.target===ix) closeTourIndex();
+    });
+  })();
+
   window.openTourIndex=function(){
     var body=document.getElementById('tourIndexBody');
     if(!body)return;
+    /* pause the coach overlay so it doesn't absorb taps behind the sheet */
+    var ov=document.getElementById('coachOverlay');
+    if(ov)ov.style.pointerEvents='none';
     var html='';
     [1,2,3].forEach(function(lv){
       var t=TOUR[lv];
@@ -5739,7 +5775,7 @@ document.addEventListener('click',function(e){
         html+='<div class="tour-step-row" onclick="jumpToTourStep('+lv+','+i+')">';
         html+='<span class="tour-step-num" style="color:'+clr+'">'+(i+1)+'</span>';
         html+='<span class="tour-step-title"'+(isCur?' style="color:'+clr+';font-weight:700"':'')+'>'+s.title+'</span>';
-        if(isCur)html+='<span class="tour-step-cur-dot" style="background:'+clr+'"></span>';
+        if(isCur)html+='<span style="font-size:10px;color:'+clr+';opacity:.7;font-weight:700;white-space:nowrap">here · tap to exit</span>';
         html+='</div>';
       });
       html+='</div>';
@@ -5751,6 +5787,9 @@ document.addEventListener('click',function(e){
   window.closeTourIndex=function(){
     var sh=document.getElementById('tourIndexSheet');
     if(sh)sh.classList.remove('show');
+    /* restore overlay tap-blocking for the coach tour */
+    var ov=document.getElementById('coachOverlay');
+    if(ov)ov.style.pointerEvents='';
   };
 
   /* ═══════════════════════════════════════
