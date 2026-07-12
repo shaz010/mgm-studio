@@ -3601,7 +3601,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.91 · AT bubble + WIT mode, tour back-to-app visible, sync badge explained';
+var VERSION='app v1.92 · WIT intercepts touchend, sync badge no longer fires through';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3789,6 +3789,7 @@ setInterval(checkForUpdate,60000);
     document.body.classList.add('wit-on');
     if(el)el.innerHTML='<i class="ti ti-help-circle" aria-hidden="true"></i>';
     document.addEventListener('touchstart',witIntercept,{capture:true,passive:false});
+    document.addEventListener('touchend',witIntercept,{capture:true,passive:false});
     document.addEventListener('click',witIntercept,true);
   }
   function deactivateWIT(){
@@ -3796,6 +3797,7 @@ setInterval(checkForUpdate,60000);
     document.body.classList.remove('wit-on');
     if(el)el.innerHTML='<i class="ti ti-school" aria-hidden="true"></i>';
     document.removeEventListener('touchstart',witIntercept,{capture:true,passive:false});
+    document.removeEventListener('touchend',witIntercept,{capture:true,passive:false});
     document.removeEventListener('click',witIntercept,true);
     hideWITTip();
   }

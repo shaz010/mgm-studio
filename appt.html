@@ -3417,7 +3417,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.74 · AT snap-zone: park anywhere, edge-snap only near edges';
+var VERSION='v5.75 · WIT intercepts touchend to block sync badge action';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5809,6 +5809,7 @@ document.addEventListener('click',function(e){
     var at=document.getElementById('tutAt');
     if(at)at.innerHTML='<i class="ti ti-help-circle" aria-hidden="true"></i>';
     document.addEventListener('touchstart',witIntercept,{capture:true,passive:false});
+    document.addEventListener('touchend',witIntercept,{capture:true,passive:false});
     document.addEventListener('click',witIntercept,true);
   };
 
@@ -5818,6 +5819,7 @@ document.addEventListener('click',function(e){
     var at=document.getElementById('tutAt');
     if(at)at.innerHTML='<i class="ti ti-school" aria-hidden="true"></i>';
     document.removeEventListener('touchstart',witIntercept,{capture:true,passive:false});
+    document.removeEventListener('touchend',witIntercept,{capture:true,passive:false});
     document.removeEventListener('click',witIntercept,true);
     hideWITTip();
   };
