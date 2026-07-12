@@ -557,6 +557,11 @@ body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85)
 #witTooltip .wit-title{font-size:13px;font-weight:700;color:#FFB800;margin-bottom:4px;line-height:1.3}
 #witTooltip .wit-body{font-size:12px;color:rgba(240,230,200,.88);line-height:1.5}
 #witTooltip .wit-tip{font-size:11px;color:rgba(255,184,0,.5);margin-top:6px}
+/* zoomed state */
+#witTooltip.zoomed{max-width:min(320px,calc(100vw - 24px))}
+#witTooltip.zoomed .wit-title{font-size:18px}
+#witTooltip.zoomed .wit-body{font-size:16px;line-height:1.6}
+#witTooltip.zoomed .wit-tip{font-size:13px}
 #witBanner{position:fixed;top:env(safe-area-inset-top,0);left:0;right:0;z-index:998;
   background:rgba(60,35,0,.92);border-bottom:1px solid rgba(255,184,0,.3);
   padding:8px 16px;text-align:center;font-size:12px;color:rgba(255,220,100,.9);
@@ -3397,7 +3402,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.67 · WIT tooltip 10s + tap to dismiss';
+var VERSION='v5.69 · WIT tap-to-zoom, tap-again-to-dismiss';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5783,11 +5788,19 @@ document.addEventListener('click',function(e){
       deactivateWIT();
       return;
     }
-    /* tapping the tooltip itself dismisses it */
+    /* tapping the tooltip toggles zoom; second tap dismisses */
     getWitEl();
     if(witTipEl&&(witTipEl===target||witTipEl.contains(target))){
       e.preventDefault();e.stopPropagation();
-      hideWITTip();
+      if(witTipEl.classList.contains('zoomed')){
+        witTipEl.classList.remove('zoomed');
+        hideWITTip();
+      } else {
+        witTipEl.classList.add('zoomed');
+        /* reset the timer so they get full 15s to read the big version */
+        clearTimeout(witTipTimeout);
+        witTipTimeout=setTimeout(hideWITTip,15000);
+      }
       return;
     }
     /* find matching entry walking up the DOM */
@@ -5837,12 +5850,12 @@ document.addEventListener('click',function(e){
     witTipEl.style.maxWidth=tipW+'px';
     witTipEl.classList.add('show');
     clearTimeout(witTipTimeout);
-    witTipTimeout=setTimeout(hideWITTip,10000);
+    witTipTimeout=setTimeout(hideWITTip,15000);
   }
 
   function hideWITTip(){
     getWitEl();
-    if(witTipEl)witTipEl.classList.remove('show');
+    if(witTipEl){witTipEl.classList.remove('show','zoomed');}
   }
 
   /* If WIT is active when AT bubble is tapped via its own tap handler, exit WIT */
