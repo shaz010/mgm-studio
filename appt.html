@@ -541,10 +541,10 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 .tour-step-title{font-size:13px;color:#c8c8d8;flex:1;line-height:1.3}
 .tour-step-cur-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 /* ── AssistiveTouch tutorial bubble ── */
-#tutAt{position:fixed;width:52px;height:52px;border-radius:50%;background:rgba(30,18,50,.82);border:2px solid rgba(167,139,250,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;color:rgba(220,210,255,.95);font-size:22px;z-index:799;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;will-change:left,top;transition:background .2s,opacity .25s,border-color .2s,box-shadow .2s;box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 4px rgba(167,139,250,.12)}
-#tutAt.dragging{cursor:grabbing;background:rgba(60,30,90,.9);border-color:rgba(167,139,250,.9);transition:none;box-shadow:0 8px 28px rgba(0,0,0,.7),0 0 0 6px rgba(167,139,250,.2)}
+#tutAt{position:fixed;left:0;top:0;width:52px;height:52px;border-radius:50%;background:rgba(30,18,50,.82);border:2px solid rgba(167,139,250,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;color:rgba(220,210,255,.95);font-size:22px;z-index:799;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;will-change:transform;transition:opacity .25s,background .2s,border-color .2s,box-shadow .2s;box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 4px rgba(167,139,250,.12)}
+#tutAt.dragging{cursor:grabbing;background:rgba(60,30,90,.9);border-color:rgba(167,139,250,.9);transition:opacity .1s;box-shadow:0 8px 28px rgba(0,0,0,.7),0 0 0 6px rgba(167,139,250,.2)}
+#tutAt.snapping{transition:transform .22s cubic-bezier(.25,1.4,.5,1),opacity .25s,background .2s}
 #tutAt.idle{opacity:.78}
-#tutAt:not(.idle):not(.dragging){opacity:1}
 body.tut-at-hidden #tutAt{display:none}
 /* ── Mode B — section help buttons ── */
 .sec-help-btn{display:none;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(167,139,250,.4);background:rgba(167,139,250,.1);color:rgba(167,139,250,.8);font-size:11px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;transition:background .15s}
@@ -3381,7 +3381,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.63 · AT bubble smoother drag + better contrast opacity';
+var VERSION='v5.65 · Commission rate moved to L1 step 3';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5177,28 +5177,26 @@ document.addEventListener('click',function(e){
 <script>
 /* ── AssistiveTouch Tutorial Bubble ── */
 (function(){
-  var el, startX, startY, moved, posX, posY;
-  var PAD=16, SIZE=52;
+  var el, moved, tx, ty, startCX, startCY, startTX, startTY;
+  var PAD=16, SIZE=52, rafId=null, pendTX=0, pendTY=0;
 
-  function savePos(x,y){ try{localStorage.setItem('ap_tutAt',JSON.stringify({x:x,y:y}));}catch(e){} }
-  function loadPos(){ try{var p=JSON.parse(localStorage.getItem('ap_tutAt'));if(p)return p;}catch(e){}return null; }
+  function clamp(v,mn,mx){return Math.max(mn,Math.min(mx,v));}
+  function savePos(x,y){try{localStorage.setItem('ap_tutAt',JSON.stringify({x:x,y:y}));}catch(e){}}
+  function loadPos(){try{var p=JSON.parse(localStorage.getItem('ap_tutAt'));if(p)return p;}catch(e){}return null;}
+  function setXY(x,y){tx=x;ty=y;el.style.transform='translate3d('+x+'px,'+y+'px,0)';}
   function snapToEdge(x,y){
     var vw=window.innerWidth,vh=window.innerHeight;
-    /* snap to nearest horizontal edge */
-    return x+SIZE/2 < vw/2 ? {x:PAD, y:clamp(y,PAD,vh-SIZE-PAD)} : {x:vw-SIZE-PAD, y:clamp(y,PAD,vh-SIZE-PAD)};
+    return {x:x+SIZE/2<vw/2?PAD:vw-SIZE-PAD, y:clamp(y,PAD,vh-SIZE-PAD)};
   }
-  function clamp(v,mn,mx){return Math.max(mn,Math.min(mx,v));}
-  function applyPos(x,y){ el.style.left=x+'px'; el.style.top=y+'px'; el.style.right=''; el.style.bottom=''; }
-
-  var rafId=null, pendX=0, pendY=0;
 
   function onStart(e){
     if(!el)return;
     moved=false;
     var t=e.touches?e.touches[0]:e;
-    var r=el.getBoundingClientRect();
-    startX=t.clientX-r.left; startY=t.clientY-r.top;
-    el.classList.add('dragging'); el.classList.remove('idle');
+    startCX=t.clientX; startCY=t.clientY;
+    startTX=tx; startTY=ty;
+    el.classList.add('dragging');
+    el.classList.remove('idle','snapping');
     document.addEventListener('touchmove',onMove,{passive:false});
     document.addEventListener('touchend',onEnd);
     document.addEventListener('mousemove',onMove);
@@ -5208,16 +5206,15 @@ document.addEventListener('click',function(e){
     if(!el)return;
     if(e.cancelable)e.preventDefault();
     var t=e.touches?e.touches[0]:e;
-    var nx=clamp(t.clientX-startX,PAD,window.innerWidth-SIZE-PAD);
-    var ny=clamp(t.clientY-startY,PAD,window.innerHeight-SIZE-PAD);
-    if(Math.abs(nx-posX)>4||Math.abs(ny-posY)>4)moved=true;
-    pendX=nx; pendY=ny;
+    var dx=t.clientX-startCX, dy=t.clientY-startCY;
+    if(Math.abs(dx)>4||Math.abs(dy)>4)moved=true;
+    pendTX=clamp(startTX+dx,PAD,window.innerWidth-SIZE-PAD);
+    pendTY=clamp(startTY+dy,PAD,window.innerHeight-SIZE-PAD);
     if(!rafId)rafId=requestAnimationFrame(commitMove);
   }
   function commitMove(){
     rafId=null;
-    posX=pendX; posY=pendY;
-    applyPos(posX,posY);
+    setXY(pendTX,pendTY);
   }
   function onEnd(){
     if(rafId){cancelAnimationFrame(rafId);rafId=null;}
@@ -5227,20 +5224,21 @@ document.addEventListener('click',function(e){
     document.removeEventListener('mouseup',onEnd);
     if(!el)return;
     el.classList.remove('dragging');
-    if(!moved){ openTourPicker(); setTimeout(function(){el.classList.add('idle');},600); return; }
-    var snapped=snapToEdge(posX,posY);
-    posX=snapped.x; posY=snapped.y;
-    applyPos(posX,posY);
-    savePos(posX,posY);
-    setTimeout(function(){el.classList.add('idle');},1000);
+    if(!moved){openTourPicker();setTimeout(function(){el.classList.add('idle');},600);return;}
+    var s=snapToEdge(tx,ty);
+    el.classList.add('snapping');
+    setXY(s.x,s.y);
+    savePos(s.x,s.y);
+    setTimeout(function(){el.classList.remove('snapping');el.classList.add('idle');},350);
   }
 
   document.addEventListener('DOMContentLoaded',function(){
     el=document.getElementById('tutAt');
     if(!el)return;
     var saved=loadPos();
-    if(saved){posX=saved.x;posY=saved.y;applyPos(posX,posY);}
-    else{posX=window.innerWidth-SIZE-PAD;posY=window.innerHeight-SIZE-100;applyPos(posX,posY);}
+    var initX=saved?saved.x:window.innerWidth-SIZE-PAD;
+    var initY=saved?saved.y:window.innerHeight-SIZE-100;
+    setXY(initX,initY);
     setTimeout(function(){el.classList.add('idle');},1200);
     el.addEventListener('touchstart',onStart,{passive:true});
     el.addEventListener('mousedown',onStart);
@@ -5335,7 +5333,7 @@ document.addEventListener('click',function(e){
       <button class="tour-level-btn" style="border-color:rgba(34,197,94,.2)" onclick="closeTourPicker();startCoachTour(1)">
         <i class="ti ti-rocket" style="font-size:22px;color:#22c55e" aria-hidden="true"></i>
         <span class="tlb-name">Level 1 — Quick start</span>
-        <span class="tlb-count">12 steps · 2 min</span>
+        <span class="tlb-count">13 steps · 2 min</span>
       </button>
       <button class="tour-level-btn" style="border-color:rgba(59,130,246,.2)" onclick="closeTourPicker();startCoachTour(2)">
         <i class="ti ti-tools" style="font-size:22px;color:#3b82f6" aria-hidden="true"></i>
@@ -5345,7 +5343,7 @@ document.addEventListener('click',function(e){
       <button class="tour-level-btn" style="border-color:rgba(167,139,250,.2)" onclick="closeTourPicker();startCoachTour(3)">
         <i class="ti ti-stars" style="font-size:22px;color:#a78bfa" aria-hidden="true"></i>
         <span class="tlb-name">Level 3 — Pro mode</span>
-        <span class="tlb-count">10 steps · 3 min</span>
+        <span class="tlb-count">9 steps · 3 min</span>
       </button>
       <button class="tour-level-btn" style="border-color:rgba(255,184,0,.2)" onclick="closeTourPicker();openTourIndex()">
         <i class="ti ti-list-search" style="font-size:22px;color:#FFB800" aria-hidden="true"></i>
@@ -5379,6 +5377,9 @@ document.addEventListener('click',function(e){
       {sel:'button[onclick="openSettings()"]',pos:'bottom',
        title:'First — set your trade',
        body:'Tap Settings → choose what you do (Hair, Barber, Nails, Lash…). Your service list updates to match yours immediately.'},
+      {sel:'button[onclick="openSettings()"]',pos:'bottom',
+       title:'Set your commission rate',
+       body:'Still in Settings → Your pay → set your split %. Commission stylist? Enter your rate (e.g. 60). Booth renter keeping everything? Enter 100. Every calculation in the app uses this number.'},
       {sel:'.tabs',pos:'top',
        title:'Your bottom bar — five tabs, one app',
        body:'Day = your schedule. Add = new booking. Clients = your people. Inventory = products. Colour = colour wheel tool.'},
@@ -5460,10 +5461,7 @@ document.addEventListener('click',function(e){
     3:{name:'Pro mode',color:'#a78bfa',steps:[
       {sel:null,pos:'center',
        title:'Level 3 — pro mode',
-       body:'Power features for full control. Commission rates, colour tools, backup, diagnostics, and more.'},
-      {sel:'button[onclick="openSettings()"]',pos:'bottom',
-       title:'Commission rate',
-       body:'Settings → Commission % — change your split percentage. Every past and future calculation updates immediately across the whole app.'},
+       body:'Power features for full control. Colour tools, backup, diagnostics, and more.'},
       {sel:'button[onclick="openSettings()"]',pos:'bottom',
        title:'Service categories',
        body:'Settings → scroll down to Services — reorder, rename, or hide any category that doesn\'t apply to your trade. Your add screen stays clean.'},
