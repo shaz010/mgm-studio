@@ -3450,7 +3450,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.97 · WIT exit button + auto-deactivate, Day tab unblocked';
+var VERSION='v5.98 · WIT self-healing: 10s timer on activate, touchcancel exit, clearTimeout on deactivate';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5948,26 +5948,32 @@ document.addEventListener('click',function(e){
     }
   }
 
-  window.activateWIT=function(){
-    if(witActive)return; /* guard: never double-register the capture listener */
-    witActive=true;
-    document.body.classList.add('wit-on');
-    var at=document.getElementById('tutAt');
-    if(at)at.innerHTML='<i class="ti ti-help-circle" aria-hidden="true"></i>';
-    /* touchend only — no touchstart. touchstart preventDefault leaves buttons
-       stuck in a pressed state; touchend still blocks the real action cleanly. */
-    document.addEventListener('touchend',witIntercept,{capture:true,passive:false});
-    document.addEventListener('click',witIntercept,true);
-  };
-
-  window.deactivateWIT=function(){
+  function deactivateWIT(){  /* defined before activateWIT so touchcancel can reference it */
+    clearTimeout(witTipTimeout);          /* kill any pending auto-deactivate timer */
     witActive=false;
     document.body.classList.remove('wit-on');
     var at=document.getElementById('tutAt');
     if(at)at.innerHTML='<i class="ti ti-school" aria-hidden="true"></i>';
     document.removeEventListener('touchend',witIntercept,{capture:true,passive:false});
     document.removeEventListener('click',witIntercept,true);
+    document.removeEventListener('touchcancel',deactivateWIT,{capture:true,passive:true});
     hideWITTip();
+    if(typeof window._apAt_resetState==='function')window._apAt_resetState();
+  }
+  window.deactivateWIT=deactivateWIT;
+
+  window.activateWIT=function(){
+    if(witActive)return; /* guard: never double-register the capture listener */
+    witActive=true;
+    document.body.classList.add('wit-on');
+    var at=document.getElementById('tutAt');
+    if(at)at.innerHTML='<i class="ti ti-help-circle" aria-hidden="true"></i>';
+    document.addEventListener('touchend',witIntercept,{capture:true,passive:false});
+    document.addEventListener('click',witIntercept,true);
+    /* touchcancel = iOS stole the touch (swipe, Control Centre, etc.) → exit WIT immediately */
+    document.addEventListener('touchcancel',deactivateWIT,{capture:true,passive:true});
+    /* Self-healing: auto-deactivate after 10 s even if no element is tapped */
+    clearTimeout(witTipTimeout);witTipTimeout=setTimeout(deactivateWIT,10000);
   };
 
   function witIntercept(e){
