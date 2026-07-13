@@ -3675,7 +3675,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.05 · hide AT during settings, WIT exit button + auto-deactivate';
+var VERSION='app v2.06 · WIT self-healing: 10s timer on activate, touchcancel exit, clearTimeout on deactivate';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3935,17 +3935,22 @@ setInterval(checkForUpdate,60000);
     witActive=true;
     document.body.classList.add('wit-on');
     if(el)el.innerHTML='<i class="ti ti-help-circle" aria-hidden="true"></i>';
-    /* touchend only — touchstart intercept blocks the AT's own onTS handler */
     document.addEventListener('touchend',witIntercept,{capture:true,passive:false});
     document.addEventListener('click',witIntercept,true);
+    /* touchcancel = iOS stole the touch (swipe, Control Centre, etc.) → exit WIT immediately */
+    document.addEventListener('touchcancel',deactivateWIT,{capture:true,passive:true});
+    /* Self-healing: auto-deactivate after 10 s even if no element is tapped */
+    clearTimeout(witTipTimeout);witTipTimeout=setTimeout(deactivateWIT,10000);
   }
   window.activateWIT=activateWIT;
   function deactivateWIT(){
+    clearTimeout(witTipTimeout);          /* kill any pending auto-deactivate timer */
     witActive=false;
     document.body.classList.remove('wit-on');
     if(el)el.innerHTML='<i class="ti ti-school" aria-hidden="true"></i>';
     document.removeEventListener('touchend',witIntercept,{capture:true,passive:false});
     document.removeEventListener('click',witIntercept,true);
+    document.removeEventListener('touchcancel',deactivateWIT,{capture:true,passive:true});
     hideWITTip();
     /* Safety: reset AT state in case WIT intercept ate a touchend */
     if(typeof window._cpAt_resetState==='function')window._cpAt_resetState();
