@@ -3425,7 +3425,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.91 · WIT banner stretch, WIT ring highlight';
+var VERSION='v5.92 · AT lock fix — onTS force-reset, WIT-tap reset, tour-end reset';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5261,7 +5261,14 @@ document.addEventListener('click',function(e){
   }
 
   function onTS(e){
-    if(active)return;            /* ignore extra fingers */
+    /* Defensive: if active is stuck (e.g. WIT stopPropagation ate the previous
+       touchend), force-reset before re-arming rather than bailing out entirely.
+       This prevents the AT from ever permanently locking. */
+    if(active){
+      active=false; tid=-1;
+      if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+      if(el){el.classList.remove('dragging','snapping');el.classList.add('idle');}
+    }
     e.preventDefault();          /* ← CRITICAL: freezes iOS viewport for this touch */
     var t=e.changedTouches[0];
     tid=t.identifier; active=true; moved=false;
@@ -5746,6 +5753,9 @@ document.addEventListener('click',function(e){
   window.closeTourLevelDone=function(){
     var sh=document.getElementById('tourLevelDoneSheet');
     if(sh)sh.classList.remove('show');
+    /* Reset AT drag state — completing a tour level can leave active=true,
+       permanently locking the AT. */
+    if(typeof window._apAt_resetState==='function')window._apAt_resetState();
   };
 
   /* jump from index sheet */
@@ -5904,11 +5914,14 @@ document.addEventListener('click',function(e){
 
   function witIntercept(e){
     var target=e.target;
-    /* AT bubble → exit WIT and reopen picker */
+    /* AT bubble → exit WIT and reopen picker.
+       stopPropagation here would leave AT's active=true stuck —
+       so we explicitly reset AT state after deactivating WIT. */
     var at=document.getElementById('tutAt');
     if(at&&(at===target||at.contains(target))){
       e.preventDefault();e.stopPropagation();
       deactivateWIT();
+      if(typeof window._apAt_resetState==='function')window._apAt_resetState();
       setTimeout(function(){_origAtTap();},120);
       return;
     }
