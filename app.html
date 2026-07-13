@@ -3166,7 +3166,13 @@ window.addEventListener('message',function(ev){
 /* ── Pay to Unlock ── */
 var UNLOCK={codeHash:4159026715,trialDays:3,stripeUrl:'https://buy.stripe.com/3cIdR97x4gdA4z9dCEfw401'};
 function pgHash(s){var h=5381;for(var i=0;i<s.length;i++){h=((h<<5)+h+s.charCodeAt(i))>>>0;}return h;}
-function pgUnlocked(){try{if(localStorage.getItem('cp_unlocked')==='1')return true;}catch(e){}try{if(sessionStorage.getItem('cp_unlocked')==='1')return true;}catch(e){}return false;}
+function pgUnlocked(){
+  try{if(localStorage.getItem('cp_unlocked')==='1')return true;}catch(e){}
+  try{if(sessionStorage.getItem('cp_unlocked')==='1')return true;}catch(e){}
+  /* Owner bypass — ?owner in URL permanently sets unlock (you built this, you own it) */
+  try{if(location.search.indexOf('owner')!==-1){localStorage.setItem('cp_unlocked','1');return true;}}catch(e){}
+  return false;
+}
 function pgTrialStart(){try{var t=localStorage.getItem('cp_trialStart');if(!t){t=String(Date.now());localStorage.setItem('cp_trialStart',t);}return +t;}catch(e){return Date.now();}}
 function pgDaysLeft(){var ms=UNLOCK.trialDays*86400000-(Date.now()-pgTrialStart());return Math.max(0,Math.ceil(ms/86400000));}
 function pgTrialOver(){return (Date.now()-pgTrialStart())>=UNLOCK.trialDays*86400000;}
@@ -3653,7 +3659,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.01 · AT force-reset, WIT touchstart removed, modal touchend dismiss';
+var VERSION='app v2.02 · owner bypass for paywall lockout';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
