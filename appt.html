@@ -595,6 +595,8 @@ body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85)
 #witTooltip.zoomed .wit-title{font-size:20px;margin-bottom:8px}
 #witTooltip.zoomed .wit-body{font-size:17px;line-height:1.65}
 #witTooltip.zoomed .wit-tip{font-size:13px;margin-top:10px}
+#witTooltip .wit-exit{display:block;margin-top:9px;background:none;border:1px solid rgba(255,184,0,.4);border-radius:7px;color:rgba(255,184,0,.65);font-size:11px;padding:5px 0;cursor:pointer;width:100%;text-align:center;-webkit-tap-highlight-color:transparent}
+#witTooltip.zoomed .wit-exit{font-size:13px;padding:7px 0}
 #witBanner{display:none;
   flex:1 1 auto;min-width:0;max-width:none;
   align-self:center;
@@ -3448,7 +3450,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.96 · WIT double-register guard, onTS changedTouches safety';
+var VERSION='v5.97 · WIT exit button + auto-deactivate, Day tab unblocked';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5244,7 +5246,7 @@ document.addEventListener('click',function(e){
 <div id="tutAt" role="button" aria-label="Tutorial guide" tabindex="0"><i class="ti ti-school" aria-hidden="true"></i></div>
 
 <!-- What Is This tooltip -->
-<div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap card to zoom · tap again to dismiss</div></div>
+<div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap any button to learn what it does</div><button class="wit-exit">✕ Done</button></div>
 
 <!-- Section help explanation sheet (Mode B) -->
 <div class="modal" id="sectionHelpSheet" onclick="if(event.target===this)closeSectionHelp()">
@@ -5981,15 +5983,17 @@ document.addEventListener('click',function(e){
       setTimeout(function(){_origAtTap();},120);
       return;
     }
-    /* tooltip tap → zoom first tap, dismiss second */
+    /* tooltip tap → zoom first tap; "Done" button or second tap exits WIT entirely */
     getWitEl();
     if(witTipEl&&(witTipEl===target||witTipEl.contains(target))){
       e.preventDefault();e.stopPropagation();
-      if(witTipEl.classList.contains('zoomed')){
-        witTipEl.classList.remove('zoomed');hideWITTip();
+      var isExitBtn=target.classList&&target.classList.contains('wit-exit')||
+                    (target.closest&&target.closest('.wit-exit'));
+      if(isExitBtn||witTipEl.classList.contains('zoomed')){
+        deactivateWIT();
       } else {
         witTipEl.classList.add('zoomed');
-        clearTimeout(witTipTimeout);witTipTimeout=setTimeout(hideWITTip,15000);
+        clearTimeout(witTipTimeout);witTipTimeout=setTimeout(deactivateWIT,15000);
       }
       return;
     }
@@ -6050,7 +6054,7 @@ document.addEventListener('click',function(e){
     witTipEl.style.top=top+'px';
     witTipEl.classList.add('show');
     clearTimeout(witTipTimeout);
-    witTipTimeout=setTimeout(hideWITTip,15000);
+    witTipTimeout=setTimeout(deactivateWIT,15000);
   }
 
   function hideWITTip(){
