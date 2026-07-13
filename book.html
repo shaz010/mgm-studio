@@ -713,7 +713,7 @@ var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', cus
 var STRIPE_PK='pk_live_51Ti0soDvwJdoHdEZNZkU5qSjuHxIJlL3kqee3BBVWOYFtv9fPgW63hwTbVRCcJ79x7EMmceD9sbUQAAWJMOVqSaG00vBDF7xUc';
 var _stripe=null,_stripeElements=null,_stripePayEl=null,_stripeECEl=null,_pendingRec=null,_depositAmt=50;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.54 · step headers non-collapsible, reveal on details focus';
+var VERSION='book v3.55 · fallback contact always visible';
 
 // ── Progressive reveal — strict sequential ─────────────────────────────────
 var _stepsRevealed={details:false,hair:false,day:false,time:false,visit:false};
@@ -822,8 +822,9 @@ function init(){
         document.title='Book · '+(info.salonName||'Salon');
         (function(){var fc=$('fallbackContact');if(!fc)return;
           var ct=((info.contact||'')+'').replace(/[^0-9+]/g,'');
-          if(ct){fc.innerHTML='<i class="ti ti-message-circle" style="font-size:12px;vertical-align:-1px"></i> Form playing up? <a href="sms:'+ct+'" style="color:var(--gold);font-weight:700;text-decoration:none">Text</a> or <a href="tel:'+ct+'" style="color:var(--gold);font-weight:700;text-decoration:none">call</a> directly from your phone instead.';fc.style.display='block';}
-          else fc.style.display='none';
+          if(ct){fc.innerHTML='<i class="ti ti-message-circle" style="font-size:12px;vertical-align:-1px"></i> Form playing up? <a href="sms:'+ct+'" style="color:var(--gold);font-weight:700;text-decoration:none">Text</a> or <a href="tel:'+ct+'" style="color:var(--gold);font-weight:700;text-decoration:none">call</a> directly from your phone instead.';}
+          else{fc.innerHTML='<i class="ti ti-message-circle" style="font-size:12px;vertical-align:-1px"></i> Having trouble with the form? Please reach out to your stylist directly.';}
+          fc.style.display='block';
         })();
         loadPending(function(){buildForm();show('formView');});
       } else {

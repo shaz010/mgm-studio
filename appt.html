@@ -1636,15 +1636,16 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 </div>
 
 <!-- CONFIRM DIALOG (in-app, works everywhere) -->
-<div class="modal" id="approvePriceModal" onclick="if(event.target===this)closeSheet('approvePriceModal')">
+<div class="modal" id="approvePriceModal" onclick="if(event.target===this)closeSheet('approvePriceModal')" ontouchend="if(event.target===this){event.preventDefault();closeSheet('approvePriceModal');}">
   <div class="sheet" style="max-width:420px">
     <div class="sheet-grip"></div>
     <div class="sheet-title">Set the price</div>
-    <div class="sheet-sub" id="apPriceWho" style="margin-bottom:2px"></div>
+    <div class="sheet-sub" id="apPriceWho" style="margin-bottom:6px;font-weight:700"></div>
+    <div id="apReqDetails" style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:10px;padding:8px 10px;background:rgba(255,255,255,.05);border-radius:10px;display:none"></div>
     <div class="ap-price-wrap"><span class="ap-price-cur">$</span><input id="apPriceInput" type="number" inputmode="decimal" min="0" step="1" placeholder="0" class="ap-price-in"></div>
     <div class="sheet-sub" id="apPriceHint" style="margin:9px 0 18px;font-size:12px"></div>
     <div class="btn-row">
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('approvePriceModal')">Cancel</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('approvePriceModal');openRequests();" ontouchend="event.preventDefault();closeSheet('approvePriceModal');openRequests();">← Back</button>
       <button class="btn btn-sm" style="flex:1" onclick="confirmApprovePrice()">Approve &amp; book</button>
     </div>
   </div>
@@ -3425,7 +3426,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.93 · modal touchend dismiss, WIT safety-deactivate on tour clear';
+var VERSION='v5.94 · approve modal back button + request details panel';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4393,6 +4394,18 @@ function openApprovePrice(r){
   var hp=combinedHairPrice(r.service,r.hairData);
   var suggested=(+r.price>0)?(+r.price):(saved>0?saved:(+(hp&&hp.price)||0));
   var who=$('apPriceWho');if(who)who.textContent=(r.name||'Client')+' · '+(r.service||'Service');
+  /* populate request details so Shaz can review before committing */
+  var det=$('apReqDetails');
+  if(det){
+    var lines=[];
+    if(r.date||r.time)lines.push('<i class="ti ti-calendar" style="width:13px"></i> '+[fmtReqDate(r.date),r.time?to12(r.time):''].filter(Boolean).join(' · '));
+    if(r.phone)lines.push('<i class="ti ti-phone" style="width:13px"></i> '+esc(r.phone));
+    if(r.hair)lines.push('<i class="ti ti-windsock" style="width:13px"></i> '+esc(r.hair));
+    if(r.hairData){var hd=r.hairData;var hparts=[];if(hd.length)hparts.push(hd.length);if(hd.texture)hparts.push(hd.texture);if(hd.thickness)hparts.push(hd.thickness);if(hd.colour)hparts.push(hd.colour);if(hparts.length)lines.push('<i class="ti ti-scissors" style="width:13px"></i> '+esc(hparts.join(' · ')));}
+    if(r.notes)lines.push('<i class="ti ti-message" style="width:13px"></i> "'+esc(r.notes)+'"');
+    if(lines.length){det.innerHTML=lines.join('<br>');det.style.display='block';}
+    else det.style.display='none';
+  }
   var inp=$('apPriceInput');if(inp)inp.value=suggested>0?suggested:'';
   var hint=$('apPriceHint');
   if(hint){
