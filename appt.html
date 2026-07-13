@@ -3425,7 +3425,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.92 · AT lock fix — onTS force-reset, WIT-tap reset, tour-end reset';
+var VERSION='v5.93 · modal touchend dismiss, WIT safety-deactivate on tour clear';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5428,7 +5428,7 @@ document.addEventListener('click',function(e){
 <div class="coach-ring" id="coachRing" style="display:none"></div>
 
 <!-- Tour level picker sheet -->
-<div class="modal" id="tourPickerSheet" onclick="if(event.target===this)closeTourPicker()">
+<div class="modal" id="tourPickerSheet" onclick="if(event.target===this)closeTourPicker()" ontouchend="if(event.target===this){event.preventDefault();closeTourPicker();}">
   <div class="sheet">
     <div class="sheet-head"><div class="sheet-title">Choose a tutorial level</div><button class="sheet-x" onclick="closeTourPicker()">✕</button></div>
     <div style="padding:16px 20px 24px">
@@ -5718,6 +5718,9 @@ document.addEventListener('click',function(e){
     if(ov){ov.classList.remove('show');ov.style.pointerEvents='none';}
     document.getElementById('coachTooltip').style.display='none';
     document.getElementById('coachRing').style.display='none';
+    /* Safety: deactivate WIT if it somehow stayed on during/after tour.
+       Its capture-phase touchend intercept causes intermittent tab binding. */
+    if(typeof window.deactivateWIT==='function')window.deactivateWIT();
     /* Reset AT bubble touch state — the overlay can corrupt it during tour nav */
     if(typeof window._apAt_resetState==='function')window._apAt_resetState();
   }

@@ -293,9 +293,9 @@ textarea{resize:vertical;min-height:60px}
     <div class="sec" onclick="toggleSec(this)">Your details <i class="sec-chev ti ti-chevron-down"></i></div>
     <div class="sec-body">
     <label>Name</label>
-    <input type="text" id="fName" placeholder="Your name" autocomplete="name" oninput="_checkDetailsComplete()" onblur="_checkDetailsComplete()">
+    <input type="text" id="fName" placeholder="Your name" autocomplete="name" onfocus="_detailsFocus()" oninput="_checkDetailsComplete()" onblur="_checkDetailsComplete()">
     <label>Phone number</label>
-    <input type="tel" id="fPhone" placeholder="So they can reach you" autocomplete="tel" inputmode="tel" oninput="_checkDetailsComplete()">
+    <input type="tel" id="fPhone" placeholder="So they can reach you" autocomplete="tel" inputmode="tel" onfocus="_detailsFocus()" oninput="_checkDetailsComplete()">
     <label>Notes <span style="color:var(--muted);font-weight:400">(optional)</span></label>
     <textarea id="fNotes" placeholder="e.g. first time, going lighter"></textarea>
     </div>
@@ -716,7 +716,7 @@ var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', cus
 var STRIPE_PK='pk_live_51Ti0soDvwJdoHdEZNZkU5qSjuHxIJlL3kqee3BBVWOYFtv9fPgW63hwTbVRCcJ79x7EMmceD9sbUQAAWJMOVqSaG00vBDF7xUc';
 var _stripe=null,_stripeElements=null,_stripePayEl=null,_stripeECEl=null,_pendingRec=null,_depositAmt=50;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.52 · reveal gate — name only, phone at submit';
+var VERSION='book v3.53 · My Hair reveals on first tap into details form';
 
 // ── Progressive reveal — strict sequential ─────────────────────────────────
 var _stepsRevealed={details:false,hair:false,day:false,time:false,visit:false};
@@ -745,11 +745,17 @@ function _startRevealCascade(){
   setTimeout(function(){_revealStep('step-details');},380);
 }
 
-// Step 2 — fires when name is filled (phone validated at submit)
+// Step 2a — fires the moment user taps into either details field
+function _detailsFocus(){
+  if(_stepsRevealed.hair)return;
+  setTimeout(function(){_revealStep('step-hair');},500);
+}
+// Step 2b — also fires on input/blur (belt-and-suspenders for autofill)
 function _checkDetailsComplete(){
   if(_stepsRevealed.hair)return;
   var nm=($('fName')||{}).value||'';
-  if(nm.trim().length>=2){
+  var ph=($('fPhone')||{}).value||'';
+  if(nm.trim().length>=1||ph.replace(/\D/g,'').length>=1){
     setTimeout(function(){_revealStep('step-hair');},380);
   }
 }
