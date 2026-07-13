@@ -212,9 +212,40 @@ textarea{resize:vertical;min-height:60px}
 .qpb-tile.sel{color:#fff;border-color:#a78bfa;background:rgba(167,139,250,.14);box-shadow:0 0 8px rgba(167,139,250,.25)}
 .qpb-more{grid-column:span 1;padding:7px 4px;border-radius:10px;border:1.5px dashed #2a2a34;color:#404050;font-size:11px;font-weight:800;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .qpb-empty{font-size:11px;color:#3a3a4a;font-weight:700;text-align:center;padding:6px 0}
+/* ── Booking tutorial ── */
+.bk-tour-screen{position:fixed;inset:0;z-index:8500;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.bk-tour-card{width:100%;max-width:360px;background:#080810;border:1.5px solid transparent;border-radius:22px;padding:28px 22px 22px;text-align:center;background-clip:padding-box;position:relative}
+body .bk-tour-card{background:linear-gradient(#08080f,#08080f) padding-box,linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#FFB800,#67e8f9) border-box;box-shadow:0 0 32px rgba(167,139,250,.2)}
+.bk-tour-ic{font-size:38px;margin-bottom:10px}
+.bk-tour-step{font-size:10.5px;font-weight:800;letter-spacing:1.2px;color:#5a5a72;text-transform:uppercase;margin-bottom:7px}
+.bk-tour-title{font-size:19px;font-weight:800;color:#f0f0fa;margin-bottom:8px;line-height:1.25}
+.bk-tour-body{font-size:13.5px;line-height:1.6;color:#9898b0;margin-bottom:18px}
+.bk-tour-body b{color:#d8d8ee;font-weight:700}
+.bk-tour-dots{display:flex;gap:7px;justify-content:center;margin-bottom:16px}
+.bk-tour-dots span{width:7px;height:7px;border-radius:50%;background:#1e1e2c;transition:background .2s,width .2s}
+.bk-tour-dots span.on{width:20px;border-radius:4px;background:linear-gradient(90deg,#67e8f9,#a78bfa)}
+.bk-tour-btn{width:100%;padding:13px;border:none;border-radius:13px;font-size:15px;font-weight:800;color:#06060a;cursor:pointer;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#FFB800);transition:transform .12s;-webkit-tap-highlight-color:transparent}
+.bk-tour-btn:active{transform:scale(.97)}
+.bk-tour-skip{display:block;margin-top:12px;background:none;border:none;color:#3a3a52;font-size:12.5px;font-weight:700;cursor:pointer;width:100%;padding:6px;-webkit-tap-highlight-color:transparent}
+.bk-how-link{display:inline-flex;align-items:center;gap:5px;background:none;border:none;color:#4a4a62;font-size:12px;font-weight:700;cursor:pointer;padding:4px 0;-webkit-tap-highlight-color:transparent;font-family:inherit;text-decoration:none}
+.bk-how-link:active{color:#6a6a88}
+.bk-how-link i{font-size:13px}
 </style>
 </head>
 <body>
+
+<!-- Booking tutorial overlay -->
+<div class="bk-tour-screen" id="bkTourScreen" style="display:none">
+  <div class="bk-tour-card">
+    <div class="bk-tour-ic" id="bkTourIc"></div>
+    <div class="bk-tour-step" id="bkTourStep"></div>
+    <div class="bk-tour-title" id="bkTourTitle"></div>
+    <div class="bk-tour-body" id="bkTourBody"></div>
+    <div class="bk-tour-dots" id="bkTourDots"></div>
+    <button class="bk-tour-btn" id="bkTourBtn" onclick="bkTourNext()">Next</button>
+    <button class="bk-tour-skip" onclick="endBkTour()">Skip — just let me book</button>
+  </div>
+</div>
 
 <div id="availToast" class="avail-toast"></div>
 <div id="updateBar" class="update-bar" onclick="applyUpdate()"><i class="ti ti-refresh"></i> New version ready — tap to update</div>
@@ -388,7 +419,10 @@ textarea{resize:vertical;min-height:60px}
   <div class="btn-hint" id="btnHint"></div>
   <div class="foot-note"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px"></i> You'll get a confirmation once the stylist approves. This just sends a request.</div>
   <div class="foot-note" id="fallbackContact" style="display:none"></div>
-  <div class="foot-note" id="bkVer" style="margin-top:14px;font-size:12.5px;font-weight:700;color:#e8e8ef;background:rgba(255,255,255,.09);display:inline-block;padding:4px 12px;border-radius:9px;letter-spacing:.3px"></div>
+  <div class="foot-note" style="margin-top:14px">
+    <button class="bk-how-link" onclick="openBkTour()"><i class="ti ti-help-circle"></i> How does booking work?</button>
+  </div>
+  <div class="foot-note" id="bkVer" style="margin-top:6px;font-size:12.5px;font-weight:700;color:#e8e8ef;background:rgba(255,255,255,.09);display:inline-block;padding:4px 12px;border-radius:9px;letter-spacing:.3px"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -691,7 +725,7 @@ var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', cus
 var STRIPE_PK='pk_live_51Ti0soDvwJdoHdEZNZkU5qSjuHxIJlL3kqee3BBVWOYFtv9fPgW63hwTbVRCcJ79x7EMmceD9sbUQAAWJMOVqSaG00vBDF7xUc';
 var _stripe=null,_stripeElements=null,_stripePayEl=null,_stripeECEl=null,_pendingRec=null,_depositAmt=50;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.49 · hide QP sticky anchor bar';
+var VERSION='book v3.50 · client booking tutorial';
 document.addEventListener('touchstart',function(e){
   var a=document.activeElement;if(!a)return;
   var tag=(a.tagName||'').toLowerCase();
@@ -1450,5 +1484,64 @@ init();
     <div class="pay-lock"><i class="ti ti-lock" style="font-size:11px"></i> Secured by Stripe · Apple Pay &amp; Google Pay accepted</div>
   </div>
 </div>
+
+<script>
+/* ── Booking tutorial ── */
+var BK_TOUR=[
+  {ic:'✨',
+   t:'Booking takes about 2 minutes',
+   x:'We\'ll walk you through it. There are just <b>4 easy steps</b> — choose your service, pick a day and time, tell us about your hair, then confirm. That\'s it.'},
+  {ic:'💇',
+   t:'Step 1 — choose your service',
+   x:'Tap <b>Women, Men,</b> or <b>Kids</b> to see the services menu. Pick what you\'re coming in for — you can select more than one. Not sure? Just tap the closest thing and add a note at the end.'},
+  {ic:'📅',
+   t:'Step 2 — pick a day & time',
+   x:'Scroll the <b>date strip</b> to find a day that works, then tap a <b>time slot</b>. If none of the slots suit you, tap <em>"None of these work?"</em> to request a custom time.'},
+  {ic:'✅',
+   t:'Step 3 & 4 — your details, then confirm',
+   x:'The <b>My hair</b> section helps your stylist plan time and materials — tap all that apply. Then drop your <b>name and phone number</b> and hit <b>Confirm & book</b>. We\'ll send you a confirmation once it\'s approved.'}
+];
+var bkTourI=0;
+function renderBkTour(){
+  var s=BK_TOUR[bkTourI];
+  if(!s)return;
+  document.getElementById('bkTourIc').textContent=s.ic;
+  document.getElementById('bkTourStep').textContent=(bkTourI+1)+' of '+BK_TOUR.length;
+  document.getElementById('bkTourTitle').textContent=s.t;
+  document.getElementById('bkTourBody').innerHTML=s.x;
+  document.getElementById('bkTourDots').innerHTML=BK_TOUR.map(function(_,i){
+    return '<span class="'+(i===bkTourI?'on':'')+'"></span>';
+  }).join('');
+  var btn=document.getElementById('bkTourBtn');
+  if(btn)btn.textContent=(bkTourI===BK_TOUR.length-1)?'Got it — let\'s book!':'Next';
+}
+function bkTourNext(){
+  if(bkTourI>=BK_TOUR.length-1){endBkTour();return;}
+  bkTourI++;renderBkTour();
+}
+function endBkTour(){
+  var sc=document.getElementById('bkTourScreen');
+  if(sc)sc.style.display='none';
+  try{localStorage.setItem('bk_tourDone','1');}catch(e){}
+}
+function openBkTour(){
+  bkTourI=0;renderBkTour();
+  var sc=document.getElementById('bkTourScreen');
+  if(sc)sc.style.display='flex';
+}
+function maybeShowBkTour(){
+  var done=false;
+  try{done=localStorage.getItem('bk_tourDone')==='1';}catch(e){}
+  if(!done)openBkTour();
+}
+/* Auto-show after form is visible — small delay so the form renders first */
+(function(){
+  var _origShow=window.show;
+  window.show=function(id){
+    if(typeof _origShow==='function')_origShow(id);
+    if(id==='formView'){setTimeout(maybeShowBkTour,600);}
+  };
+})();
+</script>
 </body>
 </html>
