@@ -62,6 +62,13 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 
 /* TABS */
 .tabs{display:flex;gap:3px;background:#0a0a0a;border-radius:10px;padding:4px;border:1px solid var(--border-bright);flex-wrap:wrap}
+#earnTabsWrap{margin-bottom:14px}
+#earnTabsRow{margin-bottom:0}
+#earnTabsRow.et-collapsed{display:none}
+#earnTabsBar{display:none;align-items:center;gap:8px;padding:5px 2px}
+#earnTabsBar.et-show{display:flex}
+#earnTabsBar .et-chip{font-size:12px;font-weight:700;color:#b0b0c0;background:#111;border:1px solid var(--border-bright);border-radius:20px;padding:5px 13px;flex:1}
+#earnTabsBar .et-expand{background:none;border:none;color:#666;font-size:17px;cursor:pointer;padding:2px 4px;line-height:1;-webkit-tap-highlight-color:transparent}
 .tab{padding:7px 14px;border-radius:7px;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;white-space:nowrap;font-weight:500}
 .tab.active{background:var(--bg3);color:var(--gold);font-weight:600;border:1px solid var(--gold-border)}
 
@@ -1392,11 +1399,18 @@ body.wit-on #witBanner{display:block}
     <button class="bn-x" onclick="dismissBackupNudge()" aria-label="Dismiss">×</button>
   </div>
 
-  <div class="tabs" style="margin-bottom:14px">
-    <button class="tab active" onclick="newBooking()"><i class="ti ti-calendar-plus" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>New booking</button>
-    <button class="tab" onclick="showTab('hist')"><i class="ti ti-list" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Appointments</button>
-    <button class="tab" onclick="showTab('mgm')"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Salon owes me</button>
-    <div id="witBanner">❓ Tap any button to learn · tap <strong>🟡</strong> to exit</div>
+  <div id="earnTabsWrap">
+    <div id="earnTabsBar">
+      <span class="et-chip" id="earnTabsLabel">New booking</span>
+      <button class="et-expand" onclick="toggleEarnTabs()" aria-label="Expand tabs">▾ show</button>
+    </div>
+    <div class="tabs" id="earnTabsRow">
+      <button class="tab active" onclick="newBooking()"><i class="ti ti-calendar-plus" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>New booking</button>
+      <button class="tab" onclick="showTab('hist')"><i class="ti ti-list" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Appointments</button>
+      <button class="tab" onclick="showTab('mgm')"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Salon owes me</button>
+      <button class="tab" onclick="toggleEarnTabs()" aria-label="Collapse tabs" style="margin-left:auto;flex-shrink:0;font-size:16px;padding:6px 10px;color:#555">▴</button>
+      <div id="witBanner">❓ Tap any button to learn · tap <strong>🟡</strong> to exit</div>
+    </div>
   </div>
 
   <!-- SEARCH OVERLAY -->
@@ -2309,9 +2323,9 @@ function printInvoice(){
 function showTab(t){
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   ['pBook','pHist','pMgm'].forEach(p=>$(p).style.display='none');
-  if(t==='book'){$('pBook').style.display='block';document.querySelectorAll('.tab')[0].classList.add('active');}
-  if(t==='hist'){$('pHist').style.display='block';document.querySelectorAll('.tab')[1].classList.add('active');renderTable();}
-  if(t==='mgm'){$('pMgm').style.display='block';document.querySelectorAll('.tab')[2].classList.add('active');renderMgm();}
+  if(t==='book'){$('pBook').style.display='block';document.querySelectorAll('.tab')[0].classList.add('active');_syncEarnTabsLabel('New booking');}
+  if(t==='hist'){$('pHist').style.display='block';document.querySelectorAll('.tab')[1].classList.add('active');renderTable();_syncEarnTabsLabel('Appointments');}
+  if(t==='mgm'){$('pMgm').style.display='block';document.querySelectorAll('.tab')[2].classList.add('active');renderMgm();_syncEarnTabsLabel('Salon owes me');}
 }
 // ── SERVICE PICKER ──
 const SERVICE_GROUPS=[
@@ -2406,10 +2420,23 @@ var TOUR=[
 ];
 var tourI=0;
 function renderTour(){var s=TOUR[tourI];if(!s)return;document.getElementById('tourIc').innerHTML='<i class="ti '+s.ic+'"></i>';document.getElementById('tourStep').textContent=(tourI+1)+' / '+TOUR.length;document.getElementById('tourTitle').textContent=s.t;document.getElementById('tourText').innerHTML=s.x;document.getElementById('tourDots').innerHTML=TOUR.map(function(_,i){return '<span class="'+(i===tourI?'on':'')+'"></span>';}).join('');document.getElementById('tourBtn').textContent=(tourI===TOUR.length-1)?'Got it':'Next';}
-function tourNext(){if(tourI>=TOUR.length-1){endTour();return;}tourI++;renderTour();}
-function endTour(){var sc=document.getElementById('tourScreen');if(sc)sc.style.display='none';try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.tourDone=true;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.tourDone=true;}
+function tourNext(){if(tourI>=TOUR.length-1){endTour(true);return;}tourI++;renderTour();}
+function endTour(completed){var sc=document.getElementById('tourScreen');if(sc)sc.style.display='none';try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.tourDone=true;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.tourDone=true;if(completed)showTourDoneToast();}
+function showTourDoneToast(){var t=document.createElement('div');t.textContent='✓ You\'re all set — explore freely!';t.style.cssText='position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:linear-gradient(110deg,#67e8f9,#a78bfa);color:#06060a;font-size:13.5px;font-weight:800;padding:11px 22px;border-radius:22px;z-index:8000;white-space:nowrap;box-shadow:0 4px 18px rgba(103,232,249,.35);transition:opacity .4s';document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},450);},2600);}
 function openTour(){tourI=0;renderTour();var sc=document.getElementById('tourScreen');if(sc)sc.style.display='flex';}
 function maybeShowTour(){var done=false;try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');done=!!p.tourDone;}catch(e){}if(!done)openTour();}
+/* ── Earnings tabs collapse ── */
+var _etCollapsed=false;
+function toggleEarnTabs(){
+  _etCollapsed=!_etCollapsed;
+  var row=document.getElementById('earnTabsRow');
+  var bar=document.getElementById('earnTabsBar');
+  if(row)row.classList.toggle('et-collapsed',_etCollapsed);
+  if(bar)bar.classList.toggle('et-show',_etCollapsed);
+  try{localStorage.setItem('cp_tabs_col',_etCollapsed?'1':'0');}catch(e){}
+}
+function _syncEarnTabsLabel(name){var lbl=document.getElementById('earnTabsLabel');if(lbl)lbl.textContent=name;}
+(function(){try{_etCollapsed=localStorage.getItem('cp_tabs_col')==='1';}catch(e){}if(_etCollapsed){var row=document.getElementById('earnTabsRow');var bar=document.getElementById('earnTabsBar');if(row)row.classList.add('et-collapsed');if(bar)bar.classList.add('et-show');}})();
 var CAT_COLORS={'Cut':'#8FD17A','Haircuts':'#8FD17A','Color':'#FF7AB0','Lights':'#a78bfa','Styling':'#67e8f9','Extensions':'#f5a8ff','Eyebrow':'#fb923c','Other Chemical Services':'#4fd1c5','Highlights':'#FFE15A','Treatments':'#5FD6C6','Texture':'#B79CFF','Barbering':'#8FD17A','Beard & Shave':'#C9A87C','Nails - Hands':'#FF93A6','Nails - Feet':'#5FC8EC','Nails - Enhancements':'#CBA6FF','Lash Extensions':'#67E8F9','Lash Extras':'#9FE0FF','Brows':'#E6B07E','Facials':'#9AD9A6','Waxing & Skin':'#F4A6C8','Makeup':'#FF7AB0','Massage':'#B79CFF','Extensions':'#7FB4FF'};
 function catColorOf(c){return CAT_COLORS[c]||'#FFC04D';}
 function getFavorites(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return Array.isArray(p.favorites)?p.favorites:DEFAULT_FAVES.slice();}catch(e){return DEFAULT_FAVES.slice();}}
@@ -3624,7 +3651,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.97 · WIT banner lives inside tabs flex row';
+var VERSION='app v1.98 · tabs collapse, WIT fix, tour payoff, Full Guide picker';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3697,7 +3724,11 @@ setInterval(checkForUpdate,60000);
       <button class="sheet-x" onclick="closeCPPicker()">✕</button>
     </div>
     <div style="padding:16px 20px 24px;display:flex;flex-direction:column;gap:10px">
-      <button class="cp-tour-btn" onclick="closeCPPicker();activateWIT()">
+      <button class="cp-tour-btn" onclick="closeCPPicker();openTour()">
+        <i class="ti ti-compass" style="font-size:22px;color:#a78bfa"></i>
+        <span><span class="cp-tlb-name">Full guide</span><span class="cp-tlb-count">4 steps · 1 min</span></span>
+      </button>
+      <button class="cp-tour-btn" onclick="closeCPPicker();window.activateWIT()">
         <i class="ti ti-help-circle" style="font-size:22px;color:#FFB800"></i>
         <span><span class="cp-tlb-name">What does this do?</span><span class="cp-tlb-count">tap any button to explain it</span></span>
       </button>
@@ -3850,6 +3881,7 @@ setInterval(checkForUpdate,60000);
     document.addEventListener('touchend',witIntercept,{capture:true,passive:false});
     document.addEventListener('click',witIntercept,true);
   }
+  window.activateWIT=activateWIT;
   function deactivateWIT(){
     witActive=false;
     document.body.classList.remove('wit-on');

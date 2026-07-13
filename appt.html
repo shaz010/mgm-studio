@@ -3423,7 +3423,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.88 · WIT banner lives inside tabs flex row';
+var VERSION='v5.89 · step 4+5 coach tour fix, card+pill highlight';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5506,13 +5506,14 @@ document.addEventListener('click',function(e){
        title:'Week strip — slide to any day',
        body:'Swipe left or right on the date strip to move through the week. Tap any date to jump straight to it.',
        action:function(){showView('day');}},
-      {sel:'.tab[data-view="day"]',pos:'top',
+      {sel:'.appt',pos:'bottom',
        title:'Tap any appointment card',
-       body:'Every card in Day view is tappable. Open it to edit price, change status, add a tip, or delete — right there inline.',
+       body:'Each block in Day view is one appointment. Tap it to open the detail sheet — edit the price, change status, add a tip, or delete it.',
        action:function(){showView('day');}},
-      {sel:null,pos:'center',
+      {sel:'.pill',pos:'bottom',
        title:'Booking status chips',
-       body:'Inside any open appointment: tap In Progress, Done, or No-show. The status shows on the card in Day view so you always know where things stand.'},
+       body:'See the status badge on every card — Confirmed, In Progress, Done, or No-show. Open any appointment and tap a status to change it instantly.',
+       action:function(){showView('day');}},
       {sel:'#fService',pos:'bottom',
        title:'Multi-service bookings',
        body:'When adding a booking, tap more than one service chip. Prices combine automatically. Perfect for colour + cut combos.',
