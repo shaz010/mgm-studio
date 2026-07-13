@@ -3653,7 +3653,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.00 · tabs default-collapsed, WIT banner stretch, WIT ring';
+var VERSION='app v2.01 · AT force-reset, WIT touchstart removed, modal touchend dismiss';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3719,7 +3719,7 @@ setInterval(checkForUpdate,60000);
 <div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap this card or anywhere else to dismiss</div></div>
 
 <!-- AT Picker sheet -->
-<div class="modal" id="cpPickerSheet" onclick="if(event.target===this)closeCPPicker()" style="display:none;opacity:0;transition:opacity .2s">
+<div class="modal" id="cpPickerSheet" onclick="if(event.target===this)closeCPPicker()" ontouchend="if(event.target===this){event.preventDefault();closeCPPicker();}" style="display:none;opacity:0;transition:opacity .2s">
   <div class="sheet" style="padding-bottom:env(safe-area-inset-bottom,16px)">
     <div class="sheet-head">
       <div class="sheet-title">Tutorial</div>
@@ -3764,7 +3764,13 @@ setInterval(checkForUpdate,60000);
   function getTouch(list,id){for(var i=0;i<list.length;i++)if(list[i].identifier===id)return list[i];return null;}
 
   function onTS(e){
-    if(active)return;
+    /* Defensive: force-reset if active is stuck (WIT stopPropagation
+       can eat the previous touchend, leaving active=true permanently). */
+    if(active){
+      active=false;tid=-1;
+      if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+      if(el){el.classList.remove('dragging','snapping');el.classList.add('idle');}
+    }
     e.preventDefault();
     var t=e.changedTouches[0];
     tid=t.identifier;active=true;moved=false;
@@ -3822,6 +3828,12 @@ setInterval(checkForUpdate,60000);
     savePos(s.x,s.y);
     setTimeout(function(){el.classList.remove('snapping');el.classList.add('idle');},380);
   }
+  /* Public reset — called by WIT/tour cleanup to prevent permanent AT lock */
+  window._cpAt_resetState=function(){
+    active=false;tid=-1;
+    if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+    if(el){el.classList.remove('dragging','snapping');el.classList.add('idle');}
+  };
 
   document.addEventListener('DOMContentLoaded',function(){
     el=document.getElementById('tutAt');
@@ -3850,6 +3862,8 @@ setInterval(checkForUpdate,60000);
     if(!sh)return;
     sh.style.opacity='0';
     setTimeout(function(){sh.style.display='none';},200);
+    /* Reset AT drag state — picker open/close can leave active=true */
+    if(typeof window._cpAt_resetState==='function')window._cpAt_resetState();
   };
 
   /* ── WIT engine ── */
@@ -3890,7 +3904,7 @@ setInterval(checkForUpdate,60000);
     witActive=true;
     document.body.classList.add('wit-on');
     if(el)el.innerHTML='<i class="ti ti-help-circle" aria-hidden="true"></i>';
-    document.addEventListener('touchstart',witIntercept,{capture:true,passive:false});
+    /* touchend only — touchstart intercept blocks the AT's own onTS handler */
     document.addEventListener('touchend',witIntercept,{capture:true,passive:false});
     document.addEventListener('click',witIntercept,true);
   }
@@ -3899,10 +3913,11 @@ setInterval(checkForUpdate,60000);
     witActive=false;
     document.body.classList.remove('wit-on');
     if(el)el.innerHTML='<i class="ti ti-school" aria-hidden="true"></i>';
-    document.removeEventListener('touchstart',witIntercept,{capture:true,passive:false});
     document.removeEventListener('touchend',witIntercept,{capture:true,passive:false});
     document.removeEventListener('click',witIntercept,true);
     hideWITTip();
+    /* Safety: reset AT state in case WIT intercept ate a touchend */
+    if(typeof window._cpAt_resetState==='function')window._cpAt_resetState();
   }
 
   function witIntercept(e){
