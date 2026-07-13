@@ -290,7 +290,7 @@ textarea{resize:vertical;min-height:60px}
 
   <!-- ② Your details (reveals after first service pick) -->
   <div id="step-details" class="bk-step bk-step-hidden">
-    <div class="sec" onclick="toggleSec(this)">Your details <i class="sec-chev ti ti-chevron-down"></i></div>
+    <div class="sec">Your details</div>
     <div class="sec-body">
     <label>Name</label>
     <input type="text" id="fName" placeholder="Your name" autocomplete="name" onfocus="_detailsFocus()" oninput="_checkDetailsComplete()" onblur="_checkDetailsComplete()">
@@ -303,12 +303,9 @@ textarea{resize:vertical;min-height:60px}
 
   <!-- ③ My hair (reveals ~700ms after Your details) -->
   <div id="step-hair" class="bk-step bk-step-hidden">
-    <div class="sec" style="display:flex;align-items:center;justify-content:space-between" onclick="toggleSec(this)">
+    <div class="sec" style="display:flex;align-items:center;justify-content:space-between">
       <span>My hair</span>
-      <div style="display:flex;align-items:center;gap:10px">
-        <button class="returning-btn" id="returningBtn" onclick="event.stopPropagation();toggleReturning()"><i class="ti ti-user-check"></i> I've been here before</button>
-        <i class="sec-chev ti ti-chevron-down"></i>
-      </div>
+      <button class="returning-btn" id="returningBtn" onclick="toggleReturning()"><i class="ti ti-user-check"></i> I've been here before</button>
     </div>
     <div class="sec-body">
     <div id="hairWrap">
@@ -366,7 +363,7 @@ textarea{resize:vertical;min-height:60px}
 
   <!-- ④ Pick a day (reveals ~1400ms after first service pick) -->
   <div id="step-day" class="bk-step bk-step-hidden">
-    <div class="sec" onclick="toggleSec(this)">Pick a day <i class="sec-chev ti ti-chevron-down"></i></div>
+    <div class="sec">Pick a day</div>
     <div class="sec-body">
       <div class="dates" id="dateRow"></div>
     </div>
@@ -374,7 +371,7 @@ textarea{resize:vertical;min-height:60px}
 
   <!-- ⑤ Pick a time (reveals ~2100ms after first service pick) -->
   <div id="step-time" class="bk-step bk-step-hidden">
-    <div class="sec" onclick="toggleSec(this)">Pick a time <i class="sec-chev ti ti-chevron-down"></i></div>
+    <div class="sec">Pick a time</div>
     <div class="sec-body">
       <div class="slots" id="slotGrid"></div>
       <button class="none-btn" id="noneBtn" onclick="toggleCustom()"><i class="ti ti-clock-plus"></i> None of these work? Request another time</button>
@@ -387,7 +384,7 @@ textarea{resize:vertical;min-height:60px}
 
   <!-- ⑥ Before your visit (reveals when a time is selected) -->
   <div id="step-visit" class="bk-step bk-step-hidden">
-    <div class="sec" onclick="toggleSec(this)">Before your visit <i class="sec-chev ti ti-chevron-down"></i></div>
+    <div class="sec">Before your visit</div>
     <div class="sec-body">
       <div style="font-size:10px;font-weight:800;color:#4a4a5a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Any of these apply? Tap all that fit</div>
       <div class="consent-flags" id="consentFlags">
@@ -716,7 +713,7 @@ var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', cus
 var STRIPE_PK='pk_live_51Ti0soDvwJdoHdEZNZkU5qSjuHxIJlL3kqee3BBVWOYFtv9fPgW63hwTbVRCcJ79x7EMmceD9sbUQAAWJMOVqSaG00vBDF7xUc';
 var _stripe=null,_stripeElements=null,_stripePayEl=null,_stripeECEl=null,_pendingRec=null,_depositAmt=50;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.53 · My Hair reveals on first tap into details form';
+var VERSION='book v3.54 · step headers non-collapsible, reveal on details focus';
 
 // ── Progressive reveal — strict sequential ─────────────────────────────────
 var _stepsRevealed={details:false,hair:false,day:false,time:false,visit:false};
