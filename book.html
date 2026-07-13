@@ -293,7 +293,7 @@ textarea{resize:vertical;min-height:60px}
     <div class="sec" onclick="toggleSec(this)">Your details <i class="sec-chev ti ti-chevron-down"></i></div>
     <div class="sec-body">
     <label>Name</label>
-    <input type="text" id="fName" placeholder="Your name" autocomplete="name" oninput="_checkDetailsComplete()">
+    <input type="text" id="fName" placeholder="Your name" autocomplete="name" oninput="_checkDetailsComplete()" onblur="_checkDetailsComplete()">
     <label>Phone number</label>
     <input type="tel" id="fPhone" placeholder="So they can reach you" autocomplete="tel" inputmode="tel" oninput="_checkDetailsComplete()">
     <label>Notes <span style="color:var(--muted);font-weight:400">(optional)</span></label>
@@ -716,7 +716,7 @@ var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', cus
 var STRIPE_PK='pk_live_51Ti0soDvwJdoHdEZNZkU5qSjuHxIJlL3kqee3BBVWOYFtv9fPgW63hwTbVRCcJ79x7EMmceD9sbUQAAWJMOVqSaG00vBDF7xUc';
 var _stripe=null,_stripeElements=null,_stripePayEl=null,_stripeECEl=null,_pendingRec=null,_depositAmt=50;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.51 · strict sequential reveal, no WIT';
+var VERSION='book v3.52 · reveal gate — name only, phone at submit';
 
 // ── Progressive reveal — strict sequential ─────────────────────────────────
 var _stepsRevealed={details:false,hair:false,day:false,time:false,visit:false};
@@ -745,12 +745,11 @@ function _startRevealCascade(){
   setTimeout(function(){_revealStep('step-details');},380);
 }
 
-// Step 2 — fires when name + phone are both filled
+// Step 2 — fires when name is filled (phone validated at submit)
 function _checkDetailsComplete(){
   if(_stepsRevealed.hair)return;
   var nm=($('fName')||{}).value||'';
-  var ph=($('fPhone')||{}).value||'';
-  if(nm.trim().length>=2&&ph.replace(/\D/g,'').length>=6){
+  if(nm.trim().length>=2){
     setTimeout(function(){_revealStep('step-hair');},380);
   }
 }
