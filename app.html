@@ -1040,6 +1040,7 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
 #tutAt.snapping{transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s,background .2s}
 #tutAt.idle{opacity:.78}
 body.tut-at-hidden #tutAt{display:none}
+body.settings-open #tutAt{display:none!important} /* AT sits z-799, above settings z-500 — hide it so settings taps can't accidentally hit AT */
 /* WIT mode */
 body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85);
   box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 5px rgba(255,184,0,.18),0 0 18px rgba(255,184,0,.25)}
@@ -1072,6 +1073,8 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
 #witTooltip.zoomed .wit-title{font-size:18px}
 #witTooltip.zoomed .wit-body{font-size:16px;line-height:1.6}
 #witTooltip.zoomed .wit-tip{font-size:13px}
+#witTooltip .wit-exit{display:block;margin-top:9px;background:none;border:1px solid rgba(255,184,0,.4);border-radius:7px;color:rgba(255,184,0,.65);font-size:11px;padding:5px 0;cursor:pointer;width:100%;text-align:center;-webkit-tap-highlight-color:transparent}
+#witTooltip.zoomed .wit-exit{font-size:13px;padding:7px 0}
 </style>
 </head>
 <body>
@@ -1204,6 +1207,7 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       <span class="settings-title">⚙️ Settings</span>
       <button class="settings-close" onclick="closeSettings()">×</button>
     </div>
+    <div id="settingsVerBadge" style="text-align:center;font-size:11px;color:#555;margin:-6px 0 14px;letter-spacing:.3px"></div>
 
     <div class="setup-section">
       <div class="setup-section-title">Your details</div>
@@ -3364,8 +3368,19 @@ function applyBigText(){var n=getBigText();document.body.classList.toggle('a11y-
 function markBigText(){var n=getBigText();document.querySelectorAll('.bigtext-btn').forEach(function(b){b.classList.toggle('sel',parseInt(b.dataset.v,10)===n);});}
 function setBigText(n,btn){try{localStorage.setItem('ys_textsize',String(n));}catch(e){}applyBigText();markBigText();}
 document.addEventListener('click',function(e){var t=e.target;if(t&&t.classList&&t.classList.contains('setup-section-title')&&t.closest&&t.closest('#settingsPanel')){var s=t.parentElement;if(s&&s.classList.contains('setup-section'))s.classList.toggle('collapsed');}});
-function toggleAdvSettings(){var p=document.getElementById('settingsPanel');if(!p)return;var on=p.classList.toggle('show-adv');var b=document.getElementById('advToggle');if(b)b.innerHTML=on?'<i class="ti ti-settings"></i> Hide advanced settings ▴':'<i class="ti ti-settings"></i> Show advanced settings ▾';}
+function toggleAdvSettings(){
+  var p=document.getElementById('settingsPanel');if(!p)return;
+  var on=p.classList.toggle('show-adv');
+  var b=document.getElementById('advToggle');
+  if(b)b.innerHTML=on?'<i class="ti ti-settings"></i> Hide advanced settings ▴':'<i class="ti ti-settings"></i> Show advanced settings ▾';
+  /* When revealing adv-sec sections, also expand them — they arrive collapsed from openSettings */
+  p.querySelectorAll('.setup-section.adv-sec').forEach(function(s){
+    if(on){s.classList.remove('collapsed');}
+    else{s.classList.add('collapsed');}
+  });
+}
 function openSettings(){
+  document.body.classList.add('settings-open');
   loadPrefs();
   const ni = document.getElementById('settingName');
   const si = document.getElementById('settingSalon');
@@ -3379,6 +3394,7 @@ function openSettings(){
 }
 
 function closeSettings(){
+  document.body.classList.remove('settings-open');
   const panel = document.getElementById('settingsPanel');
   if(panel){ panel.style.display='none'; }
   if(typeof WARP!=='undefined'&&WARP.resume)WARP.resume();
@@ -3659,7 +3675,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.02 · owner bypass for paywall lockout';
+var VERSION='app v2.05 · hide AT during settings, WIT exit button + auto-deactivate';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3673,7 +3689,14 @@ document.addEventListener('touchstart',function(e){
   if(tt==='input'||tt==='textarea'||tt==='select'||tt==='label')return;
   a.blur();
 },{passive:true});
-(function(){var b=document.getElementById('buildBadge');if(b){var v=VERSION.replace(/^app\s*/,'');var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;}})();
+(function(){
+  var v=VERSION.replace(/^app\s*/,'');
+  var parts=v.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';
+  var b=document.getElementById('buildBadge');
+  if(b)b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;
+  var sv=document.getElementById('settingsVerBadge');
+  if(sv)sv.textContent='CommissionPro '+ver;
+})();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
   try{
@@ -3722,7 +3745,7 @@ setInterval(checkForUpdate,60000);
 <!-- AssistiveTouch bubble -->
 <div id="tutAt" role="button" aria-label="Tutorial guide" tabindex="0"><i class="ti ti-school" aria-hidden="true"></i></div>
 <!-- WIT tooltip -->
-<div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap this card or anywhere else to dismiss</div></div>
+<div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap any button to learn what it does</div><button class="wit-exit">✕ Done</button></div>
 
 <!-- AT Picker sheet -->
 <div class="modal" id="cpPickerSheet" onclick="if(event.target===this)closeCPPicker()" ontouchend="if(event.target===this){event.preventDefault();closeCPPicker();}" style="display:none;opacity:0;transition:opacity .2s">
@@ -3778,6 +3801,7 @@ setInterval(checkForUpdate,60000);
       if(el){el.classList.remove('dragging','snapping');el.classList.add('idle');}
     }
     e.preventDefault();
+    if(!e.changedTouches||!e.changedTouches[0])return;
     var t=e.changedTouches[0];
     tid=t.identifier;active=true;moved=false;
     startCX=t.clientX;startCY=t.clientY;startTX=tx;startTY=ty;
@@ -3907,6 +3931,7 @@ setInterval(checkForUpdate,60000);
   }
 
   function activateWIT(){
+    if(witActive)return; /* guard: never double-register the capture listener */
     witActive=true;
     document.body.classList.add('wit-on');
     if(el)el.innerHTML='<i class="ti ti-help-circle" aria-hidden="true"></i>';
@@ -3937,11 +3962,14 @@ setInterval(checkForUpdate,60000);
     getWitEl();
     if(witTipEl&&(witTipEl===target||witTipEl.contains(target))){
       e.preventDefault();e.stopPropagation();
-      if(witTipEl.classList.contains('zoomed')){
-        witTipEl.classList.remove('zoomed');hideWITTip();
+      /* "Done" button or second tap (when already zoomed) → exit WIT entirely */
+      var isExitBtn=target.classList&&target.classList.contains('wit-exit')||
+                    (target.closest&&target.closest('.wit-exit'));
+      if(isExitBtn||witTipEl.classList.contains('zoomed')){
+        deactivateWIT();
       } else {
         witTipEl.classList.add('zoomed');
-        clearTimeout(witTipTimeout);witTipTimeout=setTimeout(hideWITTip,15000);
+        clearTimeout(witTipTimeout);witTipTimeout=setTimeout(deactivateWIT,15000);
       }
       return;
     }
@@ -3987,7 +4015,7 @@ setInterval(checkForUpdate,60000);
     top=Math.max(safeTop,Math.min(top,vh-safeBot-th));
     witTipEl.style.left=left+'px';witTipEl.style.top=top+'px';
     witTipEl.classList.add('show');
-    clearTimeout(witTipTimeout);witTipTimeout=setTimeout(hideWITTip,15000);
+    clearTimeout(witTipTimeout);witTipTimeout=setTimeout(deactivateWIT,15000);
   }
   function hideWITTip(){
     getWitEl();if(witTipEl)witTipEl.classList.remove('show','zoomed');
