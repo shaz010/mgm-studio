@@ -574,19 +574,19 @@ body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85)
 #witTooltip.zoomed .wit-body{font-size:17px;line-height:1.65}
 #witTooltip.zoomed .wit-tip{font-size:13px;margin-top:10px}
 #witBanner{display:none;
-  margin-left:auto;align-self:center;
-  max-width:96px;
+  align-self:center;flex-shrink:1;
+  max-width:82px;min-width:48px;
   background:rgba(60,35,0,.92);
   border:1px solid rgba(255,184,0,.4);
   border-radius:10px;
-  padding:5px 8px;
-  font-size:10px;line-height:1.45;
+  padding:5px 7px;
+  font-size:9.5px;line-height:1.45;
   color:rgba(255,220,100,.95);
   white-space:normal;text-align:center;
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
   box-shadow:0 2px 8px rgba(0,0,0,.5);
   pointer-events:none}
-body.wit-on #witBanner{display:block}
+body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:center}
 /* ── Mode B — section help buttons ── */
 .sec-help-btn{display:none;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(167,139,250,.4);background:rgba(167,139,250,.1);color:rgba(167,139,250,.8);font-size:11px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;transition:background .15s}
 .sec-help-btn:active{background:rgba(167,139,250,.3)}
@@ -1063,6 +1063,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <button class="gear-btn" onclick="openPrices()" aria-label="Price book" title="Price book"><i class="ti ti-currency-dollar"></i></button>
       <button class="gear-btn" onclick="showView('clients')" aria-label="Clients" title="Clients"><i class="ti ti-users"></i></button>
       <button class="gear-btn" onclick="openSettings()" aria-label="Settings" title="Settings"><i class="ti ti-settings"></i></button>
+      <div id="witBanner">❓ Tap any button · 🟡 exit</div>
     </div>
   </div>
 
@@ -1083,7 +1084,6 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <button class="tab" data-view="clients" onclick="showView('clients')"><i class="ti ti-users"></i><span>Clients</span></button>
     <button class="tab" data-view="stock" onclick="showView('stock')"><i class="ti ti-package"></i><span>Inventory</span></button>
     <button class="tab" data-view="colour" onclick="showView('colour')"><i class="ti ti-color-swatch"></i><span>Colour</span></button>
-    <div id="witBanner">❓ Tap any button to learn · tap <strong>🟡</strong> to exit</div>
   </div>
 
   <!-- DAY VIEW -->
@@ -3423,7 +3423,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.89 · step 4+5 coach tour fix, card+pill highlight';
+var VERSION='v5.90 · AT touchcancel fix, post-tour reset, banner to topbar';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5288,9 +5288,8 @@ document.addEventListener('click',function(e){
     if(rafId){cancelAnimationFrame(rafId);rafId=null;}
     el.classList.remove('dragging');
     if(!moved){
-      /* WIT intercept (in the WIT IIFE) handles taps when WIT is active
-         via capture-phase stopPropagation, so this code only runs when
-         WIT is NOT active. Just open the picker. */
+      /* WIT intercept handles taps when WIT is active via capture-phase
+         stopPropagation, so this code only runs when WIT is NOT active. */
       window.openTourPicker();
       setTimeout(function(){el.classList.add('idle');},500);
       return;
@@ -5301,20 +5300,41 @@ document.addEventListener('click',function(e){
     savePos(s.x,s.y);
     setTimeout(function(){el.classList.remove('snapping');el.classList.add('idle');},380);
   }
+  /* touchcancel: iOS cancels touches unpredictably. Reset unconditionally — never
+     check touch identifier, changedTouches may not contain it on cancel. */
+  function onTC(){
+    if(!active)return;
+    active=false; tid=-1;
+    if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+    if(el){
+      el.classList.remove('dragging');
+      var s=snapEdge(tx,ty);
+      el.classList.add('snapping');
+      applyXY(s.x,s.y);
+      savePos(s.x,s.y);
+      setTimeout(function(){el.classList.remove('snapping');el.classList.add('idle');},380);
+    }
+  }
+  /* Public reset — called by coach tour cleanup so the bubble never stays stuck */
+  window._apAt_resetState=function(){
+    active=false; tid=-1;
+    if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+    if(el){el.classList.remove('dragging','snapping');el.classList.add('idle');}
+  };
 
   document.addEventListener('DOMContentLoaded',function(){
     el=document.getElementById('tutAt');
     if(!el)return;
     var saved=loadPos();
-    var initX=saved?saved.x:window.innerWidth-SIZE-PAD;
-    var initY=saved?saved.y:window.innerHeight-SIZE-100;
+    var vw=window.innerWidth, vh=(window.visualViewport?window.visualViewport.height:window.innerHeight);
+    var initX=saved?saved.x:vw-SIZE-PAD;
+    var initY=saved?saved.y:vh-SIZE-110;
     applyXY(initX,initY);
     setTimeout(function(){el.classList.add('idle');},1200);
-    /* non-passive so e.preventDefault() works on all three */
     el.addEventListener('touchstart', onTS,{passive:false});
     el.addEventListener('touchmove',  onTM,{passive:false});
     el.addEventListener('touchend',   onTE,{passive:false});
-    el.addEventListener('touchcancel',onTE,{passive:false});
+    el.addEventListener('touchcancel',onTC,{passive:true});
   });
 
   /* settings toggles */
@@ -5689,6 +5709,8 @@ document.addEventListener('click',function(e){
     if(ov){ov.classList.remove('show');ov.style.pointerEvents='none';}
     document.getElementById('coachTooltip').style.display='none';
     document.getElementById('coachRing').style.display='none';
+    /* Reset AT bubble touch state — the overlay can corrupt it during tour nav */
+    if(typeof window._apAt_resetState==='function')window._apAt_resetState();
   }
 
   window.endCoachTour=function(completed){

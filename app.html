@@ -1044,19 +1044,19 @@ body.tut-at-hidden #tutAt{display:none}
 body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85);
   box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 5px rgba(255,184,0,.18),0 0 18px rgba(255,184,0,.25)}
 #witBanner{display:none;
-  margin-left:auto;align-self:center;
-  max-width:96px;
+  align-self:center;flex-shrink:1;
+  max-width:88px;min-width:52px;
   background:rgba(60,35,0,.92);
   border:1px solid rgba(255,184,0,.4);
   border-radius:10px;
-  padding:5px 8px;
-  font-size:10px;line-height:1.45;
+  padding:5px 7px;
+  font-size:9.5px;line-height:1.45;
   color:rgba(255,220,100,.95);
   white-space:normal;text-align:center;
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
   box-shadow:0 2px 8px rgba(0,0,0,.5);
   pointer-events:none}
-body.wit-on #witBanner{display:block}
+body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:center}
 #witTooltip{position:fixed;z-index:9999;max-width:260px;pointer-events:auto;cursor:pointer;
   background:rgba(18,12,0,.94);border:1.5px solid rgba(255,184,0,.55);
   border-radius:14px;padding:12px 14px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
@@ -1390,6 +1390,7 @@ body.wit-on #witBanner{display:block}
       <button class="gear-btn" onclick="openPrices()" title="Price book"><i class="ti ti-currency-dollar"></i></button>
       <button class="gear-btn" onclick="openSettings()" title="Settings"><i class="ti ti-settings"></i></button>
       <div class="sync-badge sync-loading" id="syncBadge"><span class="spinner"></span> Connecting...</div>
+      <div id="witBanner">❓ Tap any button · 🟡 exit</div>
     </div>
   </div>
   <div class="backup-nudge" id="backupNudge" style="display:none">
@@ -1409,7 +1410,6 @@ body.wit-on #witBanner{display:block}
       <button class="tab" onclick="showTab('hist')"><i class="ti ti-list" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Appointments</button>
       <button class="tab" onclick="showTab('mgm')"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Salon owes me</button>
       <button class="tab" onclick="toggleEarnTabs()" aria-label="Collapse tabs" style="margin-left:auto;flex-shrink:0;font-size:16px;padding:6px 10px;color:#555">▴</button>
-      <div id="witBanner">❓ Tap any button to learn · tap <strong>🟡</strong> to exit</div>
     </div>
   </div>
 
@@ -3651,7 +3651,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v1.98 · tabs collapse, WIT fix, tour payoff, Full Guide picker';
+var VERSION='app v1.99 · AT touchcancel fix, banner to topbar';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3791,14 +3791,11 @@ setInterval(checkForUpdate,60000);
       var dbl=now-lastTapTime<320;
       lastTapTime=now;
       if(witActive){
-        /* any tap while WIT active → exit WIT + open picker */
         deactivateWIT();
         setTimeout(openCPPicker,120);
       } else if(dbl){
-        /* double-tap → always picker */
         openCPPicker();
       } else {
-        /* single tap, nothing active → picker */
         openCPPicker();
       }
       setTimeout(function(){el.classList.add('idle');},500);
@@ -3810,19 +3807,33 @@ setInterval(checkForUpdate,60000);
     savePos(s.x,s.y);
     setTimeout(function(){el.classList.remove('snapping');el.classList.add('idle');},380);
   }
+  /* touchcancel: iOS can cancel touches at any time (scroll, notification, etc).
+     Reset state unconditionally — never check touch identifier, it may be absent. */
+  function onTC(){
+    if(!active)return;
+    active=false;tid=-1;
+    if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+    el.classList.remove('dragging');
+    var s=snapEdge(tx,ty);
+    el.classList.add('snapping');
+    applyXY(s.x,s.y);
+    savePos(s.x,s.y);
+    setTimeout(function(){el.classList.remove('snapping');el.classList.add('idle');},380);
+  }
 
   document.addEventListener('DOMContentLoaded',function(){
     el=document.getElementById('tutAt');
     if(!el)return;
     var saved=loadPos();
-    var initX=saved?saved.x:window.innerWidth-SIZE-PAD;
-    var initY=saved?saved.y:window.innerHeight-SIZE-100;
+    var vw=window.innerWidth, vh=(window.visualViewport?window.visualViewport.height:window.innerHeight);
+    var initX=saved?saved.x:vw-SIZE-PAD;
+    var initY=saved?saved.y:vh-SIZE-110;
     applyXY(initX,initY);
     setTimeout(function(){el.classList.add('idle');},1200);
     el.addEventListener('touchstart',onTS,{passive:false});
     el.addEventListener('touchmove',onTM,{passive:false});
     el.addEventListener('touchend',onTE,{passive:false});
-    el.addEventListener('touchcancel',onTE,{passive:false});
+    el.addEventListener('touchcancel',onTC,{passive:true});
   });
 
   /* ── CP Picker sheet ── */
