@@ -574,19 +574,21 @@ body.wit-on #tutAt{background:rgba(60,35,0,.88);border-color:rgba(255,184,0,.85)
 #witTooltip.zoomed .wit-body{font-size:17px;line-height:1.65}
 #witTooltip.zoomed .wit-tip{font-size:13px;margin-top:10px}
 #witBanner{display:none;
-  align-self:center;flex-shrink:1;
-  max-width:82px;min-width:48px;
+  flex:1 1 auto;min-width:0;max-width:none;
+  align-self:center;
   background:rgba(60,35,0,.92);
   border:1px solid rgba(255,184,0,.4);
   border-radius:10px;
-  padding:5px 7px;
-  font-size:9.5px;line-height:1.45;
+  padding:6px 11px;
+  font-size:12px;line-height:1.45;
   color:rgba(255,220,100,.95);
   white-space:normal;text-align:center;
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
   box-shadow:0 2px 8px rgba(0,0,0,.5);
   pointer-events:none}
 body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:center}
+/* WIT ring — highlights the element being explained */
+.wit-target-ring{outline:2.5px solid rgba(255,184,0,.95)!important;outline-offset:4px;border-radius:7px;box-shadow:0 0 0 5px rgba(255,184,0,.18)!important}
 /* ── Mode B — section help buttons ── */
 .sec-help-btn{display:none;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(167,139,250,.4);background:rgba(167,139,250,.1);color:rgba(167,139,250,.8);font-size:11px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;transition:background .15s}
 .sec-help-btn:active{background:rgba(167,139,250,.3)}
@@ -3423,7 +3425,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.90 · AT touchcancel fix, post-tour reset, banner to topbar';
+var VERSION='v5.91 · WIT banner stretch, WIT ring highlight';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5934,6 +5936,9 @@ document.addEventListener('click',function(e){
     if(!match){hideWITTip();return;}
     /* block the real action */
     e.preventDefault();e.stopPropagation();
+    /* ring the matched element so user sees exactly what's being explained */
+    document.querySelectorAll('.wit-target-ring').forEach(function(n){n.classList.remove('wit-target-ring');});
+    node.classList.add('wit-target-ring');
     showWITTip(match.title,match.body,node);
   }
 
@@ -5943,7 +5948,7 @@ document.addEventListener('click',function(e){
     witTitleEl.textContent=title;
     witBodyEl.textContent=body;
     var vw=window.innerWidth, vh=window.innerHeight;
-    var tipW=Math.min(260,vw-32);
+    var tipW=Math.min(280,vw-28);
     /* measure real height while hidden */
     witTipEl.style.maxWidth=tipW+'px';
     witTipEl.style.visibility='hidden';
@@ -5982,6 +5987,7 @@ document.addEventListener('click',function(e){
   function hideWITTip(){
     getWitEl();
     if(witTipEl){witTipEl.classList.remove('show','zoomed');}
+    document.querySelectorAll('.wit-target-ring').forEach(function(n){n.classList.remove('wit-target-ring');});
   }
 
   /* If WIT is active when AT bubble is tapped via its own tap handler, exit WIT */
