@@ -3381,6 +3381,11 @@ function toggleAdvSettings(){
 }
 function openSettings(){
   document.body.classList.add('settings-open');
+  /* Safety: force-close the AT picker and deactivate WIT before settings opens.
+     The picker is z-index:900 — if it's fading out (opacity:0 but display:flex) it covers
+     the settings panel (z-index:500) and swallows every tap invisibly. */
+  if(typeof window.closeCPPicker==='function')window.closeCPPicker();
+  if(typeof window.deactivateWIT==='function')window.deactivateWIT();
   loadPrefs();
   const ni = document.getElementById('settingName');
   const si = document.getElementById('settingSalon');
@@ -3675,7 +3680,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.06 · WIT self-healing: 10s timer on activate, touchcancel exit, clearTimeout on deactivate';
+var VERSION='app v2.07 · fix ghost picker covering settings, deactivateWIT on settings open';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3891,7 +3896,8 @@ setInterval(checkForUpdate,60000);
     var sh=document.getElementById('cpPickerSheet');
     if(!sh)return;
     sh.style.opacity='0';
-    setTimeout(function(){sh.style.display='none';},200);
+    sh.style.pointerEvents='none'; /* CRITICAL: stop picker absorbing taps the instant it starts fading */
+    setTimeout(function(){sh.style.display='none';sh.style.pointerEvents='';},220);
     /* Reset AT drag state — picker open/close can leave active=true */
     if(typeof window._cpAt_resetState==='function')window._cpAt_resetState();
   };
@@ -3943,6 +3949,7 @@ setInterval(checkForUpdate,60000);
     clearTimeout(witTipTimeout);witTipTimeout=setTimeout(deactivateWIT,10000);
   }
   window.activateWIT=activateWIT;
+  window.deactivateWIT=function(){deactivateWIT();}; /* expose for openSettings safety call */
   function deactivateWIT(){
     clearTimeout(witTipTimeout);          /* kill any pending auto-deactivate timer */
     witActive=false;
