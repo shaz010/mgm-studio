@@ -2430,7 +2430,14 @@ function tourNext(){if(tourI>=TOUR.length-1){endTour(true);return;}tourI++;rende
 function endTour(completed){var sc=document.getElementById('tourScreen');if(sc)sc.style.display='none';try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.tourDone=true;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.tourDone=true;if(completed)showTourDoneToast();}
 function showTourDoneToast(){var t=document.createElement('div');t.textContent='✓ You\'re all set — explore freely!';t.style.cssText='position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:linear-gradient(110deg,#67e8f9,#a78bfa);color:#06060a;font-size:13.5px;font-weight:800;padding:11px 22px;border-radius:22px;z-index:8000;white-space:nowrap;box-shadow:0 4px 18px rgba(103,232,249,.35);transition:opacity .4s';document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},450);},2600);}
 function openTour(){tourI=0;renderTour();var sc=document.getElementById('tourScreen');if(sc)sc.style.display='flex';}
-function maybeShowTour(){var done=false;try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');done=!!p.tourDone;}catch(e){}if(!done)openTour();}
+function maybeShowTour(){
+  var done=false;
+  try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');done=!!p.tourDone;}catch(e){}
+  /* If the user is already unlocked but tourDone was wiped (e.g. localStorage clear),
+     treat them as done — existing users should never be hit with the auto-tour again */
+  if(!done&&pgUnlocked()){done=true;try{var _p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');_p.tourDone=true;localStorage.setItem('cp_prefs',JSON.stringify(_p));}catch(e){}}
+  if(!done)openTour();
+}
 /* ── Earnings tabs collapse ── */
 var _etCollapsed=false;
 function toggleEarnTabs(){
@@ -3680,7 +3687,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.07 · fix ghost picker covering settings, deactivateWIT on settings open';
+var VERSION='app v2.08 · never auto-tour existing unlocked users, ghost picker fix';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
