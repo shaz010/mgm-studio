@@ -2092,6 +2092,8 @@ function renderInsights(list){var box=$('insights');if(box)box.innerHTML='';}
 function setFilter(f,el){
   activeFilter=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');renderTable();
+  /* Scroll filter-row into view so results land from the top, not mid-page */
+  try{var fr=document.querySelector('.filter-row');if(fr)fr.scrollIntoView({block:'nearest',behavior:'instant'});}catch(_){}
 }
 function updateSummary(filtered){
   $('sCharge').textContent=fmtR(filtered.reduce((s,a)=>s+a.charge,0));
@@ -2333,6 +2335,8 @@ function showTab(t){
   if(t==='book'){$('pBook').style.display='block';document.querySelectorAll('.tab')[0].classList.add('active');_syncEarnTabsLabel('New booking');}
   if(t==='hist'){$('pHist').style.display='block';document.querySelectorAll('.tab')[1].classList.add('active');renderTable();_syncEarnTabsLabel('Appointments');}
   if(t==='mgm'){$('pMgm').style.display='block';document.querySelectorAll('.tab')[2].classList.add('active');renderMgm();_syncEarnTabsLabel('Salon owes me');}
+  /* iPad fix: reset scroll on every tab switch so the new panel is never mid-scroll */
+  try{document.body.scrollTop=0;document.documentElement.scrollTop=0;}catch(_){}
 }
 // ── SERVICE PICKER ──
 const SERVICE_GROUPS=[
@@ -3694,7 +3698,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.13 · feedback door in tutorial picker';
+var VERSION='app v2.14 · scroll-to-top on tab switch, filter-row scroll-into-view';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
