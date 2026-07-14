@@ -3690,7 +3690,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.10 · bulletproof ghost picker: _cpPickerOpen flag + cancelAnimationFrame guard';
+var VERSION='app v2.11 · ghost picker: pe:none until opacity:1 — ghost state now impossible';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3896,21 +3896,29 @@ setInterval(checkForUpdate,60000);
   });
 
   /* ── CP Picker sheet ── */
-  /* _cpPickerOpen + _cpPickerRaf: race-condition guard so the picker can never
-     get stuck as an invisible full-screen tap-absorber (display:flex + opacity:0 + pe:auto).
-     Confirmed root cause of the "frozen top bar" bug via ?debug overlay. */
+  /* Ghost-picker fix v2.11:
+     The picker is ALWAYS pe:none while opacity<1. pe:auto is only set once the
+     element is fully opaque — so display:flex/opacity:0/pe:auto (ghost state) is
+     structurally impossible at any point during open or close.
+     Double-rAF ensures a full paint cycle on iOS before enabling taps. */
   var _cpPickerOpen=false, _cpPickerRaf=null;
   function openCPPicker(){
     var sh=document.getElementById('cpPickerSheet');
     if(!sh)return;
     _cpPickerOpen=true;
     if(_cpPickerRaf){cancelAnimationFrame(_cpPickerRaf);_cpPickerRaf=null;}
-    sh.style.display='flex';
-    sh.style.pointerEvents='auto'; /* ensure pe is open when picker opens */
+    sh.style.pointerEvents='none'; /* pe:none until fully opaque — ghost state impossible */
     sh.style.opacity='0';
+    sh.style.display='flex';
+    /* Double rAF: first frame lets the browser paint display:flex,
+       second frame confirms the element is fully visible before enabling taps. */
     _cpPickerRaf=requestAnimationFrame(function(){
-      _cpPickerRaf=null;
-      if(_cpPickerOpen)sh.style.opacity='1'; /* only animate in if still meant to be open */
+      _cpPickerRaf=requestAnimationFrame(function(){
+        _cpPickerRaf=null;
+        if(!_cpPickerOpen)return; /* closed before we finished opening — stay shut */
+        sh.style.opacity='1';
+        sh.style.pointerEvents='auto'; /* only NOW accept taps */
+      });
     });
   }
   window.closeCPPicker=function(){
@@ -3918,12 +3926,12 @@ setInterval(checkForUpdate,60000);
     if(!sh)return;
     _cpPickerOpen=false;
     if(_cpPickerRaf){cancelAnimationFrame(_cpPickerRaf);_cpPickerRaf=null;} /* cancel pending open-animation */
+    sh.style.pointerEvents='none'; /* IMMEDIATE — pe:none before fade starts */
     sh.style.opacity='0';
-    sh.style.pointerEvents='none'; /* IMMEDIATE — block taps before fade completes */
     setTimeout(function(){
-      if(_cpPickerOpen)return; /* picker was re-opened in the 220ms window — don't hide it */
+      if(_cpPickerOpen)return; /* picker was re-opened during fade — don't hide it */
       sh.style.display='none';
-      sh.style.pointerEvents=''; /* safe to clear: display:none already blocks interaction */
+      sh.style.pointerEvents=''; /* safe: display:none already blocks interaction */
     },220);
     /* Reset AT drag state — picker open/close can leave active=true */
     if(typeof window._cpAt_resetState==='function')window._cpAt_resetState();
@@ -4116,7 +4124,8 @@ setInterval(checkForUpdate,60000);
     });
     out.push('WIT:'+(document.body.classList.contains('wit-on')?'ON':'off'));
     out.push('SO:'+(document.body.classList.contains('settings-open')?'ON':'off'));
-    panel.textContent=out.join('  ');
+    var ver=typeof VERSION!=='undefined'?VERSION.replace(/^app\s*/,'').split(/\s*·\s*/)[0]:'?';
+    panel.textContent='v'+ver+'  '+out.join('  ');
   }
   setInterval(dbgState,800);
   dbgState();
