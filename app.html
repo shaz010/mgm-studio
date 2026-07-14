@@ -2417,7 +2417,10 @@ function closeTradePicker(){var sc=document.getElementById('tradeScreen');if(sc)
 function pickTrade(k){setTrade(k);var sc=document.getElementById('tradeScreen');if(sc)sc.style.display='none';if(typeof buildServiceChips==='function')buildServiceChips();renderTradeLabel();maybeShowTour();}
 function renderSetTradeGrid(){var g=document.getElementById('setTradeGridCP');if(!g)return;var cur=getMode();g.innerHTML=TRADES.map(function(t){return '<button type="button" class="set-trade-tile'+(t.k===cur?' on':'')+'" onclick="pickTradeInline(\''+t.k+'\')"><i class="ti '+t.icon+'"></i><span>'+t.label+'</span></button>';}).join('');}
 function pickTradeInline(k){setTrade(k);if(typeof buildServiceChips==='function')buildServiceChips();renderTradeLabel();renderSetTradeGrid();}
-function maybeShowTradePicker(){var t='';try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');t=p.trade;}catch(e){}var combo='';try{combo=localStorage.getItem('combo_trade')||'';}catch(e){}if(combo&&combo!==t&&TRADES.some(function(x){return x.k===combo;})){setTrade(combo);t=combo;if(typeof buildServiceChips==='function')buildServiceChips();if(typeof renderTradeLabel==='function')renderTradeLabel();}if(!t){openTradePicker();}else{maybeShowTour();}}
+function maybeShowTradePicker(){var t='';try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');t=p.trade;}catch(e){}var combo='';try{combo=localStorage.getItem('combo_trade')||'';}catch(e){}if(combo&&combo!==t&&TRADES.some(function(x){return x.k===combo;})){setTrade(combo);t=combo;if(typeof buildServiceChips==='function')buildServiceChips();if(typeof renderTradeLabel==='function')renderTradeLabel();}/* If existing unlocked user has no trade set (e.g. localStorage cleared),
+     don't block with full-screen trade picker — default to 'hair' and let them change in settings */
+  if(!t&&pgUnlocked()){setTrade('hair');if(typeof buildServiceChips==='function')buildServiceChips();if(typeof renderTradeLabel==='function')renderTradeLabel();try{var _p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');_p.trade='hair';localStorage.setItem('cp_prefs',JSON.stringify(_p));}catch(e){}t='hair';}
+  if(!t){openTradePicker();}else{maybeShowTour();}}
 var TOUR=[
  {ic:'ti-briefcase',t:'Your trade',x:'You\'re all set. Tap <b>Change</b> on the booking screen anytime to switch trades — it never locks you in.'},
  {ic:'ti-calendar-plus',t:'Book & track',x:'Add a client and pick the service. Your commission split is worked out for you automatically.'},
@@ -3687,7 +3690,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.08 · never auto-tour existing unlocked users, ghost picker fix';
+var VERSION='app v2.09 · trade picker fix for existing users, ghost picker fix, debug mode';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4040,6 +4043,66 @@ setInterval(checkForUpdate,60000);
     getWitEl();if(witTipEl)witTipEl.classList.remove('show','zoomed');
     document.querySelectorAll('.wit-target-ring').forEach(function(n){n.classList.remove('wit-target-ring');});
   }
+})();
+</script>
+<script>
+/* ── ?debug touch-target diagnostic ────────────────────────────────────────
+   Load the app as:  https://getcommissionpro.com/app.html?debug
+   Every tap shows a green badge: which element was touched + its z-index.
+   This lets us see what is absorbing taps when the top bar feels frozen.
+──────────────────────────────────────────────────────────────────────────── */
+(function(){
+  if(location.search.indexOf('debug')===-1)return;
+  var badge=document.createElement('div');
+  badge.style.cssText='position:fixed;bottom:72px;left:8px;right:8px;z-index:999999;'
+    +'background:rgba(0,200,80,.93);color:#000;font-size:12px;font-weight:800;'
+    +'padding:6px 10px;border-radius:10px;font-family:monospace;display:none;'
+    +'pointer-events:none;word-break:break-all;line-height:1.5';
+  document.body.appendChild(badge);
+  var timer;
+  document.addEventListener('touchstart',function(e){
+    clearTimeout(timer);
+    var el=e.target;
+    var tag=el.tagName.toLowerCase();
+    var id=el.id?'#'+el.id:'';
+    var cls=typeof el.className==='string'?'.'+el.className.trim().split(/\s+/).slice(0,2).join('.'):'';
+    var zix=window.getComputedStyle(el).zIndex;
+    var pos=window.getComputedStyle(el).position;
+    /* Walk up to find any fixed/absolute ancestor */
+    var anc=el.parentElement,ancInfo='';
+    while(anc&&anc!==document.body){
+      var acs=window.getComputedStyle(anc);
+      if(acs.position==='fixed'||acs.position==='absolute'){
+        ancInfo=' ← '+anc.tagName.toLowerCase()+(anc.id?'#'+anc.id:'')+'(z:'+acs.zIndex+')';
+        break;
+      }
+      anc=anc.parentElement;
+    }
+    badge.textContent='TOUCH → '+tag+id+cls+' pos:'+pos+' z:'+zix+ancInfo;
+    badge.style.display='block';
+    timer=setTimeout(function(){badge.style.display='none';},3000);
+  },{capture:true,passive:true});
+  /* Also show persistent overlay state panel */
+  var panel=document.createElement('div');
+  panel.style.cssText='position:fixed;top:0;left:0;right:0;z-index:999998;'
+    +'background:rgba(0,0,0,.82);color:#0f0;font-size:10px;font-family:monospace;'
+    +'padding:3px 8px;pointer-events:none;line-height:1.6;white-space:nowrap;overflow:hidden';
+  document.body.appendChild(panel);
+  function dbgState(){
+    var els={PICK:'cpPickerSheet',TRADE:'tradeScreen',TOUR:'tourScreen',PAY:'payGate'};
+    var out=[];
+    Object.keys(els).forEach(function(k){
+      var el=document.getElementById(els[k]);
+      if(!el){out.push(k+':-');return;}
+      var s=window.getComputedStyle(el);
+      out.push(k+':'+s.display.slice(0,4)+'/op:'+parseFloat(s.opacity).toFixed(1)+'/pe:'+s.pointerEvents.slice(0,3));
+    });
+    out.push('WIT:'+(document.body.classList.contains('wit-on')?'ON':'off'));
+    out.push('SO:'+(document.body.classList.contains('settings-open')?'ON':'off'));
+    panel.textContent=out.join('  ');
+  }
+  setInterval(dbgState,800);
+  dbgState();
 })();
 </script>
 </body>
