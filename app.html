@@ -315,6 +315,15 @@ body.theme-light .legal-body{color:#777}
 #trialBar .tb-txt b{color:var(--gold)}
 #trialBar .tb-btn{background:var(--gold);color:#1a1a1a;border:none;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer}
 #trialBar .tb-x{background:none;border:none;color:#888;font-size:16px;cursor:pointer;padding:2px 5px;line-height:1;margin-left:2px}
+/* Demo mode */
+#demoTag{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:100100;background:rgba(167,139,250,.18);border:1px solid #a78bfa;border-radius:20px;padding:4px 14px;font-size:11px;color:#a78bfa;pointer-events:none;display:none;letter-spacing:.04em}
+#demoTag.on{display:block}
+.pg-success{display:none;flex-direction:column;align-items:center;gap:10px;padding:24px 0;text-align:center}
+.pg-success.on{display:flex}
+.pg-success-ic{font-size:54px;animation:pgPop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pgPop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+.pg-success-title{font-size:24px;font-weight:800;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pg-success-sub{font-size:14px;color:#aaa}
 /* Day-14 nudge overlay */
 #dayNudge{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9600;display:none;align-items:flex-end;justify-content:center}
 #dayNudge.on{display:flex}
@@ -1117,19 +1126,27 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
 
 <div id="payGate" role="dialog" aria-modal="true">
   <div class="pg-card">
-    <div class="pg-logo">✂</div>
-    <div class="pg-title">Unlock CommissionPro</div>
-    <div class="pg-sub">Unlock the full app — yours forever, with a single one-time payment.</div>
-    <div class="pg-price">$49 · one-time · pays for itself with one service</div>
-    <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Buy now — $49</a>
-    <div class="pg-div">ALREADY PAID?</div>
-    <input type="text" id="payCode" class="pg-code" placeholder="Enter your unlock code" autocapitalize="characters" autocomplete="off">
-    <button class="pg-unlock" onclick="payUnlock()">Unlock</button>
-    <div class="pg-err" id="payErr">That code didn't match. Check the email from your purchase, or contact support.</div>
-    <div class="pg-foot">After paying, your unlock code is emailed to you instantly.<br>Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
-    <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
+    <div id="pgMain">
+      <div class="pg-logo">✂</div>
+      <div class="pg-title">Unlock CommissionPro</div>
+      <div class="pg-sub">Unlock the full app — yours forever, with a single one-time payment.</div>
+      <div class="pg-price">$49 · one-time · pays for itself with one service</div>
+      <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Buy now — $49</a>
+      <div class="pg-div">ALREADY PAID?</div>
+      <input type="text" id="payCode" class="pg-code" placeholder="Enter your unlock code" autocapitalize="characters" autocomplete="off">
+      <button class="pg-unlock" onclick="payUnlock()">Unlock</button>
+      <div class="pg-err" id="payErr">That code didn't match. Check the email from your purchase, or contact support.</div>
+      <div class="pg-foot">After paying, your unlock code is emailed to you instantly.<br>Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
+      <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
+    </div>
+    <div class="pg-success" id="pgSuccess">
+      <div class="pg-success-ic">✨</div>
+      <div class="pg-success-title">You're in.</div>
+      <div class="pg-success-sub">Welcome, founding stylist.</div>
+    </div>
   </div>
 </div>
+<div id="demoTag">● DEMO</div>
 
 
 <div id="eyeRest" aria-hidden="true">
@@ -3234,12 +3251,52 @@ function pgTrialOver(){return (Date.now()-pgTrialStart())>=UNLOCK.trialDays*8640
 function payShow(mandatory){var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.getElementById('pgClose').style.display=mandatory?'none':'block';document.getElementById('payErr').style.display='none';}
 function payClose(){var g=document.getElementById('payGate');if(g)g.classList.remove('on');}
 function payBuy(){if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){alert('Payment link is not set up yet — coming soon!');return;}window.location.href=UNLOCK.stripeUrl;}
+function logFounderUnlock(code){
+  try{
+    var url='https://firestore.googleapis.com/v1/projects/telemetry-eagle/databases/(default)/documents/founder_unlocks?key=AIzaSyCxPNPOcu-ShSRXDJtwdNBZJ6kFaxQ8apM';
+    var body=JSON.stringify({fields:{code:{stringValue:code},at:{timestampValue:new Date().toISOString()},app:{stringValue:'CommissionPro'}}});
+    fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:body})
+      .then(function(r){console.log('[CP] founder unlock logged · status',r.status);})
+      .catch(function(e){console.warn('[CP] founder log failed',e);});
+  }catch(e){console.warn('[CP] founder log error',e);}
+}
 function payUnlock(){
   var v=(document.getElementById('payCode').value||'').trim().toUpperCase();
   var h=pgHash(v);
-  var valid=v&&(h===UNLOCK.codeHash||UNLOCK.founderHashes.indexOf(h)!==-1);
-  if(valid){try{localStorage.setItem('cp_unlocked','1');}catch(e){}try{sessionStorage.setItem('cp_unlocked','1');}catch(e){}payClose();}
-  else{document.getElementById('payErr').style.display='block';}
+  var isFounder=v&&UNLOCK.founderHashes.indexOf(h)!==-1;
+  var valid=v&&(h===UNLOCK.codeHash||isFounder);
+  if(valid){
+    if(window._demoMode){
+      var main=document.getElementById('pgMain');
+      var succ=document.getElementById('pgSuccess');
+      if(main)main.style.display='none';
+      if(succ)succ.classList.add('on');
+      setTimeout(function(){
+        payClose();
+        setTimeout(function(){
+          if(main)main.style.display='';
+          if(succ)succ.classList.remove('on');
+          var code=document.getElementById('payCode');if(code)code.value='';
+          var err=document.getElementById('payErr');if(err)err.style.display='none';
+        },300);
+      },2200);
+      return;
+    }
+    try{localStorage.setItem('cp_unlocked','1');}catch(e){}
+    try{sessionStorage.setItem('cp_unlocked','1');}catch(e){}
+    if(isFounder)logFounderUnlock(v);
+    payClose();
+  }else{document.getElementById('payErr').style.display='block';}
+}
+/* Demo mode — ?demo in URL shows the unlock flow without touching real data */
+window._demoMode=location.search.indexOf('demo')!==-1;
+if(window._demoMode){
+  try{var _dp=JSON.parse(localStorage.getItem('cp_prefs')||'{}');if(!_dp.trade){_dp.trade='hair';localStorage.setItem('cp_prefs',JSON.stringify(_dp));}}catch(e){}
+  var _dt=document.getElementById('demoTag');if(_dt)_dt.classList.add('on');
+  setTimeout(function(){
+    var _ts=document.getElementById('tradeScreen');if(_ts)_ts.style.display='none';
+    payShow(false);
+  },400);
 }
 function trialBarShow(){
   var bar=document.getElementById('trialBar');if(!bar)return;
