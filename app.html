@@ -1399,6 +1399,7 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       <div id="witBanner">❓ Tap any button · 🟡 exit</div>
     </div>
   </div>
+  <div id="verBadge" style="text-align:right;font-size:10px;color:#444;opacity:0.5;margin:-10px 0 4px;pointer-events:none;user-select:none"></div>
   <div class="backup-nudge" id="backupNudge" style="display:none">
     <i class="ti ti-shield-lock bn-ic"></i>
     <div class="bn-txt"></div>
@@ -3690,7 +3691,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.11 · ghost picker: pe:none until opacity:1 — ghost state now impossible';
+var VERSION='app v2.12 · ghost picker: instant open/close, no transition, no timing window';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3711,6 +3712,10 @@ document.addEventListener('touchstart',function(e){
   if(b)b.innerHTML='CommissionPro · <span style="color:#f0f0fa;font-weight:800">'+ver+'</span>'+rest;
   var sv=document.getElementById('settingsVerBadge');
   if(sv)sv.textContent='CommissionPro '+ver;
+  /* Version visible outside settings — page title + inline badge below topbar */
+  document.title='CommissionPro '+ver;
+  var vb=document.getElementById('verBadge');
+  if(vb)vb.textContent='v'+ver;
 })();
 function applyUpdate(){ location.reload(); }
 function checkForUpdate(){
@@ -3763,7 +3768,7 @@ setInterval(checkForUpdate,60000);
 <div id="witTooltip"><div class="wit-title" id="witTitle"></div><div class="wit-body" id="witBody"></div><div class="wit-tip">Tap any button to learn what it does</div><button class="wit-exit">✕ Done</button></div>
 
 <!-- AT Picker sheet -->
-<div class="modal" id="cpPickerSheet" onclick="if(event.target===this)closeCPPicker()" ontouchend="if(event.target===this){event.preventDefault();closeCPPicker();}" style="display:none;opacity:0;transition:opacity .2s">
+<div class="modal" id="cpPickerSheet" onclick="if(event.target===this)closeCPPicker()" ontouchend="if(event.target===this){event.preventDefault();closeCPPicker();}" style="display:none;opacity:0;transition:none">
   <div class="sheet" style="padding-bottom:env(safe-area-inset-bottom,16px)">
     <div class="sheet-head">
       <div class="sheet-title">Tutorial</div>
@@ -3896,44 +3901,33 @@ setInterval(checkForUpdate,60000);
   });
 
   /* ── CP Picker sheet ── */
-  /* Ghost-picker fix v2.11:
-     The picker is ALWAYS pe:none while opacity<1. pe:auto is only set once the
-     element is fully opaque — so display:flex/opacity:0/pe:auto (ghost state) is
-     structurally impossible at any point during open or close.
-     Double-rAF ensures a full paint cycle on iOS before enabling taps. */
+  /* Ghost-picker fix v2.12:
+     No CSS transitions, no rAF, no setTimeout — instant show/hide only.
+     Ghost state (display:flex + opacity:0 + pe:auto) is structurally impossible:
+     open  → display:flex  + opacity:1 + pe:auto  (fully visible, tappable)
+     close → display:none  + opacity:0 + pe:none  (fully hidden, untappable)
+     There is no intermediate state. */
   var _cpPickerOpen=false, _cpPickerRaf=null;
   function openCPPicker(){
     var sh=document.getElementById('cpPickerSheet');
     if(!sh)return;
     _cpPickerOpen=true;
     if(_cpPickerRaf){cancelAnimationFrame(_cpPickerRaf);_cpPickerRaf=null;}
-    sh.style.pointerEvents='none'; /* pe:none until fully opaque — ghost state impossible */
-    sh.style.opacity='0';
+    sh.style.transition='none';
+    sh.style.opacity='1';
+    sh.style.pointerEvents='auto';
     sh.style.display='flex';
-    /* Double rAF: first frame lets the browser paint display:flex,
-       second frame confirms the element is fully visible before enabling taps. */
-    _cpPickerRaf=requestAnimationFrame(function(){
-      _cpPickerRaf=requestAnimationFrame(function(){
-        _cpPickerRaf=null;
-        if(!_cpPickerOpen)return; /* closed before we finished opening — stay shut */
-        sh.style.opacity='1';
-        sh.style.pointerEvents='auto'; /* only NOW accept taps */
-      });
-    });
   }
   window.closeCPPicker=function(){
     var sh=document.getElementById('cpPickerSheet');
     if(!sh)return;
     _cpPickerOpen=false;
-    if(_cpPickerRaf){cancelAnimationFrame(_cpPickerRaf);_cpPickerRaf=null;} /* cancel pending open-animation */
-    sh.style.pointerEvents='none'; /* IMMEDIATE — pe:none before fade starts */
+    if(_cpPickerRaf){cancelAnimationFrame(_cpPickerRaf);_cpPickerRaf=null;}
+    sh.style.transition='none';
+    sh.style.pointerEvents='none';
     sh.style.opacity='0';
-    setTimeout(function(){
-      if(_cpPickerOpen)return; /* picker was re-opened during fade — don't hide it */
-      sh.style.display='none';
-      sh.style.pointerEvents=''; /* safe: display:none already blocks interaction */
-    },220);
-    /* Reset AT drag state — picker open/close can leave active=true */
+    sh.style.display='none'; /* immediate — no setTimeout, no race window */
+    /* Reset AT drag state */
     if(typeof window._cpAt_resetState==='function')window._cpAt_resetState();
   };
 
