@@ -314,6 +314,19 @@ body.theme-light .legal-body{color:#777}
 #trialBar .tb-txt{font-size:12px;color:#ddd}
 #trialBar .tb-txt b{color:var(--gold)}
 #trialBar .tb-btn{background:var(--gold);color:#1a1a1a;border:none;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer}
+#trialBar .tb-x{background:none;border:none;color:#888;font-size:16px;cursor:pointer;padding:2px 5px;line-height:1;margin-left:2px}
+/* Day-14 nudge overlay */
+#dayNudge{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9600;display:none;align-items:flex-end;justify-content:center}
+#dayNudge.on{display:flex}
+.dn-card{background:#1a1a2e;border:1.5px solid var(--gold);border-radius:20px 20px 0 0;padding:28px 24px 32px;width:100%;max-width:480px;position:relative;text-align:center;padding-bottom:max(32px,env(safe-area-inset-bottom,32px))}
+.dn-close{position:absolute;top:14px;right:16px;background:none;border:none;color:#666;font-size:22px;cursor:pointer;padding:4px 8px;line-height:1}
+.dn-ic{font-size:36px;margin-bottom:10px}
+.dn-title{font-size:20px;font-weight:700;color:#e8e8f2;margin-bottom:8px}
+.dn-msg{font-size:15px;color:#aaa;margin-bottom:4px}
+.dn-total{color:var(--gold);font-weight:700;font-size:20px}
+.dn-sub{font-size:13px;color:#888;margin-bottom:20px;margin-top:6px}
+.dn-btn{width:100%;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);color:#0a0a14;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px}
+.dn-later{background:none;border:none;color:#666;font-size:13px;cursor:pointer;padding:4px;text-decoration:underline}
 
 /* ── CLIENT CARDS ── */
 .client-list{margin-top:14px;display:flex;flex-direction:column;gap:10px}
@@ -3194,7 +3207,19 @@ window.addEventListener('message',function(ev){
 });
 
 /* ── Pay to Unlock ── */
-var UNLOCK={codeHash:4159026715,trialDays:3,stripeUrl:'https://buy.stripe.com/3cIdR97x4gdA4z9dCEfw401'};
+var UNLOCK={
+  /* master unlock (owner) */
+  codeHash:4159026715,
+  /* 20 founding stylist codes: VELVET01 NOIR02 SILK03 PEARL04 ONYX05
+     SABLE06 IVORY07 SLATE08 EMBER09 TOPAZ10 CEDAR11 LINEN12 ROUGE13
+     FLINT14 HAVEN15 INDIGO16 JADE17 KOHL18 LUXE19 GILT20 */
+  founderHashes:[1355201180,3281019007,3469680635,3081569949,3319550008,
+                 2505427666,3313147493,2935018566,2074132601,66054324,
+                 3475308934,2382158942,1784208043,3335092263,1207658589,
+                 4071067142,3107680737,3163570396,3210388685,3000065783],
+  trialDays:21,
+  stripeUrl:'https://buy.stripe.com/3cIdR97x4gdA4z9dCEfw401'
+};
 function pgHash(s){var h=5381;for(var i=0;i<s.length;i++){h=((h<<5)+h+s.charCodeAt(i))>>>0;}return h;}
 function pgUnlocked(){
   try{if(localStorage.getItem('cp_unlocked')==='1')return true;}catch(e){}
@@ -3211,12 +3236,43 @@ function payClose(){var g=document.getElementById('payGate');if(g)g.classList.re
 function payBuy(){if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){alert('Payment link is not set up yet — coming soon!');return;}window.location.href=UNLOCK.stripeUrl;}
 function payUnlock(){
   var v=(document.getElementById('payCode').value||'').trim().toUpperCase();
-  if(v&&pgHash(v)===UNLOCK.codeHash){try{localStorage.setItem('cp_unlocked','1');}catch(e){}try{sessionStorage.setItem('cp_unlocked','1');}catch(e){}payClose();}
+  var h=pgHash(v);
+  var valid=v&&(h===UNLOCK.codeHash||UNLOCK.founderHashes.indexOf(h)!==-1);
+  if(valid){try{localStorage.setItem('cp_unlocked','1');}catch(e){}try{sessionStorage.setItem('cp_unlocked','1');}catch(e){}payClose();}
   else{document.getElementById('payErr').style.display='block';}
+}
+function trialBarShow(){
+  var bar=document.getElementById('trialBar');if(!bar)return;
+  var d=pgDaysLeft();
+  var el=document.getElementById('trialDaysLeft');if(el)el.textContent=d;
+  bar.classList.add('on');
+}
+function closeDayNudge(){
+  var el=document.getElementById('dayNudge');if(el)el.classList.remove('on');
+  try{localStorage.setItem('cp_nudgeSeen',String(Math.floor(Date.now()/86400000)));}catch(e){}
+}
+function shouldShowNudge(){
+  if(pgUnlocked()||pgTrialOver())return false;
+  if(pgDaysLeft()>8)return false; // only last 8 days (≈ day 14 of trial)
+  try{var seen=+localStorage.getItem('cp_nudgeSeen')||0;if(seen>=Math.floor(Date.now()/86400000))return false;}catch(e){}
+  return true;
+}
+function showDayNudge(){
+  if(!shouldShowNudge())return;
+  var el=document.getElementById('dayNudge');if(!el)return;
+  var total=0;
+  try{loadAppts().forEach(function(a){total+=(+a.me||0)+(+a.tip||0);});}catch(e){}
+  var tot=document.getElementById('dnTotal');
+  if(tot)tot.textContent='$'+(total<1?'0':total.toFixed(0))+' this trial';
+  var dEl=document.getElementById('dnDays');if(dEl)dEl.textContent=pgDaysLeft();
+  el.classList.add('on');
 }
 function applyAccessGate(){
   if(pgUnlocked())return;
-  payShow(true);
+  if(pgTrialOver()){payShow(true);return;}
+  /* Active trial — show countdown bar, then nudge after app settles */
+  trialBarShow();
+  setTimeout(showDayNudge,2800);
 }
 applyAccessGate();
 </script>
@@ -3706,7 +3762,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.15 · tutAt: holographic border, glow pulse, no blur on drag';
+var VERSION='app v2.16 · 21-day trial countdown + day-14 nudge';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3803,6 +3859,26 @@ setInterval(checkForUpdate,60000);
         <span><span class="cp-tlb-name">Suggest an addition</span><span class="cp-tlb-count">what would you like to see?</span></span>
       </button>
     </div>
+  </div>
+</div>
+
+<!-- TRIAL BAR (bottom-left pill, shows days remaining during active trial) -->
+<div id="trialBar">
+  <span class="tb-txt"><b id="trialDaysLeft">—</b> days left in your trial</span>
+  <button class="tb-btn" onclick="payShow(false)">Unlock</button>
+  <button class="tb-x" onclick="document.getElementById('trialBar').classList.remove('on')" aria-label="Dismiss">×</button>
+</div>
+
+<!-- DAY-14 NUDGE (warm bottom-sheet, last 8 days of trial) -->
+<div id="dayNudge">
+  <div class="dn-card">
+    <button class="dn-close" onclick="closeDayNudge()" aria-label="Dismiss">×</button>
+    <div class="dn-ic">✨</div>
+    <div class="dn-title">You're on a roll</div>
+    <div class="dn-msg">You've tracked <span id="dnTotal" class="dn-total">—</span></div>
+    <div class="dn-sub">Your trial ends in <b id="dnDays">—</b> days. Unlock to keep all your earnings history, forever.</div>
+    <button class="dn-btn" onclick="payShow(false);closeDayNudge()">Unlock CommissionPro →</button>
+    <button class="dn-later" onclick="closeDayNudge()">Remind me later</button>
   </div>
 </div>
 
