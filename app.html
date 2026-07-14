@@ -2434,6 +2434,9 @@ function tourNext(){if(tourI>=TOUR.length-1){endTour(true);return;}tourI++;rende
 function endTour(completed){var sc=document.getElementById('tourScreen');if(sc)sc.style.display='none';try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.tourDone=true;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.tourDone=true;if(completed)showTourDoneToast();}
 function showTourDoneToast(){var t=document.createElement('div');t.textContent='✓ You\'re all set — explore freely!';t.style.cssText='position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:linear-gradient(110deg,#67e8f9,#a78bfa);color:#06060a;font-size:13.5px;font-weight:800;padding:11px 22px;border-radius:22px;z-index:8000;white-space:nowrap;box-shadow:0 4px 18px rgba(103,232,249,.35);transition:opacity .4s';document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},450);},2600);}
 function openTour(){tourI=0;renderTour();var sc=document.getElementById('tourScreen');if(sc)sc.style.display='flex';}
+function openFeedback(){var sc=document.getElementById('fbScreen');if(sc)sc.style.display='flex';setTimeout(function(){var t=document.getElementById('fbText');if(t)t.focus();},120);}
+function closeFeedback(){var sc=document.getElementById('fbScreen');if(sc)sc.style.display='none';var t=document.getElementById('fbText');if(t)t.value='';}
+function submitFeedback(){var t=document.getElementById('fbText');var msg=(t?t.value.trim():'');if(!msg){if(t){t.style.borderColor='#a78bfa';setTimeout(function(){t.style.borderColor='#23232e';},800);}return;}var sub=encodeURIComponent('CommissionPro · Feature suggestion');var body=encodeURIComponent('Hi Shaz,\n\nHere\'s something I\'d love to see in Earnings:\n\n'+msg+'\n\nThanks!');window.location.href='mailto:chabokchamejun@gmail.com?subject='+sub+'&body='+body;setTimeout(closeFeedback,400);}
 function maybeShowTour(){
   var done=false;
   try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');done=!!p.tourDone;}catch(e){}
@@ -3691,7 +3694,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.12 · ghost picker: instant open/close, no transition, no timing window';
+var VERSION='app v2.13 · feedback door in tutorial picker';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3783,7 +3786,23 @@ setInterval(checkForUpdate,60000);
         <i class="ti ti-help-circle" style="font-size:22px;color:#FFB800"></i>
         <span><span class="cp-tlb-name">What does this do?</span><span class="cp-tlb-count">tap any button to explain it</span></span>
       </button>
+      <button class="cp-tour-btn" onclick="closeCPPicker();openFeedback()">
+        <i class="ti ti-message-plus" style="font-size:22px;color:#67e8f9"></i>
+        <span><span class="cp-tlb-name">Suggest an addition</span><span class="cp-tlb-count">what would you like to see?</span></span>
+      </button>
     </div>
+  </div>
+</div>
+
+<!-- FEEDBACK OVERLAY -->
+<div class="tour-screen" id="fbScreen" onclick="if(event.target===this)closeFeedback()" style="display:none">
+  <div class="tour-card" style="text-align:left">
+    <button type="button" class="tour-skip" onclick="closeFeedback()">Back</button>
+    <div class="tour-ic" style="text-align:center"><i class="ti ti-message-plus"></i></div>
+    <div class="tour-title" style="text-align:center;margin-bottom:4px">Make it better</div>
+    <div class="tour-text" style="text-align:center;margin-bottom:16px">What would you like to see added to Earnings?<br><span style="font-size:12px;color:#7a7a88">Every message reaches me directly.</span></div>
+    <textarea id="fbText" placeholder="e.g. I'd love to see weekly earnings charts…" style="width:100%;box-sizing:border-box;background:#13131a;border:1.5px solid #23232e;border-radius:12px;color:#e8e8f2;font-size:14px;padding:12px;resize:none;height:110px;line-height:1.5;font-family:inherit;outline:none;transition:border-color .2s"></textarea>
+    <button type="button" class="tour-btn" style="margin-top:12px" onclick="submitFeedback()">Send suggestion ↗</button>
   </div>
 </div>
 
@@ -4108,7 +4127,7 @@ setInterval(checkForUpdate,60000);
     +'padding:3px 8px;pointer-events:none;line-height:1.6;white-space:nowrap;overflow:hidden';
   document.body.appendChild(panel);
   function dbgState(){
-    var els={PICK:'cpPickerSheet',TRADE:'tradeScreen',TOUR:'tourScreen',PAY:'payGate'};
+    var els={PICK:'cpPickerSheet',TRADE:'tradeScreen',TOUR:'tourScreen',FB:'fbScreen',PAY:'payGate'};
     var out=[];
     Object.keys(els).forEach(function(k){
       var el=document.getElementById(els[k]);
