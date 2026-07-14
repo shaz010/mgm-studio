@@ -3690,7 +3690,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.09 · trade picker fix for existing users, ghost picker fix, debug mode';
+var VERSION='app v2.10 · bulletproof ghost picker: _cpPickerOpen flag + cancelAnimationFrame guard';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3896,18 +3896,35 @@ setInterval(checkForUpdate,60000);
   });
 
   /* ── CP Picker sheet ── */
+  /* _cpPickerOpen + _cpPickerRaf: race-condition guard so the picker can never
+     get stuck as an invisible full-screen tap-absorber (display:flex + opacity:0 + pe:auto).
+     Confirmed root cause of the "frozen top bar" bug via ?debug overlay. */
+  var _cpPickerOpen=false, _cpPickerRaf=null;
   function openCPPicker(){
     var sh=document.getElementById('cpPickerSheet');
     if(!sh)return;
+    _cpPickerOpen=true;
+    if(_cpPickerRaf){cancelAnimationFrame(_cpPickerRaf);_cpPickerRaf=null;}
     sh.style.display='flex';
-    requestAnimationFrame(function(){sh.style.opacity='1';});
+    sh.style.pointerEvents='auto'; /* ensure pe is open when picker opens */
+    sh.style.opacity='0';
+    _cpPickerRaf=requestAnimationFrame(function(){
+      _cpPickerRaf=null;
+      if(_cpPickerOpen)sh.style.opacity='1'; /* only animate in if still meant to be open */
+    });
   }
   window.closeCPPicker=function(){
     var sh=document.getElementById('cpPickerSheet');
     if(!sh)return;
+    _cpPickerOpen=false;
+    if(_cpPickerRaf){cancelAnimationFrame(_cpPickerRaf);_cpPickerRaf=null;} /* cancel pending open-animation */
     sh.style.opacity='0';
-    sh.style.pointerEvents='none'; /* CRITICAL: stop picker absorbing taps the instant it starts fading */
-    setTimeout(function(){sh.style.display='none';sh.style.pointerEvents='';},220);
+    sh.style.pointerEvents='none'; /* IMMEDIATE — block taps before fade completes */
+    setTimeout(function(){
+      if(_cpPickerOpen)return; /* picker was re-opened in the 220ms window — don't hide it */
+      sh.style.display='none';
+      sh.style.pointerEvents=''; /* safe to clear: display:none already blocks interaction */
+    },220);
     /* Reset AT drag state — picker open/close can leave active=true */
     if(typeof window._cpAt_resetState==='function')window._cpAt_resetState();
   };
