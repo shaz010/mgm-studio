@@ -3864,6 +3864,10 @@ function initPrefs(){
   updateBranding(prefs.name, prefs.salon);
   updateCommissionRate(Math.round(myRate()*100));
   applyWallpaper(prefs.wallpaper||'none');
+  /* one-time migration: seed shared key if not yet written */
+  if(localStorage.getItem('ys_tutAtHidden')===null){
+    try{var _p2=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');localStorage.setItem('ys_tutAtHidden',(prefs.tutAtHidden||_p2.tutAtHidden)?'1':'');}catch(e){}
+  }
   var _atH=prefs.tutAtHidden||(localStorage.getItem('ys_tutAtHidden')==='1');
   if(_atH)document.body.classList.add('tut-at-hidden');
 }
@@ -3873,7 +3877,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.25 · AT toggle synced across rooms';
+var VERSION='app v2.26 · AT sync migration on boot';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

@@ -3460,7 +3460,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.05 · AT toggle synced across rooms';
+var VERSION='v6.06 · section-help toggle fixed, AT sync migration';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3499,7 +3499,7 @@ function openSettings(){
   try{_lockSplit();}catch(e){}
   (function(){var parts=VERSION.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';$('setVersion').innerHTML='AppointmentPro · <span style="color:#f5f5fa;font-weight:800">'+ver+'</span>'+rest;})();
   renderHours(true);
-  syncBookingToggle();renderReqBadge();applyTheme();syncAwakeUI();try{if(typeof markTutAt==='function')markTutAt();}catch(e){}
+  syncBookingToggle();renderReqBadge();applyTheme();syncAwakeUI();try{if(typeof markTutAt==='function')markTutAt();}catch(e){}try{if(typeof markSectionHelp==='function')markSectionHelp();}catch(e){}
   try{if(typeof apptSyncGlowPrefs==='function')apptSyncGlowPrefs();}catch(e){}
   try{if(typeof apptSyncWavePrefs==='function')apptSyncWavePrefs();}catch(e){}
   try{renderSetTradeGrid();}catch(e){}
@@ -5431,8 +5431,15 @@ document.addEventListener('click',function(e){
   window.toggleSectionHelp=function(){
     var on=document.body.classList.toggle('section-help-on');
     try{var p=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');p.sectionHelp=on;localStorage.setItem('ap_prefs2',JSON.stringify(p));}catch(e){}
-    var sw=document.getElementById('sectionHelpSwitch');
-    if(sw)sw.classList.toggle('on',on);
+    var sw=document.getElementById('sectionHelpSwitch');var row=sw?sw.closest('.sb-toggle-row'):null;
+    if(row)row.classList.toggle('on',on);
+    var st=document.getElementById('sectionHelpStatus');
+    if(st)st.textContent=on?'On — ? shown on every section':'Off — tap to show ? on every section';
+  };
+  window.markSectionHelp=function(){
+    var on=document.body.classList.contains('section-help-on');
+    var sw=document.getElementById('sectionHelpSwitch');var row=sw?sw.closest('.sb-toggle-row'):null;
+    if(row)row.classList.toggle('on',on);
     var st=document.getElementById('sectionHelpStatus');
     if(st)st.textContent=on?'On — ? shown on every section':'Off — tap to show ? on every section';
   };
@@ -5462,6 +5469,10 @@ document.addEventListener('click',function(e){
   document.addEventListener('DOMContentLoaded',function(){
     try{
       var p=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');
+      /* one-time migration: seed shared key if not yet written */
+      if(localStorage.getItem('ys_tutAtHidden')===null){
+        try{var _p1=JSON.parse(localStorage.getItem('cp_prefs')||'{}');localStorage.setItem('ys_tutAtHidden',(p.tutAtHidden||_p1.tutAtHidden)?'1':'');}catch(e){}
+      }
       var _atH=p.tutAtHidden||(localStorage.getItem('ys_tutAtHidden')==='1');
       if(_atH){
         document.body.classList.add('tut-at-hidden');
@@ -5472,7 +5483,7 @@ document.addEventListener('click',function(e){
       }
       if(p.sectionHelp){
         document.body.classList.add('section-help-on');
-        var sw3=document.getElementById('sectionHelpSwitch');if(sw3)sw3.classList.add('on');
+        var sw3=document.getElementById('sectionHelpSwitch');var row3=sw3?sw3.closest('.sb-toggle-row'):null;if(row3)row3.classList.add('on');
         var st2=document.getElementById('sectionHelpStatus');if(st2)st2.textContent='On — ? shown on every section';
       }
     }catch(e){}
