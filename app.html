@@ -3896,7 +3896,7 @@ window.addEventListener('storage',function(e){
 });
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.30 · AT two-iframe roomShown+storage sync';
+var VERSION='app v2.31 · AT drag instant-init no DOMContentLoaded';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4126,7 +4126,10 @@ setInterval(checkForUpdate,60000);
     if(el){el.classList.remove('dragging','snapping');el.classList.add('idle');}
   };
 
-  document.addEventListener('DOMContentLoaded',function(){
+  /* Initialise synchronously — #tutAt is already in the DOM when this IIFE runs.
+     DOMContentLoaded fires late (~7-10s) inside a hidden iframe on iPhone, so we
+     never rely on it for touch setup. */
+  (function initTutAt(){
     el=document.getElementById('tutAt');
     if(!el)return;
     var saved=loadPos();
@@ -4139,7 +4142,7 @@ setInterval(checkForUpdate,60000);
     el.addEventListener('touchmove',onTM,{passive:false});
     el.addEventListener('touchend',onTE,{passive:false});
     el.addEventListener('touchcancel',onTC,{passive:true});
-  });
+  })();
 
   /* ── CP Picker sheet ── */
   /* Ghost-picker fix v2.12:
