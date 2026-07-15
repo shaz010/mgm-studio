@@ -3460,7 +3460,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.03 · AT glow via drop-shadow, no pseudo-element';
+var VERSION='v6.04 · AT toggle on/off fully fixed';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3499,7 +3499,7 @@ function openSettings(){
   try{_lockSplit();}catch(e){}
   (function(){var parts=VERSION.split(/\s*·\s*/);var ver=parts.shift();var rest=parts.length?(' · '+parts.join(' · ')):'';$('setVersion').innerHTML='AppointmentPro · <span style="color:#f5f5fa;font-weight:800">'+ver+'</span>'+rest;})();
   renderHours(true);
-  syncBookingToggle();renderReqBadge();applyTheme();syncAwakeUI();
+  syncBookingToggle();renderReqBadge();applyTheme();syncAwakeUI();try{if(typeof markTutAt==='function')markTutAt();}catch(e){}
   try{if(typeof apptSyncGlowPrefs==='function')apptSyncGlowPrefs();}catch(e){}
   try{if(typeof apptSyncWavePrefs==='function')apptSyncWavePrefs();}catch(e){}
   try{renderSetTradeGrid();}catch(e){}
@@ -5414,8 +5414,15 @@ document.addEventListener('click',function(e){
   window.toggleTutAt=function(){
     var hidden=document.body.classList.toggle('tut-at-hidden');
     try{var p=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');p.tutAtHidden=hidden;localStorage.setItem('ap_prefs2',JSON.stringify(p));}catch(e){}
-    var sw=document.getElementById('tutAtSwitch');
-    if(sw)sw.classList.toggle('on',!hidden);
+    var sw=document.getElementById('tutAtSwitch');var row=sw?sw.closest('.sb-toggle-row'):null;
+    if(row)row.classList.toggle('on',!hidden);
+    var st=document.getElementById('tutAtStatus');
+    if(st)st.textContent=hidden?'Off — tap here to restore it':'On — floating ✦ bubble visible';
+  };
+  window.markTutAt=function(){
+    var hidden=document.body.classList.contains('tut-at-hidden');
+    var sw=document.getElementById('tutAtSwitch');var row=sw?sw.closest('.sb-toggle-row'):null;
+    if(row)row.classList.toggle('on',!hidden);
     var st=document.getElementById('tutAtStatus');
     if(st)st.textContent=hidden?'Off — tap here to restore it':'On — floating ✦ bubble visible';
   };
@@ -5456,10 +5463,10 @@ document.addEventListener('click',function(e){
       var p=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');
       if(p.tutAtHidden){
         document.body.classList.add('tut-at-hidden');
-        var sw=document.getElementById('tutAtSwitch');if(sw)sw.classList.remove('on');
+        var sw=document.getElementById('tutAtSwitch');var row=sw?sw.closest('.sb-toggle-row'):null;if(row)row.classList.remove('on');
         var st=document.getElementById('tutAtStatus');if(st)st.textContent='Off — tap here to restore it';
       } else {
-        var sw2=document.getElementById('tutAtSwitch');if(sw2)sw2.classList.add('on');
+        var sw2=document.getElementById('tutAtSwitch');var row2=sw2?sw2.closest('.sb-toggle-row'):null;if(row2)row2.classList.add('on');
       }
       if(p.sectionHelp){
         document.body.classList.add('section-help-on');
