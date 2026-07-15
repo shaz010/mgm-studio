@@ -2062,12 +2062,23 @@ function setSyncBadge(state,msg){
   b.className='sync-badge sync-'+state;
   b.innerHTML=state==='loading'?`<span class="spinner"></span> ${msg}`:`<i class="ti ti-${state==='ok'?'check':'alert-triangle'}" style="font-size:13px"></i> ${msg}`;
 }
+/* Fast fingerprint of both appt stores — length-only, no JSON parse, O(1).
+   Used by roomShown handler to skip renderTable() when nothing changed. */
+var _lastApptFP='';
+function _apptFP(){
+  try{
+    var a=localStorage.getItem('cp_appts')||'';
+    var b=localStorage.getItem('ap_appts')||'';
+    return a.length+'|'+b.length+'|'+(a.slice(-12))+(b.slice(-12));
+  }catch(e){return '';}
+}
 function loadAll(){
   try{
     var appts=loadAppts();
     appts.sort(function(x,y){var dx=String(x.date||''),dy=String(y.date||'');if(dx!==dy)return dx<dy?-1:1;return String(x.time||'').localeCompare(String(y.time||''));});
     data=appts.map(function(a){return Object.assign({},a,{myTotal:+(((+a.me)||0)+((+a.tip)||0)).toFixed(2)});});
     paidMonths=loadPaid();
+    _lastApptFP=_apptFP(); /* stamp after load so roomShown knows current state */
     setSyncBadge('ok','Saved');renderTable();
   }catch(err){setSyncBadge('err','Error');console.error(err);}
 }
@@ -3273,12 +3284,28 @@ window.addEventListener('message',function(ev){
   if(d&&d.salon==='chime'){try{softChime();}catch(e){}}
   if(d&&d.salon==='roomShown'){
     try{loadPrefs();}catch(e){}
-    /* defer the heavy renderTable so the browser can paint the room and process
-       any in-flight touch events before the main thread blocks on DOM rebuild */
-    setTimeout(function(){
-      try{loadAll();calc();}catch(e){}
-      try{var m=$('pMgm');if(m&&m.style.display!=='none')renderMgm();}catch(e){}
-    },0);
+    /* Skip the heavy DOM rebuild if neither appt store changed since last render.
+       This makes return-to-ER instant when nothing was booked in AP while away —
+       no main-thread block, AT responds to touch immediately. */
+    try{
+      var _fp=_apptFP();
+      if(_fp!==_lastApptFP){
+        /* data changed while ER was hidden — rebuild table */
+        setTimeout(function(){
+          try{loadAll();calc();}catch(e){}
+          try{var m=$('pMgm');if(m&&m.style.display!=='none')renderMgm();}catch(e){}
+        },0);
+      }else{
+        /* nothing changed — fast path: recalc form only, table is already correct */
+        try{calc();}catch(e){}
+      }
+    }catch(e){
+      /* fallback: full rebuild */
+      setTimeout(function(){
+        try{loadAll();calc();}catch(e){}
+        try{var m=$('pMgm');if(m&&m.style.display!=='none')renderMgm();}catch(e){}
+      },0);
+    }
   }
 });
 
@@ -3902,7 +3929,7 @@ window.addEventListener('storage',function(e){
 });
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.33 · defer roomShown loadAll so AT touch not blocked';
+var VERSION='app v2.34 · skip renderTable on roomShown if appt data unchanged';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
