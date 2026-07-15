@@ -564,8 +564,8 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 .tour-step-cur-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 /* ── AssistiveTouch tutorial bubble ── */
 @keyframes atGlow{
-  0%,100%{opacity:.55;transform:scale(1)}
-  50%{opacity:1;transform:scale(1.18)}}
+  0%,100%{opacity:.3;transform:scale(1)}
+  50%{opacity:.65;transform:scale(1.1)}}
 @keyframes atIconPulse{
   0%,100%{color:rgba(220,210,255,.85)}
   50%{color:#c4b5fd}}
@@ -3461,7 +3461,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v5.99 · AT glow ring + icon pulse (matches ER)';
+var VERSION='v6.00 · AT glow softened for AR';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
