@@ -1301,6 +1301,17 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       <div style="font-size:12px;color:#a8a8a8;margin-top:8px;line-height:1.5">Four sizes, from Normal up to Biggest. Big enlarges labels, lists and numbers; Bigger and Biggest gently zoom the whole app. Works in every theme — easy on tired eyes.</div>
     </div>
 
+    <div class="setup-section">
+      <div class="setup-section-title">Animations ✨</div>
+      <div class="theme-grid" id="fxGrid" style="grid-template-columns:repeat(4,1fr)">
+        <button class="theme-btn fx-btn" data-fx="off"    onclick="setFx('off',this)">Off</button>
+        <button class="theme-btn fx-btn" data-fx="gentle" onclick="setFx('gentle',this)">Gentle</button>
+        <button class="theme-btn fx-btn" data-fx="lively" onclick="setFx('lively',this)">Lively</button>
+        <button class="theme-btn fx-btn" data-fx="party"  onclick="setFx('party',this)">Party 🎉</button>
+      </div>
+      <div style="font-size:12px;color:#a8a8a8;margin-top:8px;line-height:1.5">Controls shimmer, glow and spin speed. <b>Off</b> kills them entirely — everything else stays; the buttons, cards and colours are all still there.</div>
+    </div>
+
     <div class="setup-section adv-sec">
       <div class="setup-section-title">Light mode comfort ☀️</div>
       <label class="setup-label" style="margin-top:0">Background tone</label>
@@ -1381,8 +1392,13 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
 
     <div class="setup-section erase-sec">
       <div class="setup-section-title" style="color:#c98a93"><i class="ti ti-alert-triangle" style="margin-right:6px"></i>Reset &amp; erase</div>
-      <button class="reset-app-btn" onclick="resetApp()"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Start fresh — erase all my data</button>
-      <div class="reset-qp-hint" style="margin-top:7px">Wipes all bookings, client cards, prices and salon details on this device. Your purchase stays unlocked.</div>
+      <div style="display:flex;align-items:flex-start;gap:10px;background:rgba(201,138,147,0.08);border:1px solid rgba(201,138,147,0.25);border-radius:10px;padding:12px 14px;margin-top:4px">
+        <i class="ti ti-calendar" style="font-size:18px;color:#a78bfa;margin-top:1px;flex-shrink:0"></i>
+        <div>
+          <div style="font-size:13px;color:#e2e8f0;font-weight:600;margin-bottom:3px">Go to Appointments to erase</div>
+          <div class="reset-qp-hint" style="margin-top:0">Your bookings live in Appointments — that's where the reset lives too. Open the <strong style="color:#a78bfa">Appointments</strong> room → ⚙️ Settings → Reset &amp; erase.</div>
+        </div>
+      </div>
     </div>
 
     <button class="adv-toggle" id="advToggle" onclick="toggleAdvSettings()"><i class="ti ti-settings"></i> Show advanced settings ▾</button>
@@ -3819,7 +3835,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.16 · 21-day trial countdown + day-14 nudge';
+var VERSION='app v2.18 · Animations control in Settings';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
