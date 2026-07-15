@@ -3865,12 +3865,16 @@ function initPrefs(){
   updateBranding(prefs.name, prefs.salon);
   updateCommissionRate(Math.round(myRate()*100));
   applyWallpaper(prefs.wallpaper||'none');
-  /* AT visibility — read all three sources, off wins, reconcile shared key */
+  /* AT visibility — ys_tutAtHidden is the sole shared authority.
+     Do NOT reconcile-write back (stale per-room prefs would overwrite the shared key). */
   try{
-    var _p2=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');
-    var _atH=prefs.tutAtHidden||_p2.tutAtHidden||(localStorage.getItem('ys_tutAtHidden')==='1');
-    localStorage.setItem('ys_tutAtHidden',_atH?'1':'');
-    if(_atH)document.body.classList.add('tut-at-hidden');
+    var _ysH=localStorage.getItem('ys_tutAtHidden');
+    if(_ysH===null){
+      /* first-ever run: seed from own prefs, never overwrite an existing value */
+      _ysH=prefs.tutAtHidden?'1':'';
+      localStorage.setItem('ys_tutAtHidden',_ysH);
+    }
+    if(_ysH==='1')document.body.classList.add('tut-at-hidden');
   }catch(e){if(prefs.tutAtHidden)document.body.classList.add('tut-at-hidden');}
 }
 
@@ -3888,7 +3892,7 @@ window.addEventListener('pageshow',function(){
 });
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.28 · AT bfcache pageshow fix';
+var VERSION='app v2.29 · AT sole-authority ys key';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

@@ -3460,7 +3460,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.08 · AT boot applied synchronously';
+var VERSION='v6.09 · AT sole-authority ys key';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5467,11 +5467,16 @@ document.addEventListener('click',function(e){
   };
 
   /* load saved prefs on boot — applied synchronously (elements already in DOM at this point) */
+  /* ys_tutAtHidden is the sole shared authority — never reconcile-write back from per-room prefs */
   try{
     var _bp=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');
-    var _bq=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
-    var _batH=_bp.tutAtHidden||_bq.tutAtHidden||(localStorage.getItem('ys_tutAtHidden')==='1');
-    localStorage.setItem('ys_tutAtHidden',_batH?'1':'');
+    var _ysHap=localStorage.getItem('ys_tutAtHidden');
+    if(_ysHap===null){
+      /* first-ever run: seed from own prefs */
+      _ysHap=_bp.tutAtHidden?'1':'';
+      localStorage.setItem('ys_tutAtHidden',_ysHap);
+    }
+    var _batH=_ysHap==='1';
     if(_batH){
       document.body.classList.add('tut-at-hidden');
       var _bsw=document.getElementById('tutAtSwitch');var _brow=_bsw?_bsw.closest('.sb-toggle-row'):null;if(_brow)_brow.classList.remove('on');
