@@ -1392,6 +1392,17 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       <div class="reset-qp-hint">Restores the starting set of favourite services for both Hair and Nail. Your prices and client cards are not affected.</div>
     </div>
 
+    <div class="setup-section">
+      <div class="setup-section-title">Tutorial guide 🎓</div>
+      <div class="sb-toggle-row" onclick="toggleTutAt()" style="cursor:pointer">
+        <div>
+          <div class="sb-tt">Tutorial guide button</div>
+          <div class="sb-ts" id="tutAtStatus">On — floating ✦ bubble visible</div>
+        </div>
+        <div class="sb-switch" id="tutAtSwitch"><span></span></div>
+      </div>
+    </div>
+
     <div class="setup-section erase-sec">
       <div class="setup-section-title" style="color:#c98a93"><i class="ti ti-alert-triangle" style="margin-right:6px"></i>Reset &amp; erase</div>
       <div style="display:flex;align-items:flex-start;gap:10px;background:rgba(201,138,147,0.08);border:1px solid rgba(201,138,147,0.25);border-radius:10px;padding:12px 14px;margin-top:4px">
@@ -2827,6 +2838,19 @@ function toggleMore(){
   b.innerHTML=open?'<i class="ti ti-chevron-down more-chev"></i> <span class="more-txt">More services</span>':'<i class="ti ti-chevron-up more-chev"></i> <span class="more-txt">Hide services</span>';
 }
 function getFx(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return p.fx||'gentle';}catch(e){return 'gentle';}}
+function toggleTutAt(){
+  var hidden=document.body.classList.toggle('tut-at-hidden');
+  try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.tutAtHidden=hidden;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}
+  var sw=document.getElementById('tutAtSwitch');
+  if(sw)sw.classList.toggle('on',!hidden);
+  var st=document.getElementById('tutAtStatus');
+  if(st)st.textContent=hidden?'Off — tap here to restore it':'On — floating ✦ bubble visible';
+}
+function markTutAt(){
+  var hidden=document.body.classList.contains('tut-at-hidden');
+  var sw=document.getElementById('tutAtSwitch');if(sw)sw.classList.toggle('on',!hidden);
+  var st=document.getElementById('tutAtStatus');if(st)st.textContent=hidden?'Off — tap here to restore it':'On — floating ✦ bubble visible';
+}
 function saveFx(fx){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.fx=fx;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.fx=fx;}
 function applyFx(fx){document.body.classList.remove('fx-off','fx-gentle','fx-lively','fx-party');document.body.classList.add('fx-'+(fx||'gentle'));}
 function setFx(fx,btn){saveFx(fx);applyFx(fx);if(btn){var g=btn.parentNode;if(g)g.querySelectorAll('.fx-btn').forEach(function(b){b.classList.remove('sel');});btn.classList.add('sel');}}function markFx(){var fx=getFx();document.querySelectorAll('#fxGrid .fx-btn').forEach(function(b){b.classList.toggle('sel',b.dataset.fx===fx);});}
@@ -3552,7 +3576,7 @@ function openSettings(){
   if(ri) ri.value = prefs.rate||60;
   _lockRate();
   const panel = document.getElementById('settingsPanel');
-  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); markBigText(); renderBackupStatus(); initBookLink(); try{renderSetTradeGrid();}catch(e){} try{document.querySelectorAll('#settingsPanel .setup-section').forEach(function(s){s.classList.add('collapsed');});var _es=document.querySelector('#settingsPanel .erase-sec');if(_es)_es.classList.remove('collapsed');var _sp=document.getElementById('settingsPanel');if(_sp)_sp.classList.remove('show-adv');var _at=document.getElementById('advToggle');if(_at)_at.innerHTML='<i class="ti ti-settings"></i> Show advanced settings ▾';}catch(e){} }
+  if(panel){ if(typeof WARP!=='undefined'&&WARP.pause)WARP.pause(); panel.style.display='flex'; markCurrentWP(); markCurrentThemeAccent(); markFx(); markLightComfort(); markErColor(); markBigText(); markTutAt(); renderBackupStatus(); initBookLink(); try{renderSetTradeGrid();}catch(e){} try{document.querySelectorAll('#settingsPanel .setup-section').forEach(function(s){s.classList.add('collapsed');});var _es=document.querySelector('#settingsPanel .erase-sec');if(_es)_es.classList.remove('collapsed');var _sp=document.getElementById('settingsPanel');if(_sp)_sp.classList.remove('show-adv');var _at=document.getElementById('advToggle');if(_at)_at.innerHTML='<i class="ti ti-settings"></i> Show advanced settings ▾';}catch(e){} }
 }
 
 function closeSettings(){
@@ -3830,6 +3854,7 @@ function initPrefs(){
   updateBranding(prefs.name, prefs.salon);
   updateCommissionRate(Math.round(myRate()*100));
   applyWallpaper(prefs.wallpaper||'none');
+  if(prefs.tutAtHidden)document.body.classList.add('tut-at-hidden');
 }
 
 try{ initPrefs(); }catch(e){ console.error('initPrefs failed:',e); }
@@ -3837,7 +3862,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.21 · AT glow via drop-shadow, no pseudo-element';
+var VERSION='app v2.22 · AT on/off toggle in Settings';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
