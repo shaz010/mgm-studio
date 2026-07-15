@@ -3273,8 +3273,12 @@ window.addEventListener('message',function(ev){
   if(d&&d.salon==='chime'){try{softChime();}catch(e){}}
   if(d&&d.salon==='roomShown'){
     try{loadPrefs();}catch(e){}
-    try{loadAll();calc();}catch(e){}
-    try{var m=$('pMgm');if(m&&m.style.display!=='none')renderMgm();}catch(e){}
+    /* defer the heavy renderTable so the browser can paint the room and process
+       any in-flight touch events before the main thread blocks on DOM rebuild */
+    setTimeout(function(){
+      try{loadAll();calc();}catch(e){}
+      try{var m=$('pMgm');if(m&&m.style.display!=='none')renderMgm();}catch(e){}
+    },0);
   }
 });
 
@@ -3898,7 +3902,7 @@ window.addEventListener('storage',function(e){
 });
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.32 · AT glow opacity-only no filter repaint';
+var VERSION='app v2.33 · defer roomShown loadAll so AT touch not blocked';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
