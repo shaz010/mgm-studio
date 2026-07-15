@@ -570,21 +570,25 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
   0%,100%{color:rgba(235,220,255,.85)}
   50%{color:#c4b5fd}}
 #tutAt{position:fixed;left:0;top:0;width:52px;height:52px;border-radius:50%;
-  background:rgba(30,18,50,.82);border:2px solid rgba(167,139,250,.6);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  background:linear-gradient(rgba(22,12,42,.92),rgba(22,12,42,.92)) padding-box,
+             linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;
+  border:2px solid transparent;
   display:flex;align-items:center;justify-content:center;
-  color:rgba(220,210,255,.95);font-size:22px;z-index:903;cursor:grab;
+  color:rgba(235,220,255,1);font-size:22px;z-index:903;cursor:grab;
   user-select:none;-webkit-user-select:none;
   touch-action:none;-webkit-tap-highlight-color:transparent;
   will-change:transform;
-  transition:opacity .25s,background .2s,border-color .2s,box-shadow .2s;
-  box-shadow:0 4px 20px rgba(0,0,0,.6),0 0 0 4px rgba(167,139,250,.12)}
+  transition:opacity .25s,box-shadow .3s;
+  box-shadow:0 4px 22px rgba(0,0,0,.65),0 0 0 3px rgba(167,139,250,.2)}
 #tutAt::before{content:'';position:absolute;inset:-6px;border-radius:50%;
   background:conic-gradient(#67e8f9,#a78bfa,#f5a8ff,#67e8f9);
   z-index:-1;opacity:0;transition:opacity .3s}
 #tutAt.dragging{cursor:grabbing;transition:none;
-  background:rgba(60,30,90,.9);border-color:rgba(167,139,250,.9);
-  box-shadow:0 8px 28px rgba(0,0,0,.7),0 0 0 6px rgba(167,139,250,.2)}
+  animation:none!important;
+  background:linear-gradient(rgba(55,25,88,.96),rgba(55,25,88,.96)) padding-box,
+             linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;
+  border:2.5px solid transparent;
+  box-shadow:0 8px 30px rgba(0,0,0,.75),0 0 0 5px rgba(167,139,250,.3)}
 #tutAt.snapping{transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s,background .2s}
 #tutAt.idle{opacity:.95;animation:none}
 #tutAt.idle::before{animation:atGlow 2.8s ease-in-out infinite}
@@ -3461,7 +3465,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.01 · AT glow identical to ER';
+var VERSION='v6.02 · AT button background matches ER exactly';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
