@@ -3460,7 +3460,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.06 · section-help toggle fixed, AT sync migration';
+var VERSION='v6.07 · AT sync cross-write fix';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5414,6 +5414,7 @@ document.addEventListener('click',function(e){
   window.toggleTutAt=function(){
     var hidden=document.body.classList.toggle('tut-at-hidden');
     try{var p=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');p.tutAtHidden=hidden;localStorage.setItem('ap_prefs2',JSON.stringify(p));}catch(e){}
+    try{var _p1=JSON.parse(localStorage.getItem('cp_prefs')||'{}');_p1.tutAtHidden=hidden;localStorage.setItem('cp_prefs',JSON.stringify(_p1));}catch(e){}
     try{localStorage.setItem('ys_tutAtHidden',hidden?'1':'');}catch(e){}
     var sw=document.getElementById('tutAtSwitch');var row=sw?sw.closest('.sb-toggle-row'):null;
     if(row)row.classList.toggle('on',!hidden);
@@ -5469,11 +5470,10 @@ document.addEventListener('click',function(e){
   document.addEventListener('DOMContentLoaded',function(){
     try{
       var p=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');
-      /* one-time migration: seed shared key if not yet written */
-      if(localStorage.getItem('ys_tutAtHidden')===null){
-        try{var _p1=JSON.parse(localStorage.getItem('cp_prefs')||'{}');localStorage.setItem('ys_tutAtHidden',(p.tutAtHidden||_p1.tutAtHidden)?'1':'');}catch(e){}
-      }
-      var _atH=p.tutAtHidden||(localStorage.getItem('ys_tutAtHidden')==='1');
+      /* AT visibility — read all three sources, off wins, reconcile shared key */
+      var _p1=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
+      var _atH=p.tutAtHidden||_p1.tutAtHidden||(localStorage.getItem('ys_tutAtHidden')==='1');
+      localStorage.setItem('ys_tutAtHidden',_atH?'1':'');
       if(_atH){
         document.body.classList.add('tut-at-hidden');
         var sw=document.getElementById('tutAtSwitch');var row=sw?sw.closest('.sb-toggle-row'):null;if(row)row.classList.remove('on');
