@@ -2849,6 +2849,7 @@ function toggleTutAt(){
   var hidden=document.body.classList.toggle('tut-at-hidden');
   if(typeof prefs==='object'&&prefs)prefs.tutAtHidden=hidden;
   try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.tutAtHidden=hidden;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}
+  try{localStorage.setItem('ys_tutAtHidden',hidden?'1':'');}catch(e){}
   var row=document.getElementById('tutAtSwitch');if(row)row=row.closest('.sb-toggle-row');
   if(row)row.classList.toggle('on',!hidden);
   var st=document.getElementById('tutAtStatus');
@@ -3863,7 +3864,8 @@ function initPrefs(){
   updateBranding(prefs.name, prefs.salon);
   updateCommissionRate(Math.round(myRate()*100));
   applyWallpaper(prefs.wallpaper||'none');
-  if(prefs.tutAtHidden)document.body.classList.add('tut-at-hidden');
+  var _atH=prefs.tutAtHidden||(localStorage.getItem('ys_tutAtHidden')==='1');
+  if(_atH)document.body.classList.add('tut-at-hidden');
 }
 
 try{ initPrefs(); }catch(e){ console.error('initPrefs failed:',e); }
@@ -3871,7 +3873,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.24 · AT toggle switch renders correctly';
+var VERSION='app v2.25 · AT toggle synced across rooms';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

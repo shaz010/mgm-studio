@@ -3460,7 +3460,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.04 · AT toggle on/off fully fixed';
+var VERSION='v6.05 · AT toggle synced across rooms';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5414,6 +5414,7 @@ document.addEventListener('click',function(e){
   window.toggleTutAt=function(){
     var hidden=document.body.classList.toggle('tut-at-hidden');
     try{var p=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');p.tutAtHidden=hidden;localStorage.setItem('ap_prefs2',JSON.stringify(p));}catch(e){}
+    try{localStorage.setItem('ys_tutAtHidden',hidden?'1':'');}catch(e){}
     var sw=document.getElementById('tutAtSwitch');var row=sw?sw.closest('.sb-toggle-row'):null;
     if(row)row.classList.toggle('on',!hidden);
     var st=document.getElementById('tutAtStatus');
@@ -5461,7 +5462,8 @@ document.addEventListener('click',function(e){
   document.addEventListener('DOMContentLoaded',function(){
     try{
       var p=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');
-      if(p.tutAtHidden){
+      var _atH=p.tutAtHidden||(localStorage.getItem('ys_tutAtHidden')==='1');
+      if(_atH){
         document.body.classList.add('tut-at-hidden');
         var sw=document.getElementById('tutAtSwitch');var row=sw?sw.closest('.sb-toggle-row'):null;if(row)row.classList.remove('on');
         var st=document.getElementById('tutAtStatus');if(st)st.textContent='Off — tap here to restore it';
