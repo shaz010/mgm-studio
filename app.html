@@ -1047,8 +1047,8 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
 .cp-tlb-count{font-size:12px;color:#888;display:block;margin-top:2px}
 /* ── AssistiveTouch bubble ── */
 @keyframes atGlow{
-  0%,100%{box-shadow:0 4px 22px rgba(0,0,0,.65),0 0 0 3px rgba(167,139,250,.5),0 0 18px rgba(167,139,250,.3)}
-  50%{box-shadow:0 4px 22px rgba(0,0,0,.5),0 0 22px rgba(103,232,249,.55),0 0 0 7px rgba(167,139,250,.6),0 0 36px rgba(103,232,249,.25)}}
+  0%,100%{filter:drop-shadow(0 0 4px rgba(167,139,250,.55)) drop-shadow(0 0 8px rgba(103,232,249,.25))}
+  50%{filter:drop-shadow(0 0 10px rgba(167,139,250,1)) drop-shadow(0 0 20px rgba(103,232,249,.75)) drop-shadow(0 0 28px rgba(245,168,255,.45))}}
 @keyframes atIconPulse{
   0%,100%{color:rgba(235,220,255,.85)}
   50%{color:#c4b5fd}}
@@ -1061,16 +1061,14 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
   user-select:none;-webkit-user-select:none;
   touch-action:none;-webkit-tap-highlight-color:transparent;
   will-change:transform;
-  transition:opacity .25s,box-shadow .3s;
-  box-shadow:0 4px 22px rgba(0,0,0,.65),0 0 0 3px rgba(167,139,250,.2)}
-#tutAt.dragging{cursor:grabbing;transition:none;
-  /* drop backdrop-filter and animation during drag — expensive on iPad */
-  animation:none!important;
+  transition:opacity .25s;
+  box-shadow:0 4px 22px rgba(0,0,0,.65)}
+#tutAt.dragging{cursor:grabbing;transition:none;animation:none!important;
   background:linear-gradient(rgba(55,25,88,.96),rgba(55,25,88,.96)) padding-box,
              linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;
   border:2.5px solid transparent;
-  box-shadow:0 8px 30px rgba(0,0,0,.75),0 0 0 5px rgba(167,139,250,.3)}
-#tutAt.snapping{transition:transform .28s cubic-bezier(.34,1.56,.64,1),opacity .2s,box-shadow .2s}
+  box-shadow:0 8px 30px rgba(0,0,0,.75)}
+#tutAt.snapping{transition:transform .28s cubic-bezier(.34,1.56,.64,1),opacity .2s}
 #tutAt.idle{opacity:.95;animation:atGlow 2.8s ease-in-out infinite}
 #tutAt.idle i{animation:atIconPulse 2.8s ease-in-out infinite}
 body.tut-at-hidden #tutAt{display:none}
@@ -3839,7 +3837,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.19 · AT glow restored + icon pulse';
+var VERSION='app v2.21 · AT glow via drop-shadow, no pseudo-element';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

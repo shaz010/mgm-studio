@@ -564,8 +564,8 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 .tour-step-cur-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 /* ── AssistiveTouch tutorial bubble ── */
 @keyframes atGlow{
-  0%,100%{opacity:.55;transform:scale(1)}
-  50%{opacity:1;transform:scale(1.18)}}
+  0%,100%{filter:drop-shadow(0 0 4px rgba(167,139,250,.55)) drop-shadow(0 0 8px rgba(103,232,249,.25))}
+  50%{filter:drop-shadow(0 0 10px rgba(167,139,250,1)) drop-shadow(0 0 20px rgba(103,232,249,.75)) drop-shadow(0 0 28px rgba(245,168,255,.45))}}
 @keyframes atIconPulse{
   0%,100%{color:rgba(235,220,255,.85)}
   50%{color:#c4b5fd}}
@@ -578,20 +578,15 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
   user-select:none;-webkit-user-select:none;
   touch-action:none;-webkit-tap-highlight-color:transparent;
   will-change:transform;
-  transition:opacity .25s,box-shadow .3s;
-  box-shadow:0 4px 22px rgba(0,0,0,.65),0 0 0 3px rgba(167,139,250,.2)}
-#tutAt::before{content:'';position:absolute;inset:-6px;border-radius:50%;
-  background:conic-gradient(#67e8f9,#a78bfa,#f5a8ff,#67e8f9);
-  z-index:-1;opacity:0;transition:opacity .3s}
-#tutAt.dragging{cursor:grabbing;transition:none;
-  animation:none!important;
+  transition:opacity .25s;
+  box-shadow:0 4px 22px rgba(0,0,0,.65)}
+#tutAt.dragging{cursor:grabbing;transition:none;animation:none!important;
   background:linear-gradient(rgba(55,25,88,.96),rgba(55,25,88,.96)) padding-box,
              linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;
   border:2.5px solid transparent;
-  box-shadow:0 8px 30px rgba(0,0,0,.75),0 0 0 5px rgba(167,139,250,.3)}
-#tutAt.snapping{transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s,background .2s}
-#tutAt.idle{opacity:.95;animation:none}
-#tutAt.idle::before{animation:atGlow 2.8s ease-in-out infinite}
+  box-shadow:0 8px 30px rgba(0,0,0,.75)}
+#tutAt.snapping{transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s}
+#tutAt.idle{opacity:.95;animation:atGlow 2.8s ease-in-out infinite}
 #tutAt.idle i{animation:atIconPulse 2.8s ease-in-out infinite}
 body.tut-at-hidden #tutAt{display:none!important}
 /* ── What Is This mode ── */
@@ -3465,7 +3460,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.02 · AT button background matches ER exactly';
+var VERSION='v6.03 · AT glow via drop-shadow, no pseudo-element';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
