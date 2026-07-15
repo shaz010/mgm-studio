@@ -3460,7 +3460,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.09 · AT sole-authority ys key';
+var VERSION='v6.10 · AT two-iframe roomShown+storage sync';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -5444,6 +5444,18 @@ document.addEventListener('click',function(e){
     var st=document.getElementById('sectionHelpStatus');
     if(st)st.textContent=on?'On — ? shown on every section':'Off — tap to show ? on every section';
   };
+
+  /* AT two-iframe sync — re-sync when this room is shown, and live when ER toggles */
+  window.addEventListener('message',function(e){
+    var d=e.data||{};
+    if(d.salon==='roomShown'){
+      try{var h=localStorage.getItem('ys_tutAtHidden')==='1';document.body.classList.toggle('tut-at-hidden',h);}catch(ex){}
+    }
+  });
+  window.addEventListener('storage',function(e){
+    if(e.key!=='ys_tutAtHidden')return;
+    try{var h=e.newValue==='1';document.body.classList.toggle('tut-at-hidden',h);}catch(ex){}
+  });
 
   /* section help sheet */
   window.showSectionHelp=function(title,body,tourLevel,tourStep){

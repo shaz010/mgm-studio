@@ -3882,17 +3882,21 @@ try{ initPrefs(); }catch(e){ console.error('initPrefs failed:',e); }
 try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); }
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
-/* AT bfcache fix — pageshow fires on EVERY room-show, including iOS Safari bfcache restore.
-   initPrefs() may not re-run on bfcache, so we always re-sync from ys_tutAtHidden here. */
-window.addEventListener('pageshow',function(){
-  try{
-    var h=localStorage.getItem('ys_tutAtHidden')==='1';
-    document.body.classList.toggle('tut-at-hidden',h);
-  }catch(e){}
+/* AT two-iframe sync — salon.html keeps both rooms alive; no reload on switch.
+   Re-sync AT the moment this room is shown, and instantly when the other room toggles. */
+window.addEventListener('message',function(e){
+  var d=e.data||{};
+  if(d.salon==='roomShown'){
+    try{var h=localStorage.getItem('ys_tutAtHidden')==='1';document.body.classList.toggle('tut-at-hidden',h);}catch(ex){}
+  }
+});
+window.addEventListener('storage',function(e){
+  if(e.key!=='ys_tutAtHidden')return;
+  try{var h=e.newValue==='1';document.body.classList.toggle('tut-at-hidden',h);}catch(ex){}
 });
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.29 · AT sole-authority ys key';
+var VERSION='app v2.30 · AT two-iframe roomShown+storage sync';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
