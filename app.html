@@ -2849,6 +2849,7 @@ function toggleTutAt(){
   var hidden=document.body.classList.toggle('tut-at-hidden');
   if(typeof prefs==='object'&&prefs)prefs.tutAtHidden=hidden;
   try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.tutAtHidden=hidden;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}
+  try{var _p2=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');_p2.tutAtHidden=hidden;localStorage.setItem('ap_prefs2',JSON.stringify(_p2));}catch(e){}
   try{localStorage.setItem('ys_tutAtHidden',hidden?'1':'');}catch(e){}
   var row=document.getElementById('tutAtSwitch');if(row)row=row.closest('.sb-toggle-row');
   if(row)row.classList.toggle('on',!hidden);
@@ -3864,20 +3865,30 @@ function initPrefs(){
   updateBranding(prefs.name, prefs.salon);
   updateCommissionRate(Math.round(myRate()*100));
   applyWallpaper(prefs.wallpaper||'none');
-  /* one-time migration: seed shared key if not yet written */
-  if(localStorage.getItem('ys_tutAtHidden')===null){
-    try{var _p2=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');localStorage.setItem('ys_tutAtHidden',(prefs.tutAtHidden||_p2.tutAtHidden)?'1':'');}catch(e){}
-  }
-  var _atH=prefs.tutAtHidden||(localStorage.getItem('ys_tutAtHidden')==='1');
-  if(_atH)document.body.classList.add('tut-at-hidden');
+  /* AT visibility — read all three sources, off wins, reconcile shared key */
+  try{
+    var _p2=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');
+    var _atH=prefs.tutAtHidden||_p2.tutAtHidden||(localStorage.getItem('ys_tutAtHidden')==='1');
+    localStorage.setItem('ys_tutAtHidden',_atH?'1':'');
+    if(_atH)document.body.classList.add('tut-at-hidden');
+  }catch(e){if(prefs.tutAtHidden)document.body.classList.add('tut-at-hidden');}
 }
 
 try{ initPrefs(); }catch(e){ console.error('initPrefs failed:',e); }
 try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); }
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
+/* AT bfcache fix — pageshow fires on EVERY room-show, including iOS Safari bfcache restore.
+   initPrefs() may not re-run on bfcache, so we always re-sync from ys_tutAtHidden here. */
+window.addEventListener('pageshow',function(){
+  try{
+    var h=localStorage.getItem('ys_tutAtHidden')==='1';
+    document.body.classList.toggle('tut-at-hidden',h);
+  }catch(e){}
+});
+
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.26 · AT sync migration on boot';
+var VERSION='app v2.28 · AT bfcache pageshow fix';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
