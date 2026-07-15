@@ -1138,7 +1138,7 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
 <div id="payGate" role="dialog" aria-modal="true">
   <div class="pg-card">
     <div id="pgMain">
-      <div class="pg-logo">✂</div>
+      <div class="pg-logo">✨</div>
       <div class="pg-title">Unlock CommissionPro</div>
       <div class="pg-sub">Unlock the full app — yours forever, with a single one-time payment.</div>
       <div class="pg-price">$49 · one-time · pays for itself with one service</div>
@@ -1147,7 +1147,7 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       <input type="text" id="payCode" class="pg-code" placeholder="Enter your unlock code" autocapitalize="characters" autocomplete="off">
       <button class="pg-unlock" onclick="payUnlock()">Unlock</button>
       <div class="pg-err" id="payErr">That code didn't match. Check the email from your purchase, or contact support.</div>
-      <div class="pg-foot">After paying, your unlock code is emailed to you instantly.<br>Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
+      <div class="pg-foot">After paying, your unlock code is emailed to you automatically — usually within minutes.<br>Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
       <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
     </div>
     <div class="pg-success" id="pgSuccess">
@@ -3929,7 +3929,7 @@ window.addEventListener('storage',function(e){
 });
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.34 · skip renderTable on roomShown if appt data unchanged';
+var VERSION='app v2.35 · paygate automated copy';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
