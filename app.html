@@ -1054,8 +1054,9 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
 .cp-tlb-count{font-size:12px;color:#888;display:block;margin-top:2px}
 /* ── AssistiveTouch bubble ── */
 @keyframes atGlow{
-  0%,100%{filter:drop-shadow(0 0 4px rgba(167,139,250,.55)) drop-shadow(0 0 8px rgba(103,232,249,.25))}
-  50%{filter:drop-shadow(0 0 10px rgba(167,139,250,1)) drop-shadow(0 0 20px rgba(103,232,249,.75)) drop-shadow(0 0 28px rgba(245,168,255,.45))}}
+  /* opacity-only pulse — compositor-friendly, no filter repaint on iPhone main thread */
+  0%,100%{opacity:.72}
+  50%{opacity:1}}
 @keyframes atIconPulse{
   0%,100%{color:rgba(235,220,255,.85)}
   50%{color:#c4b5fd}}
@@ -1068,8 +1069,9 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
   user-select:none;-webkit-user-select:none;
   touch-action:none;-webkit-tap-highlight-color:transparent;
   will-change:transform;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
   transition:opacity .25s;
-  box-shadow:0 4px 22px rgba(0,0,0,.65)}
+  box-shadow:0 4px 22px rgba(0,0,0,.65),0 0 8px rgba(167,139,250,.45),0 0 14px rgba(103,232,249,.2)}
 #tutAt.dragging{cursor:grabbing;transition:none;animation:none!important;
   background:linear-gradient(rgba(55,25,88,.96),rgba(55,25,88,.96)) padding-box,
              linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;
@@ -3896,7 +3898,7 @@ window.addEventListener('storage',function(e){
 });
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.31 · AT drag instant-init no DOMContentLoaded';
+var VERSION='app v2.32 · AT glow opacity-only no filter repaint';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
