@@ -511,7 +511,7 @@
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.34';
+  var SHELL_V='v0.35';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{
@@ -713,7 +713,8 @@
   function waveIntensityMult(){
     try{
       var v=Number(JSON.parse(localStorage.getItem('cp_prefs')||'{}').waveIntensity);
-      return [0, 0.4, 1.0, 2.2][isNaN(v)?2:v] || 1.0;
+      var mults=[0,0.4,1.0,2.2];
+      return (v>=0&&v<mults.length)?mults[v]:1.0;
     }catch(e){return 1.0;}
   }
   function waveFreqDelay(){
