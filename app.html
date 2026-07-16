@@ -1054,9 +1054,8 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
 .cp-tlb-count{font-size:12px;color:#888;display:block;margin-top:2px}
 /* ── AssistiveTouch bubble ── */
 @keyframes atGlow{
-  /* opacity-only pulse — compositor-friendly, no filter repaint on iPhone main thread */
-  0%,100%{opacity:.72}
-  50%{opacity:1}}
+  0%,100%{filter:drop-shadow(0 0 4px rgba(167,139,250,.55)) drop-shadow(0 0 8px rgba(103,232,249,.25))}
+  50%{filter:drop-shadow(0 0 10px rgba(167,139,250,1)) drop-shadow(0 0 20px rgba(103,232,249,.75)) drop-shadow(0 0 28px rgba(245,168,255,.45))}}
 @keyframes atIconPulse{
   0%,100%{color:rgba(235,220,255,.85)}
   50%{color:#c4b5fd}}
@@ -1069,9 +1068,8 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
   user-select:none;-webkit-user-select:none;
   touch-action:none;-webkit-tap-highlight-color:transparent;
   will-change:transform;
-  backface-visibility:hidden;-webkit-backface-visibility:hidden;
   transition:opacity .25s;
-  box-shadow:0 4px 22px rgba(0,0,0,.65),0 0 8px rgba(167,139,250,.45),0 0 14px rgba(103,232,249,.2)}
+  box-shadow:0 4px 22px rgba(0,0,0,.65)}
 #tutAt.dragging{cursor:grabbing;transition:none;animation:none!important;
   background:linear-gradient(rgba(55,25,88,.96),rgba(55,25,88,.96)) padding-box,
              linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;
@@ -1138,7 +1136,7 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
 <div id="payGate" role="dialog" aria-modal="true">
   <div class="pg-card">
     <div id="pgMain">
-      <div class="pg-logo">✨</div>
+      <div class="pg-logo">✂</div>
       <div class="pg-title">Unlock CommissionPro</div>
       <div class="pg-sub">Unlock the full app — yours forever, with a single one-time payment.</div>
       <div class="pg-price">$49 · one-time · pays for itself with one service</div>
@@ -1147,7 +1145,7 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       <input type="text" id="payCode" class="pg-code" placeholder="Enter your unlock code" autocapitalize="characters" autocomplete="off">
       <button class="pg-unlock" onclick="payUnlock()">Unlock</button>
       <div class="pg-err" id="payErr">That code didn't match. Check the email from your purchase, or contact support.</div>
-      <div class="pg-foot">After paying, your unlock code is emailed to you automatically — usually within minutes.<br>Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
+      <div class="pg-foot">After paying, your unlock code is emailed to you instantly.<br>Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
       <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
     </div>
     <div class="pg-success" id="pgSuccess">
@@ -1792,14 +1790,24 @@ function openBookLink(){var l=_bkUrl();if(!l)return;window.open(l,'_blank');}
 let data=[],paidMonths={},activeFilter='all',editingId=null;
 var APPTS_KEY='cp_appts',PAID_KEY='cp_paid';
 function loadAppts(){
+  // Single rate read for the whole load — both cp_appts and ap_appts use the same current rate.
+  // cp_appts entries are recalculated on every load (same as ap_appts) so a rate change
+  // reflects immediately across all history without needing a manual re-save.
+  var mr=myRate();
   var own=[];
-  try{var a=JSON.parse(localStorage.getItem(APPTS_KEY)||'[]');if(Array.isArray(a))own=a;}catch(e){}
+  try{
+    var a=JSON.parse(localStorage.getItem(APPTS_KEY)||'[]');
+    if(Array.isArray(a)){own=a.map(function(r){
+      var charge=+r.charge||0,tip=+r.tip||0;
+      var salon=+(charge*(1-mr)).toFixed(2),me=+(charge*mr).toFixed(2);
+      return Object.assign({},r,{salon:salon,me:me,mytotal:+(me+tip).toFixed(2)});
+    });}
+  }catch(e){}
   var shared=[];
   try{
     var b=JSON.parse(localStorage.getItem('ap_appts')||'[]');
     if(Array.isArray(b)){shared=b.map(function(r){
       var charge=+r.price||0,tip=+r.tip||0;
-      var mr=myRate();
       var salon=+(charge*(1-mr)).toFixed(2),me=+(charge*mr).toFixed(2);
       return {id:r.id,name:r.name||'',date:r.date||'',time:r.time||'',charge:charge,tip:tip,salon:salon,me:me,mytotal:+(me+tip).toFixed(2),cat:r.service||'',_src:'appt'};
     });}
@@ -2062,23 +2070,12 @@ function setSyncBadge(state,msg){
   b.className='sync-badge sync-'+state;
   b.innerHTML=state==='loading'?`<span class="spinner"></span> ${msg}`:`<i class="ti ti-${state==='ok'?'check':'alert-triangle'}" style="font-size:13px"></i> ${msg}`;
 }
-/* Fast fingerprint of both appt stores — length-only, no JSON parse, O(1).
-   Used by roomShown handler to skip renderTable() when nothing changed. */
-var _lastApptFP='';
-function _apptFP(){
-  try{
-    var a=localStorage.getItem('cp_appts')||'';
-    var b=localStorage.getItem('ap_appts')||'';
-    return a.length+'|'+b.length+'|'+(a.slice(-12))+(b.slice(-12));
-  }catch(e){return '';}
-}
 function loadAll(){
   try{
     var appts=loadAppts();
     appts.sort(function(x,y){var dx=String(x.date||''),dy=String(y.date||'');if(dx!==dy)return dx<dy?-1:1;return String(x.time||'').localeCompare(String(y.time||''));});
     data=appts.map(function(a){return Object.assign({},a,{myTotal:+(((+a.me)||0)+((+a.tip)||0)).toFixed(2)});});
     paidMonths=loadPaid();
-    _lastApptFP=_apptFP(); /* stamp after load so roomShown knows current state */
     setSyncBadge('ok','Saved');renderTable();
   }catch(err){setSyncBadge('err','Error');console.error(err);}
 }
@@ -2091,7 +2088,7 @@ function calc(){
   $('eTip').textContent=fmt(tip);
   $('eTotal').textContent=fmt(me+tip);
   $('calcHint').innerHTML=(charge||tip)?
-    `Charge <strong style="color:var(--text)">$${charge.toFixed(2)}</strong> &times; ${pct}% = <span style="color:#5ddb7c;font-weight:700">$${me.toFixed(2)}</span><br>+ Tip <span style="color:#5ddb7c;font-weight:700">$${tip.toFixed(2)}</span> <span style="color:#888">(100% yours)</span><br>= Your take-home <span style="color:var(--gold);font-weight:700">$${(me+tip).toFixed(2)}</span>`
+    `Charge <strong style="color:var(--text)">$${charge.toFixed(2)}</strong> &times; ${pct}% = <span style="color:#5ddb7c;font-weight:700">$${me.toFixed(2)}</span><br>+ Tip <span style="color:#f59ed6;font-weight:700">$${tip.toFixed(2)}</span> <span style="color:#888">(100% yours)</span><br>= Your take-home <span style="color:var(--gold);font-weight:700">$${(me+tip).toFixed(2)}</span>`
     :'Enter a charge and tip above to see the breakdown';
 }
 async function save(){
@@ -2862,8 +2859,6 @@ function toggleTutAt(){
   var hidden=document.body.classList.toggle('tut-at-hidden');
   if(typeof prefs==='object'&&prefs)prefs.tutAtHidden=hidden;
   try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.tutAtHidden=hidden;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}
-  try{var _p2=JSON.parse(localStorage.getItem('ap_prefs2')||'{}');_p2.tutAtHidden=hidden;localStorage.setItem('ap_prefs2',JSON.stringify(_p2));}catch(e){}
-  try{localStorage.setItem('ys_tutAtHidden',hidden?'1':'');}catch(e){}
   var row=document.getElementById('tutAtSwitch');if(row)row=row.closest('.sb-toggle-row');
   if(row)row.classList.toggle('on',!hidden);
   var st=document.getElementById('tutAtStatus');
@@ -3284,28 +3279,8 @@ window.addEventListener('message',function(ev){
   if(d&&d.salon==='chime'){try{softChime();}catch(e){}}
   if(d&&d.salon==='roomShown'){
     try{loadPrefs();}catch(e){}
-    /* Skip the heavy DOM rebuild if neither appt store changed since last render.
-       This makes return-to-ER instant when nothing was booked in AP while away —
-       no main-thread block, AT responds to touch immediately. */
-    try{
-      var _fp=_apptFP();
-      if(_fp!==_lastApptFP){
-        /* data changed while ER was hidden — rebuild table */
-        setTimeout(function(){
-          try{loadAll();calc();}catch(e){}
-          try{var m=$('pMgm');if(m&&m.style.display!=='none')renderMgm();}catch(e){}
-        },0);
-      }else{
-        /* nothing changed — fast path: recalc form only, table is already correct */
-        try{calc();}catch(e){}
-      }
-    }catch(e){
-      /* fallback: full rebuild */
-      setTimeout(function(){
-        try{loadAll();calc();}catch(e){}
-        try{var m=$('pMgm');if(m&&m.style.display!=='none')renderMgm();}catch(e){}
-      },0);
-    }
+    try{loadAll();calc();}catch(e){}
+    try{var m=$('pMgm');if(m&&m.style.display!=='none')renderMgm();}catch(e){}
   }
 });
 
@@ -3898,38 +3873,15 @@ function initPrefs(){
   updateBranding(prefs.name, prefs.salon);
   updateCommissionRate(Math.round(myRate()*100));
   applyWallpaper(prefs.wallpaper||'none');
-  /* AT visibility — ys_tutAtHidden is the sole shared authority.
-     Do NOT reconcile-write back (stale per-room prefs would overwrite the shared key). */
-  try{
-    var _ysH=localStorage.getItem('ys_tutAtHidden');
-    if(_ysH===null){
-      /* first-ever run: seed from own prefs, never overwrite an existing value */
-      _ysH=prefs.tutAtHidden?'1':'';
-      localStorage.setItem('ys_tutAtHidden',_ysH);
-    }
-    if(_ysH==='1')document.body.classList.add('tut-at-hidden');
-  }catch(e){if(prefs.tutAtHidden)document.body.classList.add('tut-at-hidden');}
+  if(prefs.tutAtHidden)document.body.classList.add('tut-at-hidden');
 }
 
 try{ initPrefs(); }catch(e){ console.error('initPrefs failed:',e); }
 try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); }
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
-/* AT two-iframe sync — salon.html keeps both rooms alive; no reload on switch.
-   Re-sync AT the moment this room is shown, and instantly when the other room toggles. */
-window.addEventListener('message',function(e){
-  var d=e.data||{};
-  if(d.salon==='roomShown'){
-    try{var h=localStorage.getItem('ys_tutAtHidden')==='1';document.body.classList.toggle('tut-at-hidden',h);}catch(ex){}
-  }
-});
-window.addEventListener('storage',function(e){
-  if(e.key!=='ys_tutAtHidden')return;
-  try{var h=e.newValue==='1';document.body.classList.toggle('tut-at-hidden',h);}catch(ex){}
-});
-
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.35 · paygate automated copy';
+var VERSION='app v2.26 · tips colour distinct from commission in calc hint';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4159,10 +4111,7 @@ setInterval(checkForUpdate,60000);
     if(el){el.classList.remove('dragging','snapping');el.classList.add('idle');}
   };
 
-  /* Initialise synchronously — #tutAt is already in the DOM when this IIFE runs.
-     DOMContentLoaded fires late (~7-10s) inside a hidden iframe on iPhone, so we
-     never rely on it for touch setup. */
-  (function initTutAt(){
+  document.addEventListener('DOMContentLoaded',function(){
     el=document.getElementById('tutAt');
     if(!el)return;
     var saved=loadPos();
@@ -4175,7 +4124,7 @@ setInterval(checkForUpdate,60000);
     el.addEventListener('touchmove',onTM,{passive:false});
     el.addEventListener('touchend',onTE,{passive:false});
     el.addEventListener('touchcancel',onTC,{passive:true});
-  })();
+  });
 
   /* ── CP Picker sheet ── */
   /* Ghost-picker fix v2.12:
