@@ -186,6 +186,16 @@
     pointer-events:none;
     z-index:2;
   }
+
+  /* ===== CSS glow breath — replaces JS RAF, runs on compositor ===== */
+  @keyframes glowBreath{
+    0%,100%{box-shadow:0 0 4px 0px rgba(var(--gr),0.08);}
+    50%    {box-shadow:0 0 40px 12px rgba(var(--gr),0.65),
+                       0 0 90px 28px rgba(var(--gr),0.22),
+                       inset 0 0 14px rgba(var(--gr),0.12);}
+  }
+  .brand-mark{--gr:255,193,68;--gs:3.5s;}
+  .brand-mark.glow-on{animation:glowBreath var(--gs) ease-in-out infinite;}
 </style>
 </head>
 <body>
@@ -219,7 +229,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.34</div>
+    <div class="ver">salon v0.37 · cooler engine</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -512,7 +522,7 @@
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.36';
+  var SHELL_V='v0.37';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{
@@ -580,19 +590,19 @@
 
   initAuth();
 
-/* ── Breathing Glow Engine — Your Salon brand mark ──
-   Reads same prefs as appt.html (cp_prefs.glowColour / glowSpeedIdx)
-   Controls live in appt.html Settings → Appearance              ── */
+/* ── Breathing Glow Engine — CSS-driven, no RAF, cool on mobile ──
+   Sets CSS custom props on the brand mark; @keyframes glowBreath
+   (defined in <style>) does the breathing on the compositor.       ── */
 (function(){
   var COLOURS={
-    gold:  {hex:'#ffd166',glow:'255,193,68'},
-    purple:{hex:'#c77dff',glow:'180,90,255'},
-    rose:  {hex:'#ff6b9d',glow:'255,80,130'},
-    cyan:  {hex:'#06d6e0',glow:'6,214,224'}
+    gold:  {glow:'255,193,68'},
+    purple:{glow:'180,90,255'},
+    rose:  {glow:'255,80,130'},
+    cyan:  {glow:'6,214,224'}
   };
   var CYCLE=['gold','purple','rose','cyan'];
   var SPEEDS=[20,12,8,5,3.5,2,1.2];
-  var gColour='auto',gSpeedIdx=4,gCycleIdx=0,gCycleTimer=null,gRaf=null,gStart=null;
+  var gColour='auto',gSpeedIdx=4,gCycleIdx=0,gCycleTimer=null;
 
   function loadPrefs(){
     try{
@@ -603,64 +613,38 @@
   }
   function activeKey(){return gColour==='auto'?CYCLE[gCycleIdx]:gColour;}
 
-  function applyGlow(t){
+  function applyGlow(){
     var el=document.getElementById('brandGlowIcon');
     if(!el)return;
-    if(gColour==='off'){el.style.boxShadow='0 0 12px rgba(255,184,0,.25)';return;}
-    var col=COLOURS[activeKey()];var g=col.glow;
-    el.style.boxShadow=
-      '0 0 '+(t*40)+'px '+(t*12)+'px rgba('+g+','+(t*.65)+'),'
-     +'0 0 '+(t*90)+'px '+(t*28)+'px rgba('+g+','+(t*.22)+'),'
-     +'inset 0 0 '+(t*14)+'px rgba('+g+','+(t*.12)+')';
-  }
-
-  var _gLastTick=0;
-  function tick(ts){
-    /* Throttle to ~20 fps — breathing is slow, phone doesn't need 60 fps for it */
-    if(ts-_gLastTick<50){gRaf=requestAnimationFrame(tick);return;}
-    _gLastTick=ts;
-    if(!gStart)gStart=ts;
-    var s=SPEEDS[gSpeedIdx];
-    var r=((ts-gStart)/1000%s)/(s/2);
-    var raw=r<1?r:2-r;
-    var t=raw*raw*(3-2*raw);
-    applyGlow(t);
-    gRaf=requestAnimationFrame(tick);
-  }
-
-  function startBreath(){
-    if(gRaf)cancelAnimationFrame(gRaf);
-    gStart=null;
-    if(gColour==='off'){applyGlow(0);return;}
-    gRaf=requestAnimationFrame(tick);
+    if(gColour==='off'){
+      el.classList.remove('glow-on');
+      el.style.boxShadow='0 0 12px rgba(255,184,0,.25)';
+      return;
+    }
+    var col=COLOURS[activeKey()]||COLOURS.gold;
+    el.style.setProperty('--gr',col.glow);
+    el.style.setProperty('--gs',SPEEDS[gSpeedIdx]+'s');
+    el.style.boxShadow='';
+    el.classList.add('glow-on');
   }
 
   function startCycle(){
     if(gCycleTimer)clearInterval(gCycleTimer);
     if(gColour!=='auto')return;
-    gCycleTimer=setInterval(function(){gCycleIdx=(gCycleIdx+1)%CYCLE.length;},SPEEDS[gSpeedIdx]*2000);
+    gCycleTimer=setInterval(function(){
+      gCycleIdx=(gCycleIdx+1)%CYCLE.length;
+      applyGlow();
+    },SPEEDS[gSpeedIdx]*2000);
   }
 
-  loadPrefs();startCycle();startBreath();
-
-  /* Pause glow RAF when tab goes to background — saves CPU/heat on iPhone */
-  document.addEventListener('visibilitychange',function(){
-    if(document.hidden){
-      if(gRaf){cancelAnimationFrame(gRaf);gRaf=null;}
-      if(gCycleTimer){clearInterval(gCycleTimer);gCycleTimer=null;}
-    } else {
-      gStart=null; /* reset so breath resumes smoothly */
-      startCycle();startBreath();
-    }
-  });
+  loadPrefs();startCycle();applyGlow();
 
   /* Live-update when appt.html settings panel saves new prefs */
   window.addEventListener('storage',function(e){
     if(e.key==='cp_prefs'){
-      if(gRaf)cancelAnimationFrame(gRaf);
-      if(gCycleTimer)clearInterval(gCycleTimer);
-      gStart=null;gCycleIdx=0;
-      loadPrefs();startCycle();startBreath();
+      if(gCycleTimer){clearInterval(gCycleTimer);gCycleTimer=null;}
+      gCycleIdx=0;
+      loadPrefs();startCycle();applyGlow();
     }
   });
 })();
@@ -746,7 +730,7 @@
     return opts[Math.floor(Math.random()*opts.length)]();
   }
 
-  var waves = [], _waveRafOn = false;
+  var waves = [], _waveRafOn = false, _wLastTick = 0;
 
   function spawnWave(){
     var fd=waveFreqDelay();
@@ -811,7 +795,7 @@
   function drawWave(w, ph){
     var ext=ph.ext, ef=ph.ef, isX=ph.isExit;
     var mode=isX ? w.exit : '_entry';
-    var STEPS=40;
+    var STEPS=20; /* was 40 — halves radial gradient fills per frame */
 
     for(var i=0;i<=STEPS;i++){
       var f=i/STEPS; // 0=root → 1=tip
@@ -856,9 +840,15 @@
   }
 
   function draw(){
+    var now=performance.now();
+    /* Cap wave canvas at ~30 fps — halves GPU work on mobile */
+    if(now-_wLastTick<33){
+      if(waves.length){requestAnimationFrame(draw);}else{_waveRafOn=false;}
+      return;
+    }
+    _wLastTick=now;
     ctx.clearRect(0,0,cv.width,cv.height);
     ctx.globalCompositeOperation='screen';
-    var now=performance.now();
     waves=waves.filter(function(w){
       var ph=wPhase(w,now);
       if(!ph) return false;
