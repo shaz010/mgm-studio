@@ -316,6 +316,7 @@ body.theme-light .legal-body{color:#777}
 .pg-foot{font-size:11px;color:#777;margin-top:16px;line-height:1.6}
 .pg-foot a{color:#999}
 .pg-close{display:block;margin-top:14px;background:none;border:none;color:#888;font-size:12.5px;cursor:pointer;text-decoration:underline}
+.pg-trial-btn{width:100%;margin-top:0;padding:13px;border-radius:11px;border:1.5px solid #a78bfa;background:transparent;color:#a78bfa;font-size:14px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
 #trialBar{position:fixed;left:10px;bottom:42px;z-index:9500;display:none;align-items:center;gap:9px;background:rgba(20,20,20,.92);border:1px solid var(--gold);border-radius:11px;padding:8px 12px;box-shadow:0 6px 20px rgba(0,0,0,.4)}
 #trialBar.on{display:flex}
 #trialBar .tb-txt{font-size:12px;color:#ddd}
@@ -1135,23 +1136,40 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
 
 <div id="payGate" role="dialog" aria-modal="true">
   <div class="pg-card">
+    <!-- Main: buy / enter code / request trial -->
     <div id="pgMain">
-      <div class="pg-logo">✂</div>
-      <div class="pg-title">Unlock CommissionPro</div>
-      <div class="pg-sub">Unlock the full app — yours forever, with a single one-time payment.</div>
-      <div class="pg-price">$49 · one-time · pays for itself with one service</div>
+      <div class="pg-logo">✨</div>
+      <div class="pg-title">Your Salon Pro</div>
+      <div class="pg-sub">Professional earnings &amp; bookings for stylists.</div>
+      <div class="pg-price">$49 · one-time · yours forever</div>
       <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Buy now — $49</a>
-      <div class="pg-div">ALREADY PAID?</div>
-      <input type="text" id="payCode" class="pg-code" placeholder="Enter your unlock code" autocapitalize="characters" autocomplete="off">
+      <div class="pg-div">HAVE A CODE?</div>
+      <input type="text" id="payCode" class="pg-code" placeholder="Enter your code" autocapitalize="characters" autocomplete="off">
       <button class="pg-unlock" onclick="payUnlock()">Unlock</button>
-      <div class="pg-err" id="payErr">That code didn't match. Check the email from your purchase, or contact support.</div>
-      <div class="pg-foot">After paying, your unlock code is emailed to you instantly.<br>Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
+      <div class="pg-err" id="payErr">That code didn't match — double-check and try again.</div>
+      <div class="pg-div" style="margin-top:18px">NEW HERE?</div>
+      <button class="pg-trial-btn" onclick="pgRequestTrial()">Request 21-day free trial</button>
+      <div class="pg-foot" style="margin-top:14px">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
       <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
     </div>
+    <!-- Request sent confirmation -->
+    <div class="pg-success" id="pgTrialReq">
+      <div class="pg-success-ic">📬</div>
+      <div class="pg-success-title">Request sent!</div>
+      <div class="pg-success-sub">Your email app should have opened — send the message and watch for a reply from Shaz with your trial code.</div>
+      <button class="pg-unlock" onclick="pgBackToMain()" style="margin-top:20px">Back</button>
+    </div>
+    <!-- Permanent unlock success (founder / paid) -->
     <div class="pg-success" id="pgSuccess">
       <div class="pg-success-ic">✨</div>
       <div class="pg-success-title">You're in.</div>
       <div class="pg-success-sub">Welcome, founding stylist.</div>
+    </div>
+    <!-- Trial unlock success -->
+    <div class="pg-success" id="pgTrialSuccess">
+      <div class="pg-success-ic">🎉</div>
+      <div class="pg-success-title">Trial activated!</div>
+      <div class="pg-success-sub">21 days of full access — enjoy every feature.</div>
     </div>
   </div>
 </div>
@@ -3295,6 +3313,14 @@ var UNLOCK={
                  2505427666,3313147493,2935018566,2074132601,66054324,
                  3475308934,2382158942,1784208043,3335092263,1207658589,
                  4071067142,3107680737,3163570396,3210388685,3000065783],
+  /* 30 trial codes (21-day access): PRISM01-10 · GLOSS11-20 · SHEEN21-30
+     Hand one code per stylist who requests a trial. */
+  trialHashes:[3599854449,3599854450,3599854451,3599854452,3599854453,
+               3599854454,3599854455,3599854456,3599854457,3599854481,
+               338887055,338887056,338887057,338887058,338887059,
+               338887060,338887061,338887062,338887063,338887087,
+               2782691483,2782691484,2782691485,2782691486,2782691487,
+               2782691488,2782691489,2782691490,2782691491,2782691515],
   trialDays:21,
   stripeUrl:'https://buy.stripe.com/3cIdR97x4gdA4z9dCEfw401'
 };
@@ -3306,9 +3332,48 @@ function pgUnlocked(){
   try{if(location.search.indexOf('owner')!==-1){localStorage.setItem('cp_unlocked','1');return true;}}catch(e){}
   return false;
 }
-function pgTrialStart(){try{var t=localStorage.getItem('cp_trialStart');if(!t){t=String(Date.now());localStorage.setItem('cp_trialStart',t);}return +t;}catch(e){return Date.now();}}
+/* Trial is active only when a trial code was explicitly entered AND it hasn't expired */
+function pgTrialActive(){
+  try{
+    var code=localStorage.getItem('cp_trialCode');
+    if(!code)return false;
+    var start=localStorage.getItem('cp_trialStart');
+    if(!start)return false;
+    return (Date.now()-(+start))<(UNLOCK.trialDays*86400000);
+  }catch(e){return false;}
+}
+function pgTrialStart(){try{return +(localStorage.getItem('cp_trialStart')||0);}catch(e){return 0;}}
 function pgDaysLeft(){var ms=UNLOCK.trialDays*86400000-(Date.now()-pgTrialStart());return Math.max(0,Math.ceil(ms/86400000));}
-function pgTrialOver(){return (Date.now()-pgTrialStart())>=UNLOCK.trialDays*86400000;}
+function pgTrialOver(){return pgTrialStart()>0&&(Date.now()-pgTrialStart())>=UNLOCK.trialDays*86400000;}
+function pgRequestTrial(){
+  /* Log request to Firestore */
+  try{
+    var url='https://firestore.googleapis.com/v1/projects/telemetry-eagle/databases/(default)/documents/trial_requests?key=AIzaSyCxPNPOcu-ShSRXDJtwdNBZJ6kFaxQ8apM';
+    var body=JSON.stringify({fields:{requestedAt:{timestampValue:new Date().toISOString()},app:{stringValue:'CommissionPro'},ua:{stringValue:navigator.userAgent.slice(0,120)}}});
+    fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:body})
+      .then(function(r){console.log('[CP] trial request logged · status',r.status);})
+      .catch(function(e){console.warn('[CP] trial request log failed',e);});
+  }catch(e){}
+  /* Open prefilled email to Shaz */
+  try{
+    var sub=encodeURIComponent('CommissionPro — 21-Day Trial Request');
+    var bod=encodeURIComponent('Hi Shaz,\n\nI\'d love to try CommissionPro for 21 days.\nPlease send me a trial code.\n\nThanks!');
+    window.open('mailto:chabokchamejun@gmail.com?subject='+sub+'&body='+bod);
+  }catch(e){}
+  /* Show confirmation screen */
+  var pgMain=document.getElementById('pgMain');
+  var pgReq=document.getElementById('pgTrialReq');
+  if(pgMain)pgMain.style.display='none';
+  if(pgReq){pgReq.style.display='flex';pgReq.classList.add('on');}
+}
+function pgBackToMain(){
+  var pgMain=document.getElementById('pgMain');
+  var pgReq=document.getElementById('pgTrialReq');
+  var pgTS=document.getElementById('pgTrialSuccess');
+  if(pgReq){pgReq.style.display='none';pgReq.classList.remove('on');}
+  if(pgTS){pgTS.style.display='none';pgTS.classList.remove('on');}
+  if(pgMain)pgMain.style.display='';
+}
 function payShow(mandatory){var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.getElementById('pgClose').style.display=mandatory?'none':'block';document.getElementById('payErr').style.display='none';}
 function payClose(){var g=document.getElementById('payGate');if(g)g.classList.remove('on');}
 function payBuy(){if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){alert('Payment link is not set up yet — coming soon!');return;}window.location.href=UNLOCK.stripeUrl;}
@@ -3325,28 +3390,47 @@ function payUnlock(){
   var v=(document.getElementById('payCode').value||'').trim().toUpperCase();
   var h=pgHash(v);
   var isFounder=v&&UNLOCK.founderHashes.indexOf(h)!==-1;
-  var valid=v&&(h===UNLOCK.codeHash||isFounder);
+  var isTrial=v&&UNLOCK.trialHashes.indexOf(h)!==-1;
+  var isPermanent=v&&(h===UNLOCK.codeHash||isFounder);
+  var valid=v&&(isPermanent||isTrial);
   if(valid){
-    if(window._demoMode){
-      var main=document.getElementById('pgMain');
-      var succ=document.getElementById('pgSuccess');
-      if(main)main.style.display='none';
-      if(succ)succ.classList.add('on');
+    var pgMain=document.getElementById('pgMain');
+    if(isTrial&&!isPermanent){
+      /* Trial code — set timed access, NOT permanent unlock */
+      try{localStorage.setItem('cp_trialStart',String(Date.now()));}catch(e){}
+      try{localStorage.setItem('cp_trialCode',v);}catch(e){}
+      /* Log trial activation to Firestore */
+      try{
+        var url='https://firestore.googleapis.com/v1/projects/telemetry-eagle/databases/(default)/documents/trial_activations?key=AIzaSyCxPNPOcu-ShSRXDJtwdNBZJ6kFaxQ8apM';
+        var body=JSON.stringify({fields:{code:{stringValue:v},at:{timestampValue:new Date().toISOString()},app:{stringValue:'CommissionPro'}}});
+        fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:body}).catch(function(){});
+      }catch(e){}
+      /* Show trial success then close */
+      if(pgMain)pgMain.style.display='none';
+      var pgTS=document.getElementById('pgTrialSuccess');
+      if(pgTS){pgTS.style.display='flex';pgTS.classList.add('on');}
       setTimeout(function(){
         payClose();
-        setTimeout(function(){
-          if(main)main.style.display='';
-          if(succ)succ.classList.remove('on');
-          var code=document.getElementById('payCode');if(code)code.value='';
-          var err=document.getElementById('payErr');if(err)err.style.display='none';
-        },300);
+        setTimeout(function(){pgBackToMain();var code=document.getElementById('payCode');if(code)code.value='';},300);
+        trialBarShow();
       },2200);
-      return;
+    }else{
+      if(window._demoMode){
+        if(pgMain)pgMain.style.display='none';
+        var succ=document.getElementById('pgSuccess');
+        if(succ)succ.classList.add('on');
+        setTimeout(function(){
+          payClose();
+          setTimeout(function(){pgBackToMain();if(succ)succ.classList.remove('on');var code=document.getElementById('payCode');if(code)code.value='';var err=document.getElementById('payErr');if(err)err.style.display='none';},300);
+        },2200);
+        return;
+      }
+      /* Permanent unlock (owner or founder) */
+      try{localStorage.setItem('cp_unlocked','1');}catch(e){}
+      try{sessionStorage.setItem('cp_unlocked','1');}catch(e){}
+      if(isFounder)logFounderUnlock(v);
+      payClose();
     }
-    try{localStorage.setItem('cp_unlocked','1');}catch(e){}
-    try{sessionStorage.setItem('cp_unlocked','1');}catch(e){}
-    if(isFounder)logFounderUnlock(v);
-    payClose();
   }else{document.getElementById('payErr').style.display='block';}
 }
 /* Demo mode — ?demo in URL shows the unlock flow without touching real data */
@@ -3387,10 +3471,14 @@ function showDayNudge(){
 }
 function applyAccessGate(){
   if(pgUnlocked())return;
-  if(pgTrialOver()){payShow(true);return;}
-  /* Active trial — show countdown bar, then nudge after app settles */
-  trialBarShow();
-  setTimeout(showDayNudge,2800);
+  if(pgTrialActive()){
+    /* Valid trial — show countdown bar + nudge after app settles */
+    trialBarShow();
+    setTimeout(showDayNudge,2800);
+    return;
+  }
+  /* Not unlocked, no active trial → lock immediately */
+  payShow(true);
 }
 applyAccessGate();
 </script>
@@ -3881,7 +3969,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.28 · cooler animations — slower iridShift, atGlow, chipGlow; fewer canvas stars, 20fps cap';
+var VERSION='app v2.29 · paywall locks on fresh install; trial requires Shaz auth; 30 trial codes; Firestore+email ping';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
