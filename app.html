@@ -1147,8 +1147,10 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       <input type="text" id="payCode" class="pg-code" placeholder="Enter your code" autocapitalize="characters" autocomplete="off">
       <button class="pg-unlock" onclick="payUnlock()">Unlock</button>
       <div class="pg-err" id="payErr">That code didn't match — double-check and try again.</div>
+      <div id="pgTrialSection">
       <div class="pg-div" style="margin-top:18px">NEW HERE?</div>
       <button class="pg-trial-btn" onclick="pgRequestTrial()">Request 21-day free trial</button>
+      </div>
       <div class="pg-foot" style="margin-top:14px">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
       <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
     </div>
@@ -3374,7 +3376,7 @@ function pgBackToMain(){
   if(pgTS){pgTS.style.display='none';pgTS.classList.remove('on');}
   if(pgMain)pgMain.style.display='';
 }
-function payShow(mandatory){var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.getElementById('pgClose').style.display=mandatory?'none':'block';document.getElementById('payErr').style.display='none';}
+function payShow(mandatory){var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.getElementById('pgClose').style.display=mandatory?'none':'block';document.getElementById('payErr').style.display='none';var ts=document.getElementById('pgTrialSection');if(ts)ts.style.display=pgUnlocked()?'none':'';}
 function payClose(){var g=document.getElementById('payGate');if(g)g.classList.remove('on');}
 function payBuy(){if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){alert('Payment link is not set up yet — coming soon!');return;}window.location.href=UNLOCK.stripeUrl;}
 function logFounderUnlock(code){
@@ -3969,7 +3971,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.29 · paywall locks on fresh install; trial requires Shaz auth; 30 trial codes; Firestore+email ping';
+var VERSION='app v2.30 · trial request button hidden for paid users';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
