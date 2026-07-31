@@ -501,7 +501,7 @@ body.theme-light .data-howto{background:rgba(0,0,0,.03);color:#777}
 
 /* ── PICKER ANIMATIONS ── */
 @property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
-.svc-chip.sel{animation:chipGlow 1.8s ease-in-out infinite}
+.svc-chip.sel{animation:chipGlow 3.5s ease-in-out infinite}
 @keyframes chipGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,184,0,0)}50%{box-shadow:0 0 9px 0 rgba(255,184,0,.5)}}
 .svc-ghost{position:fixed;z-index:9000;pointer-events:none;display:inline-flex;align-items:center;justify-content:center;padding:7px 12px;border-radius:20px;background:var(--gold-dim);border:1.5px solid var(--gold);color:var(--gold);font-size:12.5px;font-weight:700;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.45);left:0;top:0}
 .svc-ghost.go{animation:ghostDance 1.35s cubic-bezier(.4,0,.2,1) forwards}
@@ -542,7 +542,7 @@ body.theme-light .svc-mode-btn[data-mode="nail"].on .m-word,body.theme-light .sv
 body.fx-gentle{--fxModeDur:11s;--fxNailColor:13s;--fxHairWave:6.5s;--fxNailWave:8.5s;--fxMoreSpin:3.4s;--fxMoreHue:22s;--fxUnderline:3.6s;--fxGlow:4.2s}
 body.fx-lively{--fxModeDur:6s;--fxNailColor:7.5s;--fxHairWave:3.6s;--fxNailWave:4.6s;--fxMoreSpin:1.8s;--fxMoreHue:11s;--fxUnderline:1.9s;--fxGlow:2.3s}
 body.fx-party{--fxModeDur:3s;--fxNailColor:3.6s;--fxHairWave:1.8s;--fxNailWave:2.4s;--fxMoreSpin:1s;--fxMoreHue:5s;--fxUnderline:1s;--fxGlow:1.2s}
-body.fx-off .svc-mode-btn.on,body.fx-off .svc-mode-btn .m-word,body.fx-off .svc-mode-btn::after,body.fx-off .svc-more,body.fx-off .svc-more::before,body.fx-off .svc-more .more-txt{animation:none!important}
+body.fx-off .svc-mode-btn.on,body.fx-off .svc-mode-btn .m-word,body.fx-off .svc-mode-btn::after,body.fx-off .svc-more,body.fx-off .svc-more::before,body.fx-off .svc-more .more-txt,body.fx-off .svc-chip.sel,body.fx-off .set-trade-tile.on,body.fx-off .set-trade-tile.on i,body.fx-off #tutAt.idle,body.fx-off #tutAt.idle i{animation:none!important}
 body.fx-off .svc-more::before{background:var(--gold)!important}
 body.fx-off .svc-more .more-txt{-webkit-text-fill-color:var(--gold)!important;color:var(--gold)!important}
 /* Pause background picker motion while a modal (e.g. Price book) is open */
@@ -989,8 +989,8 @@ body.theme-noir .svc-trade-change{color:#cbd5ff;border-color:#23232e;background:
 .set-trade-tile i{font-size:22px;color:#cbd5ff}
 .set-trade-tile span{font-size:12px;font-weight:700;color:#e8e8f2}
 body.theme-noir .set-trade-tile{background:#0a0a0e;border-color:#23232e}
-.set-trade-tile.on{border-color:transparent;border-width:2px;background:linear-gradient(#101016,#101016) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 16px rgba(167,139,250,.6),0 0 36px rgba(103,232,249,.32)}
-.set-trade-tile.on i{background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:iridShift 4.5s linear infinite}
+.set-trade-tile.on{border-color:transparent;border-width:2px;background:linear-gradient(#101016,#101016) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 9s linear infinite;box-shadow:0 0 16px rgba(167,139,250,.6),0 0 36px rgba(103,232,249,.32)}
+.set-trade-tile.on i{background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:iridShift 9s linear infinite}
 .set-trade-tile.on span{color:#fff}
 @keyframes iridShift{to{background-position:200% 50%}}
 body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!important;background:linear-gradient(#000,#000) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 10px rgba(167,139,250,.25)}
@@ -1076,8 +1076,8 @@ body.theme-noir .svc-customchip{background:#0a0a0e!important;border-color:#4a3a5
   border:2.5px solid transparent;
   box-shadow:0 8px 30px rgba(0,0,0,.75)}
 #tutAt.snapping{transition:transform .28s cubic-bezier(.34,1.56,.64,1),opacity .2s}
-#tutAt.idle{opacity:.95;animation:atGlow 2.8s ease-in-out infinite}
-#tutAt.idle i{animation:atIconPulse 2.8s ease-in-out infinite}
+#tutAt.idle{opacity:.95;animation:atGlow 5.5s ease-in-out infinite}
+#tutAt.idle i{animation:atIconPulse 5.5s ease-in-out infinite}
 body.tut-at-hidden #tutAt{display:none}
 body.settings-open #tutAt{display:none!important} /* AT sits z-799, above settings z-500 — hide it so settings taps can't accidentally hit AT */
 /* WIT mode */
@@ -3796,7 +3796,7 @@ var WARP=(function(){
   function el(){return document.getElementById('warpLayer');}
   function resize(){if(!cv||!ctx)return;W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);cx=W/2;cy=H/2;focal=Math.max(W,H)*0.9;}
   function mk(s){s=s||{};s.x=Math.random()*2-1;s.y=Math.random()*2-1;s.z=Math.random()*0.9+0.1;s.px=null;s.py=null;return s;}
-  function build(){N=Math.min(innerWidth,innerHeight)<420?150:190;stars=[];for(var i=0;i<N;i++)stars.push(mk());}
+  function build(){N=Math.min(innerWidth,innerHeight)<420?90:120;stars=[];for(var i=0;i<N;i++)stars.push(mk());}
   function poke(){
     mode='active';target=GENTLE;
     if(suspended&&running){suspended=false;last=performance.now();raf=requestAnimationFrame(frame);}
@@ -3807,7 +3807,7 @@ var WARP=(function(){
   function frame(now){
     if(!running){return;}
     if(!visible){last=now;raf=requestAnimationFrame(frame);return;}
-    if(now-last<32){raf=requestAnimationFrame(frame);return;}   // ~30fps cap
+    if(now-last<50){raf=requestAnimationFrame(frame);return;}   // ~20fps cap
     var dt=Math.min((now-last)/1000,0.06);last=now;
     if(mode==='idle'&&idleSince&&(now-idleSince)>25000){suspended=true;return;}  // stop cooking when left alone
     var tgt=target;
@@ -3881,7 +3881,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.26 · tips colour distinct from commission in calc hint';
+var VERSION='app v2.28 · cooler animations — slower iridShift, atGlow, chipGlow; fewer canvas stars, 20fps cap';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
