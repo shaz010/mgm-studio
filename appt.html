@@ -914,6 +914,11 @@ body.theme-noir .ro-item{border-color:#1c1c26}
 .sk-cats{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
 .sk-add{display:flex;gap:8px;margin-top:8px}
 .sk-add input{flex:1}
+.inv-spend-tile{margin-top:10px;padding:12px 14px;background:var(--bg2);border:1px solid #1c1c26;border-radius:13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.inv-spend-lhs{display:flex;flex-direction:column;gap:2px}
+.inv-spend-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.inv-spend-note{font-size:10.5px;color:var(--muted);margin-top:1px}
+.inv-spend-val{font-size:22px;font-weight:800;color:var(--purple)}
 .sk-add .btn{flex:0 0 auto}
 .sk-add-chip{border-style:dashed;border-color:var(--gold-border);color:var(--gold);background:transparent}
 .sk-mng{border-color:var(--border-bright);color:var(--text2);background:transparent}
@@ -1282,6 +1287,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div id="reorderStrip"></div>
     <div class="inv-cats" id="invCats"></div>
     <div id="stockList"></div>
+    <div id="invSpend"></div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════
@@ -3296,6 +3302,7 @@ function renderStock(){
   var items=stock.filter(function(s){return (s.trade||'stylist')===invTrade});
   var low=items.filter(function(s){return (+s.qty||0)<=(+s.min||0)});
   var val=items.reduce(function(t,s){return t+((+s.qty||0)*(+s.cost||0))},0);
+  var spent=items.reduce(function(t,s){return t+((+s.used||0)*(+s.cost||0))},0);
   $('invKpis').innerHTML=
     '<div class="inv-kpi"><div class="inv-kpi-v ik-items">'+items.length+'</div><div class="inv-kpi-l">Items</div></div>'+
     '<div class="inv-kpi"><div class="inv-kpi-v ik-low">'+low.length+'</div><div class="inv-kpi-l">Running low</div></div>'+
@@ -3328,7 +3335,8 @@ function renderStock(){
   });
   $('stockList').innerHTML=sorted.map(function(s){
     var qty=+s.qty||0, min=+s.min||0, isLow=qty<=min, ico=invIcon(s.cat||'Other',s.trade||'stylist');
-    var sub=(s.cat?esc(s.cat):'Other')+' · min '+min+(s.unit?' · '+esc(s.unit):'')+' · used '+(+s.used||0);
+    var costStr=(+s.cost>0?(' · $'+(+s.cost).toFixed(2)+'/unit'):'');
+    var sub=(s.cat?esc(s.cat):'Other')+' · min '+min+(s.unit?' · '+esc(s.unit):'')+' · used '+(+s.used||0)+costStr;
     return '<div class="inv-item'+(isLow?' low':'')+'">'+
       '<div class="inv-ic '+ico[1]+'" onclick="openStockSheet(\''+s.id+'\')"><i class="ti '+ico[0]+'"></i></div>'+
       '<div class="inv-mid" onclick="openStockSheet(\''+s.id+'\')"><div class="inv-n">'+esc(s.name)+'</div><div class="inv-s">'+sub+'</div>'+(isLow?'<div class="inv-low-badge">LOW · REORDER</div>':'')+'</div>'+
@@ -3340,6 +3348,15 @@ function renderStock(){
         '<button class="inv-step" onclick="addStockQty(\''+s.id+'\')" aria-label="add one">+</button>'+
       '</div></div>';
   }).join('');
+  /* Supply spend summary tile — only show when at least one item has cost set */
+  var spendEl=$('invSpend');
+  if(spendEl){
+    if(spent>0){
+      spendEl.innerHTML='<div class="inv-spend-tile"><div class="inv-spend-lhs"><div class="inv-spend-label">Est. supply spend</div><div class="inv-spend-note">Cost × units used · add to tax deductions</div></div><div class="inv-spend-val">'+fmt$(spent)+'</div></div>';
+    }else{
+      spendEl.innerHTML='';
+    }
+  }
 }
 function useStock(id){           /* used one: qty down, used count up */
   stock=stock.map(function(s){
@@ -3463,7 +3480,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.11 · cooler — slower iridShift, atGlow, addTab animations, netBorder; fx-off now wired on init';
+var VERSION='v6.12 · inventory shows cost per unit + est. supply spend tile';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
