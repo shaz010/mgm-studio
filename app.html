@@ -2639,6 +2639,11 @@ function renderBackupStatus(){
 function maybeShowBackupNudge(){
   var el=document.getElementById('backupNudge'); if(!el)return;
   if(_cloudFresh()){el.style.display='none';return;} /* live-synced — no nagging */
+  /* Grace period: stamp first open, don't nudge for 3 days */
+  var fo=0;try{fo=parseInt(localStorage.getItem('cp_firstOpen')||'0',10)||0;}catch(e){}
+  if(!fo){fo=Date.now();try{localStorage.setItem('cp_firstOpen',String(fo));}catch(e){}}
+  var daysInstalled=Math.floor((Date.now()-fo)/86400000);
+  if(daysInstalled<3){el.style.display='none';return;}
   var has=(loadAppts().length>0)||(typeof getClients==='function'&&getClients().length>0);
   if(!has){el.style.display='none';return;}
   var t=0;try{t=parseInt(localStorage.getItem('cp_lastBackup')||'0',10)||0;}catch(e){}
@@ -3978,7 +3983,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.31 · supply expenses from inventory wired into tax section';
+var VERSION='app v2.32 · backup nudge has 3-day grace on fresh install';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
