@@ -1622,6 +1622,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="btn-row" style="margin-top:10px">
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openRequests()"><i class="ti ti-inbox"></i> Requests <span class="sb-badge" id="sbReqBadge" style="display:none">0</span></button>
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="copyBookingLink()"><i class="ti ti-link"></i> Copy link</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openBookingQR()"><i class="ti ti-qrcode"></i> QR code</button>
     </div>
     <div class="sb-conn" id="sbConn"><i class="ti ti-point"></i> <span id="sbConnTxt">Connecting…</span></div>
     <label style="margin-top:14px">Fallback contact on the booking page <span style="color:#666;font-weight:400">(optional)</span></label>
@@ -1743,6 +1744,12 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       <button class="btn" style="flex:1" onclick="saveTrades()"><i class="ti ti-check"></i> Done</button>
     </div>
   </div>
+</div>
+
+<!-- QR OVERLAY -->
+<div id="apptQrOverlay" onclick="closeBookingQR()" style="display:none;position:fixed;inset:0;z-index:100060;background:rgba(0,0,0,.93);flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:32px">
+  <div style="background:#fff;border-radius:18px;padding:20px" id="apptQrBox"></div>
+  <div style="color:#fff;font-size:14px;font-weight:700;text-align:center;opacity:.85">Clients scan this to book<br><span style="font-size:11px;font-weight:400;opacity:.7">tap anywhere to close</span></div>
 </div>
 
 <!-- REQUESTS SHEET -->
@@ -3480,7 +3487,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.12 · inventory shows cost per unit + est. supply spend tile';
+var VERSION='v6.13 · QR code button in self-booking settings';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4562,6 +4569,14 @@ function copyBookingLink(){
   }catch(e){promptLink(link);}
 }
 function promptLink(link){try{window.prompt('Your booking link — copy and share:',link);}catch(e){toast(link);}}
+function openBookingQR(){
+  var l=bookingLink();if(!l)return;
+  var ov=document.getElementById('apptQrOverlay');if(!ov)return;
+  var box=document.getElementById('apptQrBox');
+  if(box)box.innerHTML='<img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data='+encodeURIComponent(l)+'" alt="QR code" style="display:block;width:240px;height:240px;border-radius:10px">';
+  ov.style.display='flex';
+}
+function closeBookingQR(){var ov=document.getElementById('apptQrOverlay');if(ov)ov.style.display='none';}
 
 /* ===== init ===== */
 applyBranding();
