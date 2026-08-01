@@ -1147,9 +1147,9 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
     <div id="pgMain">
       <div class="pg-logo">✨</div>
       <div class="pg-title">Your Salon Pro</div>
-      <div class="pg-sub">Professional earnings &amp; bookings for stylists.</div>
-      <div class="pg-price">$49 · one-time · yours forever</div>
-      <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Buy now — $49</a>
+      <div class="pg-sub">Professional earnings &amp; bookings for beauty professionals.</div>
+      <div class="pg-price">$5/month · 21-day free trial included</div>
+      <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Start free trial — $5/mo after</a>
       <div class="pg-div">HAVE A CODE?</div>
       <input type="text" id="payCode" class="pg-code" placeholder="Enter your code" autocapitalize="characters" autocomplete="off">
       <button class="pg-unlock" onclick="payUnlock()">Unlock</button>
@@ -3352,7 +3352,7 @@ var UNLOCK={
                2782691483,2782691484,2782691485,2782691486,2782691487,
                2782691488,2782691489,2782691490,2782691491,2782691515],
   trialDays:21,
-  stripeUrl:'https://buy.stripe.com/3cIdR97x4gdA4z9dCEfw401'
+  stripeUrl:'https://buy.stripe.com/aFa9AT5oW6D04z9dCEfw402'
 };
 function pgHash(s){var h=5381;for(var i=0;i<s.length;i++){h=((h<<5)+h+s.charCodeAt(i))>>>0;}return h;}
 function pgUnlocked(){
@@ -3999,7 +3999,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.34 · QR code via image API — no library needed';
+var VERSION='app v2.36 · broadened audience to beauty professionals';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
