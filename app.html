@@ -1135,6 +1135,12 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
 <div style="position:fixed;bottom:8px;right:8px;font-size:11px;color:#FFB800;background:rgba(0,0,0,.6);border:1px solid rgba(255,184,0,.45);border-radius:8px;padding:3px 9px;z-index:99999;pointer-events:none;font-family:-apple-system,sans-serif;font-weight:700;letter-spacing:.3px;display:none">v</div>
 
 
+<!-- QR code overlay -->
+<div id="qrOverlay" onclick="closeQR()" style="display:none;position:fixed;inset:0;z-index:99980;background:rgba(0,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:32px">
+  <div style="background:#fff;border-radius:18px;padding:20px" id="qrBox"></div>
+  <div style="color:#fff;font-size:14px;font-weight:700;text-align:center;opacity:.85">Clients scan this to book<br><span style="font-size:11px;font-weight:400;opacity:.7">tap anywhere to close</span></div>
+</div>
+
 <div id="payGate" role="dialog" aria-modal="true">
   <div class="pg-card">
     <!-- Main: buy / enter code / request trial -->
@@ -1399,6 +1405,7 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       <div class="reset-qp-hint" style="margin-top:7px">Paste your AppointmentPro booking link here. Clients book through it — you approve requests inside AppointmentPro. Your CommissionPro data stays on this device.</div>
       <div id="bookLinkActions" style="display:none;margin-top:11px">
         <button class="bk-btn primary" onclick="shareBookLink()"><i class="ti ti-share"></i> Share booking link</button>
+        <button class="bk-btn" onclick="openQR()"><i class="ti ti-qrcode"></i> Show QR code</button>
         <button class="bk-btn" onclick="copyBookLink()"><i class="ti ti-copy"></i> Copy link</button>
         <button class="bk-btn" onclick="openBookLink()"><i class="ti ti-external-link"></i> Open to preview</button>
       </div>
@@ -1808,6 +1815,22 @@ function _bkUrl(){var l=getBookLink();if(!l){alert('Add your booking link first.
 function shareBookLink(){var l=_bkUrl();if(!l)return;if(navigator.share){navigator.share({title:'Book an appointment',text:'Book your appointment here:',url:l}).catch(function(){});}else{copyBookLink();}}
 function copyBookLink(){var l=_bkUrl();if(!l)return;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(l).then(function(){alert('Booking link copied');},function(){window.prompt('Copy your booking link:',l);});}else{window.prompt('Copy your booking link:',l);}}
 function openBookLink(){var l=_bkUrl();if(!l)return;window.open(l,'_blank');}
+function openQR(){
+  var l=_bkUrl();if(!l)return;
+  var ov=document.getElementById('qrOverlay');if(!ov)return;
+  ov.style.display='flex';
+  document.body.classList.add('modal-open');
+  var box=document.getElementById('qrBox');if(box)box.innerHTML='';
+  if(window.QRCode){_renderQR(l);}
+  else{var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';s.onload=function(){_renderQR(l);};document.head.appendChild(s);}
+}
+function _renderQR(url){
+  var box=document.getElementById('qrBox');if(!box)return;
+  box.innerHTML='';
+  try{new QRCode(box,{text:url,width:220,height:220,colorDark:'#111',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});}
+  catch(e){box.innerHTML='<div style="color:#111;font-size:12px;padding:10px">QR unavailable offline</div>';}
+}
+function closeQR(){var ov=document.getElementById('qrOverlay');if(ov)ov.style.display='none';document.body.classList.remove('modal-open');}
 let data=[],paidMonths={},activeFilter='all',editingId=null;
 var APPTS_KEY='cp_appts',PAID_KEY='cp_paid';
 function loadAppts(){
@@ -3983,7 +4006,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.32 · backup nudge has 3-day grace on fresh install';
+var VERSION='app v2.33 · QR code button for client booking link';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
