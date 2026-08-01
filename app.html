@@ -1818,17 +1818,10 @@ function openBookLink(){var l=_bkUrl();if(!l)return;window.open(l,'_blank');}
 function openQR(){
   var l=_bkUrl();if(!l)return;
   var ov=document.getElementById('qrOverlay');if(!ov)return;
+  var box=document.getElementById('qrBox');
+  if(box)box.innerHTML='<img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data='+encodeURIComponent(l)+'" alt="QR code" style="display:block;width:240px;height:240px;border-radius:10px">';
   ov.style.display='flex';
   document.body.classList.add('modal-open');
-  var box=document.getElementById('qrBox');if(box)box.innerHTML='';
-  if(window.QRCode){_renderQR(l);}
-  else{var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';s.onload=function(){_renderQR(l);};document.head.appendChild(s);}
-}
-function _renderQR(url){
-  var box=document.getElementById('qrBox');if(!box)return;
-  box.innerHTML='';
-  try{new QRCode(box,{text:url,width:220,height:220,colorDark:'#111',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});}
-  catch(e){box.innerHTML='<div style="color:#111;font-size:12px;padding:10px">QR unavailable offline</div>';}
 }
 function closeQR(){var ov=document.getElementById('qrOverlay');if(ov)ov.style.display='none';document.body.classList.remove('modal-open');}
 let data=[],paidMonths={},activeFilter='all',editingId=null;
@@ -4006,7 +3999,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.33 · QR code button for client booking link';
+var VERSION='app v2.34 · QR code via image API — no library needed';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
