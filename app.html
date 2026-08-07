@@ -266,6 +266,8 @@ body.theme-light .reset-app-btn{border-color:#e0b4b4;color:#b14}
 .danger-body{padding:2px 15px 15px}
 .erase-modal{display:none;position:fixed;inset:0;z-index:100050;background:rgba(0,0,0,.9);align-items:center;justify-content:center;padding:26px}
 .erase-modal.open{display:flex}
+#qrOverlay{display:none;position:fixed;inset:0;z-index:100060;background:rgba(0,0,0,.93);flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:32px}
+#qrOverlay.open{display:flex}
 .erase-card{max-width:380px;width:100%;background:#0a0608;border:1.5px solid #ff2b4a;border-radius:18px;padding:26px 22px;text-align:center;box-shadow:0 0 30px rgba(255,43,74,.45),inset 0 0 22px rgba(255,43,74,.08)}
 .erase-icon{font-size:40px;color:#ff2b4a;margin-bottom:8px;text-shadow:0 0 14px rgba(255,43,74,.85)}
 .erase-title{font-size:22px;font-weight:800;color:#ff3355;margin-bottom:13px;letter-spacing:.3px;text-shadow:0 0 12px rgba(255,43,74,.75),0 0 26px rgba(255,43,74,.4)}
@@ -1136,7 +1138,7 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
 
 
 <!-- QR code overlay -->
-<div id="qrOverlay" onclick="closeQR()" style="display:none;position:fixed;inset:0;z-index:99980;background:rgba(0,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:32px">
+<div id="qrOverlay" onclick="closeQR()">
   <div style="background:#fff;border-radius:18px;padding:20px" id="qrBox"></div>
   <div style="color:#fff;font-size:14px;font-weight:700;text-align:center;opacity:.85">Clients scan this to book<br><span style="font-size:11px;font-weight:400;opacity:.7">tap anywhere to close</span></div>
 </div>
@@ -1147,9 +1149,9 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
     <div id="pgMain">
       <div class="pg-logo">✨</div>
       <div class="pg-title">Your Salon Pro</div>
-      <div class="pg-sub">Professional earnings &amp; bookings for beauty professionals.</div>
-      <div class="pg-price">$5/month · 21-day free trial included</div>
-      <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Start free trial — $5/mo after</a>
+      <div class="pg-sub">Professional earnings &amp; bookings for stylists.</div>
+      <div class="pg-price">$49 · one-time · yours forever</div>
+      <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Buy now — $49</a>
       <div class="pg-div">HAVE A CODE?</div>
       <input type="text" id="payCode" class="pg-code" placeholder="Enter your code" autocapitalize="characters" autocomplete="off">
       <button class="pg-unlock" onclick="payUnlock()">Unlock</button>
@@ -1820,10 +1822,10 @@ function openQR(){
   var ov=document.getElementById('qrOverlay');if(!ov)return;
   var box=document.getElementById('qrBox');
   if(box)box.innerHTML='<img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data='+encodeURIComponent(l)+'" alt="QR code" style="display:block;width:240px;height:240px;border-radius:10px">';
-  ov.style.display='flex';
+  ov.classList.add('open');
   document.body.classList.add('modal-open');
 }
-function closeQR(){var ov=document.getElementById('qrOverlay');if(ov)ov.style.display='none';document.body.classList.remove('modal-open');}
+function closeQR(){var ov=document.getElementById('qrOverlay');if(ov)ov.classList.remove('open');document.body.classList.remove('modal-open');}
 let data=[],paidMonths={},activeFilter='all',editingId=null;
 var APPTS_KEY='cp_appts',PAID_KEY='cp_paid';
 function loadAppts(){
@@ -3352,7 +3354,7 @@ var UNLOCK={
                2782691483,2782691484,2782691485,2782691486,2782691487,
                2782691488,2782691489,2782691490,2782691491,2782691515],
   trialDays:21,
-  stripeUrl:'https://buy.stripe.com/aFa9AT5oW6D04z9dCEfw402'
+  stripeUrl:'https://buy.stripe.com/3cIdR97x4gdA4z9dCEfw401'
 };
 function pgHash(s){var h=5381;for(var i=0;i<s.length;i++){h=((h<<5)+h+s.charCodeAt(i))>>>0;}return h;}
 function pgUnlocked(){
@@ -3406,7 +3408,31 @@ function pgBackToMain(){
 }
 function payShow(mandatory){var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.getElementById('pgClose').style.display=mandatory?'none':'block';document.getElementById('payErr').style.display='none';var ts=document.getElementById('pgTrialSection');if(ts)ts.style.display=pgUnlocked()?'none':'';}
 function payClose(){var g=document.getElementById('payGate');if(g)g.classList.remove('on');}
-function payBuy(){if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){alert('Payment link is not set up yet — coming soon!');return;}window.location.href=UNLOCK.stripeUrl;}
+function payBuy(){
+  if(window.IS_APPLE_IAP){
+    if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.iapHandler){
+      window.webkit.messageHandlers.iapHandler.postMessage({action:'purchase',productId:'com.yoursalon.pro.monthly'});
+    }else{alert('Apple payment not available. Please try again.');}
+    return;
+  }
+  if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){alert('Payment link is not set up yet — coming soon!');return;}
+  window.location.href=UNLOCK.stripeUrl;
+}
+/* Called by native Swift after successful Apple IAP */
+function onAppleIAPSuccess(productId){
+  try{localStorage.setItem('cp_unlocked','1');}catch(e){}
+  payClose();
+  var screens=document.querySelectorAll('.pg-screen');
+  screens.forEach(function(s){s.style.display='none';});
+  var s=document.getElementById('pgSuccess');if(s)s.style.display='block';
+}
+/* Hide promo code section on Apple IAP build */
+(function(){if(!window.IS_APPLE_IAP)return;
+  var el=document.querySelector('.pg-unlock');if(el)el.style.display='none';
+  var div=document.querySelector('.pg-div');if(div)div.style.display='none';
+  var code=document.getElementById('payCode');if(code)code.style.display='none';
+  var ts=document.getElementById('pgTrialSection');if(ts)ts.style.display='none';
+})();
 function logFounderUnlock(code){
   try{
     var url='https://firestore.googleapis.com/v1/projects/telemetry-eagle/databases/(default)/documents/founder_unlocks?key=AIzaSyCxPNPOcu-ShSRXDJtwdNBZJ6kFaxQ8apM';
@@ -3999,7 +4025,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.36 · broadened audience to beauty professionals';
+var VERSION='app v2.36 · Apple IAP bridge — payBuy routes to StoreKit, promo hidden on Apple build';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
