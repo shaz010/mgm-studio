@@ -1,5 +1,5 @@
 # Your Salon — Google Play Handoff
-**Last updated:** August 10, 2026  
+**Last updated:** August 10, 2026 (11:15am — closed testing submitted for review)  
 **Account:** chabokchamejun@gmail.com  
 **Developer ID:** 4835349469847474845  
 **App:** Your Salon — `com.getcommissionpro.yoursalon`  
@@ -14,8 +14,10 @@
 | Google identity verification | ✅ Done (Jul 21) |
 | App created in Play Console | ✅ Done |
 | Upload key | ✅ Reset Aug 4 → valid from Aug 7 |
-| Android device verification | ⚠️ Ticket closed Aug 5 — unclear if resolved |
-| Closed testing (20 testers) | 🔄 In progress — Shaz posted r/betatests Aug 7 |
+| Android device verification | ✅ Confirmed done (Aug 10) |
+| Closed testing submitted for review | ✅ Submitted Aug 10 — awaiting Google approval (1–7 days) |
+| Closed testing opt-in link | ⏳ Will go live once Google approves the review |
+| Closed testing (20 testers × 14 days) | ⏳ Blocked until opt-in link is live |
 | Production release | ⏳ Blocked until 20 testers × 14 days complete |
 
 ---
@@ -33,9 +35,7 @@ Shaz posted to **r/betatests on Reddit (Aug 7)** to recruit testers. The clock o
 
 ## Android Device Verification
 
-Google requires a **physical Android device (Android 10+, non-rooted)** verified via the Play Console mobile app. Shaz asked support (Aug 1–3) whether there was a waiver — there isn't. This ticket was closed Aug 5.
-
-**Unknown:** whether the device verification was actually completed or if it's still blocking. Check: Play Console → left sidebar → "Android developer verification."
+✅ **Confirmed complete (Aug 10).** Play Console home screen shows: *"All of your apps have been successfully registered to meet Android developer verification requirements."* This is no longer a blocker.
 
 ---
 
@@ -54,9 +54,8 @@ Google requires a **physical Android device (Android 10+, non-rooted)** verified
 
 - How was the Android app built? (Bubblewrap? PWABuilder? Android Studio?)
 - Is `assetlinks.json` deployed at `https://getcommissionpro.com/.well-known/assetlinks.json`?
-- How many testers have opted in so far and when did the first one join?
-- Was Android device verification completed?
-- What track is the app on — Internal or Closed Testing?
+- ~~Was Android device verification completed?~~ ✅ Yes — confirmed Aug 10
+- ~~What track is the app on?~~ ✅ Closed testing – Alpha track, submitted for review Aug 10
 
 ---
 
@@ -69,11 +68,18 @@ Google requires a **physical Android device (Android 10+, non-rooted)** verified
 
 ## Next Steps (in order)
 
-1. Check Android developer verification status in Play Console sidebar
-2. Confirm how many testers have opted in → share the opt-in link widely if under 20
-3. Check if `assetlinks.json` is live (TWA requires this for URL bar to hide)
-4. Once 20 testers × 14 days = apply for production access
-5. Address Google Play Billing if Apple IAP equivalent is needed
+1. ✅ ~~Check Android developer verification~~ — confirmed done Aug 10
+2. **Wait for Google to approve the closed testing review** (1–7 days from Aug 10)
+3. Once approved → get the opt-in link from Play Console → Testing → Closed testing → Alpha → Testers tab → "Copy link"
+4. Update social media posts (Instagram, TikTok, Facebook, Reddit r/betatests) with the live opt-in link
+5. Recruit 20 testers — daily monitor scheduled to push alert when 20 reached
+6. Once 20 testers × 14 days = apply for production access
+7. Check if `assetlinks.json` is live at `https://getcommissionpro.com/.well-known/assetlinks.json` (TWA requires this for URL bar to hide)
+8. Address Google Play Billing if Apple IAP equivalent is needed
+
+## Monitoring
+
+- **Daily tester monitor** scheduled (trigger ID: trig_01MaQbzvrLwWefkXMWmTyFhh) — checks Gmail at 9am daily, push alert when 20 testers reached
 
 ---
 
