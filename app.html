@@ -3406,7 +3406,7 @@ function pgBackToMain(){
   if(pgTS){pgTS.style.display='none';pgTS.classList.remove('on');}
   if(pgMain)pgMain.style.display='';
 }
-function payShow(mandatory){var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.getElementById('pgClose').style.display=mandatory?'none':'block';document.getElementById('payErr').style.display='none';var ts=document.getElementById('pgTrialSection');if(ts)ts.style.display=pgUnlocked()?'none':'';}
+function payShow(mandatory){var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.getElementById('pgClose').style.display=mandatory?'none':'block';document.getElementById('payErr').style.display='none';var ts=document.getElementById('pgTrialSection');if(ts)ts.style.display=(pgUnlocked()||window.IS_APPLE_IAP)?'none':'';/* iOS: hide Stripe/promo elements when IS_APPLE_IAP is set */if(window.IS_APPLE_IAP){var el=document.querySelector('.pg-unlock');if(el)el.style.display='none';var div=document.querySelectorAll('.pg-div');div.forEach(function(d){d.style.display='none';});var code=document.getElementById('payCode');if(code)code.style.display='none';}}
 function payClose(){var g=document.getElementById('payGate');if(g)g.classList.remove('on');}
 function payBuy(){
   if(window.IS_APPLE_IAP){
@@ -3421,10 +3421,10 @@ function payBuy(){
 /* Called by native Swift after successful Apple IAP */
 function onAppleIAPSuccess(productId){
   try{localStorage.setItem('cp_unlocked','1');}catch(e){}
-  payClose();
-  var screens=document.querySelectorAll('.pg-screen');
-  screens.forEach(function(s){s.style.display='none';});
-  var s=document.getElementById('pgSuccess');if(s)s.style.display='block';
+  /* Show success inside the gate, then close after delay */
+  var pgMain=document.getElementById('pgMain');if(pgMain)pgMain.style.display='none';
+  var s=document.getElementById('pgSuccess');if(s){s.style.display='flex';s.classList.add('on');}
+  setTimeout(function(){payClose();},2200);
 }
 /* Hide promo code section on Apple IAP build */
 (function(){if(!window.IS_APPLE_IAP)return;
@@ -4025,7 +4025,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.37 · paywall updated to $4.99/mo + 14-day trial';
+var VERSION='app v2.38 · Apple IAP payShow fix + onAppleIAPSuccess success screen';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
