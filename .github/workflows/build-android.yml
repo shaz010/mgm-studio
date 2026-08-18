@@ -89,11 +89,21 @@ jobs:
           MANIFEST
           cat twa-manifest.json
 
-      - name: Build AAB
+      - name: Inject signing passwords into manifest
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
-          printf "$KEYSTORE_PASSWORD\n$KEYSTORE_PASSWORD\n" | bubblewrap build --skipPwaValidation
+          tmp=$(mktemp)
+          jq --arg pw "$KEYSTORE_PASSWORD" \
+            '.signingKey.keypassword = $pw | .signingKey.storepassword = $pw' \
+            twa-manifest.json > "$tmp"
+          mv "$tmp" twa-manifest.json
+          echo "Manifest updated with passwords (redacted for log):"
+          jq 'del(.signingKey.keypassword, .signingKey.storepassword)' twa-manifest.json
+
+      - name: Build AAB
+        run: |
+          bubblewrap build --skipPwaValidation
           echo "Build complete. Listing outputs:"
           find . -name "*.aab" -o -name "*.apk" 2>/dev/null | grep -v ".gradle"
 
