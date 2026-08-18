@@ -1,0 +1,108 @@
+name: Build Android AAB (API 36)
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_note:
+        description: 'Release note'
+        required: false
+        default: 'Updated Android target API to 36'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Bubblewrap CLI
+        run: npm install -g @bubblewrap/cli
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK Platform 36
+        run: |
+          yes | sdkmanager "platforms;android-36" "build-tools;36.0.0" --sdk_root=$ANDROID_SDK_ROOT
+
+      - name: Decode keystore from secret
+        run: |
+          echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > signing.keystore
+          ls -la signing.keystore
+
+      - name: Configure Bubblewrap
+        run: |
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\":\"$(dirname $(dirname $(readlink -f $(which java))))\"\,\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
+          cat ~/.bubblewrap/config.json
+
+      - name: Create twa-manifest.json
+        run: |
+          cat > twa-manifest.json << 'MANIFEST'
+          {
+            "packageId": "com.getcommissionpro.yoursalon",
+            "host": "getcommissionpro.com",
+            "name": "Your Salon",
+            "launcherName": "Your Salon",
+            "display": "standalone",
+            "themeColor": "#000000",
+            "navigationColor": "#000000",
+            "navigationColorDark": "#000000",
+            "navigationDividerColor": "#000000",
+            "navigationDividerColorDark": "#000000",
+            "backgroundColor": "#000000",
+            "enableNotifications": false,
+            "startUrl": "/salon.html",
+            "iconUrl": "https://getcommissionpro.com/icons/icon-512.png",
+            "maskableIconUrl": "https://getcommissionpro.com/icons/icon-512.png",
+            "monochromeIconUrl": "https://getcommissionpro.com/icons/icon-512.png",
+            "appVersion": "2",
+            "appVersionCode": 2,
+            "signingKey": {
+              "path": "./signing.keystore",
+              "alias": "yoursalon"
+            },
+            "splashScreenFadeOutDuration": 300,
+            "enableSiteSettingsShortcut": true,
+            "isChromeOSOnly": false,
+            "isMetaQuest": false,
+            "minSdkVersion": 19,
+            "targetSdkVersion": 36,
+            "orientation": "default",
+            "additionalTrustedOrigins": [],
+            "retainedBundles": [],
+            "shortcuts": [],
+            "generatorApp": "bubblewrap"
+          }
+          MANIFEST
+          cat twa-manifest.json
+
+      - name: Build AAB
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          printf "$KEYSTORE_PASSWORD\n$KEYSTORE_PASSWORD\n" | bubblewrap build --skipPwaValidation
+          echo "Build complete. Listing outputs:"
+          find . -name "*.aab" -o -name "*.apk" 2>/dev/null | grep -v ".gradle"
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yoursalon-api36
+          path: |
+            app-release-bundle.aab
+            app/build/outputs/bundle/**/*.aab
+          if-no-files-found: warn
+          retention-days: 30
