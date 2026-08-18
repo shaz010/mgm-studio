@@ -102,8 +102,47 @@ jobs:
           jq 'del(.signingKey.keypassword, .signingKey.storepassword)' twa-manifest.json
 
       - name: Build AAB
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
-          bubblewrap build --skipPwaValidation
+          pip install pexpect --break-system-packages -q
+          cat > /tmp/build_aab.py << 'PYEOF'
+import pexpect, os, sys
+
+password = os.environ.get('KEYSTORE_PASSWORD', '')
+
+child = pexpect.spawn(
+    'bubblewrap build --skipPwaValidation',
+    timeout=600,
+    encoding='utf-8'
+)
+child.logfile_read = sys.stdout
+
+while True:
+    idx = child.expect([
+        r'\(Y/n\)',
+        r'Password for',
+        pexpect.EOF,
+        pexpect.TIMEOUT,
+    ], timeout=120)
+
+    if idx == 0:
+        child.sendline('Y')
+    elif idx == 1:
+        child.sendline(password)
+    elif idx == 2:
+        break
+    else:
+        sys.stderr.write('\nTimeout waiting for bubblewrap!\n')
+        child.close(force=True)
+        sys.exit(1)
+
+child.close()
+exit_code = child.exitstatus if child.exitstatus is not None else 0
+print(f'\nbubblewrap exited with code {exit_code}')
+sys.exit(exit_code)
+PYEOF
+          python3 /tmp/build_aab.py
           echo "Build complete. Listing outputs:"
           find . -name "*.aab" -o -name "*.apk" 2>/dev/null | grep -v ".gradle"
 
