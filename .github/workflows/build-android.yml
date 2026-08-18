@@ -1,4 +1,4 @@
-name: Build Android AAB (API 36)
+name: Build Andoid AAB (API 36)
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-lates
 
     steps:
       - name: Checkout
@@ -65,9 +65,9 @@ jobs:
             "backgroundColor": "#000000",
             "enableNotifications": false,
             "startUrl": "/salon.html",
-            "iconUrl": "https://getcommissionpro.com/icons/icon-512.png",
-            "maskableIconUrl": "https://getcommissionpro.com/icons/icon-512.png",
-            "monochromeIconUrl": "https://getcommissionpro.com/icons/icon-512.png",
+            "iconUrl": "https://getcommissionpro.com/icon-512.png",
+            "maskableIconUrl": "https://getcommissionpro.com/icon-512.png",
+            "monochromeIconUrl": "https://getcommissionpro.com/icon-512.png",
             "appVersion": "2",
             "appVersionCode": 2,
             "signingKey": {
