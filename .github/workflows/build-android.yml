@@ -78,7 +78,7 @@ jobs:
             "enableSiteSettingsShortcut": true,
             "isChromeOSOnly": false,
             "isMetaQuest": false,
-            "minSdkVersion": 19,
+            "minSdkVersion": 21,
             "targetSdkVersion": 36,
             "orientation": "default",
             "additionalTrustedOrigins": [],
