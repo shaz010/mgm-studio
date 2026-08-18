@@ -35,7 +35,7 @@ jobs:
 
       - name: Install Android SDK Platform 36
         run: |
-          yes | sdkmanager "platforms;android-36" "build-tools;36.0.0" --sdk_root=$ANDROID_SDK_ROOT
+          yes | sdkmanager "platforms;android-36" "build-tools;36.0.0" --sdk_root=$ANDROID_HOME
 
       - name: Decode keystore from secret
         run: |
@@ -45,7 +45,7 @@ jobs:
       - name: Configure Bubblewrap
         run: |
           mkdir -p ~/.bubblewrap
-          echo "{\"jdkPath\":\"$(dirname $(dirname $(readlink -f $(which java))))\"\,\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
           cat ~/.bubblewrap/config.json
 
       - name: Create twa-manifest.json
