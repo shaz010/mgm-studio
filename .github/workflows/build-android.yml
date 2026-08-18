@@ -1,4 +1,4 @@
-name: Build Andoid AAB (API 36)
+name: Build Android AAB (API 36)
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-lates
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
