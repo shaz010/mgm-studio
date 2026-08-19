@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beta Test Your Salon Pro — Free for 21 Days</title>
+<meta name="description" content="Get early access to Your Salon Pro — the commission & appointment app built by a stylist, for stylists. Free 21-day trial, no credit card.">
+<style>
+:root{
+  --bg:#08080a;
+  --card:#141417;
+  --border:#26262b;
+  --gold:#FFB800;
+  --green:#34d36a;
+  --blue:#6aa9ff;
+  --purple:#b98cff;
+  --ink:#f1f1f3;
+  --mut:#9a9aa3;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:48px 20px 80px;
+}
+.logo{font-size:32px;margin-bottom:8px}
+h1{
+  font-size:clamp(24px,5vw,38px);
+  font-weight:800;
+  text-align:center;
+  background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:12px;
+  max-width:600px;
+}
+.sub{
+  color:var(--mut);
+  font-size:16px;
+  text-align:center;
+  max-width:500px;
+  margin-bottom:40px;
+  line-height:1.6;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:32px;
+  width:100%;
+  max-width:480px;
+  margin-bottom:32px;
+}
+.perks{
+  list-style:none;
+  margin-bottom:32px;
+}
+.perks li{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
+  font-size:15px;
+  color:var(--ink);
+}
+.perks li:last-child{border:none}
+.perk-icon{font-size:20px;flex-shrink:0}
+.form-card{
+  background:var(--card);
+  border:2px solid transparent;
+  background-clip:padding-box;
+  border-radius:20px;
+  padding:32px;
+  width:100%;
+  max-width:480px;
+  position:relative;
+}
+.form-card::before{
+  content:'';
+  position:absolute;
+  inset:-2px;
+  border-radius:22px;
+  background:linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9);
+  z-index:-1;
+}
+.form-title{
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:6px;
+  color:var(--gold);
+}
+.form-sub{
+  font-size:13px;
+  color:var(--mut);
+  margin-bottom:24px;
+}
+label{
+  display:block;
+  font-size:12px;
+  color:var(--mut);
+  font-weight:600;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  margin-bottom:6px;
+  margin-top:16px;
+}
+label:first-of-type{margin-top:0}
+input,select{
+  width:100%;
+  background:#1a1a20;
+  border:1px solid var(--border);
+  border-radius:10px;
+  color:var(--ink);
+  font-size:15px;
+  padding:12px 14px;
+  outline:none;
+  transition:border-color .2s;
+}
+input:focus,select:focus{border-color:var(--purple)}
+select option{background:#1a1a20}
+.btn{
+  display:block;
+  width:100%;
+  margin-top:24px;
+  padding:14px;
+  background:linear-gradient(110deg,#a78bfa,#67e8f9);
+  border:none;
+  border-radius:12px;
+  color:#08080a;
+  font-size:16px;
+  font-weight:800;
+  cursor:pointer;
+  transition:opacity .2s;
+}
+.btn:hover{opacity:.9}
+.btn:disabled{opacity:.5;cursor:default}
+.fine{
+  font-size:12px;
+  color:var(--mut);
+  text-align:center;
+  margin-top:12px;
+}
+.success{
+  display:none;
+  text-align:center;
+  padding:24px 0 0;
+}
+.success h3{color:var(--green);font-size:20px;margin-bottom:8px}
+.success p{color:var(--mut);font-size:14px;line-height:1.6}
+.spots{
+  display:inline-block;
+  background:rgba(255,184,0,.12);
+  color:var(--gold);
+  border:1px solid rgba(255,184,0,.3);
+  font-size:13px;
+  font-weight:700;
+  padding:6px 16px;
+  border-radius:999px;
+  margin-bottom:32px;
+}
+.built-by{
+  text-align:center;
+  color:var(--mut);
+  font-size:13px;
+  margin-top:40px;
+  line-height:1.8;
+}
+.built-by a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="logo">✨</div>
+<h1>Beta Test Your Salon Pro</h1>
+<p class="sub">Built by a stylist with 20 years behind the chair. Tracks commissions, appointments, clients & inventory — all in one app.</p>
+
+<div class="spots">🎯 12 beta spots — Google Play early access</div>
+
+<div class="card">
+  <ul class="perks">
+    <li><span class="perk-icon">🆓</span> Free 21-day trial — no credit card needed</li>
+    <li><span class="perk-icon">📱</span> Android (Google Play) — iOS coming soon</li>
+    <li><span class="perk-icon">✂️</span> Built for stylists, barbers, nail techs, lash & brow artists</li>
+    <li><span class="perk-icon">💬</span> Direct line to the developer — your feedback shapes the app</li>
+    <li><span class="perk-icon">💰</span> Lock in a founder rate when we launch</li>
+  </ul>
+</div>
+
+<div class="form-card">
+  <div class="form-title">Claim your spot</div>
+  <div class="form-sub">Takes 30 seconds. We'll send you a direct Play Store link.</div>
+
+  <form id="betaForm" action="https://formsubmit.co/chabokchamejun@gmail.com" method="POST">
+    <input type="hidden" name="_subject" value="🎯 New Your Salon Pro Beta Tester">
+    <input type="hidden" name="_captcha" value="false">
+    <input type="hidden" name="_template" value="box">
+    <input type="hidden" name="_next" value="https://getcommissionpro.com/beta.html?thanks=1">
+
+    <label for="name">Your name</label>
+    <input type="text" id="name" name="name" placeholder="e.g. Maria" required>
+
+    <label for="email">Email address</label>
+    <input type="email" id="email" name="email" placeholder="you@example.com" required>
+
+    <label for="trade">Your trade</label>
+    <select id="trade" name="trade" required>
+      <option value="" disabled selected>Select your specialty</option>
+      <option>Hair stylist</option>
+      <option>Barber</option>
+      <option>Nail tech</option>
+      <option>Lash artist</option>
+      <option>Brow artist</option>
+      <option>Esthetician</option>
+      <option>Makeup artist</option>
+      <option>Massage therapist</option>
+      <option>Other beauty pro</option>
+    </select>
+
+    <label for="device">Android device</label>
+    <select id="device" name="device" required>
+      <option value="" disabled selected>What device will you test on?</option>
+      <option>Samsung Galaxy</option>
+      <option>Google Pixel</option>
+      <option>OnePlus</option>
+      <option>Other Android</option>
+    </select>
+
+    <button type="submit" class="btn" id="submitBtn">Get Early Access →</button>
+    <p class="fine">No spam. Just your Play Store link + occasional update from the developer.</p>
+  </form>
+
+  <div class="success" id="successMsg">
+    <h3>✅ You're on the list!</h3>
+    <p>Watch your inbox — you'll get the Play Store beta link within 24 hours.<br>Thank you for supporting an indie dev! ✨</p>
+  </div>
+</div>
+
+<p class="built-by">
+  Made with ☕ by <strong>Shahbaz Mirshahi</strong> — hair stylist turned app developer<br>
+  <a href="https://getcommissionpro.com/salon.html">Try the web version now</a> ·
+  <a href="mailto:chabokchamejun@gmail.com">Questions? Email Shaz</a>
+</p>
+
+<script>
+const form = document.getElementById('betaForm');
+const btn = document.getElementById('submitBtn');
+const success = document.getElementById('successMsg');
+
+form.addEventListener('submit', (e) => {
+  // Let formsubmit.co handle it natively — just show loading state
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  // formsubmit.co will redirect back after success; _next not set so it shows their default thanks page
+  // That's fine — we swap the button text and let it submit naturally
+});
+
+// If user lands back on page with ?thanks=1, show success
+if (new URLSearchParams(location.search).get('thanks') === '1') {
+  form.style.display = 'none';
+  success.style.display = 'block';
+}
+</script>
+
+</body>
+</html>
