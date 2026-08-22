@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Beta Test Your Salon Pro — Free for 21 Days</title>
-<meta name="description" content="Get early access to Your Salon Pro — the commission & appointment app built by a stylist, for stylists. Free 21-day trial, no credit card.">
+<title>Beta Test Your Salon Pro — Free for Life</title>
+<meta name="description" content="Beta test Your Salon Pro and get it FREE FOREVER. Built by a stylist with 20 years behind the chair. No subscription. Ever.">
 <style>
 :root{
   --bg:#08080a;
@@ -30,7 +30,7 @@ body{
 }
 .logo{font-size:32px;margin-bottom:8px}
 h1{
-  font-size:clamp(24px,5vw,38px);
+  font-size:clamp(26px,5vw,42px);
   font-weight:800;
   text-align:center;
   background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);
@@ -38,68 +38,133 @@ h1{
   -webkit-text-fill-color:transparent;
   background-clip:text;
   margin-bottom:12px;
-  max-width:600px;
+  max-width:620px;
+  line-height:1.2;
+}
+.lifetime-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:linear-gradient(110deg,rgba(103,232,249,.15),rgba(167,139,250,.15));
+  border:1px solid rgba(167,139,250,.4);
+  color:#f5a8ff;
+  font-size:14px;
+  font-weight:800;
+  padding:8px 20px;
+  border-radius:999px;
+  margin-bottom:16px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
 }
 .sub{
   color:var(--mut);
   font-size:16px;
   text-align:center;
   max-width:500px;
-  margin-bottom:40px;
+  margin-bottom:16px;
   line-height:1.6;
 }
+.sub strong{color:var(--ink)}
+.spots{
+  display:inline-block;
+  background:rgba(255,184,0,.12);
+  color:var(--gold);
+  border:1px solid rgba(255,184,0,.3);
+  font-size:13px;
+  font-weight:700;
+  padding:6px 16px;
+  border-radius:999px;
+  margin-bottom:36px;
+}
+/* Hero lifetime card */
+.lifetime-card{
+  width:100%;
+  max-width:480px;
+  border-radius:20px;
+  padding:28px 28px 24px;
+  margin-bottom:24px;
+  text-align:center;
+  position:relative;
+  background:linear-gradient(rgba(20,20,23,1),rgba(20,20,23,1)) padding-box,
+             linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;
+  border:2px solid transparent;
+}
+.lifetime-card .big-offer{
+  font-size:clamp(32px,8vw,52px);
+  font-weight:900;
+  background:linear-gradient(110deg,#FFB800,#f5a8ff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  line-height:1;
+  margin-bottom:6px;
+}
+.lifetime-card .offer-label{
+  font-size:13px;
+  color:var(--mut);
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:16px;
+}
+.lifetime-card .offer-desc{
+  font-size:15px;
+  color:var(--ink);
+  line-height:1.6;
+  max-width:340px;
+  margin:0 auto;
+}
+.lifetime-card .offer-desc span{
+  color:#34d36a;
+  font-weight:700;
+}
+
 .card{
   background:var(--card);
   border:1px solid var(--border);
   border-radius:20px;
-  padding:32px;
+  padding:28px 28px 24px;
   width:100%;
   max-width:480px;
-  margin-bottom:32px;
+  margin-bottom:24px;
 }
 .perks{
   list-style:none;
-  margin-bottom:32px;
 }
 .perks li{
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   gap:10px;
   padding:10px 0;
   border-bottom:1px solid var(--border);
   font-size:15px;
   color:var(--ink);
+  line-height:1.4;
 }
 .perks li:last-child{border:none}
-.perk-icon{font-size:20px;flex-shrink:0}
+.perk-icon{font-size:20px;flex-shrink:0;margin-top:1px}
 .form-card{
   background:var(--card);
-  border:2px solid transparent;
-  background-clip:padding-box;
   border-radius:20px;
   padding:32px;
   width:100%;
   max-width:480px;
   position:relative;
-}
-.form-card::before{
-  content:'';
-  position:absolute;
-  inset:-2px;
-  border-radius:22px;
-  background:linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9);
-  z-index:-1;
+  background:linear-gradient(rgba(20,20,23,1),rgba(20,20,23,1)) padding-box,
+             linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;
+  border:2px solid transparent;
 }
 .form-title{
-  font-size:18px;
+  font-size:20px;
   font-weight:700;
-  margin-bottom:6px;
+  margin-bottom:4px;
   color:var(--gold);
 }
 .form-sub{
   font-size:13px;
   color:var(--mut);
   margin-bottom:24px;
+  line-height:1.5;
 }
 label{
   display:block;
@@ -129,12 +194,12 @@ select option{background:#1a1a20}
   display:block;
   width:100%;
   margin-top:24px;
-  padding:14px;
+  padding:15px;
   background:linear-gradient(110deg,#a78bfa,#67e8f9);
   border:none;
   border-radius:12px;
   color:#08080a;
-  font-size:16px;
+  font-size:17px;
   font-weight:800;
   cursor:pointer;
   transition:opacity .2s;
@@ -146,25 +211,15 @@ select option{background:#1a1a20}
   color:var(--mut);
   text-align:center;
   margin-top:12px;
+  line-height:1.5;
 }
 .success{
   display:none;
   text-align:center;
   padding:24px 0 0;
 }
-.success h3{color:var(--green);font-size:20px;margin-bottom:8px}
-.success p{color:var(--mut);font-size:14px;line-height:1.6}
-.spots{
-  display:inline-block;
-  background:rgba(255,184,0,.12);
-  color:var(--gold);
-  border:1px solid rgba(255,184,0,.3);
-  font-size:13px;
-  font-weight:700;
-  padding:6px 16px;
-  border-radius:999px;
-  margin-bottom:32px;
-}
+.success h3{color:var(--green);font-size:22px;margin-bottom:10px}
+.success p{color:var(--mut);font-size:14px;line-height:1.7}
 .built-by{
   text-align:center;
   color:var(--mut);
@@ -173,43 +228,70 @@ select option{background:#1a1a20}
   line-height:1.8;
 }
 .built-by a{color:var(--blue);text-decoration:none}
+.divider{
+  width:100%;
+  max-width:480px;
+  border:none;
+  border-top:1px solid var(--border);
+  margin:8px 0 24px;
+}
 </style>
 </head>
 <body>
 
 <div class="logo">✨</div>
-<h1>Beta Test Your Salon Pro</h1>
-<p class="sub">Built by a stylist with 20 years behind the chair. Tracks commissions, appointments, clients & inventory — all in one app.</p>
+<h1>Beta test it. Keep it free — forever.</h1>
 
-<div class="spots">🎯 12 beta spots — Google Play early access</div>
+<div class="lifetime-badge">🎁 Lifetime Deal for Beta Testers</div>
+
+<p class="sub">
+  <strong>Your Salon Pro</strong> — commissions, appointments, clients & inventory.<br>
+  Built by a stylist with 20 years behind the chair.
+</p>
+
+<div class="spots">⏳ 12 spots only — Android</div>
+
+<!-- The big offer -->
+<div class="lifetime-card">
+  <div class="big-offer">FREE</div>
+  <div class="offer-label">for life · no subscription · ever</div>
+  <div class="offer-desc">
+    Join the beta today and you'll <span>never pay a cent</span> — even after we launch.<br>
+    That's our thank-you for helping shape the app.
+  </div>
+</div>
 
 <div class="card">
   <ul class="perks">
-    <li><span class="perk-icon">🆓</span> Free 21-day trial — no credit card needed</li>
+    <li><span class="perk-icon">🎁</span> <span><strong>Free for life</strong> — beta testers never pay, even after public launch</span></li>
     <li><span class="perk-icon">📱</span> Android (Google Play) — iOS coming soon</li>
     <li><span class="perk-icon">✂️</span> Built for stylists, barbers, nail techs, lash & brow artists</li>
     <li><span class="perk-icon">💬</span> Direct line to the developer — your feedback shapes the app</li>
-    <li><span class="perk-icon">💰</span> Lock in a founder rate when we launch</li>
+    <li><span class="perk-icon">🚀</span> Early access to every new feature before anyone else</li>
   </ul>
 </div>
 
 <div class="form-card">
-  <div class="form-title">Claim your spot</div>
-  <div class="form-sub">Takes 30 seconds. We'll send you a direct Play Store link.</div>
+  <div class="form-title">Claim your lifetime spot</div>
+  <div class="form-sub">Takes 30 seconds. We'll send your Play Store link instantly.<br><strong style="color:var(--gold)">One of only 12 spots.</strong></div>
 
   <form id="betaForm" action="https://formsubmit.co/chabokchamejun@gmail.com" method="POST">
     <input type="hidden" name="_subject" value="🎯 New Your Salon Pro Beta Tester">
     <input type="hidden" name="_captcha" value="false">
     <input type="hidden" name="_template" value="box">
     <input type="hidden" name="_next" value="https://getcommissionpro.com/beta.html?thanks=1">
-    <input type="hidden" name="_autoresponse" value="Hey! 🎉 You're in — thanks for signing up to beta test Your Salon Pro!
+    <input type="hidden" name="_autoresponse" value="Hey! 🎉 You're in — and here's the big news:
+
+Because you're a beta tester, Your Salon Pro is YOURS FREE — for life. No subscription. Ever.
+
+That's our thank-you for helping shape the app.
 
 Here's your Google Play beta link:
 👉 https://play.google.com/apps/testing/com.getcommissionpro.yoursalon
 
 Tap that link on your Android device, hit 'Become a tester', then install the app from Play Store.
 
-Once you're in, feel free to reply to this email with any feedback — you're talking directly to the developer (that's me, Shaz 👋).
+Once you're in, reply to this email with any feedback — you're talking directly to the developer (that's me, Shaz 👋).
 
 Your early support means everything. Thank you! ✨
 — Shaz, Your Salon Pro">
@@ -243,13 +325,15 @@ Your early support means everything. Thank you! ✨
       <option>Other Android</option>
     </select>
 
-    <button type="submit" class="btn" id="submitBtn">Get Early Access →</button>
-    <p class="fine">No spam. Just your Play Store link + occasional update from the developer.</p>
+    <button type="submit" class="btn" id="submitBtn">🎁 Claim my free-for-life spot →</button>
+    <p class="fine">No spam. Just your Play Store link + the occasional update from the developer.<br>12 spots total. First come, first served.</p>
   </form>
 
   <div class="success" id="successMsg">
-    <h3>✅ You're on the list!</h3>
-    <p>Watch your inbox — you'll get the Play Store beta link within 24 hours.<br>Thank you for supporting an indie dev! ✨</p>
+    <h3>🎉 You're in — for life!</h3>
+    <p>Check your inbox — your Play Store beta link is on its way.<br><br>
+    <strong style="color:var(--green)">Your Salon Pro is yours free, forever.</strong><br>
+    Thank you for supporting an indie dev! ✨</p>
   </div>
 </div>
 
@@ -264,15 +348,11 @@ const form = document.getElementById('betaForm');
 const btn = document.getElementById('submitBtn');
 const success = document.getElementById('successMsg');
 
-form.addEventListener('submit', (e) => {
-  // Let formsubmit.co handle it natively — just show loading state
+form.addEventListener('submit', () => {
   btn.disabled = true;
   btn.textContent = 'Sending…';
-  // formsubmit.co will redirect back after success; _next not set so it shows their default thanks page
-  // That's fine — we swap the button text and let it submit naturally
 });
 
-// If user lands back on page with ?thanks=1, show success
 if (new URLSearchParams(location.search).get('thanks') === '1') {
   form.style.display = 'none';
   success.style.display = 'block';
