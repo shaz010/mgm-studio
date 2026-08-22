@@ -1152,14 +1152,6 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       <div class="pg-sub">Professional earnings &amp; bookings for stylists.</div>
       <div class="pg-price">$4.99/mo · 14-day free trial</div>
       <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Start free trial</a>
-      <div class="pg-div">HAVE A CODE?</div>
-      <input type="text" id="payCode" class="pg-code" placeholder="Enter your code" autocapitalize="characters" autocomplete="off">
-      <button class="pg-unlock" onclick="payUnlock()">Unlock</button>
-      <div class="pg-err" id="payErr">That code didn't match — double-check and try again.</div>
-      <div id="pgTrialSection">
-      <div class="pg-div" style="margin-top:18px">NEW HERE?</div>
-      <button class="pg-trial-btn" onclick="pgRequestTrial()">Request 21-day free trial</button>
-      </div>
       <div class="pg-foot" style="margin-top:14px">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
       <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
     </div>
@@ -3406,17 +3398,29 @@ function pgBackToMain(){
   if(pgTS){pgTS.style.display='none';pgTS.classList.remove('on');}
   if(pgMain)pgMain.style.display='';
 }
-function payShow(mandatory){var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.getElementById('pgClose').style.display=mandatory?'none':'block';document.getElementById('payErr').style.display='none';var ts=document.getElementById('pgTrialSection');if(ts)ts.style.display=(pgUnlocked()||window.IS_APPLE_IAP)?'none':'';/* iOS: hide Stripe/promo elements when IS_APPLE_IAP is set */if(window.IS_APPLE_IAP){var el=document.querySelector('.pg-unlock');if(el)el.style.display='none';var div=document.querySelectorAll('.pg-div');div.forEach(function(d){d.style.display='none';});var code=document.getElementById('payCode');if(code)code.style.display='none';}}
+function payShow(mandatory){var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.getElementById('pgClose').style.display=mandatory?'none':'block';var _pe=document.getElementById('payErr');if(_pe)_pe.style.display='none';var ts=document.getElementById('pgTrialSection');if(ts)ts.style.display=(pgUnlocked()||window.IS_APPLE_IAP)?'none':'';/* iOS: hide Stripe/promo elements when IS_APPLE_IAP is set */if(window.IS_APPLE_IAP){var el=document.querySelector('.pg-unlock');if(el)el.style.display='none';var div=document.querySelectorAll('.pg-div');div.forEach(function(d){d.style.display='none';});var code=document.getElementById('payCode');if(code)code.style.display='none';}}
 function payClose(){var g=document.getElementById('payGate');if(g)g.classList.remove('on');}
+/* Auto-detect iOS WKWebView and enable Apple IAP path */
+(function(){
+  if(!window.IS_APPLE_IAP){
+    var isWK=window.webkit&&window.webkit.messageHandlers;
+    var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent||'')&&!window.MSStream;
+    if(isWK||isIOS)window.IS_APPLE_IAP=true;
+  }
+})();
 function payBuy(){
   if(window.IS_APPLE_IAP){
     if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.iapHandler){
       window.webkit.messageHandlers.iapHandler.postMessage({action:'purchase',productId:'com.yoursalon.pro.monthly'});
-    }else{alert('Apple payment not available. Please try again.');}
+    }else{
+      /* IAP bridge not available — open website in Safari */
+      window.open('https://getcommissionpro.com','_blank');
+    }
     return;
   }
   if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){alert('Payment link is not set up yet — coming soon!');return;}
-  window.location.href=UNLOCK.stripeUrl;
+  /* Open Stripe in new tab/window — avoids WKWebView navigation freeze */
+  window.open(UNLOCK.stripeUrl,'_blank');
 }
 /* Called by native Swift after successful Apple IAP */
 function onAppleIAPSuccess(productId){
@@ -3487,7 +3491,7 @@ function payUnlock(){
       if(isFounder)logFounderUnlock(v);
       payClose();
     }
-  }else{document.getElementById('payErr').style.display='block';}
+  }else{var _pe2=document.getElementById('payErr');if(_pe2)_pe2.style.display='block';}
 }
 /* Demo mode — ?demo in URL shows the unlock flow without touching real data */
 window._demoMode=location.search.indexOf('demo')!==-1;
@@ -4025,7 +4029,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.38 · Apple IAP payShow fix + onAppleIAPSuccess success screen';
+var VERSION='app v2.39 · Apple review: remove promo code + 21-day trial, fix payBuy freeze';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
