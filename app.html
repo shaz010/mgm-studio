@@ -1162,6 +1162,9 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       </div>
       <div class="pg-foot" style="margin-top:14px">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
       <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
+      <div style="margin-top:14px;font-size:11px;color:#666;text-align:center;line-height:1.6">
+        By subscribing you agree to our <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" style="color:#888;text-decoration:underline">Terms of Use</a> and <a href="https://getcommissionpro.com/privacy.html" target="_blank" style="color:#888;text-decoration:underline">Privacy Policy</a>.
+      </div>
     </div>
     <!-- Request sent confirmation -->
     <div class="pg-success" id="pgTrialReq">
@@ -1449,6 +1452,8 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
           <div class="reset-qp-hint" style="margin-top:0">Your bookings live in Appointments — that's where the reset lives too. Open the <strong style="color:#a78bfa">Appointments</strong> room → ⚙️ Settings → Reset &amp; erase.</div>
         </div>
       </div>
+      <button class="data-btn" style="margin-top:14px;border-color:rgba(201,138,147,0.4);color:#c98a93" onclick="deleteMyAccount()"><i class="ti ti-user-x" style="font-size:14px;vertical-align:-2px;margin-right:6px"></i>Delete my account &amp; all data</button>
+      <div class="reset-qp-hint" style="margin-top:6px">Permanently deletes your account and removes all data from this device. This cannot be undone.</div>
     </div>
 
     <button class="adv-toggle" id="advToggle" onclick="toggleAdvSettings()"><i class="ti ti-settings"></i> Show advanced settings ▾</button>
@@ -4025,7 +4030,14 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.38 · Apple IAP payShow fix + onAppleIAPSuccess success screen';
+var VERSION='app v2.40 · Apple review: add delete account + EULA/privacy links in paywall';
+function deleteMyAccount(){
+  if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
+  if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;
+  try{localStorage.clear();}catch(e){}
+  alert('Your account and all data have been deleted. The app will now restart.');
+  window.location.reload(true);
+}
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
