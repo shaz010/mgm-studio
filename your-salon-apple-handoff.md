@@ -1,260 +1,153 @@
-# Your Salon Pro — Apple App Store Fix Handoff
-**Date:** August 6, 2026  
+# Your Salon Pro — Apple App Store Handoff
+**Last Updated:** August 28, 2026  
 **Repo:** shaz010/mgm-studio  
-**App Store Connect:** appstoreconnect.apple.com (logged in as Shahbaz Mirshahi)
+**Live site:** getcommissionpro.com  
+**App Store Connect:** appstoreconnect.apple.com (Shahbaz Mirshahi)
 
 ---
 
-## Why Apple Rejected It (Two Issues)
+## Current Status (Aug 28, 2026)
 
-### 1. Guideline 2.1(a) — Infinite Loading Bug
-- Tapping "Start free trial — $5/mo after" hangs forever on iPad
-- **Root cause:** `payBuy()` in `app.html` does `window.location.href = 'https://buy.stripe.com/...'`
-- Stripe's checkout page fails to load inside the iOS App Store WebView
-- **Fix:** Replace Stripe call with Apple IAP trigger (see below)
+**Submission:** iOS 1.0 — ⏳ Waiting for Review (submitted Aug 28 at 4:48 PM)
 
-### 2. Guideline 3.1.1 — Promo Codes Unlock Pro
-- `payUnlock()` in `app.html` validates hash codes to unlock Pro features
-- Apple explicitly flagged this: *"the app uses promo codes to unlock Pro"*
-- Any non-Apple unlock mechanism is banned in App Store apps
-- **Fix:** Remove or disable promo code entry in the Apple version
+All known rejection issues fixed and resubmitted. Build 1.0(3) is in review.
 
 ---
 
-## The Strategy: Two Versions
+## Rejection History & Fixes Applied
 
-| | **Apple Version** | **Web / Everyone Else** |
-|--|--|--|
-| Payment | Apple IAP (StoreKit) | Stripe |
-| Promo codes | Removed | Keep as-is |
-| Where it lives | App Store (Xcode project) | getcommissionpro.com |
-| File | Modified `app.html` | Current `app.html` (unchanged) |
+### Round 1 (Aug 6) — 2 Issues
+| Issue | Fix |
+|-------|-----|
+| 2.1(a) Infinite loading (Stripe in WebView) | Replaced Stripe with Apple IAP |
+| 3.1.1 Promo codes unlock Pro | Promo button hidden on Apple version |
+
+### Round 2 (Aug 27) — 5 Issues
+| Issue | Fix Applied | Version |
+|-------|-------------|---------|
+| 2.1(b) After purchase nothing happens | IAP bridge added to salon.html (forwards to iframe) | salon v0.38 |
+| 3.1.1 No Restore Purchases button | Restore button + payRestore() added to paywall | app v2.41 |
+| 3.1.2(c) No EULA/Privacy links | Already added in v2.40 | app v2.40 |
+| 5.1.1(v) No account deletion | Already built in v2.40 | app v2.40 |
+| 2.3.3 Screenshot metadata issues | ⚠️ NOT YET FIXED — may come back |
 
 ---
 
-## Part 1 — Changes to `app.html` (Web Side)
+## Architecture: Why the IAP Bridge Exists
 
-### How to detect "running inside Apple App Store app"
-The iOS Xcode wrapper needs to inject a flag into the WebView on load.  
-In the Swift/WKWebView code, add this to `webView(_:didFinish:)`:
+**The shell/iframe problem:**
+- `salon.html` is the top-level WKWebView page (the shell)
+- `app.html` loads inside an iframe (`#roomEarn`)
+- Swift's `evaluateJavaScript()` runs on the TOP-LEVEL window (salon.html)
+- But `onAppleIAPSuccess()` is defined INSIDE the iframe (app.html)
+- **Result:** Swift calls the function, it silently fails, nothing unlocks
 
+**The fix (salon.html v0.38):**
+```javascript
+window.onAppleIAPSuccess = function(productId) {
+  var fr = document.getElementById('roomEarn');
+  if(fr && fr.contentWindow) {
+    try { fr.contentWindow.onAppleIAPSuccess(productId); } catch(e) {}
+  }
+};
+```
+This bridge in salon.html forwards the call into the iframe where the real handler lives.
+
+---
+
+## Current File Versions
+
+| File | Version | Key Changes |
+|------|---------|-------------|
+| `salon.html` | v0.38 | Apple IAP bridge (forwards evaluateJavaScript to iframe) |
+| `app.html` | v2.41 | Restore Purchases button + payRestore() function |
+| `IAPHandler.swift` | — | Added restore action support (Aug 28) |
+
+---
+
+## IAPHandler.swift (Current — with Restore)
+
+Located at: `Desktop/Your Salon/Your Salon Pro/IAPHandler.swift`
+
+Key change from original — `userContentController` now handles both actions:
 ```swift
-webView.evaluateJavaScript("window.IS_APPLE_IAP = true;", completionHandler: nil)
-```
-
-Then in `app.html`, all payment logic checks this flag first.
-
-### Replace `payBuy()` function
-**Current code (around line 3409):**
-```javascript
-function payBuy(){
-  if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){
-    alert('Payment link is not set up yet — coming soon!');
-    return;
-  }
-  window.location.href=UNLOCK.stripeUrl;
+func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+    guard message.name == "iapHandler",
+          let body = message.body as? [String: String] else { return }
+    if body["action"] == "purchase" { purchase() }
+    else if body["action"] == "restore" { SKPaymentQueue.default().restoreCompletedTransactions() }
 }
 ```
 
-**Replace with:**
-```javascript
-function payBuy(){
-  if(window.IS_APPLE_IAP){
-    // Trigger Apple IAP via native bridge
-    if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iapHandler){
-      window.webkit.messageHandlers.iapHandler.postMessage({action:'purchase', productId:'com.yoursalon.pro.monthly'});
-    } else {
-      alert('Apple payment not available. Please try again.');
-    }
-    return;
-  }
-  // Web / Stripe path (unchanged)
-  if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){
-    alert('Payment link is not set up yet — coming soon!');
-    return;
-  }
-  window.location.href=UNLOCK.stripeUrl;
-}
-```
+The `.restored` case in `paymentQueue` already calls `onAppleIAPSuccess()` — so restore fully unlocks.
 
-### Hide promo code unlock in Apple version
-Find the "Unlock" button in the payGate HTML (around line 1155):
+---
+
+## Paywall Features (app.html)
+
+### Restore Purchases button
 ```html
-<button class="pg-unlock" onclick="payUnlock()">Unlock</button>
+<button onclick="payRestore()" style="margin-top:10px;background:none;border:none;color:#555;font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:4px 0">Restore Purchases</button>
 ```
 
-Add this JS after page load to hide it on Apple:
+### payRestore() function
 ```javascript
-// Hide promo unlock on Apple IAP version
-if(window.IS_APPLE_IAP){
-  var unlockBtn = document.querySelector('.pg-unlock');
-  if(unlockBtn) unlockBtn.style.display = 'none';
-}
-```
-
-### Handle Apple IAP result (success callback)
-Apple's native code will call this JS function when purchase succeeds.  
-Add this function to `app.html`:
-```javascript
-// Called by native Swift code after successful Apple IAP purchase
-function onAppleIAPSuccess(productId){
-  try{ localStorage.setItem('cp_unlocked','1'); }catch(e){}
-  try{ sessionStorage.setItem('cp_unlocked','1'); }catch(e){}
-  payClose();
-  // Show success screen
-  var gates = document.querySelectorAll('.pg-screen');
-  gates.forEach(function(s){ s.style.display='none'; });
-  var success = document.getElementById('pgSuccessScreen');
-  if(success) success.style.display='block';
+function payRestore(){
+  if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.iapHandler){
+    window.webkit.messageHandlers.iapHandler.postMessage({action:'restore'});
+  }else{
+    alert('Restore is only available in the App Store version.');
+  }
 }
 ```
 
 ---
 
-## Part 2 — Xcode Project Changes (Native Side)
+## If Rejected Again — Likely Culprits
 
-> The Xcode project was generated (likely via PWABuilder) and lives on your Mac.  
-> Open it in Xcode before making these changes.
+1. **2.3.3 Screenshots** — Apple wants real 6.5" iPhone + 13" iPad screenshots. Use your actual device or Xcode simulator at those sizes. Upload under App Information → Screenshots.
 
-### Step 1 — Create the Subscription in App Store Connect
-1. Go to appstoreconnect.apple.com → Your Salon Pro → Monetization → Subscriptions
-2. Create a **Subscription Group** (e.g. "Your Salon Pro Access")
-3. Create a subscription:
-   - **Product ID:** `com.yoursalon.pro.monthly`
-   - **Price:** $4.99/month (closest to your $5)
-   - **Free trial:** 21 days
-4. Add a **Localization** (English) with name and description
-5. Submit for review (subscriptions need their own review)
+2. **New build not picked up** — The Aug 28 build (uploaded today) may still be processing. If Apple reviews build 3 (Aug 18), the IAPHandler.swift restore fix won't be in it. May need to resubmit with a newer build when it appears.
 
-### Step 2 — Add StoreKit to Xcode
-1. In Xcode, select your project target
-2. Go to **Signing & Capabilities** → **+ Capability** → add **In-App Purchase**
-3. Add `StoreKit.framework` to **Linked Frameworks**
+3. **Screen recording for Delete Account** — Apple may ask for proof of 5.1.1(v) account deletion. Record a screen video showing: Settings → Delete Account → confirm. Upload as App Review attachment.
 
-### Step 3 — Add the IAP Handler Swift file
-Create a new Swift file `IAPHandler.swift` in the project:
+---
 
-```swift
-import StoreKit
-import WebKit
+## Deployment Flow (How Shaz Ships)
 
-class IAPHandler: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserver, WKScriptMessageHandler {
-    
-    weak var webView: WKWebView?
-    let productID = "com.yoursalon.pro.monthly"
-    var product: SKProduct?
-    
-    override init() {
-        super.init()
-        SKPaymentQueue.default().add(self)
-        fetchProduct()
-    }
-    
-    func fetchProduct() {
-        let request = SKProductsRequest(productIdentifiers: [productID])
-        request.delegate = self
-        request.start()
-    }
-    
-    // WKScriptMessageHandler — receives messages from JS
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard message.name == "iapHandler",
-              let body = message.body as? [String: String],
-              body["action"] == "purchase" else { return }
-        purchase()
-    }
-    
-    func purchase() {
-        guard let product = product else {
-            fetchProduct()
-            return
-        }
-        guard SKPaymentQueue.canMakePayments() else {
-            webView?.evaluateJavaScript("alert('Payments are disabled on this device.');", completionHandler: nil)
-            return
-        }
-        let payment = SKPayment(product: product)
-        SKPaymentQueue.default().add(payment)
-    }
-    
-    // SKProductsRequestDelegate
-    func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
-        product = response.products.first
-    }
-    
-    // SKPaymentTransactionObserver
-    func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
-        for transaction in transactions {
-            switch transaction.transactionState {
-            case .purchased, .restored:
-                SKPaymentQueue.default().finishTransaction(transaction)
-                // Tell the web app purchase succeeded
-                DispatchQueue.main.async {
-                    self.webView?.evaluateJavaScript(
-                        "onAppleIAPSuccess('\(self.productID)');",
-                        completionHandler: nil
-                    )
-                }
-            case .failed:
-                SKPaymentQueue.default().finishTransaction(transaction)
-                DispatchQueue.main.async {
-                    self.webView?.evaluateJavaScript(
-                        "alert('Purchase failed. Please try again.');",
-                        completionHandler: nil
-                    )
-                }
-            default:
-                break
-            }
-        }
-    }
-}
+1. Edit web files (`app.html`, `salon.html`, `appt.html`) in Claude
+2. Claude saves directly to `~/mgm-studio/` via device bridge
+3. Shaz drag-drops changed files to GitHub web UI (one file at a time — no zips)
+4. Wait ~2 min, then swipe-kill + reopen Safari PWA to pick up changes
+5. For native changes: edit Swift in Xcode → ⌘B → Product → Archive → Distribute → App Store Connect
+
+---
+
+## Xcode Project Location
+
 ```
-
-### Step 4 — Wire it up in your ViewController
-In your main `ViewController.swift` (or wherever WKWebView is set up), add:
-
-```swift
-// At the top of the class
-var iapHandler: IAPHandler?
-
-// In viewDidLoad(), after creating webView:
-iapHandler = IAPHandler()
-iapHandler?.webView = webView
-
-// Add the JS message handler
-webView.configuration.userContentController.add(iapHandler!, name: "iapHandler")
-
-// Inject the Apple flag after page loads
-func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-    webView.evaluateJavaScript("window.IS_APPLE_IAP = true;", completionHandler: nil)
-}
+~/Desktop/Your Salon/Your Salon Pro/
+├── IAPHandler.swift      ← StoreKit IAP handler
+├── viewController.swift  ← WKWebView setup, injects IS_APPLE_IAP flag
+└── Your Salon Pro/
+    ├── AppDelegate.swift
+    └── SceneDelegate.swift
 ```
 
 ---
 
-## Resubmission Checklist
+## Subscription Product
 
-- [ ] Subscription created in App Store Connect and approved
-- [ ] Xcode project updated with StoreKit + IAPHandler
-- [ ] `app.html` updated with new `payBuy()` + `onAppleIAPSuccess()`
-- [ ] Promo code button hidden on Apple version
-- [ ] Tested on real device (not simulator) — IAP doesn't work on simulator
-- [ ] New build uploaded via Xcode → Product → Archive → Distribute
-- [ ] Resubmit in App Store Connect → "Resubmit App Review"
+- **Product ID:** `com.yoursalon.pro.monthly`
+- **Price:** $4.99/month
+- **Free trial:** 21 days
+- **Group:** Your Salon Pro Access
 
 ---
 
-## Files That Change
+## Outstanding Work
 
-| File | What Changes | Who does it |
-|------|-------------|-------------|
-| `app.html` | `payBuy()`, hide promo btn, add `onAppleIAPSuccess()` | Can be done here |
-| `IAPHandler.swift` | New file — full StoreKit logic | In Xcode on your Mac |
-| `ViewController.swift` | Wire up IAPHandler + inject JS flag | In Xcode on your Mac |
-| App Store Connect | Create subscription product | appstoreconnect.apple.com |
-
----
-
-## Note on the Web Version
-**Do not change the web version of `app.html`.** Stripe + promo codes stay exactly as they are for getcommissionpro.com users. Only the Xcode-packaged Apple build gets these changes — because `window.IS_APPLE_IAP` is only injected by the native wrapper, the web version automatically keeps its existing flow.
+- [ ] **2.3.3 Screenshots** — proper 6.5" iPhone + 13" iPad screenshots needed
+- [ ] **New build (Aug 28)** — may need to wait for it to process then resubmit again
+- [ ] **Screen recording** — show Delete Account flow for Apple if they ask again
+- [ ] **App Store Connect metadata** — Privacy Policy URL + EULA URL fields
