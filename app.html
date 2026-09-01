@@ -1150,7 +1150,7 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       <div class="pg-logo">✨</div>
       <div class="pg-title">Your Salon Pro</div>
       <div class="pg-sub">Professional earnings &amp; bookings for stylists.</div>
-      <div class="pg-price">$4.99/mo · 14-day free trial</div>
+      <div class="pg-price">$4.99/mo · 1 month free trial</div>
       <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Start free trial</a>
       <div class="pg-foot" style="margin-top:14px">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
       <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
@@ -1176,7 +1176,7 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
     <div class="pg-success" id="pgTrialSuccess">
       <div class="pg-success-ic">🎉</div>
       <div class="pg-success-title">Trial activated!</div>
-      <div class="pg-success-sub">21 days of full access — enjoy every feature.</div>
+      <div class="pg-success-sub">1 month of full access — enjoy every feature.</div>
     </div>
   </div>
 </div>
@@ -4043,7 +4043,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.41 · Apple review: IAP bridge + Restore Purchases button';
+var VERSION='app v2.42 · paywall: 1 month free trial text';
 function deleteMyAccount(){
   if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
   if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;
