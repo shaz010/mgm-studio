@@ -1,8 +1,19 @@
 # Your Salon Pro — Apple App Store Handoff
-**Last Updated:** August 28, 2026  
+**Last Updated:** September 1, 2026  
 **Repo:** shaz010/mgm-studio  
 **Live site:** getcommissionpro.com  
 **App Store Connect:** appstoreconnect.apple.com (Shahbaz Mirshahi)
+
+---
+
+## 🔑 CHROME ACCESS RULE — READ FIRST EVERY SESSION
+
+**ALWAYS use `mcp__claude-in-chrome__*` tools to access Apple App Store Connect, Google Play Console, Reddit, and any other site where Shaz is already logged in.**
+
+- These tools access Shaz's **real Chrome browser session** — his cookies, his logins, everything.
+- The browser panel in the app UI is **isolated** (different session, not logged in) — DO NOT use it or argue about it.
+- Do NOT ask Shaz to log in anywhere. Use Chrome tools and navigate directly.
+- Load with: `ToolSearch → "select:mcp__claude-in-chrome__tabs_context_mcp,mcp__claude-in-chrome__navigate,mcp__claude-in-chrome__computer,mcp__claude-in-chrome__read_page,mcp__claude-in-chrome__tabs_create_mcp,mcp__claude-in-chrome__javascript_tool"`
 
 ---
 
