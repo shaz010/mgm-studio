@@ -20,9 +20,20 @@
     ul { padding-left: 20px; }
     .updated { color: #888; font-size: 0.9rem; margin-bottom: 32px; }
     a { color: #5b21b6; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-bottom: 28px; padding: 9px 16px;
+      background: #f4f4f6; border-radius: 10px;
+      color: #333; font-size: 0.9rem; font-weight: 600;
+      text-decoration: none; border: none; cursor: pointer;
+      font-family: inherit; -webkit-tap-highlight-color: transparent;
+    }
+    .back-btn:active { opacity: .7; }
   </style>
 </head>
 <body>
+
+  <button class="back-btn" onclick="history.back()">← Back to app</button>
 
   <h1>Privacy Policy</h1>
   <p class="updated">Last updated: July 29, 2026</p>
