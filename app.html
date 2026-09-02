@@ -1153,13 +1153,13 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       <div class="pg-title">Your Salon Pro</div>
       <div class="pg-sub">Professional earnings &amp; bookings for stylists.</div>
       <div class="pg-price">$4.99/mo · 1 month free trial</div>
-      <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Start free trial</a>
+      <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" ontouchend="event.preventDefault();payBuy();" href="#">Start free trial</a>
       <div class="pg-foot" style="margin-top:14px">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
-      <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
+      <button class="pg-close" id="pgClose" onclick="payClose()" ontouchend="event.preventDefault();payClose()">Keep looking around</button>
       <div style="margin-top:14px;font-size:11px;color:#666;text-align:center;line-height:1.6">
         By subscribing you agree to our <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" style="color:#888;text-decoration:underline">Terms of Use</a> and <a href="https://getcommissionpro.com/privacy.html" target="_blank" style="color:#888;text-decoration:underline">Privacy Policy</a>.
       </div>
-      <button onclick="payRestore()" style="margin-top:10px;background:none;border:none;color:#555;font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:4px 0">Restore Purchases</button>
+      <button onclick="payRestore()" ontouchend="event.preventDefault();payRestore()" style="margin-top:10px;background:none;border:none;color:#555;font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:4px 0">Restore Purchases</button>
     </div>
     <!-- Request sent confirmation -->
     <div class="pg-success" id="pgTrialReq">
@@ -4047,7 +4047,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.47 · WKWebView tap fix';
+var VERSION='app v2.48 · paygate ontouchend direct';
 function deleteMyAccount(){
   if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
   if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;
@@ -4525,38 +4525,8 @@ setInterval(checkForUpdate,60000);
 })();
 </script>
 <script>
-/* ── WKWebView iframe touch fix ─────────────────────────────────────────
-   iOS WKWebView doesn't fire click events inside an iframe until the
-   iframe document has received at least one touchstart. The passive
-   listener below "primes" the touch system so clicks route normally.
-   The touchend delegate fires the button's onclick as a fallback for
-   any tap the click handler missed.                                    */
+/* WKWebView iframe touch primer — primes click routing inside iframe */
 document.addEventListener('touchstart',function(){},{passive:true,capture:true});
-(function(){
-  function delegate(container,e){
-    var t=e.target;
-    while(t&&t!==container){
-      if(t.tagName==='BUTTON'||(t.tagName==='A'&&t.getAttribute('href')==='#')){
-        if(typeof t.onclick==='function'){
-          e.preventDefault();
-          t.onclick.call(t,e);
-          return;
-        }
-      }
-      t=t.parentElement;
-    }
-  }
-  /* paygate */
-  var pg=document.getElementById('payGate');
-  if(pg)pg.addEventListener('touchend',function(e){delegate(pg,e);},{passive:false,capture:false});
-  /* setup + tour screens — delegate across whole doc for safety */
-  document.addEventListener('touchend',function(e){
-    var tgt=e.target;
-    if(tgt&&(tgt.classList.contains('ob-skip')||tgt.id==='pgBuy'||tgt.id==='pgClose')){
-      if(typeof tgt.onclick==='function'){e.preventDefault();tgt.onclick.call(tgt,e);}
-    }
-  },{passive:false,capture:true});
-})();
 </script>
 </body>
 </html>
