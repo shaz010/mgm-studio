@@ -1147,7 +1147,6 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
 </div>
 
 <div id="payGate" role="dialog" aria-modal="true">
-  <div id="pg-diag">tap: 0</div>
   <div class="pg-card">
     <!-- Main: buy / enter code / request trial -->
     <div id="pgMain">
@@ -3410,10 +3409,18 @@ function pgBackToMain(){
   if(pgTS){pgTS.style.display='none';pgTS.classList.remove('on');}
   if(pgMain)pgMain.style.display='';
 }
-function payShow(mandatory){var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.body.style.touchAction='none';/* lock pan-y while gate is open so WKWebView routes taps, not pans */document.getElementById('pgClose').style.display=mandatory?'none':'block';var _pe=document.getElementById('payErr');if(_pe)_pe.style.display='none';var ts=document.getElementById('pgTrialSection');if(ts)ts.style.display=(pgUnlocked()||window.IS_APPLE_IAP)?'none':'';/* iOS: hide Stripe/promo elements when IS_APPLE_IAP is set */if(window.IS_APPLE_IAP){var el=document.querySelector('.pg-unlock');if(el)el.style.display='none';var div=document.querySelectorAll('.pg-div');div.forEach(function(d){d.style.display='none';});var code=document.getElementById('payCode');if(code)code.style.display='none';}}
-function payClose(){var g=document.getElementById('payGate');if(g)g.classList.remove('on');document.body.style.touchAction='';}
+function payShow(mandatory){
+  /* In shell: delegate to salon.html — buttons there have no iframe hit-test offset */
+  if(window.self!==window.top){try{window.parent.postMessage({salon:'showPaygate',mandatory:!!mandatory},'*');}catch(e){}return;}
+  var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.body.style.touchAction='none';document.getElementById('pgClose').style.display=mandatory?'none':'block';var _pe=document.getElementById('payErr');if(_pe)_pe.style.display='none';var ts=document.getElementById('pgTrialSection');if(ts)ts.style.display=(pgUnlocked()||window.IS_APPLE_IAP)?'none':'';if(window.IS_APPLE_IAP){var el=document.querySelector('.pg-unlock');if(el)el.style.display='none';var div=document.querySelectorAll('.pg-div');div.forEach(function(d){d.style.display='none';});var code=document.getElementById('payCode');if(code)code.style.display='none';}
+}
+function payClose(){
+  if(window.self!==window.top){try{window.parent.postMessage({salon:'closePaygate'},'*');}catch(e){}return;}
+  var g=document.getElementById('payGate');if(g)g.classList.remove('on');document.body.style.touchAction='';
+}
 /* Restore previous Apple IAP purchase */
 function payRestore(){
+  if(window.self!==window.top){try{window.parent.postMessage({salon:'paygateRestore'},'*');}catch(e){}return;}
   if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.iapHandler){
     window.webkit.messageHandlers.iapHandler.postMessage({action:'restore'});
   }else{
@@ -3429,6 +3436,8 @@ function payRestore(){
   }
 })();
 function payBuy(){
+  /* In shell: salon.html handles IAP directly — relay the action */
+  if(window.self!==window.top){try{window.parent.postMessage({salon:'paygateBuy'},'*');}catch(e){}return;}
   if(window.IS_APPLE_IAP){
     if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.iapHandler){
       window.webkit.messageHandlers.iapHandler.postMessage({action:'purchase',productId:'com.yoursalon.pro.monthly'});
@@ -4049,7 +4058,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.51 · paygate getBCR dispatch';
+var VERSION='app v2.52 · paygate in shell';
 function deleteMyAccount(){
   if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
   if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;
@@ -4527,42 +4536,23 @@ setInterval(checkForUpdate,60000);
 })();
 </script>
 <script>
-/* WKWebView iframe touch primer */
-document.addEventListener('touchstart',function(){},{passive:true,capture:true});
-/* ── paygate touch dispatch ──────────────────────────────────────────────
-   WKWebView iframe hit-test offsets mean ontouchend on individual buttons
-   never fires. Fix: intercept at document (capture phase), use
-   elementFromPoint on the actual touch coords to find the real target.   */
-(function(){
-  var ts=0,te=0;
-  var diag=document.getElementById('pg-diag');
-  var pg=document.getElementById('payGate');
-  if(!pg||!diag)return;
-
-  pg.addEventListener('touchstart',function(){
-    ts++;diag.textContent='ts:'+ts+' te:'+te;diag.style.color='#a78bfa';
-  },{passive:true,capture:true});
-
-  document.addEventListener('touchend',function(e){
-    if(!pg.classList.contains('on'))return;
-    te++;diag.textContent='ts:'+ts+' te:'+te;
-    var t=e.changedTouches[0];if(!t)return;
-    var x=t.clientX,y=t.clientY;
-    /* Use getBoundingClientRect — reliable in WKWebView iframe unlike elementFromPoint */
-    function hits(el){
-      if(!el||el.style.display==='none')return false;
-      var r=el.getBoundingClientRect();
-      return x>=r.left-16&&x<=r.right+16&&y>=r.top-16&&y<=r.bottom+16;
-    }
-    var buy=document.getElementById('pgBuy');
-    var close=document.getElementById('pgClose');
-    var restore=pg.querySelector('button:last-child');
-    if(hits(buy)){e.preventDefault();e.stopPropagation();diag.textContent='ts:'+ts+' te:'+te+' →BUY';payBuy();return;}
-    if(hits(close)){e.preventDefault();e.stopPropagation();diag.textContent='ts:'+ts+' te:'+te+' →CLOSE';payClose();return;}
-    if(hits(restore)){e.preventDefault();e.stopPropagation();diag.textContent='ts:'+ts+' te:'+te+' →RESTORE';payRestore();return;}
-    diag.textContent='ts:'+ts+' te:'+te+' MISS';
-  },{passive:false,capture:true});
-})();
+/* ── Shell paygate: listen for results from salon.html ─────────────────────
+   payShow/payBuy/payRestore delegate to parent when in-shell; salon.html
+   posts back paygateClose and paygateIAPSuccess when done.               */
+window.addEventListener('message',function(ev){
+  var d=ev.data||{};
+  if(d.salon==='paygateClose'){
+    /* Restore body state in case anything locked it */
+    document.body.style.touchAction='';
+    /* Reset pgMain so next open is clean */
+    var pgMain=document.getElementById('pgMain');if(pgMain)pgMain.style.display='';
+    var pgS=document.getElementById('pgSuccess');if(pgS){pgS.style.display='none';pgS.classList.remove('on');}
+  }
+  if(d.salon==='paygateIAPSuccess'){
+    /* Purchase succeeded — ensure localStorage is set (salon.html already set it, belt-and-braces) */
+    try{localStorage.setItem('cp_unlocked','1');}catch(e){}
+  }
+});
 </script>
 </body>
 </html>
