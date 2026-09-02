@@ -1158,7 +1158,7 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       <div class="pg-foot" style="margin-top:14px">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
       <button class="pg-close" id="pgClose" onclick="payClose()" ontouchend="event.preventDefault();payClose()">Keep looking around</button>
       <div style="margin-top:14px;font-size:11px;color:#666;text-align:center;line-height:1.6">
-        By subscribing you agree to our <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" style="color:#888;text-decoration:underline">Terms of Use</a> and <a href="https://getcommissionpro.com/privacy.html" target="_blank" style="color:#888;text-decoration:underline">Privacy Policy</a>.
+        By subscribing you agree to our <a href="#" onclick="openExtUrl('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/');return false" style="color:#888;text-decoration:underline">Terms of Use</a> and <a href="#" onclick="openExtUrl('https://getcommissionpro.com/privacy.html');return false" style="color:#888;text-decoration:underline">Privacy Policy</a>.
       </div>
       <button onclick="payRestore()" ontouchend="event.preventDefault();payRestore()" style="margin-top:10px;background:none;border:none;color:#555;font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:4px 0">Restore Purchases</button>
     </div>
@@ -1474,7 +1474,7 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
 
     <details class="legal-foot">
       <summary><i class="ti ti-shield-check" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Legal &amp; disclaimers</summary>
-      <div class="legal-body">CommissionPro is a personal tracking tool. All figures are estimates based on the information you enter and are for your own reference only — not official payroll, tax, or accounting records. Commission splits and pay vary; the app reflects only the values you input and does not guarantee any amount. CommissionPro does not provide financial, legal, or tax advice. Always verify your earnings against your salon's official records.<br><br>Eye Rest is a relaxing visual and a reminder to rest your eyes. It is not a medical device or treatment, is not a substitute for professional eye care, and makes no health or therapeutic claims.<br><br><a href="privacy.html" target="_blank" style="color:var(--gold);text-decoration:none">Privacy Policy ↗</a> &nbsp;·&nbsp; <a href="terms.html" target="_blank" style="color:var(--gold);text-decoration:none">Terms of Service ↗</a></div>
+      <div class="legal-body">CommissionPro is a personal tracking tool. All figures are estimates based on the information you enter and are for your own reference only — not official payroll, tax, or accounting records. Commission splits and pay vary; the app reflects only the values you input and does not guarantee any amount. CommissionPro does not provide financial, legal, or tax advice. Always verify your earnings against your salon's official records.<br><br>Eye Rest is a relaxing visual and a reminder to rest your eyes. It is not a medical device or treatment, is not a substitute for professional eye care, and makes no health or therapeutic claims.<br><br><a href="#" onclick="openExtUrl('https://getcommissionpro.com/privacy.html');return false" style="color:var(--gold);text-decoration:none">Privacy Policy ↗</a> &nbsp;·&nbsp; <a href="#" onclick="openExtUrl('https://getcommissionpro.com/terms.html');return false" style="color:var(--gold);text-decoration:none">Terms of Service ↗</a></div>
     </details>
 
     <div id="buildBadge" style="text-align:center;margin:16px 0 2px;font-size:12.5px;color:#888;letter-spacing:.3px">CommissionPro · build 71</div>
@@ -4058,7 +4058,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.52 · paygate in shell';
+var VERSION='app v2.53 · ext links via parent';
 function deleteMyAccount(){
   if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
   if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;
@@ -4539,6 +4539,14 @@ setInterval(checkForUpdate,60000);
 /* ── Shell paygate: listen for results from salon.html ─────────────────────
    payShow/payBuy/payRestore delegate to parent when in-shell; salon.html
    posts back paygateClose and paygateIAPSuccess when done.               */
+/* Open external URLs via parent frame — target="_blank" is blocked in WKWebView iframes */
+function openExtUrl(url){
+  if(window.self!==window.top){
+    try{window.parent.postMessage({salon:'openUrl',url:url},'*');}catch(e){}
+  } else {
+    window.open(url,'_blank');
+  }
+}
 window.addEventListener('message',function(ev){
   var d=ev.data||{};
   if(d.salon==='paygateClose'){

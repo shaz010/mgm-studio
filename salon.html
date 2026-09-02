@@ -251,7 +251,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.43 · transform slide iframes</div>
+    <div class="ver">salon v0.44 · ext url relay</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -1125,6 +1125,8 @@ if('serviceWorker' in navigator){
     if(d.salon === 'closePaygate') { window.shellPayClose(); return; }
     if(d.salon === 'paygateBuy')   { window.shellPayBuy(); return; }
     if(d.salon === 'paygateRestore'){ window.shellPayRestore(); return; }
+    /* Open external URLs — target="_blank" blocked in WKWebView iframes */
+    if(d.salon === 'openUrl' && d.url){ window.open(d.url,'_blank'); return; }
   });
 })();
 </script>
