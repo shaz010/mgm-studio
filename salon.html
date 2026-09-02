@@ -198,7 +198,7 @@
   .brand-mark.glow-on{animation:glowBreath var(--gs) ease-in-out infinite;}
 
   /* ── Shell paygate — renders in main WKWebView frame, zero iframe coordinate issues ── */
-  #shellPG{position:fixed;inset:0;z-index:99990;display:none;align-items:flex-start;justify-content:center;overflow:hidden;background:rgba(5,5,8,.985);padding:24px;-webkit-tap-highlight-color:transparent}
+  #shellPG{position:fixed;inset:0;z-index:99990;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;background:rgba(5,5,8,.985);padding:24px;-webkit-tap-highlight-color:transparent}
   #shellPG.on{display:flex}
   .spg-card{width:100%;max-width:380px;background:#141414;border:1px solid #2a2a2a;border-radius:20px;padding:30px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);margin:auto}
   .spg-logo{font-size:30px;color:#FFB800}
@@ -251,7 +251,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.40 · always show close btn</div>
+    <div class="ver">salon v0.41 · close btn visible</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -1024,8 +1024,8 @@ if('serviceWorker' in navigator){
       <div class="spg-sub">Professional earnings &amp; bookings for stylists.</div>
       <div class="spg-price">$4.99/mo · 1 month free trial</div>
       <button class="spg-buy" onclick="shellPayBuy()" ontouchend="shellPayBuy();event.preventDefault()">Start free trial</button>
-      <div class="spg-foot">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
       <button class="spg-close" id="spgClose" onclick="shellPayClose()" ontouchend="shellPayClose();event.preventDefault()">Keep looking around</button>
+      <div class="spg-foot">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
       <div class="spg-legal">
         By subscribing you agree to our <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank">Terms&nbsp;of&nbsp;Use</a> and <a href="https://getcommissionpro.com/privacy.html" target="_blank">Privacy&nbsp;Policy</a>.
       </div>
