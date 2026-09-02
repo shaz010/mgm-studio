@@ -934,7 +934,7 @@ body.theme-noir input:focus,body.theme-noir select:focus,body.theme-noir textare
 body.theme-noir input:-webkit-autofill,body.theme-noir input:-webkit-autofill:hover,body.theme-noir input:-webkit-autofill:focus{-webkit-box-shadow:0 0 0 1000px #000 inset}
 body.theme-noir .svc-mode-btn{background:#000;border-color:#2e2e3a}
 .trade-screen{position:fixed;inset:0;z-index:7000;background:#000;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
-.trade-back{position:absolute;top:18px;left:16px;display:inline-flex;align-items:center;gap:6px;background:#0a0a0e;border:1.5px solid #23232e;color:#cbd5ff;font-size:13px;font-weight:700;padding:9px 14px;border-radius:20px;cursor:pointer;z-index:1;transition:transform .14s ease}
+.trade-back{position:absolute;top:max(env(safe-area-inset-top,18px),18px);left:16px;display:inline-flex;align-items:center;gap:6px;background:#0a0a0e;border:1.5px solid #23232e;color:#cbd5ff;font-size:13px;font-weight:700;padding:9px 14px;border-radius:20px;cursor:pointer;z-index:1;transition:transform .14s ease}
 .trade-back:active{transform:scale(.95)}
 .trade-back i{font-size:15px}
 .trade-card{width:100%;max-width:540px;text-align:center;margin:auto}
@@ -3489,7 +3489,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.14 · global touch fix for WKWebView';
+var VERSION='v6.15 · safe-area notch fix for trade-screen';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

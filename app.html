@@ -867,7 +867,7 @@ body.accent-purple{--gold:#9966DD;--gold2:#1a0a2a;--gold3:#4a1a7a;--gold-light:#
 body.accent-gold{--gold:#FFB800;--gold2:#2a1f00;--gold3:#665522;--gold-light:#FFB800}
 
 /* ── SETUP SCREEN ── */
-.setup-screen{position:fixed;inset:0;background:#0a0a0a;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.setup-screen{position:fixed;inset:0;background:#0a0a0a;z-index:1000;display:flex;align-items:center;justify-content:center;padding:max(env(safe-area-inset-top,44px),20px) 20px 20px}
 .setup-card{background:#141414;border:1px solid #2a2a2a;border-radius:20px;padding:36px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
 .setup-logo{font-size:32px;text-align:center;margin-bottom:6px}
 .setup-title{font-family:-apple-system,sans-serif;font-size:24px;font-weight:700;color:#FFB800;text-align:center;margin-bottom:6px}
@@ -1001,7 +1001,7 @@ body.theme-noir .set-trade-tile{background:#0a0a0e;border-color:#23232e}
 @keyframes iridShift{to{background-position:200% 50%}}
 body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!important;background:linear-gradient(#000,#000) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 10px rgba(167,139,250,.25)}
 .trade-screen{position:fixed;inset:0;z-index:7000;background:#000;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
-.tour-screen{position:fixed;inset:0;z-index:7100;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:24px}
+.tour-screen{position:fixed;inset:0;z-index:7100;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:max(env(safe-area-inset-top,44px),24px) 24px 24px}
 .tour-card{width:100%;max-width:380px;background:#0a0a0e;border:1.5px solid #23232e;border-radius:22px;padding:30px 24px 22px;text-align:center}
 body.theme-noir .tour-card{border:1px solid transparent;background:linear-gradient(#070708,#070708) padding-box,linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 26px rgba(167,139,250,.22)}
 .tour-ic{font-size:36px;margin-bottom:12px;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
@@ -4047,7 +4047,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.44 · paygate scroll fix + touch fix';
+var VERSION='app v2.45 · safe-area notch fix for tour + setup screens';
 function deleteMyAccount(){
   if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
   if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;
