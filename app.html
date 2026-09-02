@@ -4049,7 +4049,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.50 · paygate elementFromPoint dispatch';
+var VERSION='app v2.51 · paygate getBCR dispatch';
 function deleteMyAccount(){
   if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
   if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;
@@ -4547,15 +4547,20 @@ document.addEventListener('touchstart',function(){},{passive:true,capture:true})
     if(!pg.classList.contains('on'))return;
     te++;diag.textContent='ts:'+ts+' te:'+te;
     var t=e.changedTouches[0];if(!t)return;
-    var el=document.elementFromPoint(t.clientX,t.clientY);
-    while(el&&el!==document.body){
-      if(el.id==='pgBuy'){e.preventDefault();e.stopPropagation();payBuy();return;}
-      if(el.id==='pgClose'){e.preventDefault();e.stopPropagation();payClose();return;}
-      if(el.tagName==='BUTTON'&&(el.textContent||'').indexOf('Restore')>=0){
-        e.preventDefault();e.stopPropagation();payRestore();return;
-      }
-      el=el.parentElement;
+    var x=t.clientX,y=t.clientY;
+    /* Use getBoundingClientRect — reliable in WKWebView iframe unlike elementFromPoint */
+    function hits(el){
+      if(!el||el.style.display==='none')return false;
+      var r=el.getBoundingClientRect();
+      return x>=r.left-16&&x<=r.right+16&&y>=r.top-16&&y<=r.bottom+16;
     }
+    var buy=document.getElementById('pgBuy');
+    var close=document.getElementById('pgClose');
+    var restore=pg.querySelector('button:last-child');
+    if(hits(buy)){e.preventDefault();e.stopPropagation();diag.textContent='ts:'+ts+' te:'+te+' →BUY';payBuy();return;}
+    if(hits(close)){e.preventDefault();e.stopPropagation();diag.textContent='ts:'+ts+' te:'+te+' →CLOSE';payClose();return;}
+    if(hits(restore)){e.preventDefault();e.stopPropagation();diag.textContent='ts:'+ts+' te:'+te+' →RESTORE';payRestore();return;}
+    diag.textContent='ts:'+ts+' te:'+te+' MISS';
   },{passive:false,capture:true});
 })();
 </script>
