@@ -251,7 +251,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.42 · display none iframes</div>
+    <div class="ver">salon v0.43 · transform slide iframes</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -1055,19 +1055,19 @@ if('serviceWorker' in navigator){
   }
 
   function _hideRooms(){
-    /* visibility:hidden alone doesn't remove WKWebView iframes from the native
-       hit-test chain — use display:none to actually pull them out of the view. */
+    /* display:none kills iframe touch handlers on restore in WKWebView.
+       Instead, slide iframes off-screen — native hit-test misses them,
+       but the iframe content stays fully alive (no re-layout, no handler loss). */
     var earn=document.getElementById('roomEarn');
     var appt=document.getElementById('roomAppt');
-    if(earn){earn.style.display='none';}
-    if(appt){appt.style.display='none';}
+    if(earn){earn.style.transform='translateX(-300vw)';earn.style.pointerEvents='none';}
+    if(appt){appt.style.transform='translateX(-300vw)';appt.style.pointerEvents='none';}
   }
   function _showRooms(){
-    /* Restore display — let the .hide CSS class handle which room is visible */
     var earn=document.getElementById('roomEarn');
     var appt=document.getElementById('roomAppt');
-    if(earn){earn.style.display='';}
-    if(appt){appt.style.display='';}
+    if(earn){earn.style.transform='';earn.style.pointerEvents='';}
+    if(appt){appt.style.transform='';appt.style.pointerEvents='';}
   }
 
   window.shellPayShow = function(mandatory){
