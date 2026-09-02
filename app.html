@@ -18,9 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-input,textarea,select{-webkit-user-select:text;user-select:text}
-button,a,[onclick],[role="button"]{touch-action:manipulation}
+*{box-sizing:border-box;margin:0;padding:0}
 html{overflow-x:hidden;overflow-x:clip;width:100%;max-width:100%;-webkit-text-size-adjust:100%;background:#0a0a0a;overscroll-behavior-x:none}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#f0f0f0;min-height:100vh;overflow-x:hidden;overflow-x:clip;width:100%;max-width:100%;touch-action:pan-y;overscroll-behavior-x:none;position:relative}
 :root{
@@ -303,10 +301,9 @@ body.theme-noir .legal-body{color:#a8a8a8;font-size:11.5px}
 body.theme-noir .legal-foot summary,body.theme-noir .ty-summary{color:#b4b4b4}
 body.theme-light .legal-foot summary{color:#666}
 body.theme-light .legal-body{color:#777}
-#payGate{position:fixed;inset:0;z-index:99990;display:none;align-items:flex-start;justify-content:center;overflow:hidden;background:rgba(5,5,8,.985);padding:24px;touch-action:none}
-#pg-diag{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:10px;color:#333;pointer-events:none}
+#payGate{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;overflow:hidden;background:rgba(5,5,8,.985);padding:24px}
 #payGate.on{display:flex}
-.pg-card{width:100%;max-width:380px;background:#141414;border:1px solid #2a2a2a;border-radius:20px;padding:30px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);margin:auto}
+.pg-card{width:100%;max-width:380px;background:#141414;border:1px solid #2a2a2a;border-radius:20px;padding:30px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 .pg-logo{font-size:30px;color:var(--gold)}
 .pg-title{font-size:22px;font-weight:800;color:#fff;margin:10px 0 4px}
 .pg-sub{font-size:13.5px;color:#9a9a9a;line-height:1.6;margin-bottom:8px}
@@ -868,7 +865,7 @@ body.accent-purple{--gold:#9966DD;--gold2:#1a0a2a;--gold3:#4a1a7a;--gold-light:#
 body.accent-gold{--gold:#FFB800;--gold2:#2a1f00;--gold3:#665522;--gold-light:#FFB800}
 
 /* ── SETUP SCREEN ── */
-.setup-screen{position:fixed;inset:0;background:#0a0a0a;z-index:1000;display:flex;align-items:center;justify-content:center;padding:max(env(safe-area-inset-top,44px),20px) 20px 20px}
+.setup-screen{position:fixed;inset:0;background:#0a0a0a;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
 .setup-card{background:#141414;border:1px solid #2a2a2a;border-radius:20px;padding:36px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
 .setup-logo{font-size:32px;text-align:center;margin-bottom:6px}
 .setup-title{font-family:-apple-system,sans-serif;font-size:24px;font-weight:700;color:#FFB800;text-align:center;margin-bottom:6px}
@@ -1002,7 +999,7 @@ body.theme-noir .set-trade-tile{background:#0a0a0e;border-color:#23232e}
 @keyframes iridShift{to{background-position:200% 50%}}
 body.theme-noir .svc-trade-label{color:#fff;border:1px solid transparent!important;background:linear-gradient(#000,#000) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box!important;box-shadow:0 0 10px rgba(167,139,250,.25)}
 .trade-screen{position:fixed;inset:0;z-index:7000;background:#000;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
-.tour-screen{position:fixed;inset:0;z-index:7100;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:max(env(safe-area-inset-top,44px),24px) 24px 24px}
+.tour-screen{position:fixed;inset:0;z-index:7100;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:24px}
 .tour-card{width:100%;max-width:380px;background:#0a0a0e;border:1.5px solid #23232e;border-radius:22px;padding:30px 24px 22px;text-align:center}
 body.theme-noir .tour-card{border:1px solid transparent;background:linear-gradient(#070708,#070708) padding-box,linear-gradient(135deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 26px rgba(167,139,250,.22)}
 .tour-ic{font-size:36px;margin-bottom:12px;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
@@ -1154,13 +1151,13 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       <div class="pg-title">Your Salon Pro</div>
       <div class="pg-sub">Professional earnings &amp; bookings for stylists.</div>
       <div class="pg-price">$4.99/mo · 1 month free trial</div>
-      <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" ontouchend="event.preventDefault();payBuy();" href="#">Start free trial</a>
+      <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Start free trial</a>
       <div class="pg-foot" style="margin-top:14px">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
-      <button class="pg-close" id="pgClose" onclick="payClose()" ontouchend="event.preventDefault();payClose()">Keep looking around</button>
+      <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
       <div style="margin-top:14px;font-size:11px;color:#666;text-align:center;line-height:1.6">
-        By subscribing you agree to our <a href="#" onclick="openExtUrl('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/');return false" style="color:#888;text-decoration:underline">Terms of Use</a> and <a href="#" onclick="openExtUrl('https://getcommissionpro.com/privacy.html');return false" style="color:#888;text-decoration:underline">Privacy Policy</a>.
+        By subscribing you agree to our <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" style="color:#888;text-decoration:underline">Terms of Use</a> and <a href="https://getcommissionpro.com/privacy.html" target="_blank" style="color:#888;text-decoration:underline">Privacy Policy</a>.
       </div>
-      <button onclick="payRestore()" ontouchend="event.preventDefault();payRestore()" style="margin-top:10px;background:none;border:none;color:#555;font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:4px 0">Restore Purchases</button>
+      <button onclick="payRestore()" style="margin-top:10px;background:none;border:none;color:#555;font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:4px 0">Restore Purchases</button>
     </div>
     <!-- Request sent confirmation -->
     <div class="pg-success" id="pgTrialReq">
@@ -1474,7 +1471,7 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
 
     <details class="legal-foot">
       <summary><i class="ti ti-shield-check" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Legal &amp; disclaimers</summary>
-      <div class="legal-body">CommissionPro is a personal tracking tool. All figures are estimates based on the information you enter and are for your own reference only — not official payroll, tax, or accounting records. Commission splits and pay vary; the app reflects only the values you input and does not guarantee any amount. CommissionPro does not provide financial, legal, or tax advice. Always verify your earnings against your salon's official records.<br><br>Eye Rest is a relaxing visual and a reminder to rest your eyes. It is not a medical device or treatment, is not a substitute for professional eye care, and makes no health or therapeutic claims.<br><br><a href="#" onclick="openExtUrl('https://getcommissionpro.com/privacy.html');return false" style="color:var(--gold);text-decoration:none">Privacy Policy ↗</a> &nbsp;·&nbsp; <a href="#" onclick="openExtUrl('https://getcommissionpro.com/terms.html');return false" style="color:var(--gold);text-decoration:none">Terms of Service ↗</a></div>
+      <div class="legal-body">CommissionPro is a personal tracking tool. All figures are estimates based on the information you enter and are for your own reference only — not official payroll, tax, or accounting records. Commission splits and pay vary; the app reflects only the values you input and does not guarantee any amount. CommissionPro does not provide financial, legal, or tax advice. Always verify your earnings against your salon's official records.<br><br>Eye Rest is a relaxing visual and a reminder to rest your eyes. It is not a medical device or treatment, is not a substitute for professional eye care, and makes no health or therapeutic claims.<br><br><a href="privacy.html" target="_blank" style="color:var(--gold);text-decoration:none">Privacy Policy ↗</a> &nbsp;·&nbsp; <a href="terms.html" target="_blank" style="color:var(--gold);text-decoration:none">Terms of Service ↗</a></div>
     </details>
 
     <div id="buildBadge" style="text-align:center;margin:16px 0 2px;font-size:12.5px;color:#888;letter-spacing:.3px">CommissionPro · build 71</div>
@@ -2434,9 +2431,7 @@ function printInvoice(){
   const content=$('invoicePreview').innerHTML;
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><title>Commission Statement — ${getName()||'Your name'}</title>
-  <style>*{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-input,textarea,select{-webkit-user-select:text;user-select:text}
-button,a,[onclick],[role="button"]{touch-action:manipulation}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:32px;color:#1a1a1a;max-width:720px;margin:0 auto}
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:32px;color:#1a1a1a;max-width:720px;margin:0 auto}
   .inv-header{display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:2.5px solid #111}
   .inv-from-name{font-size:22px;font-weight:700;margin-bottom:5px}.inv-from-detail{font-size:12px;color:#555;line-height:1.8}
   .inv-to{text-align:right}.inv-to-label{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
@@ -3409,18 +3404,10 @@ function pgBackToMain(){
   if(pgTS){pgTS.style.display='none';pgTS.classList.remove('on');}
   if(pgMain)pgMain.style.display='';
 }
-function payShow(mandatory){
-  /* In shell: delegate to salon.html — buttons there have no iframe hit-test offset */
-  if(window.self!==window.top){try{window.parent.postMessage({salon:'showPaygate',mandatory:!!mandatory},'*');}catch(e){}return;}
-  var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.body.style.touchAction='none';document.getElementById('pgClose').style.display=mandatory?'none':'block';var _pe=document.getElementById('payErr');if(_pe)_pe.style.display='none';var ts=document.getElementById('pgTrialSection');if(ts)ts.style.display=(pgUnlocked()||window.IS_APPLE_IAP)?'none':'';if(window.IS_APPLE_IAP){var el=document.querySelector('.pg-unlock');if(el)el.style.display='none';var div=document.querySelectorAll('.pg-div');div.forEach(function(d){d.style.display='none';});var code=document.getElementById('payCode');if(code)code.style.display='none';}
-}
-function payClose(){
-  if(window.self!==window.top){try{window.parent.postMessage({salon:'closePaygate'},'*');}catch(e){}return;}
-  var g=document.getElementById('payGate');if(g)g.classList.remove('on');document.body.style.touchAction='';
-}
+function payShow(mandatory){var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.getElementById('pgClose').style.display=mandatory?'none':'block';var _pe=document.getElementById('payErr');if(_pe)_pe.style.display='none';var ts=document.getElementById('pgTrialSection');if(ts)ts.style.display=(pgUnlocked()||window.IS_APPLE_IAP)?'none':'';/* iOS: hide Stripe/promo elements when IS_APPLE_IAP is set */if(window.IS_APPLE_IAP){var el=document.querySelector('.pg-unlock');if(el)el.style.display='none';var div=document.querySelectorAll('.pg-div');div.forEach(function(d){d.style.display='none';});var code=document.getElementById('payCode');if(code)code.style.display='none';}}
+function payClose(){var g=document.getElementById('payGate');if(g)g.classList.remove('on');}
 /* Restore previous Apple IAP purchase */
 function payRestore(){
-  if(window.self!==window.top){try{window.parent.postMessage({salon:'paygateRestore'},'*');}catch(e){}return;}
   if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.iapHandler){
     window.webkit.messageHandlers.iapHandler.postMessage({action:'restore'});
   }else{
@@ -3436,8 +3423,6 @@ function payRestore(){
   }
 })();
 function payBuy(){
-  /* In shell: salon.html handles IAP directly — relay the action */
-  if(window.self!==window.top){try{window.parent.postMessage({salon:'paygateBuy'},'*');}catch(e){}return;}
   if(window.IS_APPLE_IAP){
     if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.iapHandler){
       window.webkit.messageHandlers.iapHandler.postMessage({action:'purchase',productId:'com.yoursalon.pro.monthly'});
@@ -4058,7 +4043,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.53 · ext links via parent';
+var VERSION='app v2.42 · paywall: 1 month free trial text';
 function deleteMyAccount(){
   if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
   if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;
@@ -4534,33 +4519,6 @@ setInterval(checkForUpdate,60000);
   setInterval(dbgState,800);
   dbgState();
 })();
-</script>
-<script>
-/* ── Shell paygate: listen for results from salon.html ─────────────────────
-   payShow/payBuy/payRestore delegate to parent when in-shell; salon.html
-   posts back paygateClose and paygateIAPSuccess when done.               */
-/* Open external URLs via parent frame — target="_blank" is blocked in WKWebView iframes */
-function openExtUrl(url){
-  if(window.self!==window.top){
-    try{window.parent.postMessage({salon:'openUrl',url:url},'*');}catch(e){}
-  } else {
-    window.open(url,'_blank');
-  }
-}
-window.addEventListener('message',function(ev){
-  var d=ev.data||{};
-  if(d.salon==='paygateClose'){
-    /* Restore body state in case anything locked it */
-    document.body.style.touchAction='';
-    /* Reset pgMain so next open is clean */
-    var pgMain=document.getElementById('pgMain');if(pgMain)pgMain.style.display='';
-    var pgS=document.getElementById('pgSuccess');if(pgS){pgS.style.display='none';pgS.classList.remove('on');}
-  }
-  if(d.salon==='paygateIAPSuccess'){
-    /* Purchase succeeded — ensure localStorage is set (salon.html already set it, belt-and-braces) */
-    try{localStorage.setItem('cp_unlocked','1');}catch(e){}
-  }
-});
 </script>
 </body>
 </html>
