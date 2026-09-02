@@ -4049,7 +4049,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.49 · paygate touch-action fix + diag';
+var VERSION='app v2.50 · paygate elementFromPoint dispatch';
 function deleteMyAccount(){
   if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
   if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;
@@ -4529,18 +4529,34 @@ setInterval(checkForUpdate,60000);
 <script>
 /* WKWebView iframe touch primer */
 document.addEventListener('touchstart',function(){},{passive:true,capture:true});
-/* diagnostic tap counter — shows in paygate bottom so Shaz can confirm touches land */
+/* ── paygate touch dispatch ──────────────────────────────────────────────
+   WKWebView iframe hit-test offsets mean ontouchend on individual buttons
+   never fires. Fix: intercept at document (capture phase), use
+   elementFromPoint on the actual touch coords to find the real target.   */
 (function(){
-  var n=0;
+  var ts=0,te=0;
   var diag=document.getElementById('pg-diag');
   var pg=document.getElementById('payGate');
-  if(pg&&diag){
-    pg.addEventListener('touchstart',function(){
-      n++;
-      diag.textContent='tap:'+n;
-      diag.style.color='#a78bfa';
-    },{passive:true,capture:true});
-  }
+  if(!pg||!diag)return;
+
+  pg.addEventListener('touchstart',function(){
+    ts++;diag.textContent='ts:'+ts+' te:'+te;diag.style.color='#a78bfa';
+  },{passive:true,capture:true});
+
+  document.addEventListener('touchend',function(e){
+    if(!pg.classList.contains('on'))return;
+    te++;diag.textContent='ts:'+ts+' te:'+te;
+    var t=e.changedTouches[0];if(!t)return;
+    var el=document.elementFromPoint(t.clientX,t.clientY);
+    while(el&&el!==document.body){
+      if(el.id==='pgBuy'){e.preventDefault();e.stopPropagation();payBuy();return;}
+      if(el.id==='pgClose'){e.preventDefault();e.stopPropagation();payClose();return;}
+      if(el.tagName==='BUTTON'&&(el.textContent||'').indexOf('Restore')>=0){
+        e.preventDefault();e.stopPropagation();payRestore();return;
+      }
+      el=el.parentElement;
+    }
+  },{passive:false,capture:true});
 })();
 </script>
 </body>
