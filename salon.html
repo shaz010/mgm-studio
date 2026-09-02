@@ -251,7 +251,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.39 · paygate hide rooms</div>
+    <div class="ver">salon v0.40 · always show close btn</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -1074,7 +1074,9 @@ if('serviceWorker' in navigator){
     if(!pg) return;
     _hideRooms();
     pg.classList.add('on');
-    if(pgCloseBtn) pgCloseBtn.style.display = mandatory ? 'none' : '';
+    /* always show the close button — never trap the user with no exit.
+       Once IAP is fully verified in production, mandatory can be re-enabled. */
+    if(pgCloseBtn) pgCloseBtn.style.display = '';
     if(pgMain){ pgMain.style.display = ''; }
     if(pgSuccess){ pgSuccess.style.display = 'none'; pgSuccess.classList.remove('on'); }
   };
