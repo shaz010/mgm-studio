@@ -1,5 +1,5 @@
 # Your Salon — Google Play Handoff
-**Last updated:** September 1, 2026 (evening — Reddit post deleted + repost instructions ready)  
+**Last updated:** September 1, 2026  
 **Account:** chabokchamejun@gmail.com  
 **Developer ID:** 4835349469847474845  
 **App:** Your Salon — `com.getcommissionpro.yoursalon`  
@@ -30,7 +30,7 @@
 | Closed testing approved by Google | ✅ Active — Beta 2, 172 countries |
 | Closed testing opt-in link | ✅ LIVE |
 | Testers opted in | ⏳ 0 of 12 needed |
-| Reddit r/betatests post | ⚠️ Sep 1 post deleted (spam filter — empty body). Repost needed by Shaz manually. |
+| Reddit r/betatests post | ✅ Posted (Aug 7 original + Sep 1 new post with live link) |
 | Closed testing (12 testers × 14 days) | ⏳ Waiting for testers |
 | Production release | ⏳ Blocked until 12 testers × 14 days complete |
 
@@ -54,28 +54,7 @@ Google requires new personal accounts to complete **Closed Testing** before prod
 - They must remain opted in for **14 days**
 - Only THEN can Shaz apply for production access
 
-Shaz posted to **r/betatests on Reddit (Aug 7)** — no opt-in link then. New post attempted Sep 1 with live link but Shaz accidentally submitted with empty body → spam-filtered and removed. Claude deleted the empty post. **Shaz needs to repost manually** at https://www.reddit.com/r/betatests/submit — body must be typed/pasted by the account owner or Reddit's spam filter will flag it again.
-
-### Reddit repost body (ready to paste):
-
-Hey r/betatests! I built a salon management app for hair stylists and beauty professionals and need 12 Android testers to qualify for Google Play production release.
-
-What Your Salon does:
-- Tracks your commission split with the salon (configurable %)
-- Appointment booking, calendar, and client profiles
-- Inventory management
-- Earnings overview so you always know what you're owed
-
-Opt in here: https://play.google.com/apps/testing/com.getcommissionpro.yoursalon
-
-Feedback I'm looking for:
-- Is the onboarding clear?
-- Does the commission math feel right for your setup?
-- Any crashes on your device?
-
-Free 21-day trial, then $4.99/month. Just need you to stay opted in for 14 days. Thanks!
-
-Title: [Android] Your Salon — Free salon management app for stylists | 21-day trial | Need 12 beta testers
+Shaz posted to **r/betatests on Reddit (Aug 7)** — no opt-in link then. New post with live link posted Sep 1.
 
 ---
 
@@ -108,12 +87,11 @@ Title: [Android] Your Salon — Free salon management app for stylists | 21-day 
 1. ✅ ~~Check Android developer verification~~ — confirmed done Aug 10
 2. ✅ ~~Wait for Google to approve the closed testing review~~ — Beta 2 active
 3. ✅ ~~Get the opt-in link~~ — both links confirmed live Sep 1
-4. **Repost to r/betatests** — Shaz must post manually (body text + title above). DO NOT automate — spam filter will remove it again.
-5. **Recruit 12 testers** — update Instagram/TikTok/Facebook with opt-in link too
-6. **Monitor tester count** — daily monitor scheduled (trigger ID: trig_01MaQbzvrLwWefkXMWmTyFhh) checks Gmail at 9am
-7. Once 12 testers × 14 days → apply for production access
-8. Check if `assetlinks.json` is live at `https://getcommissionpro.com/.well-known/assetlinks.json` (TWA requires this for URL bar to hide)
-9. Address Google Play Billing if Apple IAP equivalent is needed
+4. **Recruit 12 testers** — r/betatests post live Sep 1; update Instagram/TikTok/Facebook with live link
+5. **Monitor tester count** — daily monitor scheduled (trigger ID: trig_01MaQbzvrLwWefkXMWmTyFhh) checks Gmail at 9am
+6. Once 12 testers × 14 days → apply for production access
+7. Check if `assetlinks.json` is live at `https://getcommissionpro.com/.well-known/assetlinks.json` (TWA requires this for URL bar to hide)
+8. Address Google Play Billing if Apple IAP equivalent is needed
 
 ---
 
@@ -128,4 +106,4 @@ Title: [Android] Your Salon — Free salon management app for stylists | 21-day 
 - Play Console: https://play.google.com/console/developers/4835349469847474845
 - App page: https://play.google.com/console/u/0/developers/4835349469847474845/app/4972990211916377897
 - Closed testing track: https://play.google.com/console/u/0/developers/4835349469847474845/app/4972990211916377897/tracks/4700524375083021787?tab=testers
-- Reddit submit: https://www.reddit.com/r/betatests/submit
+- Reddit post: r/betatests (posted Aug 7, updated Sep 1)
