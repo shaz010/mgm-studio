@@ -251,7 +251,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.44 · ext url relay</div>
+    <div class="ver">salon v0.45 · plain href links</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -1027,7 +1027,7 @@ if('serviceWorker' in navigator){
       <button class="spg-close" id="spgClose" onclick="shellPayClose()">Keep looking around</button>
       <div class="spg-foot">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
       <div class="spg-legal">
-        By subscribing you agree to our <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank">Terms&nbsp;of&nbsp;Use</a> and <a href="https://getcommissionpro.com/privacy.html" target="_blank">Privacy&nbsp;Policy</a>.
+        By subscribing you agree to our <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/">Terms&nbsp;of&nbsp;Use</a> and <a href="https://getcommissionpro.com/privacy.html">Privacy&nbsp;Policy</a>.
       </div>
       <button class="spg-restore" onclick="shellPayRestore()">Restore Purchases</button>
     </div>
@@ -1125,8 +1125,8 @@ if('serviceWorker' in navigator){
     if(d.salon === 'closePaygate') { window.shellPayClose(); return; }
     if(d.salon === 'paygateBuy')   { window.shellPayBuy(); return; }
     if(d.salon === 'paygateRestore'){ window.shellPayRestore(); return; }
-    /* Open external URLs — target="_blank" blocked in WKWebView iframes */
-    if(d.salon === 'openUrl' && d.url){ window.open(d.url,'_blank'); return; }
+    /* Open external URLs — navigate main frame; native WKNavigationDelegate handles it */
+    if(d.salon === 'openUrl' && d.url){ window.location.href = d.url; return; }
   });
 })();
 </script>
