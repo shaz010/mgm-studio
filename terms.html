@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Terms of Service — Your Salon (CommissionPro &amp; AppointmentPro)</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;background:#0a0a0a;color:#e0e0e0;min-height:100vh;padding:0}
-nav{background:#141414;border-bottom:1px solid #2a2a2a;padding:16px 32px;display:flex;align-items:center;justify-content:space-between}
+nav{background:#141414;border-bottom:1px solid #2a2a2a;padding:16px 32px;padding-top:max(16px,env(safe-area-inset-top));padding-left:max(32px,env(safe-area-inset-left));padding-right:max(32px,env(safe-area-inset-right));display:flex;align-items:center;justify-content:space-between}
 .nav-logo{font-family:'DM Serif Display',serif;font-size:20px;color:#f0f0f0;text-decoration:none;display:flex;align-items:center;gap:8px}
 .nav-logo span{color:#FFB800}
 .back-link{font-size:13px;color:#888;text-decoration:none;border:1px solid #333;padding:7px 14px;border-radius:7px;transition:all .2s}
@@ -35,7 +35,7 @@ footer a{color:#FFB800;text-decoration:none}
 <body>
 <nav>
   <a href="https://getcommissionpro.com" class="nav-logo"><span>✂</span> CommissionPro</a>
-  <a href="https://getcommissionpro.com" class="back-link">← Back to home</a>
+  <button class="back-link" onclick="history.back()">← Back to app</button>
 </nav>
 
 <div class="content">

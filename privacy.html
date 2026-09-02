@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Privacy Policy - Your Salon Pro</title>
   <style>
     body {
@@ -10,6 +10,10 @@
       max-width: 760px;
       margin: 0 auto;
       padding: 40px 24px;
+      padding-top: max(40px, env(safe-area-inset-top));
+      padding-left: max(24px, env(safe-area-inset-left));
+      padding-right: max(24px, env(safe-area-inset-right));
+      padding-bottom: max(40px, env(safe-area-inset-bottom));
       color: #1a1a1a;
       line-height: 1.7;
       background: #fff;
