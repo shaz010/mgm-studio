@@ -305,7 +305,7 @@ body.theme-light .legal-foot summary{color:#666}
 body.theme-light .legal-body{color:#777}
 #payGate{position:fixed;inset:0;z-index:99990;display:none;align-items:flex-start;justify-content:center;overflow:hidden;background:rgba(5,5,8,.985);padding:24px}
 #payGate.on{display:flex}
-.pg-card{width:100%;max-width:380px;background:#141414;border:1px solid #2a2a2a;border-radius:20px;padding:30px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);margin:auto;max-height:calc(100dvh - 48px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.pg-card{width:100%;max-width:380px;background:#141414;border:1px solid #2a2a2a;border-radius:20px;padding:30px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);margin:auto}
 .pg-logo{font-size:30px;color:var(--gold)}
 .pg-title{font-size:22px;font-weight:800;color:#fff;margin:10px 0 4px}
 .pg-sub{font-size:13.5px;color:#9a9a9a;line-height:1.6;margin-bottom:8px}
@@ -4047,7 +4047,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.46 · paygate tap fix - scroll moved to card';
+var VERSION='app v2.47 · WKWebView tap fix';
 function deleteMyAccount(){
   if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
   if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;
@@ -4522,6 +4522,40 @@ setInterval(checkForUpdate,60000);
   }
   setInterval(dbgState,800);
   dbgState();
+})();
+</script>
+<script>
+/* ── WKWebView iframe touch fix ─────────────────────────────────────────
+   iOS WKWebView doesn't fire click events inside an iframe until the
+   iframe document has received at least one touchstart. The passive
+   listener below "primes" the touch system so clicks route normally.
+   The touchend delegate fires the button's onclick as a fallback for
+   any tap the click handler missed.                                    */
+document.addEventListener('touchstart',function(){},{passive:true,capture:true});
+(function(){
+  function delegate(container,e){
+    var t=e.target;
+    while(t&&t!==container){
+      if(t.tagName==='BUTTON'||(t.tagName==='A'&&t.getAttribute('href')==='#')){
+        if(typeof t.onclick==='function'){
+          e.preventDefault();
+          t.onclick.call(t,e);
+          return;
+        }
+      }
+      t=t.parentElement;
+    }
+  }
+  /* paygate */
+  var pg=document.getElementById('payGate');
+  if(pg)pg.addEventListener('touchend',function(e){delegate(pg,e);},{passive:false,capture:false});
+  /* setup + tour screens — delegate across whole doc for safety */
+  document.addEventListener('touchend',function(e){
+    var tgt=e.target;
+    if(tgt&&(tgt.classList.contains('ob-skip')||tgt.id==='pgBuy'||tgt.id==='pgClose')){
+      if(typeof tgt.onclick==='function'){e.preventDefault();tgt.onclick.call(tgt,e);}
+    }
+  },{passive:false,capture:true});
 })();
 </script>
 </body>
