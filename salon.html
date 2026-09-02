@@ -251,7 +251,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.41 · close btn visible</div>
+    <div class="ver">salon v0.42 · display none iframes</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -1023,13 +1023,13 @@ if('serviceWorker' in navigator){
       <div class="spg-title">Your Salon Pro</div>
       <div class="spg-sub">Professional earnings &amp; bookings for stylists.</div>
       <div class="spg-price">$4.99/mo · 1 month free trial</div>
-      <button class="spg-buy" onclick="shellPayBuy()" ontouchend="shellPayBuy();event.preventDefault()">Start free trial</button>
-      <button class="spg-close" id="spgClose" onclick="shellPayClose()" ontouchend="shellPayClose();event.preventDefault()">Keep looking around</button>
+      <button class="spg-buy" onclick="shellPayBuy()">Start free trial</button>
+      <button class="spg-close" id="spgClose" onclick="shellPayClose()">Keep looking around</button>
       <div class="spg-foot">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
       <div class="spg-legal">
         By subscribing you agree to our <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank">Terms&nbsp;of&nbsp;Use</a> and <a href="https://getcommissionpro.com/privacy.html" target="_blank">Privacy&nbsp;Policy</a>.
       </div>
-      <button class="spg-restore" onclick="shellPayRestore()" ontouchend="shellPayRestore();event.preventDefault()">Restore Purchases</button>
+      <button class="spg-restore" onclick="shellPayRestore()">Restore Purchases</button>
     </div>
     <div class="spg-success" id="spgSuccess">
       <div class="spg-success-ic">✨</div>
@@ -1055,19 +1055,19 @@ if('serviceWorker' in navigator){
   }
 
   function _hideRooms(){
-    /* WKWebView routes touches by native subview position — CSS z-index alone
-       won't prevent the earn iframe from eating taps. Hide the room iframes
-       entirely while the paygate is open so taps reach the overlay. */
+    /* visibility:hidden alone doesn't remove WKWebView iframes from the native
+       hit-test chain — use display:none to actually pull them out of the view. */
     var earn=document.getElementById('roomEarn');
     var appt=document.getElementById('roomAppt');
-    if(earn){earn.style.pointerEvents='none';earn.style.visibility='hidden';}
-    if(appt){appt.style.pointerEvents='none';appt.style.visibility='hidden';}
+    if(earn){earn.style.display='none';}
+    if(appt){appt.style.display='none';}
   }
   function _showRooms(){
+    /* Restore display — let the .hide CSS class handle which room is visible */
     var earn=document.getElementById('roomEarn');
     var appt=document.getElementById('roomAppt');
-    if(earn){earn.style.pointerEvents='';earn.style.visibility='';}
-    if(appt){appt.style.pointerEvents='';appt.style.visibility='';}
+    if(earn){earn.style.display='';}
+    if(appt){appt.style.display='';}
   }
 
   window.shellPayShow = function(mandatory){
