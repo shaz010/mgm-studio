@@ -3552,7 +3552,7 @@ function applyAccessGate(){
     return;
   }
   /* Not unlocked, no active trial → lock immediately */
-  payShow(true);
+  payShow(false);
 }
 applyAccessGate();
 </script>
@@ -4043,7 +4043,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.42 · paywall: 1 month free trial text';
+var VERSION='app v2.56 · paygate always dismissable';
 function deleteMyAccount(){
   if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
   if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;
