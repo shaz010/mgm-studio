@@ -194,3 +194,12 @@ Enemy_1/2/3 (Character), HeightFog, London_Hideout, London_Scene_v1/v2, London_S
 - UE5 Python: run via Output Log Cmd as py /Volumes/T7B/scriptname.py
 - Farsi address: شما (NEVER تو)
 - UE5 crash risk: NEVER call open_editor_for_assets or AssetEditorSubsystem
+
+### Ahura Mazda Voice ✅ COMPLETE (2026-09-06)
+- Line: "Ahura Mazda did not choose you because you are ready. He chose you because it is time."
+- Generated: fal.ai minimax/speech-02-hd, 0.85x speed, 6.6s
+- Imported: /Game/Audio/AhuraMazda_Voice (SoundWave) ✅
+- Spawned: Audio_AhuraMazda actor in LvL_Persia (auto_activate=False)
+- Wired: battle_scene.py Phase -1 → plays voice → 7s wait → Phase 0 battle starts
+- Script: /Volumes/T7B/spawn_ahura_voice.py
+- Note: Placeholder voice — replace with iPhone recording when ready (iPhone → Logic Pro → WAV → reimport)
