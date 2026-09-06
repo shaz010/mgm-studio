@@ -114,8 +114,10 @@ Last updated: 2026-09-06 (session 3)
 - Need Faravahar image from Shaz
 - fal.ai available if needed for image gen
 
-### WAV Import — BLOCKED
-- Ahura Mazda voice + Tabla WAV: blocked on Apogee adapter
+### WAV Import ✅ COMPLETE (2026-09-06)
+- VoiceLine1.wav, VoiceLine2.wav, VoiceLine3.wav imported as SoundWave assets
+- Location: /Game/Audio/VoiceLine1, VoiceLine2, VoiceLine3
+- Script: /Volumes/T7B/import_wavs.py
 
 ---
 
@@ -147,7 +149,7 @@ Enemy_1/2/3 (Character), HeightFog, London_Hideout, London_Scene_v1/v2, London_S
 - Manual: py /Volumes/T7B/battle_scene.py → full 8-phase Shahzad vs Ahriman battle
 
 ## GAME TIMELINE — LvL_London
-- 2s: Ahura Mazda voice (WAV pending)
+- 2s: Ahura Mazda voice — VoiceLine1/2/3 imported (/Game/Audio/), assign in Level Blueprint
 - 6s: Cuneiform lights glow
 - 10s: Villain_Ghost + DangerStrobe
 - 18s: Portal + Camera Shake + Slow Motion → GoldSurge
