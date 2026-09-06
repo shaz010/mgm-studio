@@ -119,6 +119,20 @@ Last updated: 2026-09-06 (session 3)
 - Location: /Game/Audio/VoiceLine1, VoiceLine2, VoiceLine3
 - Script: /Volumes/T7B/import_wavs.py
 
+### VoiceLine Wiring ✅ COMPLETE (2026-09-06)
+- Audio_VoiceLine1/2/3 spawned as AmbientSound actors in LvL_Persia
+- auto_activate=True — plays on level load
+- Actor count: 70 → 73
+- Script: /Volumes/T7B/spawn_audio_persia.py
+
+### Faravahar Texture ✅ COMPLETE (2026-09-06)
+- T_Faravahar_Portal.jpg generated via fal.ai FLUX dev
+- Achaemenid Zoroastrian bas-relief style, amber/gold tones
+- Imported as texture to /Game/LvL_Persia/T_Faravahar_Portal
+- Source: /Volumes/T7B/SHAHZAD/T_Faravahar_Portal.jpg
+- Script: /Volumes/T7B/import_faravahar.py
+- **NOT YET applied to Portal_Persia material** — pending
+
 ---
 
 ## ALL ACTOR TAGS IN LvL_Persia (confirmed 2026-09-04)
