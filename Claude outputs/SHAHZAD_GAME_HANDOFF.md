@@ -1,5 +1,5 @@
 # SHAHZAD GAME — HANDOFF
-Last updated: 2026-09-06 (session 3)
+Last updated: 2026-09-06 (session 5)
 
 ---
 
@@ -131,7 +131,9 @@ Last updated: 2026-09-06 (session 3)
 - Imported as texture to /Game/LvL_Persia/T_Faravahar_Portal
 - Source: /Volumes/T7B/SHAHZAD/T_Faravahar_Portal.jpg
 - Script: /Volumes/T7B/import_faravahar.py
-- **NOT YET applied to Portal_Persia material** — pending
+- M_Faravahar_Portal created at /Game/LvL_Persia/ — T_Faravahar_Portal wired to Base Color ✅
+- Script: /Volumes/T7B/create_faravahar_mat.py
+- Note: No portal actors in LvL_Persia — apply M_Faravahar_Portal to any future portal mesh
 
 ---
 
