@@ -1,4 +1,6 @@
 # SHAHZAD GAME — HANDOFF
+
+> ⚠️ SCOPE: SHAHZAD GAME ONLY. TAGJ is a separate project (github.com/Shaz010/eee-journal). Never mix them.
 Last updated: 2026-09-06 (session 5)
 
 ---
