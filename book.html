@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="apple-touch-icon" sizes="180x180" href="appt-touch-icon.png">
+<link rel="apple-touch-icon" href="appt-icon-192.png">
+<link rel="icon" type="image/png" href="appt-icon-192.png">
+<title>Book an appointment</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0a;--bg2:#141414;--bg3:#1c1c1c;--gold:#FFB800;--gold-dim:rgba(255,184,0,.13);--gold-border:rgba(255,184,0,.4);--text:#f5f5f5;--text2:#cfcfcf;--muted:#8a8a8a;--border:#222;--border-bright:#333;--green:#5ddb7c;--red:#ff7070;--blue:#7eb8ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.5;padding:0 0 40px}
+.wrap{width:100%;box-sizing:border-box;margin:0;padding:16px max(16px,env(safe-area-inset-left)) 16px max(16px,env(safe-area-inset-right))}
+.brand{display:flex;align-items:center;gap:12px;margin:8px 0 18px}
+.brand-ic{width:40px;height:40px;background:linear-gradient(135deg,#ffcf4d,#e8a91a);border:none;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#1a1208;font-size:20px;flex-shrink:0;box-shadow:0 3px 10px rgba(232,169,26,.28)}
+.brand-name{font-family:'DM Serif Display',Georgia,'Times New Roman',serif;font-size:21px;font-weight:400;letter-spacing:.4px}
+.brand-sub{font-size:12.5px;color:var(--muted);margin-top:1px}
+.sec{font-size:14px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin:26px 0 12px;padding:12px 0 6px;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid var(--gold-dim,rgba(212,175,55,.35));display:flex;align-items:center}
+.chips{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.chip{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 6px 10px;min-height:86px;border-radius:14px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.035);color:#e2e2ea;font-size:12px;font-weight:700;cursor:pointer;transition:transform .14s,border-color .2s,box-shadow .25s;-webkit-tap-highlight-color:transparent;text-align:center;line-height:1.25;word-break:break-word}
+.chip>i{font-size:20px;color:var(--gold)}.chip-name{font-size:12px;font-weight:700;line-height:1.2}.chip-price{font-size:11.5px;font-weight:600;color:#ffe566;background:none;border:none;padding:0;margin-top:2px;letter-spacing:.3px;white-space:nowrap}
+.chip.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 14px rgba(167,139,250,.45)}.chip.sel .chip-price{background:none;border:none;color:#fff}
+.chip.sel>i{background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent!important;animation:iridShift 4.5s linear infinite}
+.svc-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.svc-pills:empty{display:none}
+.svc-pill{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;padding:7px 10px 7px 12px;border-radius:20px;background:var(--gold-dim);border:1.5px solid var(--gold);color:var(--gold)}
+.svc-pill .x{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.28);margin-right:-7px;flex-shrink:0;-webkit-tap-highlight-color:transparent;opacity:.9}
+.svc-pill .x:active{opacity:1;background:rgba(0,0,0,.5)}
+.svc-pill .x i{font-size:14px;pointer-events:none}
+.chip:active{transform:scale(.93)}
+.chip,.hchip{user-select:none;-webkit-user-select:none}
+.svc-grp{margin-bottom:0;background:rgba(255,255,255,.025);border-radius:12px;border:1px solid rgba(255,255,255,.065);padding:8px 8px 10px}.svc-grp .chips{grid-template-columns:repeat(3,1fr)}.svc-grp .chip{min-height:72px;font-size:11px;padding:8px 4px}.svc-grp .chip-price{font-size:11px;padding:2px 7px;margin-top:2px}.svc-grp .svc-grp-add-input{font-size:12px;padding:6px 8px}.svc-grp .svc-grp-add-btn{font-size:11px;padding:6px 10px}.svc-grp-hdr{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:900;color:var(--gold);text-transform:uppercase;letter-spacing:1.8px;padding:7px 0 7px;border-bottom:1px solid rgba(255,184,0,.18);cursor:pointer;user-select:none;-webkit-user-select:none}.svc-grp-body{margin-top:8px}.svc-grp-body.closed{display:none}#svcChips{display:block}
+.svc-grp-hdr{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:900;color:var(--gold);text-transform:uppercase;letter-spacing:1.8px;padding:9px 0 8px;border-bottom:1px solid rgba(255,184,0,.18);cursor:pointer;user-select:none;-webkit-user-select:none}
+.grp-count{font-size:10px;font-weight:800;color:#a78bfa;background:rgba(167,139,250,.18);border-radius:20px;padding:2px 8px;flex-shrink:0}
+.svc-grp-body{margin-top:10px}
+.svc-grp-body.closed{display:none}
+.svc-grp-add{display:none}
+.svc-grp-add-input{flex:1;font-size:14px;padding:8px 10px;border-radius:8px;background:#1a1a1a;border:1.5px solid #333;color:var(--text);outline:none;font-family:inherit}
+.svc-grp-add-input:focus{border-color:var(--gold)}
+.svc-grp-add-btn{font-size:12px;font-weight:800;color:#1a1208;background:var(--gold);border:none;border-radius:8px;padding:8px 13px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.svc-pill{cursor:grab;touch-action:none}
+.svc-pill.dragging{opacity:.25;outline:2px dashed var(--gold)}
+.svc-pill.drag-over{outline:2px solid #a78bfa;box-shadow:0 0 0 3px rgba(167,139,250,.35)}
+.pill-drag-ghost{position:fixed;z-index:9999;padding:7px 14px;border-radius:20px;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d) border-box;border:1.5px solid transparent;color:#fff;font-size:13px;font-weight:700;pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,.7);opacity:.93;white-space:nowrap;transform:rotate(-2deg)}
+.sec{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.sec-chev{font-size:18px;transition:transform .28s cubic-bezier(.4,0,.2,1);color:var(--gold);margin-left:auto;flex-shrink:0;pointer-events:none}
+.sec-body{overflow:hidden;max-height:4000px;opacity:1;padding-bottom:14px;transition:max-height .45s cubic-bezier(.4,0,.2,1),opacity .28s ease}
+.sec-body.closed{max-height:0!important;opacity:0;pointer-events:none}
+.demo-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px}
+.demo-tab{padding:11px 0;border-radius:12px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.035);color:#8a8a8a;font-size:13px;font-weight:800;letter-spacing:.4px;cursor:pointer;text-align:center;transition:border-color .2s,color .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;gap:6px}
+.demo-tab i{font-size:16px}
+.demo-tab.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 14px rgba(167,139,250,.35)}
+.demo-tab:active{transform:scale(.96)}#demoTabsBar{position:sticky;top:0;z-index:100;background:#0c0c14;padding:8px 0 10px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:8px;-webkit-transform:translateZ(0);transform:translateZ(0);will-change:transform}.chip-del{position:absolute;top:4px;right:5px;font-size:14px;line-height:1;color:rgba(255,255,255,.28);cursor:pointer;z-index:2;padding:2px}.chip-del:active,.chip-del:hover{color:#ff6b6b}
+.avail-toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e1e2a;border:1px solid rgba(212,175,55,.4);color:#d4af37;font-size:12.5px;font-weight:700;padding:9px 18px;border-radius:24px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:9000;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.avail-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.dates{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.dmonth{flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;opacity:.85;padding:0 3px}
+.datecell{flex:0 0 auto;width:58px;background:#111;border:1.5px solid var(--border-bright);border-radius:11px;padding:8px 0;text-align:center;cursor:pointer;transition:all .15s}
+.datecell.sel{background:var(--gold-dim);border-color:var(--gold)}
+.datecell:active{transform:scale(.95)}
+.dc-dow{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.datecell.sel .dc-dow{color:var(--gold)}
+.dc-n{font-size:18px;font-weight:700;margin-top:2px}
+.datecell.sel .dc-n{color:var(--gold)}
+.dc-mo{font-size:9.5px;color:var(--muted);margin-top:1px}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:4px}
+.slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;padding:9px 4px;border-radius:9px;background:#1a1a1a;border:1.5px solid var(--border-bright);color:var(--text2);cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .12s;overflow:hidden}.slot-tod{font-size:13px;line-height:1}.slot-lbl{font-size:12.5px;font-weight:700;line-height:1}
+.slot.sel{background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box!important;background-size:auto,200% 100%!important;border-color:transparent!important;color:var(--gold)!important;font-weight:800;animation:iridShift 4.5s linear infinite;box-shadow:0 0 16px rgba(167,139,250,.5)}
+.slot.pending{border-color:#7a5a1a;color:#e0a93c}
+.btn-hint{display:none;text-align:center;font-size:13px;font-weight:700;color:#e0a93c;margin-top:8px}
+.btn-hint.show{display:block}
+.slot.pending::after{content:' ·';color:#e0a93c}
+.slot:active{transform:scale(.95)}
+.none-btn{margin-top:10px;width:100%;text-align:center;font-size:14px;font-weight:700;color:var(--gold);background:transparent;border:1.5px dashed var(--gold);border-radius:9px;padding:12px;cursor:pointer}
+.none-btn.on{color:var(--gold);border-color:var(--gold);border-style:solid}
+@keyframes iridShift{to{background-position:200% 50%}}
+.no-anim *{animation-play-state:paused!important}
+#noneBtn,#otherSvcBtn{display:flex;align-items:center;justify-content:center;gap:8px;font-size:15.5px;font-weight:800;color:#fff;border:1.5px solid transparent;border-radius:11px;padding:15px;background:linear-gradient(var(--bg2),var(--bg2)) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 16px rgba(167,139,250,.22);transition:transform .14s}
+#noneBtn:active,#otherSvcBtn:active{transform:scale(.97)}
+#noneBtn i,#otherSvcBtn i{font-size:17px;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:iridShift 4.5s linear infinite}
+#noneBtn.on,#otherSvcBtn.on{box-shadow:0 0 22px rgba(167,139,250,.4)}
+.custom-wrap{margin-top:10px;display:none}
+.custom-wrap.on{display:block}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--text2);margin:14px 0 6px}
+input,textarea{width:100%;background:#1a1a1a;border:1.5px solid var(--border-bright);border-radius:9px;color:var(--text);font-size:16px;padding:11px 12px;outline:none;font-family:inherit}
+input:focus,textarea:focus{border-color:var(--gold)}
+textarea{resize:vertical;min-height:60px}
+.book-btn{margin-top:22px;width:100%;background:var(--gold);color:#1a1a1a;font-size:16px;font-weight:800;border:none;border-radius:11px;padding:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.book-btn:disabled{opacity:.4}
+.book-btn:active{transform:scale(.98)}
+.foot-note{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.5}
+.consent-flags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px}
+.cflag{display:flex;align-items:center;gap:6px;padding:7px 11px;border-radius:10px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.03);font-size:11.5px;font-weight:700;color:#6a6a7a;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .15s,color .15s,background .15s;user-select:none}
+.cflag i{font-size:13px;flex-shrink:0}
+.cflag.on{border-color:#ff6b6b;color:#ffaaaa;background:rgba(255,107,107,.09)}
+.consent-agree{display:flex;align-items:flex-start;gap:10px;margin-top:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:10px 12px;border-radius:11px;border:1.5px solid #252530;background:rgba(255,255,255,.02);transition:border-color .15s}
+.consent-agree.on{border-color:#d4af37;background:rgba(212,175,55,.06)}
+.cbox{width:22px;height:22px;min-width:22px;border-radius:6px;border:1.5px solid #3a3a4a;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;transition:border-color .2s,background .2s;margin-top:1px}
+.cbox i{font-size:13px;color:#1a1208;opacity:0;transition:opacity .1s}
+.consent-agree.on .cbox{border-color:#d4af37;background:#d4af37}
+.consent-agree.on .cbox i{opacity:1}
+.ctxt{font-size:11.5px;color:#7a7a8a;line-height:1.6}
+.ctxt strong{color:#c8c8d8}
+.review-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:280px;padding:14px;border-radius:14px;border:1.5px solid var(--gold);background:rgba(212,175,55,.08);color:var(--gold);font-size:14px;font-weight:800;margin:14px auto 0;text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s}
+.review-btn:active{background:rgba(212,175,55,.2)}
+.passport-card{margin:18px auto 0;max-width:300px;padding:14px 16px;border-radius:14px;border:1.5px solid #252535;background:rgba(167,139,250,.05);text-align:left}
+.passport-card .pc-hdr{font-size:10px;font-weight:800;color:#a78bfa;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.passport-card .pc-entry{font-size:12px;color:#9a9aaa;line-height:1.6}
+.passport-card .pc-svc{font-size:13px;font-weight:700;color:#e8e8f0;margin-top:4px}
+.passport-card .pc-history{margin-top:10px;border-top:1px solid rgba(167,139,250,.15);padding-top:8px}
+.passport-card .pc-prev{font-size:11px;color:#6a6a7a;line-height:1.8}
+.passport-card .pc-prev span{color:#9a8aaa;font-weight:600}
+.pay-sheet{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .25s}
+.pay-sheet.open{opacity:1;pointer-events:all}
+.pay-inner{background:#0d0d18;border-radius:22px 22px 0 0;padding:22px 20px 40px;max-height:90vh;overflow-y:auto;transform:translateY(30px);transition:transform .3s cubic-bezier(.2,0,.2,1)}
+.pay-sheet.open .pay-inner{transform:translateY(0)}
+.pay-drag{width:36px;height:4px;border-radius:2px;background:#2a2a3a;margin:0 auto 18px}
+.pay-hdr{font-size:17px;font-weight:800;color:#e8e8f0;margin-bottom:3px}
+.pay-sub{font-size:12.5px;color:#6a6a7a;margin-bottom:18px;line-height:1.5}
+.pay-amount{font-size:32px;font-weight:800;color:#d4af37;text-align:center;margin:0 0 20px;letter-spacing:-.5px}
+.pay-amount span{font-size:16px;color:#7a7a8a;font-weight:600;margin-left:4px}
+#stripeElement{min-height:48px;margin-bottom:14px}
+.pay-btn{width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,#c9a227,#f5d77e);color:#1a1208;font-size:16px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.pay-btn:disabled{opacity:.45;cursor:default}
+.pay-btn:active:not(:disabled){opacity:.85}
+.pay-skip{text-align:center;margin-top:14px;font-size:13.5px;color:#7a7a8a;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:8px;text-decoration:underline;text-underline-offset:3px}
+.pay-skip:active{color:#8a8a9a}
+.pay-lock{text-align:center;margin-top:10px;font-size:11px;color:#3a3a4a;line-height:1.5}
+#expressCheckoutElement{margin-bottom:4px;min-height:0}
+#expressCheckoutElement:empty{display:none}
+.pay-divider{display:flex;align-items:center;gap:10px;margin:10px 0;color:#3a3a4a;font-size:11.5px}
+.pay-divider::before,.pay-divider::after{content:'';flex:1;border-top:1px solid #2a2a3a}
+.pay-divider:empty+#stripeElement,.pay-divider.hidden{display:none}
+.pay-err{background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.3);border-radius:10px;padding:10px 12px;font-size:12px;color:#ff9999;margin-bottom:12px;display:none}
+.pay-err.show{display:block}
+.center-screen{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+.cs-ic{width:64px;height:64px;border-radius:16px;background:var(--gold-dim);border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:32px;margin-bottom:16px}
+.cs-ic.green{background:rgba(93,219,124,.12);border-color:var(--green);color:var(--green)}
+.cs-ic.muted{background:#1a1a1a;border-color:var(--border-bright);color:var(--muted)}
+.cs-title{font-size:20px;font-weight:700;margin-bottom:6px}
+.cs-sub{font-size:14px;color:var(--muted);line-height:1.6;max-width:340px}
+.empty-slots{text-align:center;color:var(--muted);font-size:13px;padding:18px;font-style:italic}
+.hidden{display:none}
+.returning-btn{font-size:13px;font-weight:700;color:var(--gold);background:transparent;border:1.5px solid var(--gold);border-radius:20px;padding:7px 13px;cursor:pointer;display:flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0}
+.returning-btn.on{color:var(--gold);border-color:var(--gold);background:var(--gold-dim)}
+#hairWrap.collapsed{display:none}
+.hair-hint-box{background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.18);border-radius:11px;padding:11px 13px;margin-bottom:18px}
+.hair-hint-line{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--text2);line-height:1.45}
+.hair-hint-line+.hair-hint-line{margin-top:8px}
+.hair-row{margin-bottom:16px}
+.hair-lbl{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;color:#9090b0;text-transform:uppercase;letter-spacing:.9px;margin-bottom:9px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.06)}
+.hair-lbl-warn{color:#d4af37!important}
+.hair-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.hair-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.hchip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;min-height:66px;border-radius:12px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.035);color:#e2e2ea;cursor:pointer;transition:transform .14s,border-color .2s,box-shadow .25s;-webkit-tap-highlight-color:transparent;text-align:center}
+.hchip-ic{font-size:18px;line-height:1}
+.hchip-nm{font-size:11.5px;font-weight:700;line-height:1.25;word-break:break-word}
+.hchip.sel{color:#fff;border-color:transparent;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9) border-box;background-size:auto,200% 100%;animation:iridShift 4.5s linear infinite;box-shadow:0 0 12px rgba(167,139,250,.4)}
+.hchip:active{transform:scale(.93)}
+.spin{width:34px;height:34px;border:3px solid var(--border-bright);border-top-color:var(--gold);border-radius:50%;animation:sp 0.8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.update-bar{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 8px);transform:translateX(-50%) translateY(-140%);z-index:99999;background:var(--gold);color:#1a1208;font-weight:800;font-size:13.5px;padding:11px 18px;border-radius:30px;box-shadow:0 8px 24px rgba(0,0,0,.55);cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+.update-bar.show{transform:translateX(-50%) translateY(0)}
+.update-bar:active{transform:translateX(-50%) translateY(0) scale(.96)}
+
+.grp-more-btn{display:flex;align-items:center;gap:8px;width:100%;margin:10px 0 4px;padding:11px 14px;border-radius:11px;border:2px solid rgba(212,175,55,.38);background:rgba(212,175,55,.07);color:#c8a020;font-size:13px;font-weight:800;cursor:pointer;transition:all .18s;-webkit-tap-highlight-color:transparent}
+.grp-more-btn.on{border-color:var(--gold);background:rgba(212,175,55,.16);color:var(--gold)}
+.grp-more-btn:active{opacity:.75}
+.grp-more-btn i{flex-shrink:0}
+.grp-more-body{display:none;margin-top:4px}
+.grp-more-body.open{display:block}
+.qp-sec-lbl{font-size:10px;font-weight:900;color:#d4af37;text-transform:uppercase;letter-spacing:1.6px;margin:0 0 9px;display:flex;align-items:center;gap:6px}
+.qp-sec-lbl::after{content:'';flex:1;height:1px;background:rgba(212,175,55,.2)}
+.qp-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+@media(min-width:560px){.qp-grid{grid-template-columns:repeat(3,1fr)}}
+.qp-tile.chip{flex-direction:row!important;align-items:center!important;gap:10px;padding:10px 12px!important;min-height:52px!important;justify-content:flex-start!important}
+.qp-info{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.qp-name{font-size:11px;font-weight:700;line-height:1.2}
+.qp-price{font-size:10.5px;font-weight:600;color:#ffe566}
+.qp-tile.chip .chip-name,.qp-tile.chip .chip-price{display:none}
+.more-svc-btn{width:100%;padding:12px 14px;border-radius:12px;border:2px solid rgba(167,139,250,.35);background:rgba(167,139,250,.07);color:#a78bfa;font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.more-svc-btn .msb-ico{transition:transform .22s;flex-shrink:0}
+.more-svc-btn.open .msb-ico{transform:rotate(45deg)}
+.more-svc-hint{margin-left:auto;font-size:10px;color:#6b5fa0;white-space:nowrap;font-weight:700}
+.cat-list{display:none;flex-direction:column;gap:6px}
+.cat-list.open{display:flex}
+.qp-grid .chip:last-child:nth-child(odd){grid-column:span 2}
+.svc-grp .qp-grid{margin-bottom:0}
+.qp-drag-src{opacity:.2!important;box-shadow:none!important;transition:opacity .1s}
+.qp-drag-over{outline:2px solid #a78bfa!important;outline-offset:2px;border-radius:14px}
+.qp-tile-ghost{position:fixed;z-index:9999;padding:8px 16px;border-radius:12px;background:linear-gradient(#0c0c14,#0c0c14) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d) border-box;border:1.5px solid transparent;color:#fff;font-size:12px;font-weight:700;pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,.7);opacity:.93;white-space:nowrap;transform:rotate(-2deg)}
+.qp-dd{position:absolute;top:5px;right:6px;font-size:11px;color:rgba(255,255,255,.18);pointer-events:none;line-height:1}
+.qp-star{font-size:14px;color:rgba(255,255,255,.22);cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;padding:5px;margin-right:-4px;line-height:1;transition:color .15s}
+.qp-star.on{color:#ffd24d}
+.qp-sec-hint{font-size:9px;font-weight:600;color:#3a3a4a;margin-left:8px;text-transform:none;letter-spacing:.2px}
+.qp-empty{text-align:center;color:#4a4a58;font-size:12px;font-weight:600;padding:16px;border:1.5px dashed #252530;border-radius:12px;margin-bottom:12px;line-height:1.5}
+.qp-grid.drag-accept{outline:2px solid rgba(167,139,250,.6);outline-offset:4px;border-radius:14px;background:rgba(167,139,250,.04)}
+#qpBar{display:none!important}
+.qpb-hdr{font-size:9px;font-weight:800;color:#3a3a4a;letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between}
+.qpb-hdr i{font-size:11px;color:#d4af37;margin-right:4px}
+.qpb-up{font-size:12px;color:#404050;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:2px 0;display:flex;align-items:center;gap:3px;font-weight:700}
+.qpb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.qpb-tile{padding:7px 4px;border-radius:10px;border:1.5px solid #2a2a34;background:rgba(255,255,255,.03);color:#8a8a8a;font-size:11px;font-weight:800;letter-spacing:.3px;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;gap:4px;overflow:hidden;transition:border-color .15s,color .15s}
+.qpb-tile i{font-size:12px;flex-shrink:0}
+.qpb-tile span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.qpb-tile.sel{color:#fff;border-color:#a78bfa;background:rgba(167,139,250,.14);box-shadow:0 0 8px rgba(167,139,250,.25)}
+.qpb-more{grid-column:span 1;padding:7px 4px;border-radius:10px;border:1.5px dashed #2a2a34;color:#404050;font-size:11px;font-weight:800;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.qpb-empty{font-size:11px;color:#3a3a4a;font-weight:700;text-align:center;padding:6px 0}
+/* ── Progressive reveal steps ── */
+.bk-step{overflow:hidden;max-height:4000px;opacity:1;transform:translateY(0);transition:max-height .9s cubic-bezier(0,.8,.3,1),opacity 1.55s ease,transform 1.35s cubic-bezier(.16,1,.3,1)}
+.bk-step-hidden{max-height:0!important;opacity:0!important;transform:translateY(64px)!important;pointer-events:none!important}
+/* skip-hair nudge */
+.bk-skip-hair{background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;display:block;margin:10px auto 2px;padding:6px 14px;letter-spacing:.2px}
+.bk-skip-hair:active{color:var(--text2)}
+</style>
+</head>
+<body>
+
+<div id="availToast" class="avail-toast"></div>
+<div id="updateBar" class="update-bar" onclick="applyUpdate()"><i class="ti ti-refresh"></i> New version ready — tap to update</div>
+
+<div class="center-screen" id="loadingView">
+  <div class="spin"></div>
+  <div class="cs-sub" style="margin-top:16px">Loading…</div>
+</div>
+
+<div class="center-screen hidden" id="closedView">
+  <div class="cs-ic muted"><i class="ti ti-calendar-off"></i></div>
+  <div class="cs-title">Booking is closed right now</div>
+  <div class="cs-sub">Online booking isn't open at the moment. Please reach out directly to book your appointment.</div>
+  <button class="book-btn" style="max-width:240px;margin-top:22px" onclick="retry()"><i class="ti ti-refresh"></i> Try again</button>
+</div>
+
+<div class="center-screen hidden" id="errorView">
+  <div class="cs-ic muted"><i class="ti ti-wifi-off"></i></div>
+  <div class="cs-title">Couldn't load</div>
+  <div class="cs-sub">Please check your connection and try again.</div>
+  <button class="book-btn" style="max-width:240px;margin-top:22px" onclick="retry()"><i class="ti ti-refresh"></i> Try again</button>
+</div>
+
+<div class="center-screen hidden" id="doneView">
+  <div class="cs-ic green" id="doneIc"><i class="ti ti-check"></i></div>
+  <div class="cs-title" id="doneTitle">Request sent!</div>
+  <div class="cs-sub" id="doneSub">Your booking request has been sent. You'll get a confirmation once it's approved.</div>
+  <div class="cs-sub" id="doneWait" style="margin-top:10px;font-size:13px;opacity:.75"><i class="ti ti-bell"></i> Keep this page open — we'll keep your screen on, and you'll hear a soft chime the moment it's approved.</div>
+  <button class="book-btn hidden" id="calBtn" style="max-width:260px;margin-top:20px" onclick="addToCal()"><i class="ti ti-calendar-plus"></i> Add to my calendar</button>
+  <a class="hidden" id="gcalLink" target="_blank" style="margin-top:12px;font-size:13px;color:inherit;opacity:.8;text-decoration:underline">or add to Google Calendar ↗</a>
+  <a class="review-btn hidden" id="reviewBtn" target="_blank" rel="noopener noreferrer"><i class="ti ti-star-filled" style="color:#ffd24d"></i> Love your last visit? Leave a review</a>
+  <div class="passport-card hidden" id="passportCard">
+    <div class="pc-hdr"><i class="ti ti-notebook" style="font-size:12px"></i> Your Hair Passport</div>
+    <div class="pc-entry" id="passportEntry"></div>
+    <div class="pc-svc" id="passportSvc"></div>
+    <div class="pc-history" id="passportHistory"></div>
+  </div>
+  <button class="book-btn" id="bookAnotherBtn" style="max-width:260px;margin-top:20px" onclick="resetForm()"><i class="ti ti-plus"></i> Book another</button>
+</div>
+
+<div class="wrap hidden" id="formView">
+  <div class="brand">
+    <div class="brand-ic"><svg viewBox="0 0 100 100" width="78%" height="78%" style="display:block"><g fill="#1a1208"><polygon points="48,30.5 53.2,52 48,73.5 42.8,52"/><polygon points="26.5,52 48,46.8 69.5,52 48,57.2"/><polygon points="74,24.2 76.3,33 74,41.8 71.7,33"/><polygon points="65.2,33 74,30.7 82.8,33 74,35.3"/><polygon points="74,63.8 75.9,71 74,78.2 72.1,71"/><polygon points="66.8,71 74,69.1 81.2,71 74,72.9"/></g></svg></div>
+    <div>
+      <div class="brand-name" id="salonName">Salon</div>
+      <div class="brand-sub">Book an appointment</div>
+    </div>
+  </div>
+
+  <!-- ① Service (always visible, starts open) -->
+  <div class="sec" onclick="toggleSec(this)">Service <i class="sec-chev ti ti-chevron-down"></i></div>
+  <div id="demoTabsBar" class="demo-tabs">
+      <button class="demo-tab" onclick="pickDemo('women',this)"><i class="ti ti-gender-female"></i>Women</button>
+      <button class="demo-tab" onclick="pickDemo('men',this)"><i class="ti ti-gender-male"></i>Men</button>
+      <button class="demo-tab" onclick="pickDemo('kids',this)"><i class="ti ti-mood-kid"></i>Kids</button>
+  </div>
+  <div id="qpBar"></div>
+  <div class="sec-body">
+    <div class="chips" id="svcChips"></div>
+    <button class="none-btn" id="otherSvcBtn" onclick="toggleOtherSvc()" style="margin-top:9px"><i class="ti ti-plus"></i> None of these? Add your own</button>
+    <div class="custom-wrap" id="otherSvcWrap" style="display:flex;gap:8px;align-items:center">
+      <input type="text" id="otherSvc" placeholder="e.g. scalp treatment, colour correction" oninput="onOtherSvc()" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomSvc();}" style="flex:1;margin:0">
+      <button onclick="addCustomSvc()" style="flex-shrink:0;padding:11px 16px;border-radius:9px;border:none;background:var(--gold);color:#1a1208;font-weight:800;font-size:14px;cursor:pointer">Add</button>
+    </div>
+    <div class="svc-pills" id="svcPills"></div>
+  </div>
+
+  <!-- ② Your details (reveals after first service pick) -->
+  <div id="step-details" class="bk-step bk-step-hidden">
+    <div class="sec">Your details</div>
+    <div class="sec-body">
+    <label>Name</label>
+    <input type="text" id="fName" placeholder="Your name" autocomplete="name" onfocus="_detailsFocus()" oninput="_checkDetailsComplete()" onblur="_checkDetailsComplete()">
+    <label>Phone number</label>
+    <input type="tel" id="fPhone" placeholder="So they can reach you" autocomplete="tel" inputmode="tel" onfocus="_detailsFocus()" oninput="_checkDetailsComplete()">
+    <label>Notes <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+    <textarea id="fNotes" placeholder="e.g. first time, going lighter"></textarea>
+    </div>
+  </div>
+
+  <!-- ③ My hair (reveals ~700ms after Your details) -->
+  <div id="step-hair" class="bk-step bk-step-hidden">
+    <div class="sec" style="display:flex;align-items:center;justify-content:space-between">
+      <span>My hair</span>
+      <button class="returning-btn" id="returningBtn" onclick="toggleReturning()"><i class="ti ti-user-check"></i> I've been here before</button>
+    </div>
+    <div class="sec-body">
+    <div id="hairWrap">
+      <div class="hair-hint-box">
+        <div class="hair-hint-line"><span>🌟</span><span><b>First visit?</b> Tap all that apply — helps your stylist plan the right time &amp; price.</span></div>
+        <div class="hair-hint-line"><span>👋</span><span><b>Been here before?</b> Tap <em>"I've been here before"</em> above to skip this step.</span></div>
+      </div>
+      <div class="hair-row">
+        <div class="hair-lbl"><span>📏</span> Length</div>
+        <div class="hair-grid-4" data-hair="length">
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">✂️</span><span class="hchip-nm">Short</span></div>
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">〽️</span><span class="hchip-nm">Shoulder</span></div>
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">🌊</span><span class="hchip-nm">Long</span></div>
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">💫</span><span class="hchip-nm">Extra long</span></div>
+        </div>
+      </div>
+      <div class="hair-row">
+        <div class="hair-lbl"><span>🧵</span> Thickness</div>
+        <div class="hair-grid-3" data-hair="thickness">
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">💪</span><span class="hchip-nm">Thick</span></div>
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">〰️</span><span class="hchip-nm">Med-thick</span></div>
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">🪶</span><span class="hchip-nm">Thin</span></div>
+        </div>
+      </div>
+      <div class="hair-row">
+        <div class="hair-lbl"><span>🎨</span> Colour now</div>
+        <div class="hair-grid-3" data-hair="colour">
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">🌑</span><span class="hchip-nm">Dark</span></div>
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">🍂</span><span class="hchip-nm">Brown</span></div>
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">☀️</span><span class="hchip-nm">Light</span></div>
+        </div>
+      </div>
+      <div class="hair-row">
+        <div class="hair-lbl"><span>🌗</span> Grey</div>
+        <div class="hair-grid-3" data-hair="grey">
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">🌙</span><span class="hchip-nm">A little grey</span></div>
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">🌗</span><span class="hchip-nm">Partially grey</span></div>
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">⬜</span><span class="hchip-nm">Fully grey</span></div>
+        </div>
+      </div>
+      <div class="hair-row">
+        <div class="hair-lbl hair-lbl-warn"><span>⚠️</span> Previously had</div>
+        <div class="hair-grid-3" data-hair="history">
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">🎨</span><span class="hchip-nm">Coloured</span></div>
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">✨</span><span class="hchip-nm">Highlighted</span></div>
+          <div class="hchip" onclick="toggleHair(this)"><span class="hchip-ic">〰️</span><span class="hchip-nm">Permed</span></div>
+        </div>
+      </div>
+      <label>Anything else? <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <textarea id="fHairNotes" placeholder="e.g. recently box-dyed, sensitive scalp, going much lighter"></textarea>
+      <button class="bk-skip-hair" onclick="_skipHair()">Skip hair info and continue →</button>
+    </div>
+    </div>
+  </div>
+
+  <!-- ④ Pick a day (reveals ~1400ms after first service pick) -->
+  <div id="step-day" class="bk-step bk-step-hidden">
+    <div class="sec">Pick a day</div>
+    <div class="sec-body">
+      <div class="dates" id="dateRow"></div>
+    </div>
+  </div>
+
+  <!-- ⑤ Pick a time (reveals ~2100ms after first service pick) -->
+  <div id="step-time" class="bk-step bk-step-hidden">
+    <div class="sec">Pick a time</div>
+    <div class="sec-body">
+      <div class="slots" id="slotGrid"></div>
+      <button class="none-btn" id="noneBtn" onclick="toggleCustom()"><i class="ti ti-clock-plus"></i> None of these work? Request another time</button>
+      <div class="custom-wrap" id="customWrap">
+        <label>Preferred time</label>
+        <input type="text" id="customTime" oninput="updateBtn()" onkeyup="updateBtn()" placeholder="e.g. Tuesday after 6pm, or 5:15">
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑥ Before your visit (reveals when a time is selected) -->
+  <div id="step-visit" class="bk-step bk-step-hidden">
+    <div class="sec">Before your visit</div>
+    <div class="sec-body">
+      <div style="font-size:10px;font-weight:800;color:#4a4a5a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Any of these apply? Tap all that fit</div>
+      <div class="consent-flags" id="consentFlags">
+        <div class="cflag" data-cond="PPD / hair dye allergy" onclick="toggleCflag(this)"><i class="ti ti-alert-triangle" style="color:#ff9999"></i>PPD / dye allergy</div>
+        <div class="cflag" data-cond="Latex allergy" onclick="toggleCflag(this)"><i class="ti ti-shield-x" style="color:#ff9999"></i>Latex allergy</div>
+        <div class="cflag" data-cond="Pregnant or breastfeeding" onclick="toggleCflag(this)"><i class="ti ti-heart" style="color:#f5a8ff"></i>Pregnant / nursing</div>
+        <div class="cflag" data-cond="Scalp condition or irritation" onclick="toggleCflag(this)"><i class="ti ti-bandage" style="color:#ffd24d"></i>Scalp condition</div>
+        <div class="cflag" data-cond="Recent chemical service (last 4 weeks)" onclick="toggleCflag(this)"><i class="ti ti-flask" style="color:#67e8f9"></i>Recent chemical</div>
+        <div class="cflag" data-cond="Skin medication (e.g. Accutane)" onclick="toggleCflag(this)"><i class="ti ti-pill" style="color:#a78bfa"></i>Skin medication</div>
+      </div>
+      <label style="font-size:11.5px">Anything else your stylist should know? <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <textarea id="consentNotes" placeholder="e.g. PPD-sensitive, previous reaction, currently on Accutane…" style="min-height:44px;font-size:12px"></textarea>
+      <div class="consent-agree" id="consentAgree" onclick="toggleConsent()">
+        <div class="cbox"><i class="ti ti-check"></i></div>
+        <span class="ctxt">I confirm the above information is accurate and I consent to receiving the services requested. I understand that colour &amp; chemical services may require a patch test 48 hours prior. <strong>Required to book.</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <button class="book-btn" id="bookBtn" onclick="submitBooking()"><i class="ti ti-send"></i> Confirm & book</button>
+  <div class="btn-hint" id="btnHint"></div>
+  <div class="foot-note"><i class="ti ti-lock" style="font-size:12px;vertical-align:-1px"></i> You'll get a confirmation once the stylist approves. This just sends a request.</div>
+  <div class="foot-note" id="fallbackContact" style="display:none"></div>
+  <div class="foot-note" id="bkVer" style="margin-top:14px;font-size:12.5px;font-weight:700;color:#e8e8ef;background:rgba(255,255,255,.09);display:inline-block;padding:4px 12px;border-radius:9px;letter-spacing:.3px"></div>
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+var DEMO_SVCS={
+  women:{
+    'Cut':["Women's Haircut","Bang Trim","Fringe Cut","Pixie Cut","Bob Cut","Layered Cut","Blunt Cut","Wolf Cut","Trim / Dusting"],
+    'Color':["Single Process Color","Root Touch-Up","Root Smudge","Gray Coverage","Toner / Gloss","Vivid / Fashion Color","Color Correction"],
+    'Lights':["Full Highlights","Partial Highlights","Balayage","Foilayage","Babylights","Money Piece","Ombré","Lowlights","Bleach & Tone"],
+    'Styling':["Blowout","Brushing","Silk Press","Flat Iron Style","Curling Iron Style","Updo","Half-Up Style","Bridal Style","Special Occasion Style","Box Braids","Cornrows","Goddess Braids","Loc Retwist","Loc Styling"],
+    'Extensions':["Extensions Install","Extensions Maintenance","Extensions Removal","Wig Install"],
+    'Eyebrow':["Eyebrow Wax / Shape","Eyebrow Tint","Lip Wax"],
+    'Other Chemical Services':["Deep Conditioning","Keratin Treatment","Brazilian Blowout","Olaplex Treatment","Scalp Treatment","Hot Oil Treatment","Perm","Body Wave","Relaxer"]
+  },
+  men:{
+    'Cut':["Men's Haircut","Buzz Cut","Crew Cut","Taper Cut","Fade","Skin Fade","High Fade","Mid Fade","Low Fade","Temple Fade","Undercut","Textured Cut","Scissor Cut","French Crop","Mohawk"],
+    'Beard':["Beard Trim","Beard Shape-Up","Beard Lineup","Full Beard Styling","Goatee Trim","Mustache Trim","Hot Towel Straight Razor Shave","Neck Shave"],
+    'Color':["Beard Color","Men's Color","Men's Gray Coverage","Men's Highlights","Bleach & Tone","Toner"],
+    'Styling':["Blowout","Hard Part","Hair Design / Razor Art","Edge Up / Lineup"],
+    'Treatments':["Scalp Treatment","Deep Conditioning","Keratin Treatment"],
+    'Eyebrow':["Eyebrow Trim","Nose Hair Wax","Ear Hair Wax"]
+  },
+  kids:{
+    'Cut':["Kids Haircut","Toddler / First Haircut","Kids Buzz Cut","Kids Fade","Kids Trim","Kids Bang Trim"],
+    'Color':["Kids Highlights","Kids Toner / Gloss","Kids Fashion Color"],
+    'Styling':["Kids Blowout","Kids Style & Finish","Kids Braid / Cornrow","Kids Protective Style","Kids Ponytail / Updo"],
+    'Treatments':["Kids Deep Conditioning","Lice Treatment / Removal"]
+  }
+};
+
+var QUICK_PICKS={
+  women:["Women's Haircut","Blowout","Balayage","Root Touch-Up","Full Highlights","Keratin Treatment"],
+  men:["Men's Haircut","Fade","Beard Trim","Beard Shape-Up","Men's Color","Scalp Treatment"],
+  kids:["Kids Haircut","Toddler / First Haircut","Kids Blowout","Kids Highlights","Kids Deep Conditioning","Kids Fade"]
+};
+var GRP_ICONS={'Cut':'scissors','Color':'palette','Lights':'sparkles','Styling':'wind','Extensions':'diamond','Eyebrow':'eye','Other Chemical Services':'flask','Beard':'user','Treatments':'droplet'};
+var GRP_COLORS={'Cut':'#8FD17A','Color':'#d4af37','Lights':'#a78bfa','Styling':'#67e8f9','Extensions':'#f5a8ff','Eyebrow':'#fb923c','Other Chemical Services':'#4fd1c5','Beard':'#94a3b8','Treatments':'#60a5fa'};
+var DEMO_PRICES={"Women's Haircut":75,"Bang Trim":25,"Fringe Cut":30,"Pixie Cut":85,"Bob Cut":80,"Layered Cut":85,"Blunt Cut":75,"Wolf Cut":85,"Trim / Dusting":45,"Single Process Color":95,"Root Touch-Up":80,"Root Smudge":65,"Gray Coverage":90,"Toner / Gloss":55,"Vivid / Fashion Color":150,"Color Correction":200,"Full Highlights":150,"Partial Highlights":110,"Balayage":175,"Foilayage":190,"Babylights":160,"Money Piece":95,"Ombré":140,"Lowlights":120,"Bleach & Tone":165,"Blowout":55,"Brushing":45,"Silk Press":80,"Flat Iron Style":65,"Curling Iron Style":60,"Updo":95,"Half-Up Style":75,"Bridal Style":150,"Special Occasion Style":120,"Box Braids":200,"Cornrows":120,"Goddess Braids":160,"Loc Retwist":80,"Loc Styling":75,"Extensions Install":400,"Extensions Maintenance":150,"Extensions Removal":85,"Wig Install":120,"Eyebrow Wax / Shape":25,"Eyebrow Tint":20,"Lip Wax":15,"Deep Conditioning":45,"Keratin Treatment":250,"Brazilian Blowout":250,"Olaplex Treatment":85,"Scalp Treatment":60,"Hot Oil Treatment":45,"Perm":150,"Body Wave":140,"Relaxer":120,"Men's Haircut":35,"Buzz Cut":25,"Crew Cut":30,"Taper Cut":35,"Fade":35,"Skin Fade":40,"High Fade":40,"Mid Fade":38,"Low Fade":35,"Temple Fade":40,"Undercut":45,"Textured Cut":45,"Scissor Cut":50,"French Crop":40,"Mohawk":50,"Beard Trim":20,"Beard Shape-Up":25,"Beard Lineup":20,"Full Beard Styling":35,"Goatee Trim":20,"Mustache Trim":15,"Hot Towel Straight Razor Shave":45,"Neck Shave":15,"Toner":35,"Beard Color":35,"Men's Color":65,"Men's Gray Coverage":70,"Men's Highlights":75,"Hard Part":15,"Hair Design / Razor Art":25,"Edge Up / Lineup":15,"Eyebrow Trim":15,"Nose Hair Wax":15,"Ear Hair Wax":15,"Kids Haircut":30,"Toddler / First Haircut":25,"Kids Buzz Cut":20,"Kids Fade":25,"Kids Trim":20,"Kids Bang Trim":15,"Kids Highlights":80,"Kids Toner / Gloss":45,"Kids Fashion Color":90,"Kids Blowout":35,"Kids Style & Finish":30,"Kids Braid / Cornrow":45,"Kids Protective Style":80,"Kids Ponytail / Updo":25,"Kids Deep Conditioning":35,"Lice Treatment / Removal":85};
+var curDemo=null;
+var _customSvcs=[];
+var _userQP={};
+function getUserQP(demo){
+  if(!_userQP[demo]){
+    try{var sv=localStorage.getItem('userQP_'+SALON_ID+'_'+demo);_userQP[demo]=sv?JSON.parse(sv):(QUICK_PICKS[demo]||[]).slice();}
+    catch(x){_userQP[demo]=(QUICK_PICKS[demo]||[]).slice();}
+  }
+  return _userQP[demo];
+}
+function saveUserQP(demo){try{localStorage.setItem('userQP_'+SALON_ID+'_'+demo,JSON.stringify(_userQP[demo]));}catch(x){}}
+function promoteQp(e){
+  e.stopPropagation();
+  var chip=e.currentTarget.closest&&e.currentTarget.closest('.chip');if(!chip)return;
+  var s=chip.dataset.s;if(!s||!curDemo)return;
+  var qp=getUserQP(curDemo);
+  if(qp.indexOf(s)===-1){qp.push(s);saveUserQP(curDemo);renderDemoChips();}
+}
+function demoteQp(e){
+  e.stopPropagation();
+  var chip=e.currentTarget.closest&&e.currentTarget.closest('.chip');if(!chip)return;
+  var s=chip.dataset.s;if(!s||!curDemo)return;
+  var qp=getUserQP(curDemo);
+  var idx=qp.indexOf(s);
+  if(idx>-1){
+    qp.splice(idx,1);saveUserQP(curDemo);
+    // If it's a custom service, also remove it from the custom list and selection
+    var ci=_customSvcs.indexOf(s);
+    if(ci>-1){_customSvcs.splice(ci,1);var si=selSvcArr.indexOf(s);if(si>-1)selSvcArr.splice(si,1);}
+    renderDemoChips();renderSvcPills();updateBtn();
+  }
+}
+function pickDemo(demo,tab){
+  if(curDemo===demo){curDemo=null;document.querySelectorAll('.demo-tab').forEach(function(t){t.classList.remove('sel');});}
+  else{curDemo=demo;document.querySelectorAll('.demo-tab').forEach(function(t){t.classList.remove('sel');});tab.classList.add('sel');}
+  renderDemoChips();
+}
+function renderDemoChips(){
+  var el=$('svcChips');if(!el)return;
+  if(!curDemo||!DEMO_SVCS[curDemo]){
+    var allSvcs=window._allSvcs||[];
+    el.innerHTML=allSvcs.map(function(s){var p=window._priceBook&&window._priceBook[s];var ph=p?'<span class="chip-price">'+p+'</span>':'';return '<div class="chip" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-sparkles"></i><span class="chip-name">'+esc(s)+'</span>'+ph+'</div>';}).join('');
+    syncSvcSel();_injectCustomChips();return;
+  }
+  var grps=DEMO_SVCS[curDemo];window._curGrps=grps;
+  var hidden=(window._bookingHiddenSvcs&&window._bookingHiddenSvcs[curDemo])||[];
+  var qpSvcs=getUserQP(curDemo).filter(function(s){return hidden.indexOf(s)===-1;});
+  function findGrpFor(s){var r={ic:'sparkles',cl:'var(--gold)'};Object.keys(grps).forEach(function(g){if((grps[g]||[]).indexOf(s)>-1){r={ic:GRP_ICONS[g]||'sparkles',cl:GRP_COLORS[g]||'var(--gold)'};}});return r;}
+  function makeQpTile(s){var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="qp-price">'+p+'</span>':'';var gf=findGrpFor(s);var disp=esc((window._qpLabels&&window._qpLabels[s])||s);return '<div class="chip qp-tile" data-s="'+esc(s)+'" onclick="pickSvc(this)"><i class="ti ti-'+gf.ic+'" style="color:'+gf.cl+';font-size:20px;flex-shrink:0" aria-hidden="true"></i><div class="qp-info"><span class="qp-name">'+disp+'</span>'+ph+'</div><i class="ti ti-star-filled qp-star on" onclick="demoteQp(event)" aria-hidden="true"></i></div>';}
+  var grpKeys=Object.keys(grps);
+  var hint=grpKeys.slice(0,4).join(' · ')+(grpKeys.length>4?' · more':'');
+  var html='<div class="qp-sec-lbl"><i class="ti ti-bolt" aria-hidden="true"></i> Quick picks<span class="qp-sec-hint">tap below to add · hold &amp; drag to reorder · ★ to remove</span></div>';
+  html+=qpSvcs.length?'<div class="qp-grid">'+qpSvcs.map(makeQpTile).join('')+'</div>':'<div class="qp-empty"><i class="ti ti-star" style="font-size:14px;margin-right:5px;vertical-align:-2px;color:#3a3a4a"></i>Tap ★ on any service below to pin it here</div>';
+  html+='<button class="more-svc-btn" id="moreSvcBtn" onclick="toggleMoreSvc()"><i class="ti ti-chevron-down msb-ico" aria-hidden="true"></i> More services<span class="more-svc-hint">'+esc(hint)+'</span></button>';
+  html+='<div class="cat-list" id="catList">';
+  function buildGrp(grpName){
+    var allSvcs=(grps[grpName]||[]).filter(function(s){return hidden.indexOf(s)===-1&&getUserQP(curDemo).indexOf(s)===-1;});if(!allSvcs.length)return '';
+    var primary=allSvcs.slice(0,GRP_MAX_VIS);
+    var extra=allSvcs.slice(GRP_MAX_VIS);
+    var gid='g'+curDemo+'_'+grpName.replace(/[^a-z0-9]/gi,'_');
+    var ic=GRP_ICONS[grpName]||'sparkles';var cl=GRP_COLORS[grpName]||'var(--gold)';
+    function makeChip(s){var p=(window._priceBook&&window._priceBook[s])||DEMO_PRICES[s]||null;var ph=p?'<span class="qp-price">'+p+'</span>':'';return '<div class="chip qp-tile" data-s="'+esc(s)+'" onclick="promoteQp(event)"><i class="ti ti-'+ic+'" style="color:'+cl+';font-size:20px;flex-shrink:0" aria-hidden="true"></i><div class="qp-info"><span class="qp-name">'+esc(s)+'</span>'+ph+'</div><i class="ti ti-star qp-star" style="pointer-events:none" aria-hidden="true"></i></div>';}
+    var h='<div class="svc-grp">';
+    h+='<div class="svc-grp-hdr" onclick="toggleGrp(\''+gid+'\')">';
+    h+='<i class="ti ti-chevron-down" id="chev_'+gid+'" style="transition:transform .2s;flex-shrink:0;transform:rotate(-90deg)"></i>';
+    h+='<span>'+esc(grpName)+'</span>';
+    h+='<span class="grp-count">'+allSvcs.length+'</span>';
+    h+='</div>';
+    h+='<div class="svc-grp-body closed" id="'+gid+'">';
+    h+='<div class="qp-grid">'+primary.map(makeChip).join('')+'</div>';
+    if(extra.length){var mid='more_'+gid;h+='<button class="grp-more-btn" id="mbtn_'+mid+'" onclick="toggleGrpMore(\''+mid+'\')"><i class="ti ti-chevron-down" id="mico_'+mid+'" style="transition:transform .2s;font-size:13px"></i> '+extra.length+' more '+esc(grpName)+' services</button>';h+='<div class="grp-more-body" id="'+mid+'"><div class="qp-grid">'+extra.map(makeChip).join('')+'</div></div>';}
+    h+='</div></div>';
+    return h;
+  }
+  grpKeys.forEach(function(grpName){html+=buildGrp(grpName);});
+  html+='</div>';
+  el.innerHTML=html;
+  syncSvcSel();_injectCustomChips();
+  initQpDrag();
+  if(window._qpBarCheck)window._qpBarCheck();else renderQpBar();
+}
+function initQpDrag(){
+  var chips=$('svcChips');if(!chips)return;
+  var grid=chips.querySelector('.qp-grid');if(!grid)return;
+  var ghost=null,srcEl=null,holdTmr=null;
+  function gx(e){var t=e.touches&&e.touches.length?e.touches[0]:e.changedTouches&&e.changedTouches.length?e.changedTouches[0]:e;return t.clientX;}
+  function gy(e){var t=e.touches&&e.touches.length?e.touches[0]:e.changedTouches&&e.changedTouches.length?e.changedTouches[0]:e;return t.clientY;}
+  function cleanup(){
+    clearTimeout(holdTmr);holdTmr=null;
+    if(ghost&&ghost.parentNode)ghost.parentNode.removeChild(ghost);ghost=null;
+    if(srcEl)srcEl.classList.remove('qp-drag-src');
+    chips.querySelectorAll('.qp-drag-over').forEach(function(t){t.classList.remove('qp-drag-over');});
+    srcEl=null;
+  }
+  grid.addEventListener('touchstart',function(e){
+    if(e.target.closest&&e.target.closest('.qp-star'))return;
+    var tile=e.target.closest&&e.target.closest('.chip');
+    if(!tile||!grid.contains(tile))return;
+    var ex=gx(e),ey=gy(e);
+    holdTmr=setTimeout(function(){
+      srcEl=tile;tile.classList.add('qp-drag-src');
+      try{if(navigator.vibrate)navigator.vibrate(18);}catch(x){}
+      ghost=document.createElement('div');ghost.className='qp-tile-ghost';
+      var nm=tile.querySelector('.qp-name');ghost.textContent=nm?nm.textContent:(tile.dataset.s||'');
+      ghost.style.left=(ex-60)+'px';ghost.style.top=(ey-26)+'px';
+      document.body.appendChild(ghost);
+    },300);
+  },{passive:true});
+  grid.addEventListener('touchmove',function(e){
+    if(holdTmr&&!ghost){clearTimeout(holdTmr);holdTmr=null;return;}
+    if(!ghost)return;
+    e.preventDefault();
+    ghost.style.left=(gx(e)-60)+'px';ghost.style.top=(gy(e)-26)+'px';
+    chips.querySelectorAll('.qp-drag-over').forEach(function(t){t.classList.remove('qp-drag-over');});
+    var el2=document.elementFromPoint(gx(e),gy(e));
+    if(el2){var tc=el2.closest&&el2.closest('#svcChips .qp-grid .chip');if(tc&&tc!==srcEl&&grid.contains(tc))tc.classList.add('qp-drag-over');}
+  },{passive:false});
+  function onEnd(e){
+    if(!ghost){cleanup();return;}
+    var el2=document.elementFromPoint(gx(e),gy(e));
+    if(el2&&srcEl){
+      var tc=el2.closest&&el2.closest('#svcChips .qp-grid .chip');
+      if(tc&&tc!==srcEl&&grid.contains(tc)){
+        var s=srcEl.dataset.s,at=tc.dataset.s,ai=srcEl.innerHTML,bi=tc.innerHTML;
+        srcEl.dataset.s=at;srcEl.innerHTML=bi;tc.dataset.s=s;tc.innerHTML=ai;
+        if(curDemo){_userQP[curDemo]=Array.from(grid.querySelectorAll('.chip')).map(function(t){return t.dataset.s;}).filter(Boolean);saveUserQP(curDemo);}
+        syncSvcSel();
+      }
+    }
+    cleanup();
+  }
+  grid.addEventListener('touchend',onEnd);
+  grid.addEventListener('touchcancel',cleanup);
+}
+function _findGrpFor(s){
+  var r={ic:'sparkles',cl:'var(--gold)'};
+  var grps=window._curGrps;if(!grps)return r;
+  Object.keys(grps).forEach(function(g){if((grps[g]||[]).indexOf(s)>-1){r={ic:GRP_ICONS[g]||'sparkles',cl:GRP_COLORS[g]||'var(--gold)'};} });
+  return r;
+}
+function pickSvcByKey(s){
+  var i=selSvcArr.indexOf(s);
+  if(i>=0)selSvcArr.splice(i,1);else selSvcArr.push(s);
+  renderSvcPills();updateBtn();renderQpBar();
+  if(selSvcArr.length===1&&!_cascadeStarted){_startRevealCascade();}
+}
+function renderQpBar(){
+  var bar=$('qpBar');if(!bar)return;
+  var qp=curDemo?getUserQP(curDemo):[];
+  var hdr='<div class="qpb-hdr"><span><i class="ti ti-bolt"></i>Quick picks</span><span class="qpb-up" onclick="scrollToQP()"><i class="ti ti-chevron-up"></i>Back</span></div>';
+  if(!qp.length){
+    bar.innerHTML=hdr+'<div class="qpb-empty">Tap services below to add to quick picks</div>';
+    return;
+  }
+  var tiles=qp.map(function(s){
+    var sel=selSvcArr.indexOf(s)>=0;
+    var lbl=esc((window._qpLabels&&window._qpLabels[s])||s);
+    var gf=_findGrpFor(s);
+    return '<div class="qpb-tile'+(sel?' sel':'')+'" onclick="pickSvcByKey(\''+esc(s).replace(/'/g,"\\'")+'\')"><i class="ti ti-'+gf.ic+'" style="color:'+gf.cl+'"></i><span>'+lbl+'</span></div>';
+  }).join('');
+  bar.innerHTML=hdr+'<div class="qpb-grid">'+tiles+'</div>';
+}
+function scrollToQP(){
+  var lbl=document.querySelector('#svcChips .qp-sec-lbl');
+  if(lbl)lbl.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function initQpStickyBar(){
+  var bar=$('qpBar');if(!bar)return;
+  function check(){
+    var lbl=document.querySelector('#svcChips .qp-sec-lbl');
+    if(!lbl||!curDemo){bar.style.display='none';return;}
+    var r=lbl.getBoundingClientRect();
+    if(r.bottom<72){
+      bar.style.display='flex';
+      renderQpBar();
+    }else{
+      bar.style.display='none';
+    }
+  }
+  if(window._qpBarUnlisten)window._qpBarUnlisten();
+  window.addEventListener('scroll',check,{passive:true});
+  window._qpBarUnlisten=function(){window.removeEventListener('scroll',check);};
+  window._qpBarCheck=check;
+  check();
+}
+function toggleMoreSvc(){
+  var cl=$('catList');var btn=$('moreSvcBtn');if(!cl||!btn)return;
+  var open=cl.classList.toggle('open');
+  btn.classList.toggle('open',open);
+}
+function toggleGrp(gid){
+  var body=document.getElementById(gid);if(!body)return;
+  var closed=body.classList.toggle('closed');
+  var chev=document.getElementById('chev_'+gid);
+  if(chev)chev.style.transform=closed?'rotate(-90deg)':'rotate(0deg)';
+}
+
+var GRP_MAX_VIS=5;
+function toggleGrpMore(mid){
+  var body=document.getElementById(mid);
+  var btn=document.getElementById('mbtn_'+mid);
+  var ico=document.getElementById('mico_'+mid);
+  if(!body)return;
+  var open=body.classList.toggle('open');
+  if(ico)ico.style.transform=open?'rotate(45deg)':'rotate(0deg)';
+  if(btn)btn.classList.toggle('on',open);
+}
+
+function addGrpSvc(gid){
+  var inp=document.getElementById('inp_'+gid);if(!inp)return;
+  var val=inp.value.trim();if(!val)return;
+  inp.value='';
+  var body=document.getElementById(gid);
+  if(body){
+    var cd=document.createElement('div');
+    cd.className='chip sel';cd.dataset.s=val;
+    cd.setAttribute('onclick','pickSvc(this)');
+    cd.innerHTML='<i class="ti ti-sparkles"></i><span class="chip-name">'+esc(val)+'</span><span class="chip-del" onclick="event.stopPropagation();removeCustomChip(this)">&#215;</span>';
+    var cw=body.querySelector('.chips');
+    if(cw){cw.appendChild(cd);}
+    else{var ar=body.querySelector('.svc-grp-add');if(ar)body.insertBefore(cd,ar);else body.appendChild(cd);}
+    cd.style.boxShadow='0 0 18px rgba(212,175,55,.7)';
+    setTimeout(function(){cd.style.transition='box-shadow .5s';cd.style.boxShadow='';},60);
+    setTimeout(function(){cd.scrollIntoView({behavior:'smooth',block:'nearest'});},90);
+  }
+  if(selSvcArr.indexOf(val)===-1)selSvcArr.push(val);
+  renderSvcPills();updateBtn();
+}
+function syncSvcSel(){document.querySelectorAll('#svcChips .chip').forEach(function(c){c.classList.toggle('sel',selSvcArr.indexOf(c.dataset.s)>-1);});}
+function removeCustomChip(btn){
+  var chip=btn.parentElement;while(chip&&!chip.classList.contains('chip'))chip=chip.parentElement;if(!chip)return;
+  var s=chip.dataset.s;var idx=selSvcArr.indexOf(s);if(idx>-1)selSvcArr.splice(idx,1);
+  var ci=_customSvcs.indexOf(s);if(ci>-1)_customSvcs.splice(ci,1);
+  chip.remove();renderSvcPills();updateBtn();
+}
+function toggleSec(hdr){
+  var sib=hdr.nextElementSibling;
+  if(sib&&sib.id==='demoTabsBar'){
+    sib.style.display=(!sib.style.display||sib.style.display==='')? 'none':'';
+    sib=sib.nextElementSibling;
+  }
+  var body=sib;
+  if(!body||!body.classList.contains('sec-body'))return;
+  var closing=!body.classList.contains('closed');
+  body.classList.toggle('closed',closing);
+  var chev=hdr.querySelector('.sec-chev');
+  if(chev)chev.style.transform=closing?'rotate(-90deg)':'';
+}
+var FB_CONFIG={
+  apiKey:"AIzaSyCxPNPOcu-ShSRXDJtwdNBZJ6kFaxQ8apM",
+  authDomain:"telemetry-eagle.firebaseapp.com",
+  projectId:"telemetry-eagle",
+  storageBucket:"telemetry-eagle.firebasestorage.app",
+  messagingSenderId:"216199298094",
+  appId:"1:216199298094:web:665c061ebe07d3c23373bf"
+};
+var SALON_ID='mgm-studio';
+var WEEKS_AHEAD=6, STEP=30;
+var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
+var STRIPE_PK='pk_live_51Ti0soDvwJdoHdEZNZkU5qSjuHxIJlL3kqee3BBVWOYFtv9fPgW63hwTbVRCcJ79x7EMmceD9sbUQAAWJMOVqSaG00vBDF7xUc';
+var _stripe=null,_stripeElements=null,_stripePayEl=null,_stripeECEl=null,_pendingRec=null,_depositAmt=50;
+function $(id){return document.getElementById(id);}
+var VERSION='book v3.55 · fallback contact always visible';
+
+// ── Progressive reveal — strict sequential ─────────────────────────────────
+var _stepsRevealed={details:false,hair:false,day:false,time:false,visit:false};
+var _cascadeStarted=false;
+
+function _revealStep(stepId,skipScroll){
+  var key=stepId.replace('step-','');
+  if(_stepsRevealed[key])return;
+  _stepsRevealed[key]=true;
+  var el=document.getElementById(stepId);
+  if(!el)return;
+  el.classList.remove('bk-step-hidden');
+  // unlock overflow after transition so date strip can scroll horizontally
+  setTimeout(function(){el.style.overflow='';},2000);
+  if(!skipScroll){
+    setTimeout(function(){
+      el.scrollIntoView({behavior:'smooth',block:'start'});
+    },700);
+  }
+}
+
+// Step 1 — triggered by first service selection
+function _startRevealCascade(){
+  if(_cascadeStarted)return;
+  _cascadeStarted=true;
+  setTimeout(function(){_revealStep('step-details');},380);
+}
+
+// Step 2a — fires the moment user taps into either details field
+function _detailsFocus(){
+  if(_stepsRevealed.hair)return;
+  setTimeout(function(){_revealStep('step-hair');},500);
+}
+// Step 2b — also fires on input/blur (belt-and-suspenders for autofill)
+function _checkDetailsComplete(){
+  if(_stepsRevealed.hair)return;
+  var nm=($('fName')||{}).value||'';
+  var ph=($('fPhone')||{}).value||'';
+  if(nm.trim().length>=1||ph.replace(/\D/g,'').length>=1){
+    setTimeout(function(){_revealStep('step-hair');},380);
+  }
+}
+
+// Step 3 — any hair interaction (chip, returning toggle, or skip) reveals Pick a day
+function _onHairInteract(){
+  if(!_stepsRevealed.day){setTimeout(function(){_revealStep('step-day');},380);}
+}
+function _skipHair(){_onHairInteract();}
+
+function _resetReveal(){
+  _cascadeStarted=false;
+  _stepsRevealed={details:false,hair:false,day:false,time:false,visit:false};
+  ['step-details','step-hair','step-day','step-time','step-visit'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el){el.classList.add('bk-step-hidden');el.style.overflow='';}
+  });
+}
+document.addEventListener('touchstart',function(e){
+  var a=document.activeElement;if(!a)return;
+  var tag=(a.tagName||'').toLowerCase();
+  if(tag!=='input'&&tag!=='textarea'&&tag!=='select')return;
+  var t=e.target;if(t===a)return;
+  var tt=(t.tagName||'').toLowerCase();
+  if(tt==='input'||tt==='textarea'||tt==='select'||tt==='label')return;
+  a.blur();
+},{passive:true});
+document.addEventListener('keydown',function(e){if(e.key!=='Enter')return;var a=document.activeElement;if(a&&a.tagName==='INPUT')a.blur();});
+try{var _bv=document.getElementById('bkVer');if(_bv)_bv.textContent=VERSION;}catch(e){}
+function show(id){['loadingView','closedView','errorView','doneView','formView'].forEach(function(v){$(v).classList.toggle('hidden',v!==id);});}
+function retry(){show('loadingView');setTimeout(init,250);}
+function mins(t){if(!t)return 0;var p=(''+t).split(':');return (+p[0])*60+(+p[1]||0);}
+function fromMins(m){var h=Math.floor(m/60),mm=m%60;return (h<10?'0':'')+h+':'+(mm<10?'0':'')+mm;}
+function to12(t){if(!t)return '';var p=(''+t).split(':'),h=+p[0],m=p[1],ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+m+' '+ap;}
+function ymd(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function genSlots(dayHours,taken,pending){
+  if(!dayHours||dayHours.open===false)return [];
+  var s=mins(dayHours.start||'09:00'),e=mins(dayHours.end||'18:00');
+  var out=[];
+  for(var t=s;t<=e-STEP;t+=STEP){
+    var blocked=(taken||[]).some(function(b){var bs=mins(b.time),be=bs+(+b.dur||60);return t<be&&(t+STEP)>bs;});
+    if(blocked)continue;
+    var pend=(pending||[]).some(function(p){return mins(p.time)===t;});
+    out.push({t:t,time:fromMins(t),label:to12(fromMins(t)),pending:pend});
+  }
+  return out;
+}
+function dayIdx(d){return (d.getDay()+6)%7;}
+function init(){
+  try{
+    if(typeof firebase==='undefined'){show('errorView');return;}
+    if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(FB_CONFIG);
+    db=firebase.firestore();
+    if(_salonUnsub)_salonUnsub();
+    _salonUnsub=db.collection('public').doc(SALON_ID).onSnapshot(function(doc){
+      if(!doc.exists){show('errorView');return;}
+      var fresh=doc.data();
+      window._priceBook=fresh.priceBook||null;
+      window._bookingHiddenSvcs=fresh.bookingHiddenSvcs||{};
+      try{var _lk='qpLabels_'+SALON_ID;window._qpLabels=Object.assign(JSON.parse(localStorage.getItem(_lk)||'{}'),fresh.qpLabels||{});}catch(x){window._qpLabels=fresh.qpLabels||{};}
+      if(!_salonInited){
+        _salonInited=true;
+        info=fresh;
+        if(!info.bookingOpen){show('closedView');return;}
+        $('salonName').textContent=info.salonName||'Salon';
+        document.title='Book · '+(info.salonName||'Salon');
+        (function(){var fc=$('fallbackContact');if(!fc)return;
+          var ct=((info.contact||'')+'').replace(/[^0-9+]/g,'');
+          if(ct){fc.innerHTML='<i class="ti ti-message-circle" style="font-size:12px;vertical-align:-1px"></i> Form playing up? <a href="sms:'+ct+'" style="color:var(--gold);font-weight:700;text-decoration:none">Text</a> or <a href="tel:'+ct+'" style="color:var(--gold);font-weight:700;text-decoration:none">call</a> directly from your phone instead.';}
+          else{fc.innerHTML='<i class="ti ti-message-circle" style="font-size:12px;vertical-align:-1px"></i> Having trouble with the form? Please reach out to your stylist directly.';}
+          fc.style.display='block';
+        })();
+        loadPending(function(){buildForm();show('formView');});
+      } else {
+        info=fresh;
+        if(!info.bookingOpen){show('closedView');return;}
+        try{rebuildCal();}catch(e){}
+        if(selDate){
+          var prevTime=selTime;
+          loadPending(function(){
+            renderSlots();
+            if(prevTime&&!document.querySelector('.slot.sel')){selTime='';updateBtn();}
+          });
+        }
+        showAvailToast('✦ Availability just updated');
+      }
+    },function(e){console.warn(e);if(!_salonInited)show('errorView');});
+  }catch(e){console.warn(e);show('errorView');}
+}
+function loadPending(cb){
+  pendingMap={};
+  try{
+    db.collection('requests').where('salon','==',SALON_ID).where('status','==','pending').get().then(function(snap){
+      snap.forEach(function(d){var r=d.data();if(!r.date||!r.time)return;(pendingMap[r.date]=pendingMap[r.date]||[]).push({time:r.time});});
+      cb();
+    }).catch(function(){cb();});
+  }catch(e){cb();}
+}
+function buildForm(){
+  var svc=(info.services&&info.services.length)?info.services:[];
+  window._allSvcs=svc;
+  // Auto-select Women tab on load
+  if(!curDemo){
+    curDemo='women';
+    var tab=document.querySelector('.demo-tab');
+    if(tab)tab.classList.add('sel');
+  }
+  renderDemoChips();
+  setTimeout(initQpStickyBar,100);
+  var hours=info.hours||[];
+  var row='',today=new Date();today.setHours(12,0,0,0);
+  var first='',lastMonth=-1;
+  for(var i=0;i<WEEKS_AHEAD*7;i++){
+    var d=new Date(today);d.setDate(today.getDate()+i);
+    var dh=hours[dayIdx(d)];
+    if(dh&&dh.open===false)continue;
+    var ds=ymd(d),mo=d.getMonth();
+    if(!first)first=ds;
+    if(mo!==lastMonth){
+      var lbl=d.toLocaleDateString('en-US',{month:'short'});
+      if(d.getFullYear()!==today.getFullYear())lbl+=" '"+String(d.getFullYear()).slice(2);
+      row+='<div class="dmonth">'+lbl+'</div>';
+      lastMonth=mo;
+    }
+    row+='<div class="datecell" data-d="'+ds+'" onclick="pickDate(this)">'+
+      '<div class="dc-dow">'+['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()]+'</div>'+
+      '<div class="dc-n">'+d.getDate()+'</div>'+
+      '<div class="dc-mo">'+d.toLocaleDateString('en-US',{month:'short'})+'</div></div>';
+  }
+  $('dateRow').innerHTML=row;
+  if(first){selDate=first;markSel('dateRow',first,'d');renderSlots();}
+}
+function rebuildCal(){
+  var hours=info.hours||[];
+  var row='',today=new Date();today.setHours(12,0,0,0);
+  var first='',lastMonth=-1;
+  for(var i=0;i<WEEKS_AHEAD*7;i++){
+    var d=new Date(today);d.setDate(today.getDate()+i);
+    var dh=hours[dayIdx(d)];
+    if(dh&&dh.open===false)continue;
+    var ds=ymd(d),mo=d.getMonth();
+    if(!first)first=ds;
+    if(mo!==lastMonth){
+      var lbl=d.toLocaleDateString('en-US',{month:'short'});
+      if(d.getFullYear()!==today.getFullYear())lbl+=" '"+String(d.getFullYear()).slice(2);
+      row+='<div class="dmonth">'+lbl+'</div>';
+      lastMonth=mo;
+    }
+    row+='<div class="datecell" data-d="'+ds+'" onclick="pickDate(this)">'+
+      '<div class="dc-dow">'+['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()]+'</div>'+
+      '<div class="dc-n">'+d.getDate()+'</div>'+
+      '<div class="dc-mo">'+d.toLocaleDateString('en-US',{month:'short'})+'</div></div>';
+  }
+  $('dateRow').innerHTML=row;
+  var stillValid=selDate&&document.querySelector('.datecell[data-d="'+selDate+'"]');
+  if(stillValid){markSel('dateRow',selDate,'d');}
+  else if(first){selDate=first;markSel('dateRow',first,'d');}
+}
+function allSvcs(){
+  var arr=selSvcArr.slice();
+  var c=$('otherSvc')?$('otherSvc').value.trim():'';
+  if(otherSvcMode&&c)arr.push(c);
+  return arr;
+}
+function renderSvcPills(){
+  var el=$('svcPills');if(!el)return;
+  el.innerHTML=selSvcArr.map(function(s){
+    return '<span class="svc-pill" data-s="'+esc(s)+'">'+esc(s)+'<span class="x" onclick="removeSvc(\''+esc(s).replace(/'/g,"\\'")+'\')"><i class="ti ti-x"></i></span></span>';
+  }).join('');
+  initPillDrag();
+}
+function initPillDrag(){
+  var wrap=$('svcPills');if(!wrap)return;
+  var pills=wrap.querySelectorAll('.svc-pill');if(pills.length<2)return;
+  var dragSrc=null,ghost=null,holdTimer=null;
+  function onDocMove(e){
+    if(!dragSrc)return;e.preventDefault();
+    var t=e.touches?e.touches[0]:e;
+    if(ghost){ghost.style.left=(t.clientX-60)+'px';ghost.style.top=(t.clientY-20)+'px';}
+    if(ghost)ghost.style.visibility='hidden';
+    var el=document.elementFromPoint(t.clientX,t.clientY);
+    if(ghost)ghost.style.visibility='';
+    var target=el&&el.closest?el.closest('#svcPills .svc-pill'):null;
+    wrap.querySelectorAll('.svc-pill').forEach(function(p){p.classList.remove('drag-over');});
+    if(target&&target!==dragSrc)target.classList.add('drag-over');
+  }
+  function cleanup(){
+    clearTimeout(holdTimer);
+    document.removeEventListener('touchmove',onDocMove);
+    if(ghost){try{ghost.remove();}catch(_e){}ghost=null;}
+    wrap.querySelectorAll('.svc-pill').forEach(function(p){p.classList.remove('dragging','drag-over');});
+    dragSrc=null;
+  }
+  pills.forEach(function(pill){
+    pill.addEventListener('touchstart',function(e){
+      var t=e.touches[0],sx=t.clientX,sy=t.clientY;
+      holdTimer=setTimeout(function(){
+        dragSrc=pill;pill.classList.add('dragging');
+        ghost=document.createElement('div');ghost.className='pill-drag-ghost';
+        ghost.textContent=pill.dataset.s||'';
+        ghost.style.left=(sx-60)+'px';ghost.style.top=(sy-20)+'px';
+        document.body.appendChild(ghost);
+        document.addEventListener('touchmove',onDocMove,{passive:false});
+        try{if(navigator.vibrate)navigator.vibrate(18);}catch(_e){}
+      },420);
+    },{passive:true});
+    pill.addEventListener('touchmove',function(){if(!dragSrc)clearTimeout(holdTimer);},{passive:true});
+    pill.addEventListener('touchend',function(e){
+      if(!dragSrc){clearTimeout(holdTimer);return;}
+      var t=e.changedTouches[0];
+      if(ghost)ghost.style.visibility='hidden';
+      var el=document.elementFromPoint(t.clientX,t.clientY);
+      var target=el&&el.closest?el.closest('#svcPills .svc-pill'):null;
+      var srcName=dragSrc.dataset.s,tgtName=target?target.dataset.s:null;
+      cleanup();
+      if(tgtName&&tgtName!==srcName){
+        var si=selSvcArr.indexOf(srcName),ti=selSvcArr.indexOf(tgtName);
+        if(si!==-1&&ti!==-1){selSvcArr.splice(si,1);selSvcArr.splice(selSvcArr.indexOf(tgtName),0,srcName);renderSvcPills();}
+      }
+    },{passive:true});
+    pill.addEventListener('touchcancel',cleanup,{passive:true});
+  });
+}
+function pickSvc(el){
+  // Double-tap on QP tile = rename label
+  if(el.classList.contains('qp-tile')){
+    var now=Date.now();
+    if(el._lastTap&&(now-el._lastTap)<380){el._lastTap=0;showQpRename(el);return;}
+    el._lastTap=now;
+  }
+  var s=el.dataset.s;
+  var i=selSvcArr.indexOf(s);
+  if(i>=0){selSvcArr.splice(i,1);el.classList.remove('sel');}
+  else{selSvcArr.push(s);el.classList.add('sel');}
+  renderSvcPills();updateBtn();
+  // Progressive reveal — cascade triggers on first service selection
+  if(selSvcArr.length===1&&!_cascadeStarted){_startRevealCascade();}
+}
+function showQpRename(el){
+  var s=el.dataset.s;
+  var nm=el.querySelector('.qp-name');if(!nm)return;
+  var cur=nm.textContent;
+  var inp=document.createElement('input');
+  inp.value=cur;
+  inp.style.cssText='position:absolute;inset:0;width:100%;height:100%;padding:4px 10px;font-size:11px;font-weight:700;font-family:inherit;background:#111;border:2px solid #a78bfa;border-radius:13px;color:#fff;text-align:center;z-index:20;box-sizing:border-box;outline:none';
+  el.appendChild(inp);inp.focus();inp.select();
+  function commit(){
+    var v=inp.value.trim()||s;
+    try{inp.remove();}catch(x){}
+    if(!window._qpLabels)window._qpLabels={};
+    window._qpLabels[s]=v;
+    try{var lk='qpLabels_'+SALON_ID;var obj=JSON.parse(localStorage.getItem(lk)||'{}');obj[s]=v;localStorage.setItem(lk,JSON.stringify(obj));}catch(x){}
+    if(nm)nm.textContent=v;
+  }
+  inp.addEventListener('blur',commit);
+  inp.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){e.preventDefault();inp.blur();}
+    if(e.key==='Escape'){inp.value=cur;inp.blur();}
+  });
+}
+function removeSvc(s){
+  var i=selSvcArr.indexOf(s);if(i>=0)selSvcArr.splice(i,1);
+  document.querySelectorAll('#svcChips .chip').forEach(function(c){if(c.dataset.s===s)c.classList.remove('sel');});
+  renderSvcPills();updateBtn();
+}
+function toggleOtherSvc(){
+  otherSvcMode=!otherSvcMode;
+  $('otherSvcWrap').classList.toggle('on',otherSvcMode);
+  $('otherSvcBtn').classList.toggle('on',otherSvcMode);
+  if(!otherSvcMode)$('otherSvc').value='';
+  updateBtn();
+}
+function onOtherSvc(){updateBtn();}
+function addCustomSvc(){
+  var input=$('otherSvc');
+  var val=input?input.value.trim():'';
+  if(!val)return;
+  if(input)input.value='';
+  if(_customSvcs.indexOf(val)===-1)_customSvcs.push(val);
+  if(selSvcArr.indexOf(val)===-1)selSvcArr.push(val);
+  if(curDemo){
+    // Pin it to the front of Quick Picks so it's immediately visible and draggable
+    var qp=getUserQP(curDemo);
+    if(qp.indexOf(val)===-1){qp.unshift(val);saveUserQP(curDemo);}
+    renderDemoChips();
+    // Scroll QP into view
+    var qg=document.querySelector('#svcChips .qp-grid');
+    if(qg)setTimeout(function(){qg.scrollIntoView({behavior:'smooth',block:'nearest'});},80);
+  }else{
+    _injectCustomChips();
+  }
+  renderSvcPills();updateBtn();
+}
+function _injectCustomChips(){
+  if(curDemo)return; // demo mode: custom services live in QP grid, no injection needed
+  var el=$('svcChips');if(!el)return;
+  _customSvcs.forEach(function(val){
+    var exists=false;
+    el.querySelectorAll('.chip').forEach(function(c){if(c.dataset.s===val)exists=true;});
+    if(exists)return;
+    var cd=document.createElement('div');
+    cd.className='chip sel';cd.dataset.s=val;
+    cd.setAttribute('onclick','pickSvc(this)');
+    cd.innerHTML='<i class="ti ti-sparkles" style="color:var(--gold)"></i><span class="chip-name">'+esc(val)+'</span><span class="chip-del" onclick="event.stopPropagation();removeCustomChip(this)">&#215;</span>';
+    cd.style.boxShadow='0 0 18px rgba(212,175,55,.7)';
+    setTimeout(function(){cd.style.transition='box-shadow .5s';cd.style.boxShadow='';},60);
+    el.appendChild(cd);
+  });
+}
+function pickDate(el){
+  selDate=el.dataset.d;selTime='';
+  markSel('dateRow',selDate,'d');renderSlots();updateBtn();
+  // Step 4 complete — reveal Pick a time
+  if(!_stepsRevealed.time){setTimeout(function(){_revealStep('step-time');},380);}
+}
+function markSel(wrap,val,attr){document.querySelectorAll('#'+wrap+' [data-'+attr+']').forEach(function(c){c.classList.toggle('sel',c.dataset[attr]===val);});}
+function slotTOD(t){
+  var p=t.split(':'),h=+p[0],m=+(p[1]||0),d=h+m/60;
+  var r=[
+    [5.5, 'linear-gradient(145deg,rgba(12,12,55,.62),rgba(25,8,65,.52))', '#9898e8','🌙'],
+    [7,   'linear-gradient(145deg,rgba(130,25,20,.55),rgba(170,50,0,.45))','#ffb098','🌄'],
+    [8.5, 'linear-gradient(145deg,rgba(195,80,0,.48),rgba(215,110,0,.38))','#ffc888','🌅'],
+    [10,  'linear-gradient(145deg,rgba(185,135,0,.42),rgba(218,168,0,.32))','#ffe090','☀️'],
+    [12,  'linear-gradient(145deg,rgba(195,155,0,.38),rgba(235,195,0,.28))','#fff2a0','🌞'],
+    [14,  'linear-gradient(145deg,rgba(182,142,0,.40),rgba(225,180,0,.30))','#ffe888','🌤️'],
+    [16,  'linear-gradient(145deg,rgba(168,108,0,.42),rgba(205,138,0,.32))','#ffd870','🌻'],
+    [17.5,'linear-gradient(145deg,rgba(155,68,0,.46),rgba(185,85,0,.36))', '#ffba68','🌤️'],
+    [19,  'linear-gradient(145deg,rgba(148,38,0,.52),rgba(118,18,35,.42))','#ffaa70','🌇'],
+    [20.5,'linear-gradient(145deg,rgba(68,8,105,.52),rgba(98,18,78,.42))', '#e078ff','🌆'],
+    [99,  'linear-gradient(145deg,rgba(10,10,58,.60),rgba(18,5,58,.50))',  '#8080cc','🌃'],
+  ];
+  for(var i=0;i<r.length;i++){if(d<r[i][0])return {bg:r[i][1],col:r[i][2],ic:r[i][3]};}
+  return {bg:'linear-gradient(145deg,rgba(10,10,58,.60),rgba(18,5,58,.50))',col:'#8080cc',ic:'🌃'};
+}
+function renderSlots(){
+  var hours=info.hours||[];
+  var d=new Date(selDate+'T12:00:00');
+  var dh=hours[dayIdx(d)];
+  var taken=(info.taken||[]).filter(function(t){return t.date===selDate;});
+  var pend=pendingMap[selDate]||[];
+  var slots=genSlots(dh,taken,pend);
+  if(!slots.length){$('slotGrid').innerHTML='<div class="empty-slots" style="grid-column:1/-1">No open times this day — try another, or request a time below.</div>';return;}
+  $('slotGrid').innerHTML=slots.map(function(s){
+    var td=slotTOD(s.time);
+    return '<div class="slot'+(s.pending?' pending':'')+'" data-t="'+s.time+'" onclick="pickTime(this)" style="background:'+td.bg+',#161618;color:'+td.col+'"><span class="slot-tod">'+td.ic+'</span><span class="slot-lbl">'+s.label+'</span></div>';
+  }).join('');
+}
+function pickTime(el){
+  selTime=el.dataset.t;customMode=false;
+  $('customWrap').classList.remove('on');$('noneBtn').classList.remove('on');$('customTime').value='';
+  document.querySelectorAll('#slotGrid .slot').forEach(function(c){c.classList.toggle('sel',c===el);});
+  updateBtn();
+  // Reveal "Before your visit" on first time selection
+  if(!_stepsRevealed.visit){setTimeout(function(){_revealStep('step-visit');},420);}
+}
+var returning=false;
+function toggleHair(el){
+  el.classList.toggle('sel');
+  _onHairInteract(); // any chip tap unlocks Pick a day
+}
+function toggleReturning(){
+  returning=!returning;
+  $('returningBtn').classList.toggle('on',returning);
+  $('hairWrap').classList.toggle('collapsed',returning);
+  _onHairInteract(); // "been here before" also unlocks Pick a day
+}
+var _consentGiven=false;
+function toggleCflag(el){el.classList.toggle('on');}
+function toggleConsent(){
+  _consentGiven=!_consentGiven;
+  var el=$('consentAgree');if(el)el.classList.toggle('on',_consentGiven);
+  updateBtn();
+}
+function gatherConsentFlags(){
+  return Array.from(document.querySelectorAll('#consentFlags .cflag.on')).map(function(el){return el.dataset.cond;});
+}
+function collectHair(){
+  if(returning)return '';
+  var parts=[];
+  document.querySelectorAll('#hairWrap [data-hair]').forEach(function(row){
+    var picks=[];
+    row.querySelectorAll('.hchip.sel').forEach(function(c){picks.push((c.querySelector('.hchip-nm')||c).textContent.trim());});
+    if(picks.length)parts.push(cap(row.dataset.hair)+': '+picks.join(', '));
+  });
+  var extra=($('fHairNotes').value||'').trim();
+  if(extra)parts.push('Note: '+extra);
+  return parts.join(' | ');
+}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+function collectHairData(){
+  if(returning)return null;
+  var d={length:'',thickness:'',colour:'',grey:'',history:[]};
+  document.querySelectorAll('#hairWrap [data-hair]').forEach(function(row){
+    var key=row.dataset.hair,picks=[];
+    row.querySelectorAll('.hchip.sel').forEach(function(c){picks.push((c.querySelector('.hchip-nm')||c).textContent.trim());});
+    if(!picks.length)return;
+    if(key==='history'){d.history=picks;}else{d[key]=picks[0];}
+  });
+  return d;
+}
+function toggleCustom(){
+  customMode=!customMode;
+  $('customWrap').classList.toggle('on',customMode);
+  $('noneBtn').classList.toggle('on',customMode);
+  if(customMode){selTime='';document.querySelectorAll('#slotGrid .slot').forEach(function(c){c.classList.remove('sel');});setTimeout(function(){var ct=$('customTime');if(ct)ct.focus();},120);}
+  updateBtn();
+}
+function addToCal(){
+  var b=_lastBooking;if(!b)return;
+  var a=_approvedRec;
+  var pad=function(n){return (n<10?'0':'')+n;};
+  var fmt=function(x){return x.getFullYear()+pad(x.getMonth()+1)+pad(x.getDate())+'T'+pad(x.getHours())+pad(x.getMinutes())+'00';};
+  var date=(a&&a.date)||b.date,time=((a&&a.time)||b.time||'09:00'),dur=(a&&+a.dur)||60,svc=(a&&a.service)||b.svc;
+  var startD=new Date(date+'T'+time+':00');
+  if(isNaN(startD.getTime()))startD=new Date(date+'T09:00:00');
+  var endD=new Date(startD.getTime()+dur*60000);
+  var ie=function(s){return String(s||'').replace(/([,;\\])/g,'\\$1').replace(/\n/g,'\\n');};
+  var desc=a?('Confirmed with '+b.salon+'. See you then!'):('Booking request sent to '+b.salon+'. This is pending confirmation.'+(b.custom&&b.customTime?(' Requested time: '+b.customTime+'.'):''));
+  var ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Your Salon//Booking//EN','CALSCALE:GREGORIAN','BEGIN:VEVENT',
+    'UID:ys-'+(b.id||Date.now())+'@yoursalon','DTSTAMP:'+fmt(new Date()),'DTSTART:'+fmt(startD),'DTEND:'+fmt(endD),
+    'SUMMARY:'+ie(svc+' — '+b.salon+(a?'':' (requested)')),'DESCRIPTION:'+ie(desc),'STATUS:'+(a?'CONFIRMED':'TENTATIVE'),'END:VEVENT','END:VCALENDAR'].join('\r\n');
+  var fn=(b.salon+'-appointment').replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,'')+'.ics';
+  try{
+    var blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+    if(navigator.share&&navigator.canShare){var file=new File([blob],fn,{type:'text/calendar'});if(navigator.canShare({files:[file]})){navigator.share({files:[file],title:'Add to calendar'}).catch(function(){_icsDl(blob,fn);});return;}}
+    _icsDl(blob,fn);
+  }catch(e){window.location.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);}
+}
+function _icsDl(blob,fn){var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=fn;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(url);a.remove();},1500);}
+function updateBtn(){
+  var needSvc=!allSvcs().length;
+  var needTime=!(selTime||(customMode&&$('customTime').value.trim()));
+  var needConsent=!_consentGiven;
+  var ok=!needSvc&&selDate&&!needTime&&!needConsent;
+  $('bookBtn').disabled=!ok;
+  var h=$('btnHint');
+  var hint=needSvc?'↑ Pick a service first':(!selDate?'↑ Pick a day':needTime?'↑ Pick a time — or request your own':needConsent?'↓ Agree to the service terms below to continue':'');
+  if(h){h.textContent=hint;h.classList.toggle('show',!ok);}
+}
+document.addEventListener('input',function(e){if(e.target&&e.target.id==='customTime')updateBtn();});
+/* ── Hair Passport (localStorage, device-local) ─────────────── */
+var PASSPORT_KEY='hairPassport_'+SALON_ID;
+function getPassport(){try{return JSON.parse(localStorage.getItem(PASSPORT_KEY)||'{"visits":[]}');}catch(e){return {visits:[]};}}
+function saveToPassport(rec){
+  try{
+    var p=getPassport();
+    p.visits.unshift({service:rec.service,date:rec.date,time:rec.time,savedAt:Date.now()});
+    p.visits=p.visits.slice(0,30);
+    localStorage.setItem(PASSPORT_KEY,JSON.stringify(p));
+  }catch(e){}
+}
+function renderPassportCard(r,when){
+  var pc=$('passportCard'),pe=$('passportEntry'),ps=$('passportSvc'),ph=$('passportHistory');
+  if(!pc)return;
+  pc.classList.remove('hidden');
+  var p=getPassport();
+  var total=p.visits.length;
+  var salonName=(info&&info.salonName)||'the salon';
+  if(ps)ps.textContent=(r.service||_lastBooking.svc||'')+(when?' · '+when:'');
+  if(pe){
+    if(total<=1){
+      pe.textContent='Welcome! Your hair journey at '+salonName+' starts here.';
+    } else {
+      pe.textContent='Visit #'+total+' at '+salonName+'. Good to have you back.';
+    }
+  }
+  if(ph){
+    if(total>1){
+      var prev=p.visits.slice(1,4);
+      var rows=prev.map(function(v){
+        var d=v.date?new Date(v.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+        return '<div class="pc-prev"><span>'+esc(v.service)+'</span>'+(d?' &middot; '+d:'')+'</div>';
+      }).join('');
+      ph.innerHTML='<div class="pc-prev" style="font-size:10px;color:#4a4a5a;font-weight:800;letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px">Previous visits</div>'+rows;
+    } else {
+      ph.innerHTML='';
+    }
+  }
+}
+/* ── Payment helpers ─────────────────────────────────────────── */
+function _sendRec(rec){
+  db.collection('requests').add(rec).then(function(ref){
+    _lastBooking={id:(ref&&ref.id)||'',date:rec.date,time:rec.time,svc:rec.service,salon:(info&&info.salonName)||'Salon',custom:!!rec.custom,customTime:rec.customTime||''};
+    if(ref&&ref.id){watchRequest(ref.id);_waiting=true;wakeOn();}
+    saveToPassport(rec);
+    var isCustom=rec.custom;
+    var when=isCustom?(rec.customTime||'custom time'):(to12(rec.time)+' on '+new Date(rec.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}));
+    $('doneSub').innerHTML='Your request for <b>'+esc(rec.service)+'</b> ('+esc(when)+') has been sent. You\'ll get a confirmation once it\'s approved.';
+    show('doneView');
+  }).catch(function(e){
+    console.warn(e);
+    $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Confirm & book';
+    closePaySheet();
+    alert('Could not send — please try again.');
+  });
+}
+function showPaymentStep(rec){
+  _pendingRec=rec;
+  _depositAmt=(info&&info.depositAmount)||50;
+  var pk=(info&&info.stripePk)||STRIPE_PK||'';
+  var ps=$('paySheet');if(!ps)return;
+  var amt=$('paySheetAmt');if(amt)amt.innerHTML='$'+_depositAmt.toFixed(0)+' <span>deposit</span>';
+  var ba=$('payBtnAmt');if(ba)ba.textContent=_depositAmt.toFixed(0);
+  var sub=$('paySheetSvc');if(sub)sub.textContent=rec.service;
+  var err=$('payErr');if(err){err.textContent='';err.classList.remove('show');}
+  var pb=$('payConfirmBtn');if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
+  ps.classList.add('open');
+  if(!pk){console.warn('No Stripe PK in Firestore info.stripePk');return;}
+  if(!_stripe||_stripe._pk!==pk){
+    _stripe=Stripe(pk);_stripe._pk=pk;
+    _stripeElements=null;_stripePayEl=null;_stripeECEl=null;
+  }
+  if(!_stripeElements){
+    _stripeElements=_stripe.elements({
+      mode:'payment',amount:Math.round(_depositAmt*100),currency:'usd',
+      appearance:{theme:'night',variables:{colorBackground:'#0d0d18',colorPrimary:'#d4af37',colorText:'#e8e8f0',fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif',borderRadius:'10px'}}
+    });
+    // Express Checkout Element — shows Apple Pay / Google Pay button natively
+    _stripeECEl=_stripeElements.create('expressCheckout',{buttonHeight:48,buttonTheme:{applePay:'black',googlePay:'black'}});
+    var eceEl=$('expressCheckoutElement');
+    if(eceEl){eceEl.innerHTML='';_stripeECEl.mount('#expressCheckoutElement');}
+    _stripeECEl.on('confirm',function(){
+      var fn=firebase.functions().httpsCallable('createPaymentIntent');
+      var err=$('payErr');
+      fn({amount:Math.round(_depositAmt*100),currency:'usd',salonId:SALON_ID}).then(function(res){
+        var clientSecret=res.data&&res.data.clientSecret;
+        if(!clientSecret){throw new Error('No client secret');}
+        return _stripe.confirmPayment({elements:_stripeElements,clientSecret:clientSecret,redirect:'if_required'});
+      }).then(function(res2){
+        if(res2&&res2.error){if(err){err.textContent=res2.error.message;err.classList.add('show');}return;}
+        var pi=res2&&res2.paymentIntent;
+        if(_pendingRec&&pi){_pendingRec.depositPaid=true;_pendingRec.depositAmount=_depositAmt;_pendingRec.paymentIntentId=pi.id||'';}
+        closePaySheet();
+        if(_pendingRec){_sendRec(_pendingRec);_pendingRec=null;}
+      }).catch(function(e){if(err){err.textContent=e.message||'Payment error';err.classList.add('show');}});
+    });
+    // Card input element
+    _stripePayEl=_stripeElements.create('payment',{layout:'tabs'});
+    var container=$('stripeElement');if(container){container.innerHTML='';_stripePayEl.mount('#stripeElement');setTimeout(function(){if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();},80);}
+  }
+}
+function closePaySheet(){
+  var ps=$('paySheet');if(ps)ps.classList.remove('open');
+  $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Confirm & book';
+}
+function skipDeposit(){
+  closePaySheet();
+  if(_pendingRec){_sendRec(_pendingRec);_pendingRec=null;}
+}
+function confirmPayment(){
+  if(!_stripe||!_stripeElements){skipDeposit();return;}
+  var pb=$('payConfirmBtn');if(pb){pb.disabled=true;pb.innerHTML='<i class="ti ti-loader"></i> Processing…';}
+  var err=$('payErr');if(err){err.textContent='';err.classList.remove('show');}
+  _stripeElements.submit().then(function(r){
+    if(r.error){
+      if(err){err.textContent=r.error.message;err.classList.add('show');}
+      if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
+      return;
+    }
+    var fn=firebase.functions().httpsCallable('createPaymentIntent');
+    fn({amount:Math.round(_depositAmt*100),currency:'usd',salonId:SALON_ID}).then(function(res){
+      var clientSecret=res.data&&res.data.clientSecret;
+      if(!clientSecret){throw new Error('No client secret returned');}
+      return _stripe.confirmPayment({elements:_stripeElements,clientSecret:clientSecret,redirect:'if_required'});
+    }).then(function(res2){
+      if(res2&&res2.error){
+        if(err){err.textContent=res2.error.message;err.classList.add('show');}
+        if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
+        return;
+      }
+      var pi=res2&&res2.paymentIntent;
+      if(_pendingRec&&pi){_pendingRec.depositPaid=true;_pendingRec.depositAmount=_depositAmt;_pendingRec.paymentIntentId=pi.id||'';}
+      closePaySheet();
+      if(_pendingRec){_sendRec(_pendingRec);_pendingRec=null;}
+    }).catch(function(e){
+      console.warn(e);
+      if(err){err.textContent=(e&&e.message)||'Payment failed — please try again.';err.classList.add('show');}
+      if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
+    });
+  }).catch(function(e){
+    console.warn(e);
+    if(err){err.textContent=(e&&e.message)||'Payment failed — please try again.';err.classList.add('show');}
+    if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
+  });
+}
+/* ── Main submit ─────────────────────────────────────────────── */
+function submitBooking(){
+  var name=$('fName').value.trim(),phone=$('fPhone').value.trim(),notes=$('fNotes').value.trim();
+  var svcs=allSvcs();
+  if(!name){alert('Please add your name');return;}
+  if(!phone){alert('Please add a phone number');return;}
+  if(!svcs.length){alert('Please pick at least one service');return;}
+  var svcStr=svcs.join(' + ');
+  var isCustom=customMode&&$('customTime').value.trim();
+  var time=isCustom?'':selTime;
+  var notesFull=isCustom?('Requested time: '+$('customTime').value.trim()+(notes?(' — '+notes):'')):notes;
+  if(!time&&!isCustom){alert('Please pick a time');return;}
+  _unlockAudio();
+  $('bookBtn').disabled=true;$('bookBtn').innerHTML='<i class="ti ti-loader"></i> Sending…';
+  var consentNotes=$('consentNotes')?$('consentNotes').value.trim():'';
+  var rec={
+    salon:SALON_ID,name:name,phone:phone,service:svcStr,
+    date:selDate,time:time||'09:00',dur:60,price:0,
+    notes:notesFull,hair:collectHair(),hairData:collectHairData(),
+    custom:!!isCustom,customTime:isCustom?$('customTime').value.trim():'',
+    customSvc:!!(otherSvcMode&&$('otherSvc').value.trim()),
+    status:'pending',createdAt:Date.now(),
+    consent:{agreed:true,agreedAt:Date.now(),conditions:gatherConsentFlags(),notes:consentNotes}
+  };
+  var proceed=function(){
+    var pk=(info&&info.stripePk)||'';
+    if(pk){showPaymentStep(rec);}
+    else{_sendRec(rec);}
+  };
+  if(isCustom){proceed();return;}
+  db.collection('public').doc(SALON_ID).get().then(function(doc){
+    var fresh=doc.exists?(doc.data()||{}):{};
+    var t0=mins(time),t1=t0+60;
+    var clash=(fresh.taken||[]).some(function(b){if(b.date!==selDate)return false;var bs=mins(b.time),be=bs+(+b.dur||60);return t0<be&&t1>bs;});
+    if(clash){
+      info.taken=fresh.taken||info.taken;
+      selTime='';renderSlots();updateBtn();
+      $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Confirm & book';
+      alert('Ah — that time was just snapped up! Please pick another that suits you.');
+      return;
+    }
+    proceed();
+  }).catch(function(){proceed();});
+}
+var _watchUnsub=null,_approvedRec=null,_audioCtx=null;
+var _wl=null,_waiting=false,_salonUnsub=null,_salonInited=false;
+function showAvailToast(msg){var t=document.getElementById("availToast");if(!t)return;t.textContent=msg;t.classList.add("show");clearTimeout(t._tid);t._tid=setTimeout(function(){t.classList.remove("show");},3500);}
+function wakeOn(){try{if(navigator.wakeLock&&navigator.wakeLock.request){navigator.wakeLock.request('screen').then(function(s){_wl=s;}).catch(function(){});}}catch(e){}}
+function wakeOff(){try{if(_wl){_wl.release();_wl=null;}}catch(e){}}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&_waiting)wakeOn();});
+function _unlockAudio(){try{if(!_audioCtx)_audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(_audioCtx.state==='suspended')_audioCtx.resume();}catch(e){}}
+document.addEventListener('touchend',_unlockAudio,{passive:true});
+var _scrollTimer=null;
+document.addEventListener('scroll',function(){
+  document.body.classList.add('no-anim');
+  clearTimeout(_scrollTimer);
+  _scrollTimer=setTimeout(function(){document.body.classList.remove('no-anim');},150);
+},{passive:true});
+document.addEventListener('click',_unlockAudio,{passive:true});
+function softChime(){
+  try{
+    if(!_audioCtx||_audioCtx.state!=='running')return;
+    var t=_audioCtx.currentTime;
+    [[880,0],[1174.66,0.16]].forEach(function(nf){
+      var o=_audioCtx.createOscillator(),g=_audioCtx.createGain();
+      o.type='sine';o.frequency.value=nf[0];
+      g.gain.setValueAtTime(0.0001,t+nf[1]);
+      g.gain.exponentialRampToValueAtTime(0.1,t+nf[1]+0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+nf[1]+0.9);
+      o.connect(g);g.connect(_audioCtx.destination);
+      o.start(t+nf[1]);o.stop(t+nf[1]+1);
+    });
+  }catch(e){}
+}
+function watchRequest(id){
+  try{
+    if(_watchUnsub)_watchUnsub();
+    _watchUnsub=db.collection('requests').doc(id).onSnapshot(function(d){
+      var r=d.data();if(!r)return;
+      if(r.status==='approved'){_watchUnsub();_watchUnsub=null;onApproved(r);}
+      else if(r.status==='declined'){_watchUnsub();_watchUnsub=null;onDeclined(r);}
+    },function(err){console.warn('watch err',err);});
+  }catch(e){console.warn('watch',e);}
+}
+function onApproved(r){
+  _approvedRec=r;_waiting=false;wakeOff();softChime();
+  try{if(navigator.vibrate)navigator.vibrate([80,60,80]);}catch(e){}
+  var when=(r.time?to12(r.time)+' on ':'')+new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  if($('doneTitle'))$('doneTitle').textContent="You're booked! 🎉";
+  if($('doneSub'))$('doneSub').innerHTML='<b>'+esc(r.service||_lastBooking.svc||'Your appointment')+'</b> is confirmed for <b>'+esc(when)+'</b>. See you then!';
+  if($('doneWait'))$('doneWait').classList.add('hidden');
+  if($('calBtn'))$('calBtn').classList.remove('hidden');
+  var g=$('gcalLink');if(g){g.href=_gcalUrl(r);g.classList.remove('hidden');g.style.display='block';}
+  // Review button — links to salon's Google review URL if set
+  var reviewBtn=$('reviewBtn');
+  if(reviewBtn){
+    var reviewUrl=(info&&info.reviewUrl)||('https://search.google.com/local/writereview?placeid='+encodeURIComponent((info&&info.salonName)||''));
+    reviewBtn.href=reviewUrl;
+    reviewBtn.classList.remove('hidden');
+  }
+  // Hair Passport card
+  renderPassportCard(r,when);
+}
+function onDeclined(r){
+  _waiting=false;wakeOff();
+  var ic=$('doneIc');if(ic){ic.className='cs-ic';ic.innerHTML='<i class="ti ti-calendar-x"></i>';}
+  if($('doneTitle'))$('doneTitle').textContent="That time didn't work out";
+  if($('doneSub'))$('doneSub').innerHTML='No worries at all — your details are saved. Please tap below and pick another time that suits you. 💛';
+  var bb=$('bookAnotherBtn');if(bb){bb.innerHTML='<i class="ti ti-clock-plus"></i> Pick another time';bb.onclick=retryForm;}
+  if($('doneWait'))$('doneWait').classList.add('hidden');
+}
+function _calDates(r){
+  var t=(r.time||'09:00');
+  var s=new Date(r.date+'T'+t+':00');if(isNaN(s.getTime()))s=new Date(r.date+'T09:00:00');
+  var e=new Date(s.getTime()+((+r.dur||60)*60000));
+  var p=function(n){return (n<10?'0':'')+n;};
+  var f=function(x){return x.getFullYear()+p(x.getMonth()+1)+p(x.getDate())+'T'+p(x.getHours())+p(x.getMinutes())+'00';};
+  return {start:f(s),end:f(e)};
+}
+function _gcalUrl(r){
+  var d=_calDates(r);
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent((r.service||'Appointment')+' — '+(_lastBooking.salon||'Salon'))+'&dates='+d.start+'/'+d.end;
+}
+function retryForm(){
+  _waiting=false;wakeOff();
+  if(_watchUnsub){try{_watchUnsub();}catch(e){}_watchUnsub=null;}
+  _approvedRec=null;
+  var ic=$('doneIc');if(ic){ic.className='cs-ic green';ic.innerHTML='<i class="ti ti-check"></i>';}
+  if($('doneTitle'))$('doneTitle').textContent='Request sent!';
+  if($('doneWait'))$('doneWait').classList.remove('hidden');
+  if($('calBtn'))$('calBtn').classList.add('hidden');
+  var _g=$('gcalLink');if(_g){_g.classList.add('hidden');_g.style.display='';}
+  selTime='';customMode=false;$('customTime').value='';
+  if($('customWrap'))$('customWrap').classList.remove('on');
+  if($('noneBtn'))$('noneBtn').classList.remove('on');
+  var bb=$('bookAnotherBtn');if(bb){bb.innerHTML='<i class="ti ti-plus"></i> Book another';bb.onclick=resetForm;}
+  $('bookBtn').innerHTML='<i class="ti ti-send"></i> Confirm & book';$('bookBtn').disabled=true;
+  loadPending(function(){renderSlots();updateBtn();show('formView');try{var el=$('slotGrid');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}});
+}
+function resetForm(){
+  _waiting=false;wakeOff();
+  _resetReveal();
+  if(_watchUnsub){try{_watchUnsub();}catch(e){}_watchUnsub=null;}
+  _approvedRec=null;
+  var ic=$('doneIc');if(ic){ic.className='cs-ic green';ic.innerHTML='<i class="ti ti-check"></i>';}
+  if($('doneTitle'))$('doneTitle').textContent='Request sent!';
+  if($('doneWait'))$('doneWait').classList.remove('hidden');
+  if($('calBtn'))$('calBtn').classList.add('hidden');
+  var _g=$('gcalLink');if(_g){_g.classList.add('hidden');_g.style.display='';}
+  selSvcArr=[];selTime='';customMode=false;returning=false;otherSvcMode=false;
+  _consentGiven=false;
+  var ca=$('consentAgree');if(ca)ca.classList.remove('on');
+  document.querySelectorAll('#consentFlags .cflag.on').forEach(function(el){el.classList.remove('on');});
+  if($('consentNotes'))$('consentNotes').value='';
+  var rb=$('reviewBtn');if(rb)rb.classList.add('hidden');
+  var pc=$('passportCard');if(pc)pc.classList.add('hidden');
+  var ph=$('passportHistory');if(ph)ph.innerHTML='';
+  var pe=$('passportEntry');if(pe)pe.textContent='';
+  document.querySelectorAll('#svcChips .chip.sel').forEach(function(c){c.classList.remove('sel');});
+  if($('svcPills'))$('svcPills').innerHTML='';
+  $('fName').value='';$('fPhone').value='';$('fNotes').value='';$('customTime').value='';
+  if($('otherSvc'))$('otherSvc').value='';
+  if($('otherSvcWrap'))$('otherSvcWrap').classList.remove('on');
+  if($('otherSvcBtn'))$('otherSvcBtn').classList.remove('on');
+  if($('fHairNotes'))$('fHairNotes').value='';
+  document.querySelectorAll('#hairWrap .hchip.sel').forEach(function(c){c.classList.remove('sel');});
+  if($('returningBtn'))$('returningBtn').classList.remove('on');
+  if($('hairWrap'))$('hairWrap').classList.remove('collapsed');
+  $('bookBtn').innerHTML='<i class="ti ti-send"></i> Confirm & book';$('bookBtn').disabled=true;
+  loadPending(function(){buildForm();show('formView');});
+}
+function applyUpdate(){location.replace(location.pathname+'?v='+Date.now());}
+function checkForUpdate(){
+  try{
+    fetch(location.pathname+'?_t='+Date.now(),{cache:'no-store'})
+      .then(function(r){return r.text();})
+      .then(function(txt){
+        var m=txt.match(/var VERSION='([^']+)'/);
+        if(m&&m[1]&&m[1]!==VERSION){var b=$('updateBar');if(b)b.classList.add('show');}
+      }).catch(function(){});
+  }catch(e){}
+}
+setTimeout(checkForUpdate,8000);
+setInterval(checkForUpdate,60000);
+init();
+</script>
+
+<!-- ── Payment sheet ───────────────────────────────────────── -->
+<div class="pay-sheet" id="paySheet" onclick="if(event.target===this)closePaySheet()">
+  <div class="pay-inner">
+    <div class="pay-drag"></div>
+    <div class="pay-hdr">Secure your spot</div>
+    <p class="pay-sub" id="paySheetSvc">Hold your appointment with a deposit — the rest you pay at the salon.</p>
+    <div class="pay-amount" id="paySheetAmt">$50 <span>deposit</span></div>
+    <div id="payErr" class="pay-err"></div>
+    <div id="expressCheckoutElement"></div>
+    <div class="pay-divider" id="payDivider"><span>or pay by card</span></div>
+    <div id="stripeElement"></div>
+    <button class="pay-btn" id="payConfirmBtn" onclick="confirmPayment()">
+      <i class="ti ti-credit-card" style="font-size:18px"></i> Pay $<span id="payBtnAmt">50</span> by card
+    </button>
+    <div class="pay-skip" onclick="skipDeposit()">Pay at the salon instead →</div>
+    <div class="pay-lock"><i class="ti ti-lock" style="font-size:11px"></i> Secured by Stripe · Apple Pay &amp; Google Pay accepted</div>
+  </div>
+</div>
+</body>
+</html>

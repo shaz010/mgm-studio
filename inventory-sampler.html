@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inventory — redesign sampler</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:#000;color:#efefef;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:440px;margin:0 auto;padding:18px 14px 60px}
+  .intro h1{font-size:18px;font-weight:800;margin:0 0 5px}
+  .intro p{font-size:13px;line-height:1.55;color:#9a9aa5;margin:0 0 18px}
+
+  .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .head-t{font-size:21px;font-weight:800}
+  .head-t span{background:linear-gradient(120deg,#67e8f9,#5ddb7c,#22d3ee);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .head-a{display:flex;gap:8px}
+  .ic{width:38px;height:38px;border-radius:10px;border:1px solid #23232c;background:#070709;display:flex;align-items:center;justify-content:center;font-size:18px;color:#cfcfd6}
+  .ic.add{border-color:#2a1730;color:#ff5cf0;filter:drop-shadow(0 0 5px rgba(255,92,240,.5))}
+
+  .kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:13px}
+  .kpi{background:#070709;border:1px solid #1c1c26;border-radius:13px;padding:12px 8px;text-align:center}
+  .kpi-v{font-size:21px;font-weight:800;line-height:1}
+  .kpi-l{font-size:9px;text-transform:uppercase;letter-spacing:.5px;margin-top:5px;color:#8a8a92}
+  .v-items{color:#3b82f6;text-shadow:0 0 10px rgba(59,130,246,.5)}
+  .v-low{color:#ff3b5c;text-shadow:0 0 11px rgba(255,59,92,.7)}
+  .v-val{background:linear-gradient(100deg,#a78bfa,#f5a8ff,#7df9ff,#d8b4fe,#a78bfa);background-size:220% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:irid 5s linear infinite}
+  @keyframes irid{to{background-position:-220% center}}
+
+  .reorder{border:1px solid #3a0e18;background:linear-gradient(180deg,#16070b,#000);border-radius:13px;padding:11px 12px;margin-bottom:14px}
+  .reorder-h{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#ff3b5c;margin-bottom:9px}
+  .reorder-h .dot{width:7px;height:7px;border-radius:50%;background:#ff3b5c;box-shadow:0 0 8px #ff3b5c}
+  .chips{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;display:flex;align-items:center;gap:6px;border:1px solid #5a1422;background:#0c0507;border-radius:20px;padding:6px 11px;font-size:12px;font-weight:600;color:#ffb3c1;white-space:nowrap}
+  .chip b{color:#ff6b85}
+
+  .cats{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;margin-bottom:13px}
+  .cats::-webkit-scrollbar{display:none}
+  .cat{flex:0 0 auto;border:1px solid #23232c;background:#070709;border-radius:18px;padding:7px 13px;font-size:12.5px;font-weight:700;color:#9a9aa5;white-space:nowrap}
+  .cat.on{border-color:transparent;background:linear-gradient(120deg,#1a1206,#0a0a0e);color:#FFB800;box-shadow:inset 0 0 0 1px #554000}
+
+  .item{display:flex;align-items:center;gap:12px;background:#060608;border:1px solid #1c1c26;border-radius:14px;padding:12px 13px;margin-bottom:9px}
+  .item.low{border-color:#5a1422;box-shadow:0 0 13px rgba(255,59,92,.15)}
+  .item-ic{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .ic-color{background:#0c1622;color:#67e8f9;border:1px solid #1a3550}
+  .ic-dev{background:#160c22;color:#c084fc;border:1px solid #2e1a4a}
+  .ic-tool{background:#1a1206;color:#fbbf24;border:1px solid #4a3510}
+  .ic-nail{background:#1a0a14;color:#ff8fd0;border:1px solid #4a1a3a}
+  .item-mid{flex:1;min-width:0}
+  .item-n{font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item-s{font-size:11.5px;color:#8a8a92;margin-top:2px}
+  .badge-low{display:inline-block;margin-top:5px;font-size:9px;font-weight:800;letter-spacing:.5px;padding:2px 8px;border-radius:20px;color:#ff3b5c;border:1px solid #5a1422;background:#16070b}
+  .stepper{display:flex;align-items:center;gap:9px;flex-shrink:0}
+  .step{width:30px;height:30px;border-radius:9px;border:1px solid #2a2a34;background:#0a0a0e;color:#cfcfd6;font-size:17px;display:flex;align-items:center;justify-content:center;line-height:1}
+  .qty{min-width:34px;text-align:center}
+  .qty-n{font-size:18px;font-weight:800;line-height:1}
+  .qty-n.low{color:#ff3b5c}
+  .qty-u{font-size:9px;color:#8a8a92;text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="intro">
+    <h1>Inventory — the redesign</h1>
+    <p>Your supplies at a glance: what you have, what's running low (in neon red, as you liked), and what it's all worth.</p>
+  </div>
+
+  <div class="head">
+    <div class="head-t"><span>Inventory</span></div>
+    <div class="head-a">
+      <button class="ic"><i class="ti ti-search"></i></button>
+      <button class="ic add"><i class="ti ti-plus"></i></button>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="kpi-v v-items">24</div><div class="kpi-l">Items</div></div>
+    <div class="kpi"><div class="kpi-v v-low">5</div><div class="kpi-l">Running low</div></div>
+    <div class="kpi"><div class="kpi-v v-val">$1,240</div><div class="kpi-l">Stock value</div></div>
+  </div>
+
+  <div class="reorder">
+    <div class="reorder-h"><span class="dot"></span> Reorder soon · 5 items</div>
+    <div class="chips">
+      <div class="chip"><b>6N</b> Dark Blonde</div>
+      <div class="chip"><b>20</b> Vol Developer</div>
+      <div class="chip">Acetone</div>
+      <div class="chip">Foils</div>
+      <div class="chip">Cotton pads</div>
+    </div>
+  </div>
+
+  <div class="cats">
+    <div class="cat on">All</div>
+    <div class="cat">Color</div>
+    <div class="cat">Developer</div>
+    <div class="cat">Tools</div>
+    <div class="cat">Nail</div>
+  </div>
+
+  <div class="item low">
+    <div class="item-ic ic-color"><i class="ti ti-droplet"></i></div>
+    <div class="item-mid">
+      <div class="item-n">6N Dark Blonde</div>
+      <div class="item-s">Color · min 4</div>
+      <div class="badge-low">LOW · REORDER</div>
+    </div>
+    <div class="stepper">
+      <button class="step">–</button>
+      <div class="qty"><div class="qty-n low">3</div><div class="qty-u">tubes</div></div>
+      <button class="step">+</button>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="item-ic ic-dev"><i class="ti ti-flask"></i></div>
+    <div class="item-mid">
+      <div class="item-n">20 Vol Developer</div>
+      <div class="item-s">Developer · min 2</div>
+    </div>
+    <div class="stepper">
+      <button class="step">–</button>
+      <div class="qty"><div class="qty-n">6</div><div class="qty-u">bottles</div></div>
+      <button class="step">+</button>
+    </div>
+  </div>
+
+  <div class="item low">
+    <div class="item-ic ic-nail"><i class="ti ti-bottle"></i></div>
+    <div class="item-mid">
+      <div class="item-n">Acetone</div>
+      <div class="item-s">Nail · min 2</div>
+      <div class="badge-low">LOW · REORDER</div>
+    </div>
+    <div class="stepper">
+      <button class="step">–</button>
+      <div class="qty"><div class="qty-n low">1</div><div class="qty-u">litres</div></div>
+      <button class="step">+</button>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="item-ic ic-nail"><i class="ti ti-brush"></i></div>
+    <div class="item-mid">
+      <div class="item-n">Gel Top Coat</div>
+      <div class="item-s">Nail · min 3</div>
+    </div>
+    <div class="stepper">
+      <button class="step">–</button>
+      <div class="qty"><div class="qty-n">8</div><div class="qty-u">bottles</div></div>
+      <button class="step">+</button>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="item-ic ic-tool"><i class="ti ti-scissors"></i></div>
+    <div class="item-mid">
+      <div class="item-n">Foils</div>
+      <div class="item-s">Tools · min 1</div>
+    </div>
+    <div class="stepper">
+      <button class="step">–</button>
+      <div class="qty"><div class="qty-n">2</div><div class="qty-u">rolls</div></div>
+      <button class="step">+</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

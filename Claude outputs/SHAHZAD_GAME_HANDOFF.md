@@ -1,5 +1,5 @@
 # SHAHZAD GAME — HANDOFF
-Last updated: 2026-09-06 (session 2)
+Last updated: 2026-09-06 (session 3)
 
 ---
 
@@ -19,10 +19,10 @@ Last updated: 2026-09-06 (session 2)
 - GitHub: give Terminal commands only — Shaz runs them, Claude never pushes
 - Short replies — eye strain. One action at a time.
 - Blueprint instructions: ALWAYS give the FULL step in every message — never assume Shaz remembers a previous step. If he asks a question mid-step, restate the complete instruction with the question answered. Never make him scroll up. Every step names: which node, which side (left/right), which pin label.
-- NEVER call open_editor_for_assets or AssetEditorSubsystem — crashes UE5
-- widget_tree attribute does NOT exist in UE5.8 Python — use load_object path instead
-- TextBlock_0 accessible via: /Game/UI/WBP_LanguageToggle.WBP_LanguageToggle:WidgetTree.TextBlock_0
-- UE5 Python: run via Output Log Cmd as `py /Volumes/T7B/scriptname.py`
+- **UE5 MINIMIZE RULE (ALWAYS):** Open UE5 → run command → minimize immediately when done → open again for next command → minimize when done. NEVER leave UE5 open/unminimized between commands. Prevents Mac overheating.
+- UE5 crash risk: NEVER call open_editor_for_assets or AssetEditorSubsystem
+- device_bash runs in Linux VM — cannot run macOS commands like osascript
+- widget_tree attribute does NOT exist in UE5.8 Python
 
 ---
 
@@ -56,20 +56,11 @@ Last updated: 2026-09-06 (session 2)
 - Gold button (amber R=1.0 G=0.72 B=0.0) with text "EN | فا"
 - Compiled and saved
 
-### Portal Opening Sequence ✅ COMPLETE (2026-09-06)
-- Script: /Volumes/T7B/portal_sequence.py
-- 5-phase animation: reset → cuneiform lights → portal mesh + gold/violet → danger strobe → gold surge
-- Default state script: /Volumes/T7B/portal_default_state.py (all portal lights hidden, level saved)
-- Actors used: Portal_Persia, Portal_GoldLight, Portal_VioletRim, CuneiformLight_Portal_1-6, London_GoldSurge, London_DangerStrobe
-
-### Portal_Persia Faravahar Material ✅ COMPLETE (2026-09-06)
-- M_Portal_Faravahar applied to Portal_Persia in LvL_London
-- Asset was already on T7B: T_Shahzad_Faravahar_Power.uasset
-- Script: /Volumes/T7B/apply_portal_faravahar.py
-
-### Farsi Font Typeface ✅ COMPLETE (2026-09-06)
-- typeface_font_name set to 'Regular' on F_Vazirmatn in WBP_LanguageToggle
-- Script: /Volumes/T7B/fix_font_typeface.py
+### Farsi Font Applied ✅ COMPLETE (2026-09-06)
+- Font: /Game/UI/Fonts/F_Vazirmatn applied to TextBlock_0
+- typeface_font_name set to 'Regular' (fix_font_typeface.py)
+- Script: /Volumes/T7B/apply_font.py + fix_font_typeface.py
+- Farsi glyphs now render properly with Vazirmatn font
 
 ### Language Toggle Logic ✅ COMPLETE (2026-09-06)
 - FlipFlop wiring done via Python REPL (probe28.py)
@@ -77,17 +68,33 @@ Last updated: 2026-09-06 (session 2)
 - B branch → SetText26 → "فا | EN"
 - TextBlock_0 wired to both, orphan nodes removed, compiled and saved
 
-### Farsi Font (Vazirmatn) Applied ✅ COMPLETE (2026-09-06)
-- Font asset imported: /Game/UI/Fonts/F_Vazirmatn (Font class)
-- Applied to TextBlock_0 in WBP_LanguageToggle via Python
-- Size: 24, font_object = F_Vazirmatn
-- Blueprint compiled and saved ✅
-- Path used: /Game/UI/WBP_LanguageToggle.WBP_LanguageToggle:WidgetTree.TextBlock_0
-- Script: /Volumes/T7B/apply_font.py
+### Portal Opening Sequence ✅ COMPLETE (2026-09-06)
+- Script: /Volumes/T7B/portal_sequence.py
+- Run: py /Volumes/T7B/portal_sequence.py (in LvL_London)
+- 5-phase sequence: cuneiform lights → portal mesh → gold/violet → danger strobe → gold surge
+- Confirmed WORKING (viewport went golden) ✅
+- Reset script: /Volumes/T7B/portal_default_state.py
+
+### Portal Faravahar Material ✅ COMPLETE (2026-09-06)
+- M_Portal_Faravahar applied to Portal_Persia in LvL_London
+- Script: /Volumes/T7B/apply_portal_faravahar.py
+- Confirmed via probe: mat=M_Portal_Faravahar ✅
+
+### Army Battle Scene ✅ COMPLETE (2026-09-06)
+- Script: /Volumes/T7B/army_battle_scene.py
+- Run: py /Volumes/T7B/army_battle_scene.py (in LvL_Persia)
+- 6-phase sequence:
+  - Phase 0: Reset — BattleBillboard hidden, tablets dim
+  - Phase 1: Tablet glows surge amber (army approaches)
+  - Phase 2: BattleBillboard flash reveal (4 flashes)
+  - Phase 3: Torch flicker (alternating pairs, 3 cycles)
+  - Phase 4: Tablet battle pulse (3x red/amber burst)
+  - Phase 5: ArrivalBurst flare (5000 → 1500 → off)
+  - Phase 6: BattleBillboard sustained + tablets settle
+- All 6 phases confirmed COMPLETE ✅
 
 ### Ahriman Attack Sequence ✅ COMPLETE (2026-09-04)
 - Script: /Volumes/T7B/ahriman_attack_sequence.py
-- Sequence: reveal Ahriman+light → 3s → attack flare → 1.5s → Ahriman lunges Y=800
 
 ### Shahzad Weapon Billboards ✅ COMPLETE (2026-09-04)
 - Shahzad_Weapon_Pistol: (200, -600, 250) tag=ShahzadWeapon
@@ -95,10 +102,6 @@ Last updated: 2026-09-06 (session 2)
 - Shahzad_Weapon_SwordsCrossed: (300, 0, 500) tag=ShahzadWeapon
 
 ### LvL_Persia — Ahriman Confrontation ✅ COMPLETE (2026-09-04)
-- Persia_BattleBillboard placed (0, 3000, 500), battle scene backdrop
-- Persia_Ahriman billboard, AhrimanLight (red PointLight) — hidden at start
-- Level Blueprint: PersiaArrival Completed → Delay(5s) → reveal Ahriman+light + CameraShake
-
 ### LvL_London — Feature A: Portal Shockwave ✅ COMPLETE
 ### LvL_London — Feature C: Fright/Fascination/Exhilaration ✅ COMPLETE
 ### Git LFS ✅ COMPLETE
@@ -107,22 +110,12 @@ Last updated: 2026-09-06 (session 2)
 
 ## PENDING — RESUME HERE NEXT SESSION
 
-### Orphan Node Cleanup in WBP_LanguageToggle EventGraph
-- Nodes to delete: K2Node_CallFunction_23, K2Node_Event_0, K2Node_VariableGet_0
-- Script ready: /Volumes/T7B/cleanup_nodes.py
-- Run: py /Volumes/T7B/cleanup_nodes.py (in UE5 Output Log Cmd)
-- These are cosmetic orphans — no gameplay impact, just graph clutter
+### Portal_Persia Faravahar Texture — BLOCKED
+- Need Faravahar image from Shaz
+- fal.ai available if needed for image gen
 
 ### WAV Import — BLOCKED
 - Ahura Mazda voice + Tabla WAV: blocked on Apogee adapter
-
-### Army Battle Scene — Enhancement possible
-- Persia_BattleBillboard is static — particle soldiers / animated opacity possible
-
-### NEXT MAJOR FEATURES (per build order)
-1. Portal opening sequence — screen shake, audio swell, Simorgh cry, geometric gold tear
-2. Ahura Mazda's voice — one divine line, climax only
-3. Villain appears in LvL_London — distant, watching, vanishes on look
 
 ---
 
@@ -141,17 +134,24 @@ Last updated: 2026-09-06 (session 2)
 
 ---
 
+## ALL ACTORS IN LvL_PERSIA (confirmed 2026-09-06, 70 total)
+Enemy_1/2/3 (Character), HeightFog, London_Hideout, London_Scene_v1/v2, London_Shahzad, London_ShahzadVillain, NavMeshBounds×2, Persia_Ahriman, Persia_AhrimanAttackFlare, Persia_AhrimanLight×2, Persia_Ahriman_Full, Persia_ArrivalBurst, Persia_ArrivalTrigger, Persia_BattleBillboard ← army backdrop, Persia_Column_1–4, Persia_CuneiformTablet_1–4, Persia_DustLayer, Persia_Faravahar_Power, Persia_Floor, Persia_Fog, Persia_Persepolis_Apocalypse, Persia_Pistol, Persia_Rostam_v1/v2, Persia_Roxana_Vault, Persia_ShahzadArrives, Persia_Shahzad_Hero, Persia_Shahzad_v1, Persia_Simorgh, Persia_Simorgh_Apadana, Persia_Simorgh_Glory, Persia_SkyLight, Persia_Sun, Persia_Swords, Persia_SwordsCrossed, Persia_TabletGlow_1–4, Persia_Torch_1–8, Persia_Wall_Back/Front/Left/Right, PlayerStart, RecastNavMesh-Default, Shahzad_Weapon_Pistol/Swords/SwordsCrossed, SkyAtmosphere, SkyLight, Sun
+
+---
+
 ## GAME TIMELINE — LvL_Persia
 - 0s: BeginPlay → golden scene, torches, columns
 - 0.5s: PersiaArrival actors visible
 - 5s after arrival: Ahriman billboard + red AhrimanLight + camera shake
-- Manual: run battle_scene.py for full 8-phase battle sequence
+- Manual: py /Volumes/T7B/army_battle_scene.py → army billboard sequence
+- Manual: py /Volumes/T7B/battle_scene.py → full 8-phase Shahzad vs Ahriman battle
 
 ## GAME TIMELINE — LvL_London
 - 2s: Ahura Mazda voice (WAV pending)
 - 6s: Cuneiform lights glow
 - 10s: Villain_Ghost + DangerStrobe
 - 18s: Portal + Camera Shake + Slow Motion → GoldSurge
+- Manual: py /Volumes/T7B/portal_sequence.py → portal opening animation
 
 ---
 
@@ -161,18 +161,16 @@ Last updated: 2026-09-06 (session 2)
 | Game Repo | https://github.com/shaz010/mgm-studio |
 | Handoff | T7B/SHAHZAD/SHAHZAD_GAME_HANDOFF.md |
 | Battle script | /Volumes/T7B/battle_scene.py |
+| Army battle | /Volumes/T7B/army_battle_scene.py |
+| Portal sequence | /Volumes/T7B/portal_sequence.py |
+| Portal reset | /Volumes/T7B/portal_default_state.py |
 | Tag script | /Volumes/T7B/tag_battle_actors.py |
 | Ahriman script | /Volumes/T7B/ahriman_attack_sequence.py |
 | Weapons script | /Volumes/T7B/place_weapons.py |
-| Font apply script | /Volumes/T7B/apply_font.py |
-| Node cleanup script | /Volumes/T7B/cleanup_nodes.py |
 
 ## KEY FACTS
 - GitHub: github.com/shaz010 (repo: mgm-studio)
 - T7B mount in device_bash: $HOME/mnt/T7B/
-- UE5 Python: run via Output Log Cmd as `py /Volumes/T7B/scriptname.py`
+- UE5 Python: run via Output Log Cmd as py /Volumes/T7B/scriptname.py
 - Farsi address: شما (NEVER تو)
 - UE5 crash risk: NEVER call open_editor_for_assets or AssetEditorSubsystem
-   - **UE5 MINIMIZE RULE (ALWAYS):** Open UE5 → run command → minimize immediately when done → open again for next command → minimize when done. NEVER leave UE5 open/unminimized between commands. This prevents Mac overheating.
-- TextBlock_0 path: /Game/UI/WBP_LanguageToggle.WBP_LanguageToggle:WidgetTree.TextBlock_0
-- Font asset: /Game/UI/Fonts/F_Vazirmatn

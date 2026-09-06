@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Salon Commission Calculator — Free, No Signup | Your Salon</title>
+<meta name="description" content="Free salon commission calculator. Enter the service price, your split and tip — see exactly what you take home. Works for hair, barber, nails, lashes and more. No signup, nothing saved.">
+<meta property="og:title" content="Salon Commission Calculator — what's actually yours">
+<meta property="og:description" content="Service price − salon split + tip = your take-home. Free, instant, no signup.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#050507; --panel:#0a0a0e; --border:#23232e; --text:#e8e8f2; --muted:#8a8a99;
+  --gold:#e8c37a; --green:#5ddb7c; --blue:#7fa7e8; --pink:#f5a8ff;
+  --irid:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#ffd24d,#67e8f9);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--ink);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;padding:28px 18px 60px;display:flex;flex-direction:column;align-items:center}
+.wrap{width:100%;max-width:460px}
+.eyebrow{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.eyebrow .spark{background:var(--irid);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:irid 4.5s linear infinite;font-size:15px}
+h1{font-family:'DM Serif Display',Georgia,serif;font-weight:400;font-size:34px;line-height:1.12;margin-bottom:8px}
+.sub{font-size:14.5px;color:var(--muted);line-height:1.5;margin-bottom:26px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:20px 18px;margin-bottom:18px}
+label{display:block;font-size:12.5px;font-weight:700;letter-spacing:.04em;color:var(--muted);margin:0 0 7px}
+.field{margin-bottom:18px}
+.money{position:relative}
+.money::before{content:"$";position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gold);font-weight:700;font-size:17px}
+input[type=number]{width:100%;background:#050507;border:1.5px solid var(--border);border-radius:12px;color:#fff;font-size:19px;font-weight:700;padding:13px 14px 13px 30px;outline:none;font-family:inherit}
+input[type=number]:focus{border-color:var(--gold)}
+input[type=number].plain{padding-left:14px}
+.rate-row{display:flex;align-items:center;gap:14px}
+input[type=range]{flex:1;accent-color:#a78bfa;height:34px}
+.rate-val{font-family:'DM Serif Display',Georgia,serif;font-size:26px;min-width:74px;text-align:right;color:var(--gold)}
+.split-bar{height:14px;border-radius:8px;overflow:hidden;display:flex;border:1px solid var(--border);margin:4px 0 10px}
+.split-you{background:var(--green);transition:width .25s ease}
+.split-salon{background:var(--blue);transition:width .25s ease}
+.legend{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:2px}
+.legend b{font-weight:700}
+.legend .ly{color:var(--green)}.legend .ls{color:var(--blue)}
+.take{padding:22px 18px;text-align:center;border:1.5px solid transparent;border-radius:18px;background:linear-gradient(var(--panel),var(--panel)) padding-box,var(--irid) border-box;background-size:auto,200% 100%;animation:irid 4.5s linear infinite;box-shadow:0 0 22px rgba(167,139,250,.22)}
+.take .t-label{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.take .t-num{font-family:'DM Serif Display',Georgia,serif;font-size:52px;line-height:1;background:var(--irid);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:irid 4.5s linear infinite}
+.rows{margin-top:16px;border-top:1px solid var(--border);padding-top:12px}
+.row{display:flex;justify-content:space-between;font-size:14.5px;padding:5px 0}
+.row .k{color:var(--muted)}
+.row .v{font-weight:700}
+.v.you{color:var(--green)}.v.salon{color:var(--blue)}.v.tip{color:var(--pink)}
+.mini{font-size:12px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.5}
+.link-card{display:block;text-decoration:none;background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px 18px;margin-top:26px;color:var(--text)}
+.link-card b{color:var(--gold)}
+.link-card .go{color:var(--muted);font-size:13px;margin-top:4px;display:block;line-height:1.5}
+.faq{margin-top:34px}
+.faq h2{font-family:'DM Serif Display',Georgia,serif;font-weight:400;font-size:21px;margin-bottom:12px}
+.faq h3{font-size:14px;margin:14px 0 4px;color:var(--gold)}
+.faq p{font-size:13.5px;color:var(--muted);line-height:1.6}
+footer{margin-top:36px;font-size:12px;color:#55555f;text-align:center;line-height:1.6}
+@keyframes irid{to{background-position:200% 50%}}
+@media (prefers-reduced-motion:reduce){.take,.take .t-num,.eyebrow .spark{animation:none}}
+@media (min-width:520px){h1{font-size:40px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow"><span class="spark">✦</span> getcommissionpro.com</div>
+  <h1>Salon commission calculator</h1>
+  <p class="sub">Service price − the salon's split + your tip = what's actually yours. Free, instant, and nothing you type leaves this page.</p>
+
+  <div class="card">
+    <div class="field money">
+      <label for="price">Service total</label>
+      <input type="number" id="price" inputmode="decimal" placeholder="120" min="0" oninput="calc()">
+    </div>
+    <div class="field">
+      <label for="rate">Your commission</label>
+      <div class="rate-row">
+        <input type="range" id="rate" min="20" max="80" step="1" value="50" oninput="calc()">
+        <div class="rate-val" id="rateVal">50%</div>
+      </div>
+    </div>
+    <div class="field money" style="margin-bottom:6px">
+      <label for="tip">Tip (all yours)</label>
+      <input type="number" id="tip" inputmode="decimal" placeholder="0" min="0" oninput="calc()">
+    </div>
+  </div>
+
+  <div class="legend"><b class="ly">You</b><b class="ls">Salon</b></div>
+  <div class="split-bar"><div class="split-you" id="barYou" style="width:50%"></div><div class="split-salon" id="barSalon" style="width:50%"></div></div>
+
+  <div class="take">
+    <div class="t-label">You take home</div>
+    <div class="t-num" id="takeHome">$0</div>
+    <div class="rows">
+      <div class="row"><span class="k">Your cut</span><span class="v you" id="rYou">$0</span></div>
+      <div class="row"><span class="k">Salon's cut</span><span class="v salon" id="rSalon">$0</span></div>
+      <div class="row"><span class="k">Tip</span><span class="v tip" id="rTip">$0</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <div class="field plain" style="margin-bottom:6px">
+      <label for="wk">Doing the week's math? Services at this price</label>
+      <input type="number" id="wk" class="plain" inputmode="numeric" placeholder="1" min="1" oninput="calc()">
+    </div>
+    <div class="row" style="padding-top:8px"><span class="k">Week's take-home</span><span class="v" id="rWeek" style="color:var(--gold)">$0</span></div>
+  </div>
+
+  <p class="mini">Works the same for hair, barbering, nails, lashes, brows, esthetics, makeup, massage &amp; extensions.</p>
+
+  <a class="link-card" href="https://getcommissionpro.com">
+    <b>✦ Prefer it tracked automatically?</b>
+    <span class="go">Your Salon does this math on every booking, all year — built by a stylist with 20 years behind the chair. The tracking tool is on the house.</span>
+  </a>
+
+  <div class="faq">
+    <h2>Quick answers</h2>
+    <h3>What's a typical salon commission split?</h3>
+    <p>Most commission salons pay somewhere between 30% and 60% of the service price, depending on experience, the salon's prices and what's included (products, marketing, front desk). Always ask: percentage of what?</p>
+    <h3>Do tips get split with the salon?</h3>
+    <p>Normally no — tips are yours. This calculator adds the tip on top of your cut, after the split.</p>
+    <h3>Is anything I type saved?</h3>
+    <p>No. There's no signup, no tracking of your numbers — the math happens on your device and stays there.</p>
+  </div>
+
+  <footer>✦ Your Salon · made by a working stylist, not a software company<br><span id="ver"></span></footer>
+</div>
+<script>
+var VERSION='calc v1.0 · the free front door';
+document.getElementById('ver').textContent=VERSION;
+function n(id){var v=parseFloat(document.getElementById(id).value);return isNaN(v)||v<0?0:v;}
+function fmt(x){return '$'+(Math.round(x*100)/100).toLocaleString(undefined,{minimumFractionDigits:(x%1?2:0),maximumFractionDigits:2});}
+function calc(){
+  var price=n('price'), rate=n('rate')||50, tip=n('tip'), wk=Math.max(1,Math.floor(n('wk'))||1);
+  document.getElementById('rateVal').textContent=rate+'%';
+  var you=price*rate/100, salon=price-you, take=you+tip;
+  document.getElementById('rYou').textContent=fmt(you);
+  document.getElementById('rSalon').textContent=fmt(salon);
+  document.getElementById('rTip').textContent=fmt(tip);
+  document.getElementById('takeHome').textContent=fmt(take);
+  document.getElementById('rWeek').textContent=fmt(take*wk);
+  document.getElementById('barYou').style.width=rate+'%';
+  document.getElementById('barSalon').style.width=(100-rate)+'%';
+}
+calc();
+</script>
+</body>
+</html>
