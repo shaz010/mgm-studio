@@ -1149,13 +1149,14 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
     <div id="pgMain">
       <div class="pg-logo">✨</div>
       <div class="pg-title">Your Salon Pro</div>
-      <div class="pg-sub">Professional earnings &amp; bookings for stylists.</div>
-      <div class="pg-price">$4.99/mo · 1 month free trial</div>
+      <div class="pg-sub">Unlimited appointments, commission tracking, client history &amp; tips — everything a salon pro needs.</div>
+      <div class="pg-price">$4.99 / month · auto-renewing</div>
+      <div style="font-size:11px;color:#666;text-align:center;margin:-6px 0 8px;line-height:1.5">21-day free trial &nbsp;·&nbsp; cancel anytime in iOS Settings</div>
       <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Start free trial</a>
       <div class="pg-foot" style="margin-top:14px">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
       <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
       <div style="margin-top:14px;font-size:11px;color:#666;text-align:center;line-height:1.6">
-        By subscribing you agree to our <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" style="color:#888;text-decoration:underline">Terms of Use</a> and <a href="https://getcommissionpro.com/privacy.html" target="_blank" style="color:#888;text-decoration:underline">Privacy Policy</a>.
+        By subscribing you agree to our <a onclick="openExternalURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')" href="#" style="color:#888;text-decoration:underline">Terms of Use</a> and <a onclick="openExternalURL('https://getcommissionpro.com/privacy.html')" href="#" style="color:#888;text-decoration:underline">Privacy Policy</a>.
       </div>
       <button onclick="payRestore()" style="margin-top:10px;background:none;border:none;color:#555;font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:4px 0">Restore Purchases</button>
     </div>
@@ -3406,6 +3407,14 @@ function pgBackToMain(){
 }
 function payShow(mandatory){var g=document.getElementById('payGate');if(!g)return;g.classList.add('on');document.getElementById('pgClose').style.display=mandatory?'none':'block';var _pe=document.getElementById('payErr');if(_pe)_pe.style.display='none';var ts=document.getElementById('pgTrialSection');if(ts)ts.style.display=(pgUnlocked()||window.IS_APPLE_IAP)?'none':'';/* iOS: hide Stripe/promo elements when IS_APPLE_IAP is set */if(window.IS_APPLE_IAP){var el=document.querySelector('.pg-unlock');if(el)el.style.display='none';var div=document.querySelectorAll('.pg-div');div.forEach(function(d){d.style.display='none';});var code=document.getElementById('payCode');if(code)code.style.display='none';}}
 function payClose(){var g=document.getElementById('payGate');if(g)g.classList.remove('on');}
+/* Open external URL — works in WKWebView by posting to native handler */
+function openExternalURL(url){
+  if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.openURL){
+    window.webkit.messageHandlers.openURL.postMessage({url:url});
+  }else{
+    window.open(url,'_blank');
+  }
+}
 /* Restore previous Apple IAP purchase */
 function payRestore(){
   if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.iapHandler){
@@ -3551,7 +3560,7 @@ function applyAccessGate(){
     setTimeout(showDayNudge,2800);
     return;
   }
-  /* Not unlocked, no active trial → lock immediately */
+  /* Not unlocked, no active trial → show paygate but always allow dismissal */
   payShow(false);
 }
 applyAccessGate();
@@ -4043,7 +4052,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.56 · paygate always dismissable';
+var VERSION='app v2.57 · paywall subscription info + external links';
 function deleteMyAccount(){
   if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
   if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;

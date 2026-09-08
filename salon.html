@@ -11,18 +11,18 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-<script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<title>Your Salon — Commission & Appointment Tracker for Salon Pros</title></title>
- <meta name="description" content="Your Salon — free commission calculator and appointment manager for hair stylists, barbers, nail techs and salon pros. Track earnings, splits and bookings.">
- <meta name="keywords" content="salon commission calculator, hair stylist app, barber commission tracker, salon earnings, appointment manager">
- <meta name="author" content="Your Salon">
- <meta property="og:title" content="Your Salon — Commission & Appointment Tracker">
- <meta property="og:description" content="Free app for salon pros. Track commissions, splits, appointments and clients.">
- <meta property="og:url" content="https://getcommissionpro.com/salon.html">
- <meta property="og:type" content="website">
- <link rel="canonical" href="https://getcommissionpro.com/salon.html">
+<title>Your Salon — Commission & Appointment Tracker for Salon Pros</title>
+<meta name="description" content="Your Salon — free commission calculator and appointment manager for hair stylists, barbers, nail techs and salon pros. Track earnings, splits and bookings.">
+<meta name="keywords" content="salon commission calculator, hair stylist app, barber commission tracker, salon earnings, appointment manager">
+<meta name="author" content="Your Salon">
+<meta property="og:title" content="Your Salon — Commission & Appointment Tracker">
+<meta property="og:description" content="Free app for salon pros. Track commissions, splits, appointments and clients.">
+<meta property="og:url" content="https://getcommissionpro.com/salon.html">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://getcommissionpro.com/salon.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap" rel="stylesheet">
@@ -259,7 +259,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.46 · dev unlock tap</div>
+    <div class="ver">salon v0.48 · skip sign-in option</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -276,6 +276,7 @@
         <button class="auth-btn primary" onclick="doSignIn()">Sign in</button>
         <button class="auth-btn" onclick="doSignUp()">Create account</button>
         <button class="auth-link" onclick="doReset()">Forgot password?</button>
+        <button class="auth-link" onclick="closeAuth()" style="margin-top:12px;font-size:13px;color:#8a8a96">Continue without account →</button>
       </div>
       <div id="authMe" style="display:none">
         <div class="auth-title">You're synced</div>
