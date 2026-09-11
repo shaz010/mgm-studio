@@ -1,5 +1,5 @@
 # Your Salon Pro — Apple App Store Handoff
-**Last Updated:** September 1, 2026  
+**Last Updated:** September 11, 2026  
 **Repo:** shaz010/mgm-studio  
 **Live site:** getcommissionpro.com  
 **App Store Connect:** appstoreconnect.apple.com (Shahbaz Mirshahi)
@@ -17,11 +17,39 @@
 
 ---
 
-## Current Status (Aug 28, 2026)
+## ⚠️ CRITICAL RULE — NEVER TOUCH APP STORE CONNECT WHILE "WAITING FOR REVIEW"
 
-**Submission:** iOS 1.0 — ⏳ Waiting for Review (submitted Aug 28 at 4:48 PM)
+**Editing ANYTHING in App Store Connect while the app is "Waiting for Review" auto-removes the submission from the queue.** This is why all previous submissions showed "Removed by Shahbaz Mirshahi" — it wasn't intentional, it was caused by editing the listing while in review.
 
-All known rejection issues fixed and resubmitted. Build 1.0(3) is in review.
+**Once submitted → DO NOT touch App Store Connect until Apple sends a result email.**
+
+---
+
+## Current Status (Sep 10, 2026)
+
+**Submission:** iOS 1.0 — ⏳ Waiting for Review (submitted Sep 10, 2026 at ~1:54 PM)
+
+**3 Items submitted together in one draft:**
+- iOS App 1.0 (Build 7)
+- Your Salon Pro Monthly — Subscription Group
+- Your Salon Pro Monthly — Subscription (com.yoursalon.pro.monthly)
+
+This is the correct format — all 3 items in a single submission. Previous attempts had iOS App submitted alone (missing subscriptions) or subscriptions in a separate draft that couldn't be submitted without an iOS app version.
+
+---
+
+## App + Subscription IDs
+
+- **App ID:** 6796050684
+- **Subscription Group ID:** 22292515
+- **Subscription ID:** 6798901074 (com.yoursalon.pro.monthly)
+- **Build 7 UUID:** b7aba1bf-c95a-4d94-97c6-eaaaabf40f4c
+
+---
+
+## Submission History (all "Removed" = not Apple rejection)
+
+All 6 previous submission history entries show "Removed by Shahbaz Mirshahi" — NOT rejected by Apple. Most likely cause: editing App Store Connect while app was "Waiting for Review" auto-removes it from the queue. This is an Apple system behaviour, not intentional.
 
 ---
 
@@ -40,7 +68,7 @@ All known rejection issues fixed and resubmitted. Build 1.0(3) is in review.
 | 3.1.1 No Restore Purchases button | Restore button + payRestore() added to paywall | app v2.41 |
 | 3.1.2(c) No EULA/Privacy links | Already added in v2.40 | app v2.40 |
 | 5.1.1(v) No account deletion | Already built in v2.40 | app v2.40 |
-| 2.3.3 Screenshot metadata issues | ⚠️ NOT YET FIXED — may come back |
+| 2.3.3 Screenshot metadata issues | ⚠️ NOT YET FIXED — Shaz says ignore for now |
 
 ---
 
@@ -116,21 +144,27 @@ function payRestore(){
 
 ## If Rejected Again — Likely Culprits
 
-1. **2.3.3 Screenshots** — Apple wants real 6.5" iPhone + 13" iPad screenshots. Use your actual device or Xcode simulator at those sizes. Upload under App Information → Screenshots.
+1. **2.3.3 Screenshots** — Apple wants real 6.5" iPhone + 13" iPad screenshots. Use your actual device or Xcode simulator at those sizes. Upload under App Information → Screenshots. (Shaz chose to ignore this for now.)
 
-2. **New build not picked up** — The Aug 28 build (uploaded today) may still be processing. If Apple reviews build 3 (Aug 18), the IAPHandler.swift restore fix won't be in it. May need to resubmit with a newer build when it appears.
-
-3. **Screen recording for Delete Account** — Apple may ask for proof of 5.1.1(v) account deletion. Record a screen video showing: Settings → Delete Account → confirm. Upload as App Review attachment.
+2. **Screen recording for Delete Account** — Apple may ask for proof of 5.1.1(v) account deletion. Record a screen video showing: Settings → Delete Account → confirm. Upload as App Review attachment.
 
 ---
 
-## Deployment Flow (How Shaz Ships)
+## Deployment Flow (How Claude Ships)
+
+**Claude does ALL git operations via the device bridge — Shaz does NOT need to use Terminal or GitHub web UI at all.**
 
 1. Edit web files (`app.html`, `salon.html`, `appt.html`) in Claude
-2. Claude saves directly to `~/mgm-studio/` via device bridge
-3. Shaz drag-drops changed files to GitHub web UI (one file at a time — no zips)
-4. Wait ~2 min, then swipe-kill + reopen Safari PWA to pick up changes
-5. For native changes: edit Swift in Xcode → ⌘B → Product → Archive → Distribute → App Store Connect
+2. Claude saves file directly to `/Users/shahbazmirshahi/mgm-studio/` via device bridge
+3. Claude runs `git add / commit / push` via device bridge — done automatically, no Terminal needed
+4. Claude confirms the push result in chat
+5. Shaz waits ~2 min, then swipe-kills + reopens Safari PWA to pick up changes
+6. For native changes: edit Swift in Xcode → ⌘B → Product → Archive → Distribute → App Store Connect
+
+**Note on Shaz's Terminal (for reference only — not needed for deployment):**
+- Terminal username shows as `shahbazmirshahimac.com` but git repo lives at `/Users/shahbazmirshahi/mgm-studio/`
+- These are different Mac user accounts — Terminal `cd ~/mgm-studio` and `cd /Users/shahbazmirshahi/mgm-studio` both fail from Shaz's shell
+- Claude's device bridge can access and push the repo directly — this is the correct flow
 
 ---
 
@@ -158,7 +192,6 @@ function payRestore(){
 
 ## Outstanding Work
 
-- [ ] **2.3.3 Screenshots** — proper 6.5" iPhone + 13" iPad screenshots needed
-- [ ] **New build (Aug 28)** — may need to wait for it to process then resubmit again
+- [ ] **2.3.3 Screenshots** — proper 6.5" iPhone + 13" iPad screenshots (Shaz deferring)
 - [ ] **Screen recording** — show Delete Account flow for Apple if they ask again
 - [ ] **App Store Connect metadata** — Privacy Policy URL + EULA URL fields
