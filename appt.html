@@ -3088,12 +3088,13 @@ function deleteClient(){
   var msg=apptCount>0
     ?'Delete '+c.name+' AND their '+apptCount+' appointment'+(apptCount===1?'':'s')+'? This cannot be undone.'
     :'Delete '+c.name+'?';
-  if(!confirm(msg))return;
-  clients=clients.filter(function(x){return x.id!==clientId;});
-  if(apptCount>0){appts=appts.filter(function(a){return !sameClient(a,c);});save(APPTS,appts);}
-  save(CLIENTS,clients);
-  closeSheet('clientModal');renderClients();toast('Deleted');
-  if(typeof publishAvailability==='function')publishAvailability();
+  askConfirm(msg,function(){
+    clients=clients.filter(function(x){return x.id!==clientId;});
+    if(apptCount>0){appts=appts.filter(function(a){return !sameClient(a,c);});save(APPTS,appts);}
+    save(CLIENTS,clients);
+    closeSheet('clientModal');renderClients();toast('Deleted');
+    if(typeof publishAvailability==='function')publishAvailability();
+  },{danger:true,yesLabel:'Delete'});
 }
 function openClientBookings(id){
   reload();
@@ -3489,7 +3490,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.15 · safe-area notch fix for trade-screen';
+var VERSION='v6.16 · fix deleteClient confirm → askConfirm modal (WKWebView)';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
