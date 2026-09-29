@@ -11,6 +11,12 @@ Version **1.0 (7)** is **REJECTED** (Sep 24) for **5.1.1(v) — no real in-app a
 
 ---
 
+## 🧪 TESTING RULE — WE TEST IN TESTFLIGHT
+- All iPhone testing happens in the **TestFlight** build of Your Salon Pro (internal group "Shaz Dev"), NOT the Safari PWA
+- The TestFlight app loads getcommissionpro.com/salon.html live → web pushes show up in TestFlight after ~2 min + swipe-kill/reopen. No new build needed for web-only changes
+- Native (Swift) changes → new Xcode archive (next = build 8) → it appears in TestFlight → test there before submitting
+- Apple screen recordings (e.g., account deletion) = record in the TestFlight app on the physical iPhone
+
 ## 🆕 SEP 29 SESSION
 ### Rejection timeline (same submission ID 2e5902ac-e4fd-4c4d-8aa5-513b73907f3c)
 | Submitted | Result | Issues |
@@ -31,7 +37,7 @@ Version **1.0 (7)** is **REJECTED** (Sep 24) for **5.1.1(v) — no real in-app a
 ### ▶️ Next steps (in order)
 1. Upload salon.html v0.50 to GitHub
 2. Test with a **throwaway account** (create → Delete account). If error "Missing or insufficient permissions" → Firestore rules block delete on `users/{uid}`; fix rule
-3. Screen-record on a **physical iPhone**: open app → create/sign in → cloud pill → Delete account → password → "Account deleted ✓"
+3. Screen-record on a **physical iPhone in the TestFlight build**: open app → create/sign in → cloud pill → Delete account → password → "Account deleted ✓"
 4. App Review → **Reply to App Review** with the video + note: "In-app account deletion: tap the cloud/account pill → Delete account."
 5. Also add video/steps to **App Review Information → Notes**
 6. **Update Review** → then DO NOT touch App Store Connect until Apple replies
