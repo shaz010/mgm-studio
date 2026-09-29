@@ -1,11 +1,44 @@
 # YOUR SALON PRO — iOS HANDOFF
-**Last updated: Sep 9, 2026 · 1:05 PM PT**
+**Last updated: Sep 29, 2026 · 1:15 PM PT**
 Read this first in any new session about the iOS app / App Store.
 
 ---
 
 ## 🎯 CURRENT STATE (one line)
-Version **1.0, build 7** + subscription **"Your Salon Pro Monthly"** + its group are **Waiting for Review** at Apple (submitted Sep 9, 12:57 PM). Up to 48 hrs. Email will arrive.
+Version **1.0 (7)** is **REJECTED** (Sep 24) for **5.1.1(v) — no real in-app account deletion**. Subscription + group = Ready for Review. Fix built in **salon v0.50** — upload, test, screen-record, reply, Update Review.
+
+⚠️ App Review emails go to **shahbazmirshahi@mac.com** (NOT the Gmail). Check Mail app → search "App Store Connect".
+
+---
+
+## 🆕 SEP 29 SESSION
+### Rejection timeline (same submission ID 2e5902ac-e4fd-4c4d-8aa5-513b73907f3c)
+| Submitted | Result | Issues |
+|---|---|---|
+| Sep 10 | ❌ Sep 14 | **3.1.2(c)** "first month free" more prominent than $4.99/mo billed amount · **2.1(a)** iPad Air (M3, iPadOS 27): after purchase + login, app kept routing back to paywall |
+| Sep 14 4:08 PM | ❌ Sep 24 | **5.1.1(v)** account deletion — app supports account creation but has no in-app deletion |
+- Shaz replied Sep 14 saying both 3.1.2(c) + 2.1(a) were being fixed. Sep 24 only lists 5.1.1 → those two look resolved.
+
+### Why the old "fix" failed
+`app.html` → `deleteMyAccount()` (CommissionPro settings, "Delete my account & all data") only runs `localStorage.clear()`. It does **not** delete the Firebase Auth user or the Firestore `users/{uid}` backup, it's buried in a room, and it uses `confirm()`/`alert()` which can silently fail in WKWebView.
+
+### Fix — salon.html v0.50 (SHELL_V v0.38) — built, NOT yet pushed
+- New **Delete account** button in the signed-in panel (`#authMe`, opened from the cloud pill), under Sign out
+- In-page confirm (`#delAcctBox`) → password re-auth → deletes Firestore `users/{uid}` → `user.delete()` → clears localStorage/sessionStorage → **"Account deleted ✓"** panel (`#delDone`) → Done reloads
+- No native popups. Functions: `delAcctStart / delAcctCancel / delAcctConfirm / delErr`
+- Web-only change → **no Xcode build needed**
+
+### ▶️ Next steps (in order)
+1. Upload salon.html v0.50 to GitHub
+2. Test with a **throwaway account** (create → Delete account). If error "Missing or insufficient permissions" → Firestore rules block delete on `users/{uid}`; fix rule
+3. Screen-record on a **physical iPhone**: open app → create/sign in → cloud pill → Delete account → password → "Account deleted ✓"
+4. App Review → **Reply to App Review** with the video + note: "In-app account deletion: tap the cloud/account pill → Delete account."
+5. Also add video/steps to **App Review Information → Notes**
+6. **Update Review** → then DO NOT touch App Store Connect until Apple replies
+7. Later: repoint app.html's old local-only "Delete my account" button to the new flow (so reviewers never hit the half version)
+
+### Also check
+- Trial wording must match everywhere: paywall says **first month free**; apple handoff said **21 days** → confirm ASC subscription Introductory Offer = 1 month free
 
 ---
 
@@ -53,13 +86,15 @@ Version **1.0, build 7** + subscription **"Your Salon Pro Monthly"** + its group
 - Subscription product ID `com.yoursalon.pro.monthly` (group 22292515)
 - Internal TestFlight group "Shaz Dev"
 - Builds 1–7 exist; next upload will be 8
+- Version board (Sep 29): 💰 app v2.57 · 📅 appt v6.16 · 🚪 salon v0.50 · 🛡️ sw v75 · 📆 book v3.55
 
 ---
 
-## 🤖 ANDROID (separate, ticking)
-- **Sep 30 2026**: Android developer verification deadline in Play Console — app removed globally if missed
-- Target API 34 deadline (Aug 31) has passed — update target SDK ASAP
-- Closed testing needs 12 opted-in testers (0 confirmed as of Sep 2)
+## 🤖 ANDROID — PARKED (Apple first)
+- ✅ Android developer verification: **Registered** (confirmed on screen Sep 29; Sep 30 deadline is a non-issue)
+- ✅ No Play Console warnings besides the (done) verification reminder
+- Closed testing still needs 12 opted-in testers — Shaz: "no way can get 12" → parked. Android users can install the PWA from Chrome meanwhile
+- Pending: "Submit 1 change for review" (Alpha testers → Google Group your-salon-pro-testers@googlegroups.com)
 
 ---
 
@@ -69,6 +104,20 @@ Version **1.0, build 7** + subscription **"Your Salon Pro Monthly"** + its group
 - privacy.html opening line says "does not collect any personal data" — soften someday (optional Firebase sync collects email)
 
 ---
+
+## 💻 MAC NOTE
+Logged-in Mac user is `shahbazmirshahimac.com`; its ~/Desktop/Your Salon only has an empty .xcodeproj shell. The real Xcode project (Swift files) lives under the other user account `shahbazmirshahi`.
+
+## 💻 PUSH TO GITHUB — CURRENT METHOD (Sep 29, from SHAHZAD_MASTER "File backup rules")
+1. Claude writes changed files into **~/Downloads/mgm-push/** (device bridge; Downloads is writable, Desktop is NOT)
+2. Shaz pastes ONE line in Terminal:
+```
+cd ~/Downloads && [ -d mgm-studio ] || git clone https://github.com/shaz010/mgm-studio.git; cd mgm-studio && git pull && cp ../mgm-push/* . && git add -A && git commit -m "update" && git push && mkdir -p ../mgm-pushed && mv ../mgm-push/* ../mgm-pushed/
+```
+- The final `mv` empties mgm-push after a successful push, so old files never get re-copied over newer ones next time.
+- Local clone lives at **~/Downloads/mgm-studio** (Shaz's Terminal owns it). Claude must NOT git-clone there itself — the bridge can't delete git lock files, clone breaks.
+- Login prompt: Username `shaz010` · Password = GitHub **personal access token** (not the account password). Keychain remembers it.
+- Broken clone attempt from Sep 29 parked in ~/Downloads/_to_delete/ — safe to trash.
 
 ## 🛠 HOW CLAUDE PUSHES TO GITHUB FROM COWORK (works)
 GitHub web editor → JS fetches raw file → applies string replacements → click in editor → ⌘A + Delete → `execCommand('insertText', …)` → verify line count → Commit. (`file_upload` tool rejects every path; don't bother.)

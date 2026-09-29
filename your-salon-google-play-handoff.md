@@ -1,5 +1,8 @@
 # Your Salon — Google Play Handoff
-**Last updated:** September 1, 2026  
+**Last updated:** September 29, 2026  
+
+> 🅿️ **PARKED (Sep 29)** — Apple is the priority. Developer verification = **Registered** (Sep 30 deadline OK). No other Play Console warnings. 12-tester requirement parked; Android users can install the PWA from Chrome. Pending: submit the Alpha tester change (Google Group your-salon-pro-testers@googlegroups.com). Unblock options if resumed: salon clients with Android phones · tester-swap communities · Organization developer account (exempt from 12-tester rule, needs D-U-N-S).
+
 **Account:** chabokchamejun@gmail.com  
 **Developer ID:** 4835349469847474845  
 **App:** Your Salon — `com.getcommissionpro.yoursalon`  

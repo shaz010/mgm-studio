@@ -262,7 +262,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.49 · paywall: subscription details for App Review</div>
+    <div class="ver">salon v0.50 · in-app account deletion for App Review</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -289,6 +289,20 @@
           <a href="./guide.html" target="_blank" class="auth-btn" style="flex:1;text-align:center;text-decoration:none;font-size:13px">📖 App Guide</a>
           <button class="auth-btn" style="flex:1;font-size:13px" onclick="closeAuth();replayOnboarding()">▶ Replay intro</button>
         </div>
+        <button class="auth-btn" id="delAcctBtn" onclick="delAcctStart()" style="margin-top:14px;color:#f59ed6;border-color:rgba(245,158,214,.35)"><i class="ti ti-user-x" style="margin-right:6px"></i>Delete account</button>
+        <div id="delAcctBox" style="display:none;margin-top:14px;border-top:1px solid #1c1c24;padding-top:14px">
+          <div class="auth-title" style="font-size:16px">Delete your account?</div>
+          <div class="auth-sub" style="color:#e9bfd6">This permanently deletes your account, your cloud backup, and all Your Salon data on this device. This can’t be undone.</div>
+          <input id="delPass" class="auth-in" type="password" placeholder="Enter your password to confirm" autocomplete="current-password">
+          <div class="auth-err" id="delErr"></div>
+          <button class="auth-btn" id="delGoBtn" onclick="delAcctConfirm()" style="background:#3a0f22;border-color:#f59ed6;color:#fff">Permanently delete account</button>
+          <button class="auth-link" onclick="delAcctCancel()">Cancel</button>
+        </div>
+      </div>
+      <div id="delDone" style="display:none">
+        <div class="auth-title">Account deleted ✓</div>
+        <div class="auth-sub">Your account, cloud backup and on-device data have been permanently deleted.</div>
+        <button class="auth-btn primary" onclick="location.replace(location.pathname+'?v='+Date.now())">Done</button>
       </div>
     </div>
   </div>
@@ -421,7 +435,7 @@
     }
     var f=document.getElementById('authForm'), me=document.getElementById('authMe');
     if(u){ if(f)f.style.display='none'; if(me)me.style.display='block'; var em=document.getElementById('meEmail'); if(em)em.textContent=u.email||''; }
-    else{ if(f)f.style.display='block'; if(me)me.style.display='none'; }
+    else{ var dn=document.getElementById('delDone'); if(f)f.style.display=(dn&&dn.style.display==='block')?'none':'block'; if(me)me.style.display='none'; }
   }
   function openAuth(){var o=document.getElementById('authOv');if(o)o.classList.add('open');}
   function closeAuth(){var o=document.getElementById('authOv');if(o)o.classList.remove('open');authErr('');}
@@ -433,6 +447,30 @@
   function doSignUp(){authErr('');if(!_guard())return;if(_pw().length<6){authErr('Password needs 6+ characters.');return;}fa.createUserWithEmailAndPassword(_em(),_pw()).then(function(){closeAuth();}).catch(function(e){authErr(prettyAuthErr(e));});}
   function doReset(){authErr('');if(!_guard())return;var em=_em();if(!em){authErr('Type your email above first, then tap reset.');return;}fa.sendPasswordResetEmail(em).then(function(){authErr('Reset email sent — check your inbox.');}).catch(function(e){authErr(prettyAuthErr(e));});}
   function doSignOut(){if(fa)fa.signOut();closeAuth();}
+  /* ===== Account deletion (App Store 5.1.1(v)) — deletes auth user + cloud data + local data ===== */
+  function delErr(m){var e=document.getElementById('delErr');if(e)e.textContent=m||'';}
+  function delAcctStart(){delErr('');var b=document.getElementById('delAcctBox');if(b)b.style.display='block';var d=document.getElementById('delAcctBtn');if(d)d.style.display='none';var i=document.getElementById('delPass');if(i){i.value='';setTimeout(function(){try{i.focus();}catch(e){}},50);}}
+  function delAcctCancel(){delErr('');var b=document.getElementById('delAcctBox');if(b)b.style.display='none';var d=document.getElementById('delAcctBtn');if(d)d.style.display='';}
+  function delAcctConfirm(){
+    delErr('');
+    var u=fa&&fa.currentUser; if(!u){delErr('You’re not signed in.');return;}
+    var pw=((document.getElementById('delPass')||{}).value)||''; if(!pw){delErr('Enter your password to confirm.');return;}
+    var go=document.getElementById('delGoBtn'); if(go){go.disabled=true;go.textContent='Deleting…';}
+    function fail(e){ if(go){go.disabled=false;go.textContent='Permanently delete account';} console.warn('delete account failed',e); delErr(prettyAuthErr(e)); }
+    var uid=u.uid, cred=firebase.auth.EmailAuthProvider.credential(u.email,pw);
+    u.reauthenticateWithCredential(cred).then(function(){
+      stopUserSync();                                           // stop listener + pushes before wiping
+      return fdb?fdb.collection('users').doc(uid).delete():null; // cloud backup
+    }).then(function(){
+      return u.delete();                                        // Firebase Auth account
+    }).then(function(){
+      try{localStorage.clear();}catch(e){}                      // on-device data
+      try{sessionStorage.clear();}catch(e){}
+      var me=document.getElementById('authMe'),f=document.getElementById('authForm'),dn=document.getElementById('delDone');
+      if(me)me.style.display='none'; if(f)f.style.display='none'; if(dn)dn.style.display='block';
+      var x=document.querySelector('.auth-x'); if(x)x.style.display='none';
+    }).catch(fail);
+  }
   function prettyAuthErr(e){var c=(e&&e.code)||'';
     if(c.indexOf('wrong-password')>=0||c.indexOf('invalid-credential')>=0)return 'Wrong email or password.';
     if(c.indexOf('user-not-found')>=0)return 'No account yet — tap Create account.';
@@ -556,7 +594,7 @@
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.37';
+  var SHELL_V='v0.38';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{

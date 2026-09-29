@@ -1,5 +1,5 @@
 # Your Salon Pro — Apple App Store Handoff
-**Last Updated:** September 11, 2026  
+**Last Updated:** September 29, 2026  
 **Repo:** shaz010/mgm-studio  
 **Live site:** getcommissionpro.com  
 **App Store Connect:** appstoreconnect.apple.com (Shahbaz Mirshahi)
@@ -25,9 +25,13 @@ Once submitted — DO NOT touch App Store Connect until Apple sends a result ema
 
 ---
 
-## Current Status (Sep 10, 2026)
+## Current Status (Sep 29, 2026)
 
-Submission: iOS 1.0 — Waiting for Review (submitted Sep 10, 2026 at ~1:54 PM)
+**iOS 1.0 (7) — REJECTED Sep 24** · Guideline **5.1.1(v)** account deletion. Subscription + group: Ready for Review.
+Fix = salon.html v0.50 (real Firebase account deletion in the account panel). Full steps in YOUR_SALON_HANDOFF.md → "SEP 29 SESSION".
+App Review mail arrives at **shahbazmirshahi@mac.com**.
+
+Previous status (Sep 10): Waiting for Review (submitted Sep 10, 2026 at ~1:54 PM)
 
 3 Items submitted together in one draft:
 - iOS App 1.0 (Build 7)
@@ -61,10 +65,19 @@ Round 2 (Aug 27):
 - 2.1(b) After purchase nothing happens — Fixed: IAP bridge added to salon.html (salon v0.38)
 - 3.1.1 No Restore Purchases button — Fixed: Restore button + payRestore() added (app v2.41)
 - 3.1.2(c) No EULA/Privacy links — Fixed in v2.40
-- 5.1.1(v) No account deletion — Fixed in v2.40
+- 5.1.1(v) No account deletion — "Fixed" in v2.40, BUT that button only cleared localStorage → rejected again (see Round 4)
 - 2.3.3 Screenshot metadata issues — NOT YET FIXED (Shaz ignoring for now)
 
 ---
+
+Round 3 (Sep 14, reviewed on iPad Air 11" M3, iPadOS 27.0):
+- 3.1.2(c) Free trial shown more prominently than the $4.99/mo billed amount — billed amount must be the biggest pricing element
+- 2.1(a) After purchase + login, app kept redirecting to the purchase screen (StoreKit entitlement not unlocking)
+- Shaz replied Sep 14; resubmitted Sep 14 4:08 PM. Neither issue repeated in Round 4
+
+Round 4 (Sep 24):
+- 5.1.1(v) Account deletion — must actually delete the account in-app (deactivate-only or email/support not allowed). Apple asks for a **physical-device screen recording**: create/sign in → navigate to deletion → full flow to confirmation. Put the recording in App Review Information → Notes for future submissions
+- Fix: salon.html v0.50 — Delete account in #authMe panel → password re-auth → delete Firestore users/{uid} → user.delete() → clear local → "Account deleted ✓"
 
 ## Architecture: Why the IAP Bridge Exists
 
@@ -139,7 +152,7 @@ For native changes: Xcode -> Archive -> Distribute -> App Store Connect.
 
 - Product ID: com.yoursalon.pro.monthly
 - Price: $4.99/month
-- Free trial: 21 days
+- Free trial: 21 days ⚠️ CONFLICT — paywall + ASC notes say "first month free". Verify the Introductory Offer in ASC matches the paywall
 - Group: Your Salon Pro Access
 
 ---
@@ -147,5 +160,6 @@ For native changes: Xcode -> Archive -> Distribute -> App Store Connect.
 ## Outstanding Work
 
 - 2.3.3 Screenshots — proper 6.5 inch iPhone + 13 inch iPad screenshots (Shaz deferring)
-- Screen recording — show Delete Account flow for Apple if they ask again
+- ✅ NOW REQUIRED: screen recording of the Delete Account flow (salon v0.50) → reply to App Review + Notes
+- Repoint app.html "Delete my account & all data" (local-only) to the real flow
 - App Store Connect metadata — Privacy Policy URL + EULA URL fields
