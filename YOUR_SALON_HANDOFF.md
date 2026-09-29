@@ -5,7 +5,10 @@ Read this first in any new session about the iOS app / App Store.
 ---
 
 ## 🎯 CURRENT STATE (one line)
-Version **1.0 (7)** is **REJECTED** (Sep 24) for **5.1.1(v) — no real in-app account deletion**. Subscription + group = Ready for Review. Fix built in **salon v0.50** — upload, test, screen-record, reply, Update Review.
+✅ **RESUBMITTED Sep 29, 2:27 PM** — iOS 1.0 (7) + subscription + group = **Waiting for Review**. Fix for 5.1.1(v) = salon v0.50 real account deletion. 🚫 **HANDS OFF App Store Connect until Apple replies** (any edit pulls it from the queue).
+
+Done Sep 29: salon v0.50 pushed · tested in TestFlight with reviewtest@yoursalon.com · 74-sec recording (Downloads/YourSalon_account_deletion.mp4) sent in Reply to App Review + attached in App Review Information · Notes rewritten (account deletion first, then sign-in, subscription, about).
+Tip: ASC attachments reject uppercase `.MP4` — rename to lowercase `.mp4`.
 
 ⚠️ App Review emails go to **shahbazmirshahi@mac.com** (NOT the Gmail). Check Mail app → search "App Store Connect".
 
