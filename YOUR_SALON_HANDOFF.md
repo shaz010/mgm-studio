@@ -14,6 +14,12 @@ Tip: ASC attachments reject uppercase `.MP4` — rename to lowercase `.mp4`.
 
 ---
 
+## 📬 APPLE REPLY CHECKLIST (Shaz missed both Sep 14 + Sep 24 rejections)
+- App Review emails go to **shahbazmirshahi@mac.com** — NOT the Gmail. Nothing arrives in Gmail
+- Fix: install the **App Store Connect** iPhone app + turn on notifications (instant approve/reject push)
+- Optional: icloud.com → Mail → Settings → Forwarding → chabokchamejun@gmail.com
+- Claude: at session start, if a submission is "Waiting for Review", check mac.com mail (Mail app → search "App Store Connect") or ASC → App Review
+
 ## 🧪 TESTING RULE — WE TEST IN TESTFLIGHT
 - All iPhone testing happens in the **TestFlight** build of Your Salon Pro (internal group "Shaz Dev"), NOT the Safari PWA
 - The TestFlight app loads getcommissionpro.com/salon.html live → web pushes show up in TestFlight after ~2 min + swipe-kill/reopen. No new build needed for web-only changes
