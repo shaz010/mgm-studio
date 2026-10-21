@@ -307,7 +307,7 @@ body.theme-light .legal-body{color:#777}
 .pg-logo{font-size:30px;color:var(--gold)}
 .pg-title{font-size:22px;font-weight:800;color:#fff;margin:10px 0 4px}
 .pg-sub{font-size:13.5px;color:#9a9a9a;line-height:1.6;margin-bottom:8px}
-.pg-price{font-size:14px;color:var(--gold);font-weight:700;margin:14px 0 18px}
+.pg-price{font-size:26px;color:var(--gold);font-weight:800;margin:14px 0 2px}.pg-trial{font-size:12px;color:#888;margin:0 0 18px;line-height:1.5}
 .pg-buy{display:block;width:100%;padding:15px;border-radius:13px;border:none;background:var(--gold);color:#1a1a1a;font-size:16px;font-weight:800;cursor:pointer;text-decoration:none}
 .pg-buy:active{opacity:.9}
 .pg-div{display:flex;align-items:center;gap:10px;margin:18px 0;color:#666;font-size:11px;letter-spacing:1px}
@@ -1150,7 +1150,8 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
       <div class="pg-logo">✨</div>
       <div class="pg-title">Your Salon Pro</div>
       <div class="pg-sub">Professional earnings &amp; bookings for stylists.</div>
-      <div class="pg-price">$4.99/mo · 1 month free trial</div>
+      <div class="pg-price">$4.99/mo</div>
+      <div class="pg-trial">Includes 1 month free trial · auto-renews monthly · cancel anytime</div>
       <a class="pg-buy" id="pgBuy" onclick="payBuy();return false;" href="#">Start free trial</a>
       <div class="pg-foot" style="margin-top:14px">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
       <button class="pg-close" id="pgClose" onclick="payClose()">Keep looking around</button>
@@ -4043,7 +4044,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.56 · paygate always dismissable';
+var VERSION='app v2.57 · Apple 3.1.2c paywall price fix';
 function deleteMyAccount(){
   if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
   if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;

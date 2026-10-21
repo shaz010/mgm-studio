@@ -1,0 +1,27 @@
+# UE Engine — never commit
+UE_5.8/
+
+# Logic Pro / Audio
+*.logicx/
+*.logicx
+*.wav
+*.mp3
+*.aif
+*.aiff
+
+# macOS
+.DS_Store
+.Spotlight-V100/
+.fseventsd/
+.Trashes/
+
+# GitHub auto-create
+.github/
+
+# Embedded git repos (track separately)
+SHAHZAD/
+
+# Large media
+*.mov
+*.mp4
+*.zip

@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Your Salon">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<title>Your Salon — Commission & Appointment Tracker for Salon Pros</title>
+<meta name="description" content="Your Salon — free commission calculator and appointment manager for hair stylists, barbers, nail techs and salon pros. Track earnings, splits and bookings.">
+<meta name="keywords" content="salon commission calculator, hair stylist app, barber commission tracker, salon earnings, appointment manager">
+<meta name="author" content="Your Salon">
+<meta property="og:title" content="Your Salon — Commission & Appointment Tracker">
+<meta property="og:description" content="Free app for salon pros. Track commissions, splits, appointments and clients.">
+<meta property="og:url" content="https://getcommissionpro.com/salon.html">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://getcommissionpro.com/salon.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{height:100dvh}body{height:100%;background:#000;overflow:hidden}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    color:#f0f0f0;
+    display:flex;flex-direction:column;
+    /* respect the notch / rounded corners so nothing clips */
+    padding-top:env(safe-area-inset-top);
+    padding-left:env(safe-area-inset-left);
+    padding-right:env(safe-area-inset-right);
+  }
+
+  /* ===== Shell bar ===== */
+  .shell-bar{
+    flex:0 0 auto;
+    padding:10px 14px 12px;
+    background:#000;
+    border-bottom:1px solid #15151c;
+  }
+  .brand{
+    display:flex;align-items:center;gap:9px;
+  }
+  .toprow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+  .acct-pill{display:flex;align-items:center;gap:6px;border:1.5px solid #3ba7ff;background:rgba(59,167,255,.13);color:#7cc9ff;font-family:inherit;font-size:11.5px;font-weight:700;padding:7px 12px;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:.15s;flex-shrink:0;box-shadow:0 0 16px rgba(59,167,255,.55),0 0 3px rgba(59,167,255,.6)}
+  .acct-pill:hover{background:rgba(59,167,255,.2);box-shadow:0 0 22px rgba(59,167,255,.75),0 0 4px rgba(59,167,255,.7)}
+  .acct-pill i{font-size:15px}
+  .acct-pill:active{transform:scale(.97)}
+  .acct-pill.on{color:#7ee0b8;border-color:#1f5a44;background:#08130e;box-shadow:0 0 10px rgba(126,224,184,.22)}
+
+  /* ===== Auth overlay ===== */
+  .auth-ov{position:fixed;inset:0;background:rgba(0,0,0,.72);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:50;padding:22px}
+  .auth-ov.open{display:flex}
+  .auth-card{width:100%;max-width:340px;background:#0b0b10;border:1px solid #1c1c24;border-radius:18px;padding:24px 22px 20px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .auth-x{position:absolute;top:12px;right:14px;background:none;border:0;color:#6a6a78;font-size:24px;line-height:1;cursor:pointer;font-family:inherit}
+  .auth-mark{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:22px;color:#050507;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff)}
+  .auth-title{text-align:center;font-size:18px;font-weight:800;color:#fff;margin-bottom:5px}
+  .auth-sub{text-align:center;font-size:12.5px;color:#8a8a96;line-height:1.45;margin-bottom:16px}
+  .auth-in{width:100%;background:#08080c;border:1px solid #23232c;border-radius:11px;color:#f0f0f0;font-family:inherit;font-size:15px;padding:13px 14px;margin-bottom:10px;outline:none}
+  .auth-in:focus{border-color:#a78bfa}
+  .auth-err{min-height:16px;font-size:12px;color:#f59ed6;text-align:center;margin:2px 0 8px}
+  .auth-btn{width:100%;border:1px solid #2a2a34;background:#13131a;color:#e8e8ef;font-family:inherit;font-size:14.5px;font-weight:700;padding:13px;border-radius:11px;cursor:pointer;margin-bottom:9px;-webkit-tap-highlight-color:transparent}
+  .auth-btn:active{transform:scale(.99)}
+  .auth-btn.primary{border:1px solid transparent;color:#fff;background:linear-gradient(#0b0b10,#0b0b10) padding-box,linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;box-shadow:0 0 14px rgba(167,139,250,.3)}
+  .auth-link{display:block;margin:2px auto 0;background:none;border:0;color:#7a7a88;font-family:inherit;font-size:12.5px;cursor:pointer;text-decoration:underline}
+  .brand-mark{
+    width:30px;height:30px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#FFB800,#ff8a00);
+    color:#1a1208;font-size:16px;flex-shrink:0;
+    box-shadow:0 0 12px rgba(255,184,0,.25);
+    transition:box-shadow .08s linear;
+  }
+  .brand-name{font-family:'DM Serif Display',Georgia,'Times New Roman',serif;font-size:17px;font-weight:400;letter-spacing:.4px;color:#FFB800;max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand-sub{font-size:10.5px;color:#6a6a78;font-weight:600;margin-top:1px;letter-spacing:.3px}
+
+  /* ===== The two-room toggle (the signature piece) ===== */
+  .rooms{
+    display:flex;gap:6px;
+    background:#0a0a0e;
+    border:1px solid #1a1a22;
+    border-radius:13px;
+    padding:5px;
+  }
+  .room-btn{
+    flex:1;
+    display:flex;align-items:center;justify-content:center;gap:7px;
+    padding:12px 8px;
+    border:1px solid transparent;
+    border-radius:9px;
+    background:transparent;
+    color:#7a7a88;
+    font-size:14px;font-weight:700;letter-spacing:.2px;
+    font-family:inherit;
+    cursor:pointer;
+    transition:color .2s, transform .12s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .room-btn i{font-size:17px}
+  .room-btn:active{transform:scale(.97)}
+  .room-btn.active{
+    color:#fff;
+    border:1px solid transparent;
+    background:
+      linear-gradient(#050507,#050507) padding-box,
+      linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;
+    box-shadow:0 0 12px rgba(167,139,250,.32);
+    text-shadow:0 0 7px rgba(103,232,249,.3);
+  }
+
+  /* ===== The room itself ===== */
+  .stage{flex:1 1 auto;position:relative;background:#000}
+  .room{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    border:0;
+    background:#000;
+    opacity:1;
+    transition:opacity .18s ease;
+  }
+  .room.hide{visibility:hidden;opacity:0;pointer-events:none}
+
+  .ver{
+    position:absolute;bottom:6px;right:10px;
+    font-size:12px;color:#d7d7de;font-weight:700;letter-spacing:.3px;
+    background:rgba(255,255,255,.07);padding:3px 9px;border-radius:8px;
+    pointer-events:none;z-index:2;
+    transition:opacity .6s ease;
+  }
+  .ver.dim{opacity:0}
+
+  /* ===== shell self-update pill ===== */
+  .upd-pill{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    z-index:60;display:none;align-items:center;gap:8px;
+    font-family:inherit;font-size:13px;font-weight:800;color:#fff;
+    padding:12px 18px;border-radius:999px;cursor:pointer;
+    border:1.5px solid transparent;
+    background:
+      linear-gradient(#0b0b10,#0b0b10) padding-box,
+      linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9) border-box;
+    box-shadow:0 6px 24px rgba(0,0,0,.55),0 0 18px rgba(167,139,250,.35);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .upd-pill.show{display:flex}
+  .upd-pill:active{transform:translateX(-50%) scale(.96)}
+  .upd-pill i{font-size:16px}
+
+  /* ===== shell-level NEW BOOKING banner — visible over BOTH rooms ===== */
+  #shellReqBanner{position:fixed;top:0;left:0;right:0;z-index:80;display:none;
+    align-items:center;justify-content:center;gap:8px;padding:13px 14px;
+    padding-top:calc(13px + env(safe-area-inset-top));
+    background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff,#67e8f9);
+    background-size:200% 100%;animation:reqShimmer 3s linear infinite;
+    color:#0a0a0a;font-weight:800;font-size:14px;letter-spacing:.3px;
+    cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.55)}
+  #shellReqBanner.show{display:flex}
+  @keyframes reqShimmer{to{background-position:200% 0}}
+
+  /* ===== Onboarding slides ===== */
+  #onboardOv{position:fixed;inset:0;z-index:200;background:#050507;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-end;opacity:0;pointer-events:none;transition:opacity .35s}
+  #onboardOv.show{opacity:1;pointer-events:all}
+  .ob-skip{position:absolute;top:calc(14px + env(safe-area-inset-top));right:16px;font-size:13px;color:#555;background:none;border:none;cursor:pointer;padding:6px 2px;font-family:inherit}
+  .ob-slides{flex:1;display:flex;align-items:center;justify-content:center;padding:0 28px;padding-top:calc(40px + env(safe-area-inset-top))}
+  .ob-slide{display:none;text-align:center;max-width:380px;width:100%}
+  .ob-slide.active{display:block}
+  .ob-icon{font-size:56px;margin-bottom:22px;line-height:1}
+  .ob-title{font-size:22px;font-weight:800;color:#f0f0f0;line-height:1.2;margin-bottom:14px;letter-spacing:-.3px}
+  .ob-title span{background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .ob-body{font-size:14.5px;color:#888;line-height:1.7}
+  .ob-body strong{color:#ccc;font-weight:600}
+  .ob-foot{padding:24px 28px calc(28px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:16px}
+  .ob-dots{display:flex;gap:7px}
+  .ob-dot{width:6px;height:6px;border-radius:3px;background:#2a2a2a;transition:background .25s,width .25s}
+  .ob-dot.active{background:linear-gradient(110deg,#67e8f9,#a78bfa);width:20px}
+  .ob-next{width:100%;max-width:320px;padding:15px;border-radius:14px;border:none;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);color:#050507;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:.2px;transition:opacity .15s}
+  .ob-next:active{opacity:.8}
+  .ob-guide-link{font-size:13px;color:#555;text-decoration:none}
+  .ob-guide-link:hover{color:#a78bfa}
+
+  /* ===== Prismatic burst canvas ===== */
+
+  #waveCanvas{
+    position:fixed;inset:0;
+    width:100%;height:100%;
+    pointer-events:none;
+    z-index:2;
+  }
+
+  /* ===== CSS glow breath — replaces JS RAF, runs on compositor ===== */
+  @keyframes glowBreath{
+    0%,100%{box-shadow:0 0 4px 0px rgba(var(--gr),0.08);}
+    50%    {box-shadow:0 0 40px 12px rgba(var(--gr),0.65),
+                       0 0 90px 28px rgba(var(--gr),0.22),
+                       inset 0 0 14px rgba(var(--gr),0.12);}
+  }
+  .brand-mark{--gr:255,193,68;--gs:3.5s;}
+  .brand-mark.glow-on{animation:glowBreath var(--gs) ease-in-out infinite;}
+
+  /* ── Shell paygate — renders in main WKWebView frame, zero iframe coordinate issues ── */
+  #shellPG{position:fixed;inset:0;z-index:99990;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;background:rgba(5,5,8,.985);padding:24px;-webkit-tap-highlight-color:transparent}
+  #shellPG.on{display:flex}
+  .spg-card{width:100%;max-width:380px;background:#141414;border:1px solid #2a2a2a;border-radius:20px;padding:30px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);margin:auto}
+  .spg-logo{font-size:30px;color:#FFB800}
+  .spg-title{font-size:22px;font-weight:800;color:#fff;margin:10px 0 4px}
+  .spg-sub{font-size:13.5px;color:#9a9a9a;line-height:1.6;margin-bottom:8px}
+  .spg-price{font-size:14px;color:#FFB800;font-weight:700;margin:14px 0 18px}
+  .spg-list{list-style:none;padding:0;margin:8px 0 4px;text-align:left;font-size:13px;color:#d0d0d0;line-height:1.7}
+  .spg-list li:before{content:"✓ ";color:#FFB800;font-weight:700}
+  .spg-terms{font-size:11.5px;color:#8a8a8a;line-height:1.5;margin:0 0 12px}
+  .spg-buy{display:block;width:100%;padding:15px;border-radius:13px;border:none;background:#FFB800;color:#1a1a1a;font-size:16px;font-weight:800;cursor:pointer;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  .spg-buy:active{opacity:.85}
+  .spg-close{display:block;margin-top:14px;width:100%;background:none;border:none;color:#888;font-size:13px;cursor:pointer;text-decoration:underline;padding:10px;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  .spg-restore{margin-top:6px;background:none;border:none;color:#555;font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:6px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:block;width:100%}
+  .spg-foot{font-size:11px;color:#777;margin-top:16px;line-height:1.6}
+  .spg-foot a{color:#999}
+  .spg-legal{margin-top:14px;font-size:11px;color:#666;text-align:center;line-height:1.6}
+  .spg-legal a{color:#888;text-decoration:underline}
+  .spg-success{display:none;flex-direction:column;align-items:center;gap:10px;padding:24px 0;text-align:center}
+  .spg-success.on{display:flex}
+  .spg-success-ic{font-size:54px}
+  .spg-success-title{font-size:24px;font-weight:800;background:linear-gradient(110deg,#67e8f9,#a78bfa,#f5a8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .spg-success-sub{font-size:14px;color:#aaa}
+</style>
+</head>
+<body>
+
+  <canvas id="waveCanvas"></canvas>
+
+  <div class="shell-bar">
+    <div class="toprow">
+      <div class="brand">
+        <div class="brand-mark" id="brandGlowIcon" onclick="(function(){var k='_devTaps',n=(parseInt(localStorage.getItem(k)||'0',10)+1);if(n>=5){localStorage.removeItem(k);localStorage.setItem('cp_unlocked','1');var f=FRAMES&&FRAMES.earn&&FRAMES.earn.contentWindow;if(f){try{f.postMessage({salon:'devUnlock'},'*');}catch(e){}}alert('Dev unlocked');}else{localStorage.setItem(k,String(n));}})()" ><svg viewBox="0 0 100 100" width="78%" height="78%" style="display:block"><g fill="#1a1208"><polygon points="48,30.5 53.2,52 48,73.5 42.8,52"/><polygon points="26.5,52 48,46.8 69.5,52 48,57.2"/><polygon points="74,24.2 76.3,33 74,41.8 71.7,33"/><polygon points="65.2,33 74,30.7 82.8,33 74,35.3"/><polygon points="74,63.8 75.9,71 74,78.2 72.1,71"/><polygon points="66.8,71 74,69.1 81.2,71 74,72.9"/></g></svg></div>
+        <div>
+          <div class="brand-name" id="brandName">Your Salon</div>
+          <div class="brand-sub" id="brandSub">ONE APP · EARNINGS + APPOINTMENTS</div>
+        </div>
+      </div>
+      <button class="acct-pill" id="acctPill" onclick="openAuth()"><i class="ti ti-cloud-off"></i><span id="acctTxt">Sign in to sync</span></button>
+    </div>
+
+    <div class="rooms" role="tablist">
+      <button class="room-btn active" id="btnEarn" onclick="goRoom('earn')">
+        <i class="ti ti-cash"></i> Earnings
+      </button>
+      <button class="room-btn" id="btnAppt" onclick="goRoom('appt')">
+        <i class="ti ti-calendar-event"></i> Appointments
+      </button>
+    </div>
+  </div>
+
+  <div class="stage">
+    <iframe id="roomEarn" class="room" title="Earnings" allow="web-share; clipboard-write"></iframe>
+    <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
+    <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
+    <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
+    <div class="ver">salon v0.49 · paywall: subscription details for App Review</div>
+  </div>
+
+  <!-- ===== Auth overlay (Step 1: login only) ===== -->
+  <div class="auth-ov" id="authOv">
+    <div class="auth-card">
+      <button class="auth-x" onclick="closeAuth()">&times;</button>
+      <div class="auth-mark"><i class="ti ti-cloud-lock"></i></div>
+      <div id="authForm">
+        <div class="auth-title">Sync your data</div>
+        <div class="auth-sub">Sign in so your numbers are safely backed up — and on every device.</div>
+        <input id="authEmail" class="auth-in" type="email" placeholder="Email" autocomplete="email" autocapitalize="off" spellcheck="false">
+        <input id="authPass" class="auth-in" type="password" placeholder="Password" autocomplete="current-password">
+        <div class="auth-err" id="authErr"></div>
+        <button class="auth-btn primary" onclick="doSignIn()">Sign in</button>
+        <button class="auth-btn" onclick="doSignUp()">Create account</button>
+        <button class="auth-link" onclick="doReset()">Forgot password?</button>
+        <button class="auth-link" onclick="closeAuth()" style="margin-top:12px;font-size:13px;color:#8a8a96">Continue without account →</button>
+      </div>
+      <div id="authMe" style="display:none">
+        <div class="auth-title">You're synced</div>
+        <div class="auth-sub">Signed in as <b id="meEmail" style="color:#cfcfe0"></b></div>
+        <button class="auth-btn" onclick="doSignOut()">Sign out</button>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <a href="./guide.html" target="_blank" class="auth-btn" style="flex:1;text-align:center;text-decoration:none;font-size:13px">📖 App Guide</a>
+          <button class="auth-btn" style="flex:1;font-size:13px" onclick="closeAuth();replayOnboarding()">▶ Replay intro</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  /* shell guard: if the shell ever gets served INTO its own iframe
+     (e.g. offline fallback), self-heal by loading a room instead
+     — prevents the infinite "Your Salon" mirror hall. */
+  if(window.self!==window.top){
+    var _last='earn';
+    try{_last=localStorage.getItem('salon_last_room')||'earn';}catch(e){}
+    location.replace((_last==='appt'?'appt.html':'app.html')+'?v='+Date.now());
+  }
+  var ROOMS={ earn:'app.html', appt:'appt.html' };
+  var KEY='salon_last_room';
+  /* the door wears your business name (falls back to "Your Salon") */
+  function applyBrandName(){
+    var n='';
+    try{n=(JSON.parse(localStorage.getItem('ap_prefs')||'{}').bizName)||'';}catch(e){}
+    if(!n){try{n=(JSON.parse(localStorage.getItem('cp_prefs')||'{}').salon)||'';}catch(e){}}
+    n=(n||'').trim();
+    var el=document.getElementById('brandName');
+    if(el)el.textContent=n||'Your Salon';
+    var sub=document.getElementById('brandSub');
+    if(sub)sub.textContent=n?'YOUR SALON · EARNINGS + APPOINTMENTS':'ONE APP · EARNINGS + APPOINTMENTS';
+    try{document.title=n||'Your Salon';}catch(e){}
+  }
+  applyBrandName();
+  window.addEventListener('storage',function(){ applyBrandName(); });
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden)applyBrandName(); });
+  setInterval(applyBrandName,4000); /* safety net — Safari sometimes drops storage events */
+  var FRAMES={ earn:document.getElementById('roomEarn'), appt:document.getElementById('roomAppt') };
+  var loaded={ earn:false, appt:false };
+  var btnEarn=document.getElementById('btnEarn');
+  var btnAppt=document.getElementById('btnAppt');
+  var current='earn';
+  var BUST=Date.now();
+  function roomSrc(r){return ROOMS[r]+(ROOMS[r].indexOf('?')<0?'?':'&')+'v='+BUST;}
+  function otherRoom(r){return r==='earn'?'appt':'earn';}
+  function ensureLoaded(r){ if(!loaded[r]){ loaded[r]=true; FRAMES[r].src=roomSrc(r); } }
+
+  function setActive(room){
+    btnEarn.classList.toggle('active', room==='earn');
+    btnAppt.classList.toggle('active', room==='appt');
+  }
+
+  /* both rooms stay ALIVE — switching just shows/hides, so it's instant */
+  function goRoom(room){
+    if(room===current) return;            // already here, do nothing
+    current=room;
+    setActive(room);
+    try{ localStorage.setItem(KEY, room); }catch(e){}
+    ensureLoaded(room);
+    FRAMES[otherRoom(room)].classList.add('hide');
+    FRAMES[room].classList.remove('hide');
+    notifyShown(room);                    // wake the room so its numbers are fresh
+    try{_syncReqBanner(room==='appt'?0:_shellReqN);}catch(e){}
+  }
+  function notifyShown(room){
+    try{ FRAMES[room].contentWindow.postMessage({salon:'roomShown'},'*'); }catch(e){}
+  }
+  var pendingView=null;
+  window.addEventListener('message', function(ev){
+    var d=ev.data||{};
+    if(d&&d.salon==='goRoom'&&d.room&&ROOMS[d.room]){
+      pendingView=d.view||null;
+      var target=d.room, wasLoaded=loaded[target];
+      goRoom(target);
+      if(wasLoaded&&pendingView){ // room is alive, deliver straight away
+        try{FRAMES[target].contentWindow.postMessage({salon:'openView',view:pendingView},'*');}catch(e){}
+        pendingView=null;
+      }
+    }
+  });
+  Object.keys(FRAMES).forEach(function(r){
+    FRAMES[r].addEventListener('load', function(){
+      if(pendingView&&r===current){
+        try{FRAMES[r].contentWindow.postMessage({salon:'openView',view:pendingView},'*');}catch(e){}
+        pendingView=null;
+      }
+    });
+  });
+
+  // restore the room you were last in, then quietly warm up the other one
+  (function(){
+    var last='earn';
+    try{ last=localStorage.getItem(KEY)||'earn'; }catch(e){}
+    current=(last==='appt')?'appt':'earn';
+    setActive(current);
+    FRAMES[otherRoom(current)].classList.add('hide');
+    FRAMES[current].classList.remove('hide');
+    ensureLoaded(current);
+    setTimeout(function(){ ensureLoaded(otherRoom(current)); }, 2500);
+  })();
+
+  /* ===== Account / sync auth (Step 1: login only — data sync comes next) ===== */
+  var FB_CONFIG={
+    apiKey:"AIzaSyCxPNPOcu-ShSRXDJtwdNBZJ6kFaxQ8apM",
+    authDomain:"telemetry-eagle.firebaseapp.com",
+    projectId:"telemetry-eagle",
+    storageBucket:"telemetry-eagle.firebasestorage.app",
+    messagingSenderId:"216199298094",
+    appId:"1:216199298094:web:665c061ebe07d3c23373bf"
+  };
+  var fa=null, fdb=null;
+  function initAuth(){
+    try{
+      if(typeof firebase==='undefined'||!firebase.initializeApp){return;}
+      if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(FB_CONFIG);
+      fa=firebase.auth();
+      try{ fdb=firebase.firestore(); }catch(e){ console.warn('firestore init',e); }
+      fa.onAuthStateChanged(function(u){
+        renderAuth(u);
+        if(u){ startUserSync(u.uid); if(typeof _ysShowOnboardingIfNeeded==='function')_ysShowOnboardingIfNeeded(); } else { stopUserSync(); }
+      });
+    }catch(e){console.warn('auth init failed',e);}
+  }
+  function renderAuth(u){
+    var pill=document.getElementById('acctPill');
+    var txt=document.getElementById('acctTxt');
+    var ic=pill?pill.querySelector('i'):null;
+    if(u){
+      if(txt)txt.textContent=_lastSync?('Synced '+relTime(_lastSync)):'Syncing…';
+      if(ic)ic.className='ti ti-cloud-check';
+      if(pill)pill.classList.add('on');
+    }else{
+      if(txt)txt.textContent='Sign in to sync';
+      if(ic)ic.className='ti ti-cloud-off';
+      if(pill)pill.classList.remove('on');
+    }
+    var f=document.getElementById('authForm'), me=document.getElementById('authMe');
+    if(u){ if(f)f.style.display='none'; if(me)me.style.display='block'; var em=document.getElementById('meEmail'); if(em)em.textContent=u.email||''; }
+    else{ if(f)f.style.display='block'; if(me)me.style.display='none'; }
+  }
+  function openAuth(){var o=document.getElementById('authOv');if(o)o.classList.add('open');}
+  function closeAuth(){var o=document.getElementById('authOv');if(o)o.classList.remove('open');authErr('');}
+  function authErr(m){var e=document.getElementById('authErr');if(e)e.textContent=m||'';}
+  function _em(){return ((document.getElementById('authEmail')||{}).value||'').trim();}
+  function _pw(){return (document.getElementById('authPass')||{}).value||'';}
+  function _guard(){ if(!fa){authErr('Connecting… give it a second and retry.');return false;} return true; }
+  function doSignIn(){authErr('');if(!_guard())return;fa.signInWithEmailAndPassword(_em(),_pw()).then(function(){closeAuth();}).catch(function(e){authErr(prettyAuthErr(e));});}
+  function doSignUp(){authErr('');if(!_guard())return;if(_pw().length<6){authErr('Password needs 6+ characters.');return;}fa.createUserWithEmailAndPassword(_em(),_pw()).then(function(){closeAuth();}).catch(function(e){authErr(prettyAuthErr(e));});}
+  function doReset(){authErr('');if(!_guard())return;var em=_em();if(!em){authErr('Type your email above first, then tap reset.');return;}fa.sendPasswordResetEmail(em).then(function(){authErr('Reset email sent — check your inbox.');}).catch(function(e){authErr(prettyAuthErr(e));});}
+  function doSignOut(){if(fa)fa.signOut();closeAuth();}
+  function prettyAuthErr(e){var c=(e&&e.code)||'';
+    if(c.indexOf('wrong-password')>=0||c.indexOf('invalid-credential')>=0)return 'Wrong email or password.';
+    if(c.indexOf('user-not-found')>=0)return 'No account yet — tap Create account.';
+    if(c.indexOf('email-already-in-use')>=0)return 'That email already has an account — tap Sign in.';
+    if(c.indexOf('invalid-email')>=0)return 'That email doesn’t look right.';
+    if(c.indexOf('weak-password')>=0)return 'Password needs 6+ characters.';
+    if(c.indexOf('operation-not-allowed')>=0)return 'Email sign-in isn’t switched on yet (Firebase console).';
+    if(c.indexOf('network')>=0)return 'No connection — check your internet.';
+    return (e&&e.message)||'Something went wrong — try again.';
+  }
+
+  /* ===== SYNC ENGINE (Step 2) — mirrors shared localStorage <-> Firestore, merge-safe ===== */
+  var SYNC_KEYS=['ap_appts','ap_clients','ap_custom','ap_stock','ap_prefs','cp_appts','cp_clients','cp_prefs','cp_paid','combo_trade'];
+  var META_KEY='salon_sync_meta';
+  var _uid=null, _userUnsub=null, _pushTimer=null, _reloadTimer=null, _snap={};
+  var _lastSync=parseInt((function(){try{return localStorage.getItem('salon_lastSync');}catch(e){return '0';}})()||'0',10)||0;
+  function relTime(ts){if(!ts)return '';var s=Math.floor((Date.now()-ts)/1000);if(s<10)return 'just now';if(s<60)return s+'s ago';var m=Math.floor(s/60);if(m<60)return m+'m ago';var h=Math.floor(m/60);if(h<24)return h+'h ago';return Math.floor(h/24)+'d ago';}
+  function updateSyncPill(){var txt=document.getElementById('acctTxt');if(!txt||!_uid)return;txt.textContent=_lastSync?('Synced '+relTime(_lastSync)):'Synced';}
+  function markSynced(){_lastSync=Date.now();try{localStorage.setItem('salon_lastSync',String(_lastSync));}catch(e){}updateSyncPill();}
+
+  function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+  function lsSet(k,v){try{ if(v==null)localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){}}
+  function getMeta(){try{return JSON.parse(localStorage.getItem(META_KEY)||'{}');}catch(e){return {};}}
+  function setMeta(m){try{localStorage.setItem(META_KEY,JSON.stringify(m));}catch(e){}}
+  function snapshotLocal(){var s={};SYNC_KEYS.forEach(function(k){s[k]=lsGet(k);});return s;}
+  function detectChanges(){var ch=[];SYNC_KEYS.forEach(function(k){if(lsGet(k)!==_snap[k])ch.push(k);});return ch;}
+
+  function isRecArray(val){try{var a=JSON.parse(val);return Array.isArray(a)&&a.length>0&&a[0]&&typeof a[0]==='object'&&('id' in a[0]);}catch(e){return false;}}
+  // Union two record arrays by id. The "winner" side overrides conflicting ids; non-conflicts from both survive (never lose a record).
+  function mergeRecArrays(localStr,cloudStr,localNewer){
+    var L=[],C=[];try{L=JSON.parse(localStr)||[];}catch(e){L=[];}try{C=JSON.parse(cloudStr)||[];}catch(e){C=[];}
+    var winner=localNewer?L:C, loser=localNewer?C:L;
+    var byId={}, order=[], n=0;
+    function ingest(list){list.forEach(function(r){var id=(r&&r.id!=null)?('id:'+r.id):('x:'+(n++));if(!(id in byId)){byId[id]=r;order.push(id);}else{byId[id]=r;}});}
+    ingest(loser); ingest(winner); // winner ingested last => overrides conflicts
+    return JSON.stringify(order.map(function(id){return byId[id];}));
+  }
+  // Merge the cloud's keys into local. Returns true if local changed (so we can refresh the room).
+  function mergeFromCloud(cloudKeys){
+    cloudKeys=cloudKeys||{}; var meta=getMeta(), changed=false;
+    SYNC_KEYS.forEach(function(k){
+      var lv=lsGet(k), lt=meta[k]||0;
+      var c=cloudKeys[k], cv=c?c.v:null, ct=c?(c.t||0):0;
+      if(cv==null) return;                    // nothing in cloud for this key -> keep local
+      if(lv==null){ lsSet(k,cv); meta[k]=ct; changed=true; return; }
+      if(lv===cv){ if(ct>lt)meta[k]=ct; return; }
+      if(isRecArray(lv)||isRecArray(cv)){      // record arrays -> union (no record ever lost)
+        var merged=mergeRecArrays(lv,cv, lt>=ct);
+        if(merged!==lv){ lsSet(k,merged); changed=true; }
+        meta[k]=Math.max(lt,ct);
+      }else{                                   // scalar/object -> newer timestamp wins
+        if(ct>lt){ lsSet(k,cv); meta[k]=ct; changed=true; }
+      }
+    });
+    setMeta(meta); return changed;
+  }
+  function pushKeys(keys){
+    if(!fdb||!_uid||!keys||!keys.length)return;
+    var meta=getMeta(), now=Date.now(), keysObj={};
+    keys.forEach(function(k){ keysObj[k]={v:lsGet(k), t:now}; meta[k]=now; });
+    setMeta(meta);
+    fdb.collection('users').doc(_uid).set({keys:keysObj,updatedAt:now},{merge:true})
+      .then(function(){ _snap=snapshotLocal(); markSynced(); })
+      .catch(function(e){ console.warn('sync push failed',e); });
+  }
+  function scheduleScan(){ clearTimeout(_pushTimer); _pushTimer=setTimeout(function(){ if(!_uid)return; var ch=detectChanges(); if(ch.length)pushKeys(ch); },1500); }
+  var _lastReload=0;
+  function reloadRoomSoon(){
+    clearTimeout(_reloadTimer);
+    var since=Date.now()-_lastReload, wait=since<20000?(20000-since):500;  // throttle: ≤1 reload per ~20s (kills cross-device reload thrash)
+    _reloadTimer=setTimeout(function(){
+      _lastReload=Date.now();
+      Object.keys(FRAMES).forEach(function(r){ if(loaded[r]){ try{ FRAMES[r].src=roomSrc(r); }catch(e){} } });
+    }, wait);
+  }
+
+  function startUserSync(uid){
+    if(!fdb){ return; }
+    _uid=uid; _snap=snapshotLocal();
+    if(_userUnsub){ _userUnsub(); _userUnsub=null; }
+    var ref=fdb.collection('users').doc(uid);
+    ref.get().then(function(doc){
+      var data=doc.exists?(doc.data()||{}):{};
+      var ck=data.keys||{};
+      var changed=mergeFromCloud(ck);                 // pull cloud down, merge-safe
+      var toPush=[];                                  // seed/refresh cloud with anything local that differs
+      SYNC_KEYS.forEach(function(k){ var lv=lsGet(k); if(lv!=null){ var cv=ck[k]?ck[k].v:null; if(cv!==lv)toPush.push(k); } });
+      if(toPush.length)pushKeys(toPush);
+      _snap=snapshotLocal();
+      if(changed)reloadRoomSoon();
+      markSynced();
+      _userUnsub=ref.onSnapshot(function(snap){
+        if(snap.metadata&&snap.metadata.hasPendingWrites)return;  // ignore our own writes
+        var d=snap.data()||{};
+        markSynced();
+        if(mergeFromCloud(d.keys||{})){ _snap=snapshotLocal(); reloadRoomSoon(); }
+      });
+    }).catch(function(e){ console.warn('sync start failed',e); });
+  }
+  function stopUserSync(){ if(_userUnsub){ _userUnsub(); _userUnsub=null; } _uid=null; clearTimeout(_pushTimer); }
+
+  // a room (iframe) write to shared localStorage fires 'storage' here in the shell -> scan & push
+  window.addEventListener('storage',function(e){ if(_uid)scheduleScan(); });
+  setInterval(function(){ if(_uid)updateSyncPill(); },30000);
+  // safety net in case a storage event is missed
+  setInterval(function(){ if(_uid)scheduleScan(); },5000);
+
+  setTimeout(function(){var v=document.querySelector('.ver');if(v)v.classList.add('dim');},6000);
+  /* ===== update watcher — the shell owns updates now that rooms stay alive ===== */
+  var _updSeen={},_updShown=false;
+  function _verOf(txt){var m=txt.match(/var VERSION='([^']+)'/)||txt.match(/salon v[\d.]+/);return m?(m[1]||m[0]):'';}
+  function _checkUpd(){
+    ['salon.html','app.html','appt.html'].forEach(function(f){
+      fetch(f+'?_u='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():'';}).then(function(t){
+        var v=_verOf(t); if(!v)return;
+        if(!(f in _updSeen)){ _updSeen[f]=v; return; }      // first sight = baseline
+        if(_updSeen[f]!==v && !_updShown){ _updShown=true; var p=document.getElementById('updPill'); if(p)p.classList.add('show'); }
+      }).catch(function(){});
+    });
+  }
+  setTimeout(_checkUpd,8000);
+  setInterval(_checkUpd,90000);
+  /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
+  var SHELL_V='v0.37';
+  function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
+  function checkShellUpdate(){
+    try{
+      fetch(location.pathname+'?_t='+Date.now(),{cache:'no-store'})
+        .then(function(r){return r.text();})
+        .then(function(txt){
+          var m=txt.match(/var SHELL_V='([^']+)'/);
+          if(m&&m[1]&&m[1]!==SHELL_V){var p=document.getElementById('updPill');if(p)p.classList.add('show');}
+        }).catch(function(){});
+    }catch(e){}
+  }
+  setTimeout(checkShellUpdate,8000);
+  setInterval(checkShellUpdate,60000);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)checkShellUpdate();});
+
+  /* ===== shell chime + booking-request relay (rooms live in iframes; iOS unlocks
+     audio per-frame, so the shell + BOTH rooms all try to ring — whoever's unlocked wins) ===== */
+  var _sAudio=null;
+  function _sUnlock(){try{if(!_sAudio)_sAudio=new (window.AudioContext||window.webkitAudioContext)();if(_sAudio.state==='suspended')_sAudio.resume();}catch(e){}}
+  document.addEventListener('touchend',_sUnlock,{passive:true});
+  document.addEventListener('click',_sUnlock,{passive:true});
+  function _sChime(){
+    try{
+      if(!_sAudio||_sAudio.state!=='running')return;
+      var t=_sAudio.currentTime;
+      [[880,0],[1174.66,0.16]].forEach(function(nf){
+        var o=_sAudio.createOscillator(),g=_sAudio.createGain();
+        o.type='sine';o.frequency.value=nf[0];
+        g.gain.setValueAtTime(0.0001,t+nf[1]);
+        g.gain.exponentialRampToValueAtTime(0.1,t+nf[1]+0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+nf[1]+0.9);
+        o.connect(g);g.connect(_sAudio.destination);
+        o.start(t+nf[1]);o.stop(t+nf[1]+1);
+      });
+    }catch(e){}
+  }
+  function _syncReqBanner(n){
+    var b=document.getElementById('shellReqBanner');if(!b)return;
+    if(n>0&&current!=='appt'){
+      var tx=document.getElementById('shellReqTxt');
+      if(tx)tx.textContent=(n===1?'New booking request — tap to review':n+' booking requests waiting — tap to review');
+      b.classList.add('show');
+    }else{ b.classList.remove('show'); }
+  }
+  var _shellReqN=0;
+  window.addEventListener('message',function(ev){
+    var d=ev.data||{};
+    if(d&&d.salon==='newRequest'){
+      _shellReqN=+d.n||0;
+      _syncReqBanner(_shellReqN);
+      if(d.inc){
+        _sChime();
+        try{if(navigator.vibrate)navigator.vibrate([80,60,80]);}catch(e){}
+        try{if(loaded.earn)FRAMES.earn.contentWindow.postMessage({salon:'chime'},'*');}catch(e){}
+      }
+    }
+  });
+  function openApptRequests(){
+    _syncReqBanner(0);
+    var wasLoaded=loaded.appt;
+    if(current!=='appt')goRoom('appt');
+    try{FRAMES.appt.contentWindow.postMessage({salon:'openView',view:'requests'},'*');}catch(e){}
+    if(!wasLoaded)pendingView='requests';
+  }
+
+  initAuth();
+
+/* ── Breathing Glow Engine — CSS-driven, no RAF, cool on mobile ──
+   Sets CSS custom props on the brand mark; @keyframes glowBreath
+   (defined in <style>) does the breathing on the compositor.       ── */
+(function(){
+  var COLOURS={
+    gold:  {glow:'255,193,68'},
+    purple:{glow:'180,90,255'},
+    rose:  {glow:'255,80,130'},
+    cyan:  {glow:'6,214,224'}
+  };
+  var CYCLE=['gold','purple','rose','cyan'];
+  var SPEEDS=[20,12,8,5,3.5,2,1.2];
+  var gColour='auto',gSpeedIdx=4,gCycleIdx=0,gCycleTimer=null;
+
+  function loadPrefs(){
+    try{
+      var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
+      if(p.glowColour!=null)gColour=p.glowColour;
+      if(p.glowSpeedIdx!=null)gSpeedIdx=Number(p.glowSpeedIdx);
+    }catch(e){}
+  }
+  function activeKey(){return gColour==='auto'?CYCLE[gCycleIdx]:gColour;}
+
+  function applyGlow(){
+    var el=document.getElementById('brandGlowIcon');
+    if(!el)return;
+    if(gColour==='off'){
+      el.classList.remove('glow-on');
+      el.style.boxShadow='0 0 12px rgba(255,184,0,.25)';
+      return;
+    }
+    var col=COLOURS[activeKey()]||COLOURS.gold;
+    el.style.setProperty('--gr',col.glow);
+    el.style.setProperty('--gs',SPEEDS[gSpeedIdx]+'s');
+    el.style.boxShadow='';
+    el.classList.add('glow-on');
+  }
+
+  function startCycle(){
+    if(gCycleTimer)clearInterval(gCycleTimer);
+    if(gColour!=='auto')return;
+    gCycleTimer=setInterval(function(){
+      gCycleIdx=(gCycleIdx+1)%CYCLE.length;
+      applyGlow();
+    },SPEEDS[gSpeedIdx]*2000);
+  }
+
+  loadPrefs();startCycle();applyGlow();
+
+  /* Live-update when appt.html settings panel saves new prefs */
+  window.addEventListener('storage',function(e){
+    if(e.key==='cp_prefs'){
+      if(gCycleTimer){clearInterval(gCycleTimer);gCycleTimer=null;}
+      gCycleIdx=0;
+      loadPrefs();startCycle();applyGlow();
+    }
+  });
+})();
+
+/* ── Icon Wave Engine — soft colour breath from YS icon toward screen edges
+   6 randomised EXIT MODES keep every retract surprising:
+     retract   → classic pull-back along the beam
+     tip-first → far end dissolves first, sweeping inward
+     root-first→ beam disconnects from icon first, tip lingers
+     mid-fade  → centre vanishes, two glowing ends fade last
+     spread    → blobs bloom outward then dissolve in place
+     bounce    → beam snaps back, mini ghost bounces out, fades
+   Completely independent of the prismatic burst above.          ── */
+(function(){
+  var cv = document.getElementById('waveCanvas');
+  if(!cv) return;
+  var ctx = cv.getContext('2d');
+
+  var WAVE_COLOURS = {
+    gold:  '255,193,68',
+    purple:'180,90,255',
+    rose:  '255,80,130',
+    cyan:  '6,214,224'
+  };
+  var WAVE_ALPHA_BOOST = {
+    gold:1.0, purple:1.9, rose:1.7, cyan:1.0
+  };
+  var WAVE_CYCLE = ['gold','purple','rose','cyan'];
+  var wCycleIdx  = 0;
+
+  (function syncCycle(){
+    try{
+      var p = JSON.parse(localStorage.getItem('cp_prefs')||'{}');
+      var speeds = [20,12,8,5,3.5,2,1.2];
+      var spIdx  = p.glowSpeedIdx!=null ? Number(p.glowSpeedIdx) : 4;
+      var spd    = speeds[Math.min(spIdx,speeds.length-1)] || 3.5;
+      setInterval(function(){ wCycleIdx=(wCycleIdx+1)%WAVE_CYCLE.length; }, spd*2000);
+    }catch(e){}
+  })();
+
+  function activeColourKey(){
+    try{
+      var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');
+      return (p.glowColour && p.glowColour!=='auto' && p.glowColour!=='off')
+             ? p.glowColour : WAVE_CYCLE[wCycleIdx];
+    }catch(e){ return 'gold'; }
+  }
+  function activeGlow(){ return WAVE_COLOURS[activeColourKey()] || WAVE_COLOURS.gold; }
+  function activeBoost(){ return WAVE_ALPHA_BOOST[activeColourKey()] || 1.0; }
+
+  function waveIntensityMult(){
+    try{
+      var v=Number(JSON.parse(localStorage.getItem('cp_prefs')||'{}').waveIntensity);
+      var mults=[0,0.4,1.0,2.2];
+      return (v>=0&&v<mults.length)?mults[v]:1.0;
+    }catch(e){return 1.0;}
+  }
+  function waveFreqDelay(){
+    try{
+      var v=Number(JSON.parse(localStorage.getItem('cp_prefs')||'{}').waveFreq);
+      return [[20000,25000],[8000,12000],[2500,6000]][isNaN(v)?1:v] || [8000,12000];
+    }catch(e){return [8000,12000];}
+  }
+
+  function resize(){ cv.width=innerWidth; cv.height=innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function ss(x){ x=x<0?0:x>1?1:x; return x*x*(3-2*x); }
+  function c1(x){ return x<0?0:x>1?1:x; }
+
+  var EXIT_MODES = ['retract','tip-first','root-first','mid-fade','spread','bounce'];
+
+  function randomTarget(){
+    var W=cv.width, H=cv.height;
+    var opts=[
+      function(){ return {x:W,            y:H           }; },
+      function(){ return {x:W*(.4+Math.random()*.4), y:H}; },
+      function(){ return {x:W, y:H*(.3+Math.random()*.5)}; },
+      function(){ return {x:W*(.75+Math.random()*.25), y:H*(.65+Math.random()*.35)}; },
+      function(){ return {x:W*(.85+Math.random()*.15), y:H*(.5+Math.random()*.4) }; },
+    ];
+    return opts[Math.floor(Math.random()*opts.length)]();
+  }
+
+  var waves = [], _waveRafOn = false, _wLastTick = 0;
+
+  function spawnWave(){
+    var fd=waveFreqDelay();
+    if(waveIntensityMult()===0){ setTimeout(spawnWave, fd[0]+Math.random()*fd[1]); return; }
+    var el = document.getElementById('brandGlowIcon');
+    if(!el){ setTimeout(spawnWave, 12000+Math.random()*16000); return; }
+    var r   = el.getBoundingClientRect();
+    var ax  = r.right, ay = r.bottom;
+    var tgt = randomTarget();
+    var dx  = tgt.x-ax, dy=tgt.y-ay;
+    var dist= Math.sqrt(dx*dx+dy*dy);
+    waves.push({
+      ax:ax, ay:ay,
+      nx:dx/dist, ny:dy/dist,
+      dist:dist,
+      glow:  activeGlow(),
+      belly: 0.22+Math.random()*0.42,
+      alpha: (0.018+Math.random()*0.022)*activeBoost()*waveIntensityMult(),
+      period:(10+Math.random()*12)*1000,
+      hold:  (1.5+Math.random()*3.5)*1000,
+      born:  performance.now(),
+      exit:  EXIT_MODES[Math.floor(Math.random()*EXIT_MODES.length)]
+    });
+    /* Kick the draw loop only if it went idle */
+    if(!_waveRafOn){_waveRafOn=true;requestAnimationFrame(draw);}
+    fd=waveFreqDelay(); setTimeout(spawnWave, fd[0]+Math.random()*fd[1]);
+  }
+
+  setTimeout(spawnWave, 2000+Math.random()*3000);
+
+  /* Returns {ext, isExit, ef} or null when dead.
+     ext  = smoothstep envelope 0→1→0
+     ef   = exit fraction 0→1 (only meaningful when isExit=true) */
+  function wPhase(w, now){
+    var age=now-w.born;
+    if(age>=w.period) return null;
+    var ramp=(w.period-w.hold)/2;
+    if(age<ramp)          return {ext:ss(age/ramp),             isExit:false, ef:0};
+    if(age<ramp+w.hold)   return {ext:1,                        isExit:false, ef:0};
+    var ef=c1((age-ramp-w.hold)/ramp);
+    return                       {ext:ss(1-ef),                  isExit:true,  ef:ef};
+  }
+
+  /* Per-blob alpha factor during exit phase.
+     f = 0 (root/icon end) → 1 (tip/screen-edge end)
+     ef = 0 (exit just started) → 1 (wave fully gone)
+     Scale ef by 1.3 so every blob reaches fade=1 before ef=1,
+     offset by a position-dependent start time for sweep effects.  */
+  function exitAlpha(f, ef, mode){
+    var W=0.25; // fade-zone width
+    switch(mode){
+      case 'retract':    return 1;                                       // reach shrinkage handles it
+      case 'spread':     return 1-ef;                                    // uniform; blobs bloom instead
+      case 'bounce':     return ef<0.6 ? 1 : 1-(ef-0.6)/0.4;
+      case 'tip-first':  return 1-c1((ef*1.3-(1-f))/W);                 // tip(f=1) → root(f=0)
+      case 'root-first': return 1-c1((ef*1.3-f      )/W);               // root(f=0) → tip(f=1)
+      case 'mid-fade':   return 1-c1((ef*1.3-Math.abs(f-0.5)*1.3)/W);  // centre first
+      default:           return 1-ef;
+    }
+  }
+
+  function drawWave(w, ph){
+    var ext=ph.ext, ef=ph.ef, isX=ph.isExit;
+    var mode=isX ? w.exit : '_entry';
+    var STEPS=20; /* was 40 — halves radial gradient fills per frame */
+
+    for(var i=0;i<=STEPS;i++){
+      var f=i/STEPS; // 0=root → 1=tip
+
+      /* ── extFrac: controls both reach cutoff and blob position ── */
+      var xf;
+      if(!isX || mode==='retract'){
+        xf=ext;                                           // beam extends / retracts
+      } else if(mode==='bounce'){
+        /* snap back → mini ghost → fade */
+        if(ef<0.6)       xf=(1-ef/0.6);                  // retract to 0
+        else if(ef<0.8)  xf=((ef-0.6)/0.2)*0.28;        // bounce out to 28 %
+        else             xf=0.28*(1-(ef-0.8)/0.2);       // collapse
+      } else {
+        xf=1;  // beam stays extended — alpha does the work
+      }
+
+      if(f*w.dist > xf*w.dist) break; // beyond reach
+
+      /* ── blob size ── */
+      var arch=Math.sin(f*Math.PI*0.9);
+      var bloom=(mode==='spread'&&isX) ? (1+ef*2.8) : 1;
+      var blobR=arch*w.belly*w.dist*xf*bloom;
+      if(blobR<1) continue;
+
+      /* ── blob position ── */
+      var px=w.ax+w.nx*w.dist*f*xf;
+      var py=w.ay+w.ny*w.dist*f*xf;
+
+      /* ── alpha ── */
+      var aF = isX ? exitAlpha(f, ef, mode) : ext;
+      var a  = w.alpha*(1-f*0.65)*aF;
+      if(a<0.001) continue;
+
+      var rg=ctx.createRadialGradient(px,py,0,px,py,blobR);
+      rg.addColorStop(0,   'rgba('+w.glow+','+a.toFixed(3)+')');
+      rg.addColorStop(0.5, 'rgba('+w.glow+','+(a*.4).toFixed(3)+')');
+      rg.addColorStop(1,   'rgba('+w.glow+',0)');
+      ctx.fillStyle=rg;
+      ctx.beginPath(); ctx.arc(px,py,blobR,0,Math.PI*2); ctx.fill();
+    }
+  }
+
+  function draw(){
+    var now=performance.now();
+    /* Cap wave canvas at ~30 fps — halves GPU work on mobile */
+    if(now-_wLastTick<33){
+      if(waves.length){requestAnimationFrame(draw);}else{_waveRafOn=false;}
+      return;
+    }
+    _wLastTick=now;
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.globalCompositeOperation='screen';
+    waves=waves.filter(function(w){
+      var ph=wPhase(w,now);
+      if(!ph) return false;
+      drawWave(w,ph);
+      return true;
+    });
+    ctx.globalCompositeOperation='source-over';
+    if(waves.length>0){
+      requestAnimationFrame(draw);  /* keep looping while waves are alive */
+    } else {
+      _waveRafOn=false;             /* nothing to draw — go idle, save CPU/heat */
+    }
+  }
+  /* Pause wave RAF when tab goes to background; drain active waves on return */
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden){
+      waves=[];      /* drop in-flight waves — clean slate when user returns */
+      _waveRafOn=false;
+    }
+    /* on return, spawnWave loop is already running via setTimeout — nothing to restart */
+  });
+  /* Loop starts only when the first wave spawns (see spawnWave above) */
+})();
+</script>
+
+<!-- ===== ONBOARDING OVERLAY ===== -->
+<div id="onboardOv">
+  <button class="ob-skip" onclick="dismissOnboarding()">Skip</button>
+  <div class="ob-slides">
+
+    <div class="ob-slide active" data-i="0">
+      <div class="ob-icon">✨</div>
+      <div class="ob-title">Welcome to <span>Your Salon</span></div>
+      <div class="ob-body">Everything you need to run your business — bookings, earnings, clients, inventory, colour — in one beautifully simple app. Built for every beauty professional.</div>
+    </div>
+
+    <div class="ob-slide" data-i="1">
+      <div class="ob-icon">💰</div>
+      <div class="ob-title">Your money, <span>always right</span></div>
+      <div class="ob-body">Set your commission rate once. Every booking instantly calculates your cut, the salon's cut, and your take-home. <strong>Tips are 100% yours</strong> — tracked separately, never shared. If you ever lose your device, every figure is safe in the cloud.</div>
+    </div>
+
+    <div class="ob-slide" data-i="2">
+      <div class="ob-icon">📲</div>
+      <div class="ob-title">Clients book <span>themselves</span></div>
+      <div class="ob-body">Share your personal booking link — in your Instagram bio, a text, anywhere. Your client taps it, picks a time, and the request arrives in your inbox. <strong>No app for them to download. No account to create. No friction.</strong></div>
+    </div>
+
+    <div class="ob-slide" data-i="3">
+      <div class="ob-icon">🪪</div>
+      <div class="ob-title">Hair Passport — <span>never forget a client</span></div>
+      <div class="ob-body">Every client gets a digital profile — every service, every note, every visit. <strong>Recall exactly what you did last time</strong> without asking. That kind of personal touch is what turns a one-time client into a loyal regular.</div>
+    </div>
+
+    <div class="ob-slide" data-i="4">
+      <div class="ob-icon">🎨</div>
+      <div class="ob-title">Colour wheel — <span>in your pocket</span></div>
+      <div class="ob-body">The professional colour wheel, always with you. Identify an unwanted tone, tap it, and instantly see the exact colour to neutralise it. <strong>What used to take years of instinct is now a two-second reference.</strong> No textbook. No guesswork.</div>
+    </div>
+
+    <div class="ob-slide" data-i="5">
+      <div class="ob-icon">📦</div>
+      <div class="ob-title">Inventory — <span>always know your stock</span></div>
+      <div class="ob-body">Track every product you carry. Log usage after each service. Get low-stock alerts before you run out — not after. <strong>Available on every device, everywhere you work.</strong></div>
+    </div>
+
+    <div class="ob-slide" data-i="6">
+      <div class="ob-icon">📊</div>
+      <div class="ob-title">Reports &amp; tax — <span>your business at a glance</span></div>
+      <div class="ob-body">Search any client, service, or date in seconds. View earnings by day, week, month, or all time. When tax season arrives, <strong>your complete income record is already there</strong> — no scrambling, no receipts to chase.</div>
+    </div>
+
+    <div class="ob-slide" data-i="7">
+      <div class="ob-icon">🛡️</div>
+      <div class="ob-title">You are <span>covered</span></div>
+      <div class="ob-body">Client bookings include a <strong>built-in consent acknowledgement</strong>. Your data is encrypted and cloud-backed. Works for every beauty trade. One purchase — yours forever, every future update included. <strong>What used to cost hundreds a year now fits in your pocket.</strong></div>
+    </div>
+
+  </div>
+  <div class="ob-foot">
+    <div class="ob-dots" id="obDots"></div>
+    <button class="ob-next" id="obNext" onclick="obAdvance()">Next</button>
+    <a class="ob-guide-link" href="./guide.html" target="_blank">Read the full guide →</a>
+  </div>
+</div>
+
+<script>
+/* ===== ONBOARDING ===== */
+(function(){
+  var slides=document.querySelectorAll('.ob-slide');
+  var dots=document.getElementById('obDots');
+  var nextBtn=document.getElementById('obNext');
+  var cur=0;
+
+  /* Build dots */
+  slides.forEach(function(_,i){
+    var d=document.createElement('div');
+    d.className='ob-dot'+(i===0?' active':'');
+    dots.appendChild(d);
+  });
+
+  function goTo(n){
+    slides[cur].classList.remove('active');
+    dots.querySelectorAll('.ob-dot')[cur].classList.remove('active');
+    cur=n;
+    slides[cur].classList.add('active');
+    dots.querySelectorAll('.ob-dot')[cur].classList.add('active');
+    nextBtn.textContent=cur===slides.length-1?'Get started':'Next';
+  }
+
+  window.obAdvance=function(){
+    if(cur<slides.length-1){goTo(cur+1);}
+    else{dismissOnboarding();}
+  };
+
+  window.dismissOnboarding=function(){
+    var ov=document.getElementById('onboardOv');
+    if(ov){ov.classList.remove('show');setTimeout(function(){ov.style.display='none';},400);}
+    try{localStorage.setItem('_ys_onboarded','1');}catch(e){}
+  };
+
+  window.replayOnboarding=function(){
+    cur=0;
+    slides.forEach(function(s,i){s.classList.toggle('active',i===0);});
+    dots.querySelectorAll('.ob-dot').forEach(function(d,i){d.classList.toggle('active',i===0);});
+    nextBtn.textContent='Next';
+    var ov=document.getElementById('onboardOv');
+    if(ov){ov.style.display='flex';requestAnimationFrame(function(){ov.classList.add('show');});}
+  };
+
+  /* Show on first login */
+  window._ysShowOnboardingIfNeeded=function(){
+    if(localStorage.getItem('_ys_onboarded'))return;
+    var ov=document.getElementById('onboardOv');
+    if(ov){ov.style.display='flex';requestAnimationFrame(function(){ov.classList.add('show');});}
+  };
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(function(r){r.update();}).catch(function(){});
+}
+</script>
+
+<!-- Shell paygate — renders in the main WKWebView document (no iframe coord mismatch) -->
+<div id="shellPG" role="dialog" aria-modal="true">
+  <div class="spg-card">
+    <div id="spgMain">
+      <div class="spg-logo">✨</div>
+      <div class="spg-title">Your Salon Pro Monthly</div>
+      <div class="spg-sub">Full access to everything, for stylists.</div>
+      <ul class="spg-list">
+        <li>Earnings &amp; commission ledger, insights, tax export</li>
+        <li>Appointments calendar &amp; client cards</li>
+        <li>Online self-booking page for your clients</li>
+        <li>Backups &amp; cloud sync</li>
+      </ul>
+      <div class="spg-price">$4.99 / month · first month free</div>
+      <div class="spg-terms">1-month auto-renewable subscription. Renews at $4.99/month after the free month unless cancelled at least 24 hours before the period ends. Manage or cancel anytime in your Apple ID settings.</div>
+      <button class="spg-buy" onclick="shellPayBuy()">Start free trial</button>
+      <button class="spg-close" id="spgClose" onclick="shellPayClose()">Keep looking around</button>
+      <div class="spg-foot">Questions? <a href="mailto:chabokchamejun@gmail.com">chabokchamejun@gmail.com</a></div>
+      <div class="spg-legal">
+        By subscribing you agree to our <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/">Terms&nbsp;of&nbsp;Use</a> and <a href="https://getcommissionpro.com/privacy.html">Privacy&nbsp;Policy</a>.
+      </div>
+      <button class="spg-restore" onclick="shellPayRestore()">Restore Purchases</button>
+    </div>
+    <div class="spg-success" id="spgSuccess">
+      <div class="spg-success-ic">✨</div>
+      <div class="spg-success-title">You're in.</div>
+      <div class="spg-success-sub">Welcome, founding stylist.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Shell paygate: IAP lives here in the main WKWebView frame ──────────────
+   Touch events in the main document have no iframe coordinate offset — every
+   button tap is reliable. app.html posts messages to trigger show/buy/restore;
+   salon.html calls iapHandler directly and relays success back via postMessage. */
+(function(){
+  var pg = document.getElementById('shellPG');
+  var pgMain = document.getElementById('spgMain');
+  var pgSuccess = document.getElementById('spgSuccess');
+  var pgCloseBtn = document.getElementById('spgClose');
+
+  function _earnFrame(){
+    try{return FRAMES && FRAMES.earn ? FRAMES.earn : null;}catch(e){return null;}
+  }
+
+  function _hideRooms(){
+    /* display:none kills iframe touch handlers on restore in WKWebView.
+       Instead, slide iframes off-screen — native hit-test misses them,
+       but the iframe content stays fully alive (no re-layout, no handler loss). */
+    var earn=document.getElementById('roomEarn');
+    var appt=document.getElementById('roomAppt');
+    if(earn){earn.style.transform='translateX(-300vw)';earn.style.pointerEvents='none';}
+    if(appt){appt.style.transform='translateX(-300vw)';appt.style.pointerEvents='none';}
+  }
+  function _showRooms(){
+    var earn=document.getElementById('roomEarn');
+    var appt=document.getElementById('roomAppt');
+    if(earn){earn.style.transform='';earn.style.pointerEvents='';}
+    if(appt){appt.style.transform='';appt.style.pointerEvents='';}
+  }
+
+  window.shellPayShow = function(mandatory){
+    if(!pg) return;
+    _hideRooms();
+    pg.classList.add('on');
+    /* always show the close button — never trap the user with no exit.
+       Once IAP is fully verified in production, mandatory can be re-enabled. */
+    if(pgCloseBtn) pgCloseBtn.style.display = '';
+    if(pgMain){ pgMain.style.display = ''; }
+    if(pgSuccess){ pgSuccess.style.display = 'none'; pgSuccess.classList.remove('on'); }
+  };
+
+  window.shellPayClose = function(){
+    if(!pg) return;
+    pg.classList.remove('on');
+    _showRooms();
+    var f = _earnFrame();
+    if(f){ try{ f.contentWindow.postMessage({salon:'paygateClose'}, '*'); }catch(e){} }
+  };
+
+  window.shellPayBuy = function(){
+    if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iapHandler){
+      window.webkit.messageHandlers.iapHandler.postMessage({action:'purchase', productId:'com.yoursalon.pro.monthly'});
+    } else {
+      window.open('https://getcommissionpro.com', '_blank');
+    }
+  };
+
+  window.shellPayRestore = function(){
+    if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iapHandler){
+      window.webkit.messageHandlers.iapHandler.postMessage({action:'restore'});
+    }
+  };
+
+  /* Called by native Swift after a successful purchase or restore */
+  window.onAppleIAPSuccess = function(productId){
+    try{ localStorage.setItem('cp_unlocked','1'); }catch(e){}
+    if(pgMain) pgMain.style.display = 'none';
+    if(pgSuccess){ pgSuccess.style.display = 'flex'; pgSuccess.classList.add('on'); }
+    var f = _earnFrame();
+    if(f){ try{ f.contentWindow.postMessage({salon:'paygateIAPSuccess', productId: productId || ''}, '*'); }catch(e){} }
+    setTimeout(function(){
+      if(pg) pg.classList.remove('on');
+      if(f){ try{ f.contentWindow.postMessage({salon:'paygateClose'}, '*'); }catch(e){} }
+    }, 2200);
+  };
+
+  window.onAppleIAPRestore = window.onAppleIAPSuccess;
+
+  /* Listen for commands from the earn iframe */
+  window.addEventListener('message', function(ev){
+    var d = ev.data || {};
+    if(d.salon === 'showPaygate')  { window.shellPayShow(!!d.mandatory); return; }
+    if(d.salon === 'closePaygate') { window.shellPayClose(); return; }
+    if(d.salon === 'paygateBuy')   { window.shellPayBuy(); return; }
+    if(d.salon === 'paygateRestore'){ window.shellPayRestore(); return; }
+    /* Open external URLs — navigate main frame; native WKNavigationDelegate handles it */
+    if(d.salon === 'openUrl' && d.url){ window.location.href = d.url; return; }
+  });
+})();
+</script>
+</body>
+</html>
