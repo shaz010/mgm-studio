@@ -3088,12 +3088,13 @@ function deleteClient(){
   var msg=apptCount>0
     ?'Delete '+c.name+' AND their '+apptCount+' appointment'+(apptCount===1?'':'s')+'? This cannot be undone.'
     :'Delete '+c.name+'?';
-  if(!confirm(msg))return;
-  clients=clients.filter(function(x){return x.id!==clientId;});
-  if(apptCount>0){appts=appts.filter(function(a){return !sameClient(a,c);});save(APPTS,appts);}
-  save(CLIENTS,clients);
-  closeSheet('clientModal');renderClients();toast('Deleted');
-  if(typeof publishAvailability==='function')publishAvailability();
+  askConfirm(msg,function(){
+    clients=clients.filter(function(x){return x.id!==clientId;});
+    if(apptCount>0){appts=appts.filter(function(a){return !sameClient(a,c);});save(APPTS,appts);}
+    save(CLIENTS,clients);
+    closeSheet('clientModal');renderClients();toast('Deleted');
+    if(typeof publishAvailability==='function')publishAvailability();
+  },{danger:true,yesLabel:'Delete'});
 }
 function openClientBookings(id){
   reload();
@@ -3489,7 +3490,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.15 · safe-area notch fix for trade-screen';
+var VERSION='v6.17 · fix demo data re-seeding after Delete All';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3820,6 +3821,9 @@ function _nukeStorage(){
   /* permanent erase wall — requests created BEFORE this time are refused forever,
      even if Firestore clear fails or is slow.  Never removed.               */
   try{localStorage.setItem('_ap_eraseTime',String(_eraseNow));}catch(_){}
+  /* block demo re-injection after erase — without this flag the first-run IIFE
+     re-seeds 6 fake clients on every reload after a nuke.                   */
+  try{localStorage.setItem('_ys_demo_seen','1');}catch(_){}
 }
 function deleteAllClients(){
   askConfirm('Delete ALL clients and ALL appointments on this device? Cannot be undone.',function(){
