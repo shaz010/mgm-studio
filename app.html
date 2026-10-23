@@ -3440,10 +3440,17 @@ function payBuy(){
 /* Called by native Swift after successful Apple IAP */
 function onAppleIAPSuccess(productId){
   try{localStorage.setItem('cp_unlocked','1');}catch(e){}
-  /* Show success inside the gate, then close after delay */
+  /* Only show pgSuccess flash when the payGate was already open (new purchase).
+     If gate was closed (restore-on-launch), just silently unlock — no flash. */
+  var gate=document.getElementById('payGate');
+  var gateWasOpen=gate&&gate.classList.contains('on');
   var pgMain=document.getElementById('pgMain');if(pgMain)pgMain.style.display='none';
-  var s=document.getElementById('pgSuccess');if(s){s.style.display='flex';s.classList.add('on');}
-  setTimeout(function(){payClose();},2200);
+  if(gateWasOpen){
+    var s=document.getElementById('pgSuccess');if(s){s.style.display='flex';s.classList.add('on');}
+    setTimeout(function(){payClose();},2200);
+  }else{
+    payClose();
+  }
 }
 /* Hide promo code section on Apple IAP build */
 (function(){if(!window.IS_APPLE_IAP)return;
@@ -3555,7 +3562,13 @@ function applyAccessGate(){
   /* Not unlocked, no active trial → lock immediately */
   payShow(false);
 }
-applyAccessGate();
+/* Bug 2 fix: on iOS (IS_APPLE_IAP), defer gate check ~1.5s so Swift's
+   checkCurrentEntitlements() can finish before we show/hide the paywall. */
+if(window.IS_APPLE_IAP){
+  setTimeout(applyAccessGate,1500);
+}else{
+  applyAccessGate();
+}
 </script>
 <script>
 if("serviceWorker" in navigator){
@@ -4044,7 +4057,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.57 · Apple 3.1.2c paywall price fix';
+var VERSION='app v2.58 · restore fix + paywall timing fix';
 function deleteMyAccount(){
   if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
   if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;
