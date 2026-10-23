@@ -1,5 +1,5 @@
 # YOUR SALON PRO — iOS HANDOFF
-**Last updated: Sep 29, 2026 · 1:15 PM PT**
+**Last updated: Oct 1, 2026 · 3:30 PM PT**
 Read this first in any new session about the iOS app / App Store.
 
 ---
@@ -104,6 +104,11 @@ Tip: ASC attachments reject uppercase `.MP4` — rename to lowercase `.mp4`.
 - Version board (Sep 29): 💰 app v2.57 · 📅 appt v6.16 · 🚪 salon v0.50 · 🛡️ sw v75 · 📆 book v3.55
 
 ---
+
+## ⚠️ OPS WATCHLIST
+- 🔥 **Google Cloud billing** — Free trial expires **~Oct 8, 2026** (7 days from Oct 1). Firebase Auth + Firestore go down if not upgraded. Fix: add billing at console.cloud.google.com → Billing. Firebase Spark free tier = no charges at this scale. **DO THIS NOW.**
+- 🌐 **Domain renewal** — getcommissionpro.com ~June 2027 (Namecheap)
+- 🛡️ **Firestore security rules** — permanent rules only, no expiry
 
 ## 🤖 ANDROID — PARKED (Apple first)
 - ✅ Android developer verification: **Registered** (confirmed on screen Sep 29; Sep 30 deadline is a non-issue)
