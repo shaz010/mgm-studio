@@ -3460,14 +3460,15 @@ function payRestore(){
   }
 })();
 function payBuy(){
-  /* Only use native IAP when the Swift bridge is actually present */
-  if(window.IS_APPLE_IAP&&window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.iapHandler){
-    window.webkit.messageHandlers.iapHandler.postMessage({action:'purchase',productId:'com.yoursalon.pro.monthly'});
+  if(window.IS_APPLE_IAP){
+    if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.iapHandler){
+      window.webkit.messageHandlers.iapHandler.postMessage({action:'purchase',productId:'com.yoursalon.pro.monthly'});
+    }else{
+      /* PWA context — IAP only available in the App Store build */
+      window.open('https://apps.apple.com/app/id6748930947','_blank');
+    }
     return;
   }
-  /* PWA or browser (incl. iOS Safari PWA) — open Stripe */
-  if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){return;}
-  window.open(UNLOCK.stripeUrl,'_blank');
 }
 /* Called by native Swift after successful Apple IAP */
 function onAppleIAPSuccess(productId){
@@ -4090,7 +4091,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.60 · fix payBuy — route iOS PWA to Stripe instead of landing page';
+var VERSION='app v2.61 · revert Stripe — Apple IAP only; PWA taps ✨x5 for dev access';
 /* ===== In-app confirm (native confirm() silently fails in iOS PWA / WKWebView) ===== */
 var _cpCfFn=null;
 function askConfirm(msg,onYes,opts){
