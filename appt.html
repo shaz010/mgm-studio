@@ -3490,11 +3490,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-<<<<<<< HEAD
-var VERSION='v6.17 · fix demo data re-seeding after Delete All';
-=======
-var VERSION='v6.16 · fix deleteClient confirm → askConfirm modal (WKWebView)';
->>>>>>> 7e750c7f04745bb41644deb0657c26dc8ad360db
+var VERSION='v6.18 · fix AR freeze — replace confirm() in saveSplit + forceUpdate with askConfirm (WKWebView safe)';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3570,7 +3566,14 @@ function _lockSplit(){_splitUnlocked=false;var i=$('setSplit'),b=$('splitLockBtn
 function saveSplit(){
   var p=getPrefs();var old=(p.splitPct!=null?p.splitPct:60);var v=parseFloat($('setSplit').value);
   if(isNaN(v))v=60; v=Math.max(0,Math.min(100,v));
-  if(v!==old && !confirm('Change your split from '+old+'% to '+v+'%?\n\nThis recalculates all your take-home figures.')){$('setSplit').value=old;_lockSplit();return;}
+  if(v!==old){
+    askConfirm('Change your split from '+old+'% to '+v+'%? This recalculates all your take-home figures.',function(){
+      p.splitPct=v;setPrefs(p);$('setSplit').value=v;_lockSplit();
+      toast(v>=100?'Pay saved — you keep 100%':'Pay saved');
+      if(typeof dayMode!=='undefined'&&dayMode==='day')renderDay();
+    });
+    return;
+  }
   p.splitPct=v;setPrefs(p);$('setSplit').value=v;_lockSplit();
   toast(v>=100?'Pay saved — you keep 100%':'Pay saved');
   if(typeof dayMode!=='undefined'&&dayMode==='day')renderDay();
@@ -3585,7 +3588,7 @@ function applyTheme(){
   var st=$('noirStatus'); if(st)st.textContent=on?'On — holographic noir':'Off — classic dark';
 }
 function forceUpdate(){
-  if(!confirm('Refresh the app to the latest version? This clears the local app cache (your saved data stays).'))return;
+  askConfirm('Refresh to the latest version? This clears the local app cache — your saved data stays safe.',function(){
   /* location.reload() is blocked in iOS PWA iframes — use hard nav instead */
   var done=function(){
     try{
@@ -3602,6 +3605,7 @@ function forceUpdate(){
     Promise.all(jobs).then(done).catch(done);
     setTimeout(done,1500);
   }catch(e){done();}
+  });
 }
 function toggleNoir(){
   var p=getPrefs();p.noir=!p.noir;setPrefs(p);applyTheme();
@@ -3825,9 +3829,6 @@ function _nukeStorage(){
   /* permanent erase wall — requests created BEFORE this time are refused forever,
      even if Firestore clear fails or is slow.  Never removed.               */
   try{localStorage.setItem('_ap_eraseTime',String(_eraseNow));}catch(_){}
-  /* block demo re-injection after erase — without this flag the first-run IIFE
-     re-seeds 6 fake clients on every reload after a nuke.                   */
-  try{localStorage.setItem('_ys_demo_seen','1');}catch(_){}
 }
 function deleteAllClients(){
   askConfirm('Delete ALL clients and ALL appointments on this device? Cannot be undone.',function(){
