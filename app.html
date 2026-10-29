@@ -3460,17 +3460,13 @@ function payRestore(){
   }
 })();
 function payBuy(){
-  if(window.IS_APPLE_IAP){
-    if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.iapHandler){
-      window.webkit.messageHandlers.iapHandler.postMessage({action:'purchase',productId:'com.yoursalon.pro.monthly'});
-    }else{
-      /* IAP bridge not available — open website in Safari */
-      window.open('https://getcommissionpro.com','_blank');
-    }
+  /* Only use native IAP when the Swift bridge is actually present */
+  if(window.IS_APPLE_IAP&&window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.iapHandler){
+    window.webkit.messageHandlers.iapHandler.postMessage({action:'purchase',productId:'com.yoursalon.pro.monthly'});
     return;
   }
-  if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){alert('Payment link is not set up yet — coming soon!');return;}
-  /* Open Stripe in new tab/window — avoids WKWebView navigation freeze */
+  /* PWA or browser (incl. iOS Safari PWA) — open Stripe */
+  if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){return;}
   window.open(UNLOCK.stripeUrl,'_blank');
 }
 /* Called by native Swift after successful Apple IAP */
@@ -4094,7 +4090,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.59 · fix delete + replace confirm() with askConfirm (WKWebView/PWA safe)';
+var VERSION='app v2.60 · fix payBuy — route iOS PWA to Stripe instead of landing page';
 /* ===== In-app confirm (native confirm() silently fails in iOS PWA / WKWebView) ===== */
 var _cpCfFn=null;
 function askConfirm(msg,onYes,opts){
