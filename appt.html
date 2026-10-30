@@ -3492,7 +3492,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.20 · fix _nukeStorage — preserve cp_unlocked so paywall doesnt return after data wipe';
+var VERSION='v6.21 · fix delete-all ghost: preserve _ys_demo_seen in _nukeStorage so demo data cant re-inject';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3827,6 +3827,10 @@ function _nukeStorage(){
   keys.forEach(function(k){try{localStorage.removeItem(k);}catch(_){}});
   try{localStorage.clear();}catch(_){}
   if(wasUnlocked){try{localStorage.setItem('cp_unlocked','1');}catch(_){}}
+  /* prevent demo data re-injection after wipe — _nukeStorage clears _ys_demo_seen,
+     which causes the first-run IIFE to re-fire and inject Lisa Park (today, In Progress).
+     Mark demo as already seen so the ghost appointment never comes back. */
+  try{localStorage.setItem('_ys_demo_seen','1');}catch(_){}
   /* write erase TIMESTAMP after clearing — survives multiple reloads for 60 s,
      so rapid reloads (update checks, room-switches) can't bypass the guard */
   var _eraseNow=Date.now();
