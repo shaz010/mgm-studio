@@ -2722,9 +2722,11 @@ function commitSave(){
 function cancelEdit(){editingId=null;showView('day')}
 function deleteFromSheet(){
   if(!sheetId)return;
+  var _id=sheetId;
   askConfirm('Delete this appointment?',function(){
-    appts=appts.filter(function(a){return a.id!==sheetId});save(APPTS,appts);
+    appts=appts.filter(function(a){return a.id!==_id});save(APPTS,appts);
     closeSheet('apptModal');sheetId=null;toast('Deleted');
+    if(typeof renderDay==='function')renderDay();
     if(typeof publishAvailability==='function')publishAvailability();
   },{title:'Delete appointment',yesLabel:'Delete',danger:true});
 }
@@ -3490,7 +3492,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.18 · fix AR freeze — replace confirm() in saveSplit + forceUpdate with askConfirm (WKWebView safe)';
+var VERSION='v6.20 · fix _nukeStorage — preserve cp_unlocked so paywall doesnt return after data wipe';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3818,10 +3820,13 @@ function _hardReload(){
   }
 }
 function _nukeStorage(){
+  var wasUnlocked=false;
+  try{wasUnlocked=localStorage.getItem('cp_unlocked')==='1';}catch(_){}
   var keys=[];
   try{for(var i=0;i<localStorage.length;i++){keys.push(localStorage.key(i));}}catch(_){}
   keys.forEach(function(k){try{localStorage.removeItem(k);}catch(_){}});
   try{localStorage.clear();}catch(_){}
+  if(wasUnlocked){try{localStorage.setItem('cp_unlocked','1');}catch(_){}}
   /* write erase TIMESTAMP after clearing — survives multiple reloads for 60 s,
      so rapid reloads (update checks, room-switches) can't bypass the guard */
   var _eraseNow=Date.now();
