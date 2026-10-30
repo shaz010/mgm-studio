@@ -3492,7 +3492,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.21 · fix delete-all ghost: preserve _ys_demo_seen in _nukeStorage so demo data cant re-inject';
+var VERSION='v6.22 · fix delete-all: reload sibling earn frame so ER clears stale in-memory data';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3839,12 +3839,18 @@ function _nukeStorage(){
      even if Firestore clear fails or is slow.  Never removed.               */
   try{localStorage.setItem('_ap_eraseTime',String(_eraseNow));}catch(_){}
 }
+function _reloadSibling(){
+  /* Tell the shell to reload the earn iframe so it picks up clean localStorage
+     instead of rendering stale in-memory data when the user switches rooms. */
+  try{window.parent.postMessage({salon:'reloadRoom',room:'earn'},'*');}catch(_){}
+}
 function deleteAllClients(){
   askConfirm('Delete ALL clients and ALL appointments on this device? Cannot be undone.',function(){
     closeSheet('settingsModal');
     if(_reqUnsub){_reqUnsub();_reqUnsub=null;}
     clearFirestoreRequests(function(){
       _nukeStorage();
+      _reloadSibling();
       toast('All cleared');
       setTimeout(_hardReload,600);
     });
@@ -3856,6 +3862,7 @@ function startFresh(){
       if(_reqUnsub){_reqUnsub();_reqUnsub=null;}
       clearFirestoreRequests(function(){
         _nukeStorage();
+        _reloadSibling();
         toast('Fresh start — all clear');
         setTimeout(_hardReload,400);
       });
