@@ -266,6 +266,15 @@ body.theme-light .reset-app-btn{border-color:#e0b4b4;color:#b14}
 .danger-body{padding:2px 15px 15px}
 .erase-modal{display:none;position:fixed;inset:0;z-index:100050;background:rgba(0,0,0,.9);align-items:center;justify-content:center;padding:26px}
 .erase-modal.open{display:flex}
+#cpConfirm{display:none;position:fixed;inset:0;z-index:100040;background:rgba(0,0,0,.72);align-items:flex-end;justify-content:center;padding:0 0 env(safe-area-inset-bottom,0) 0}
+#cpConfirm.open{display:flex}
+#cpConfirm .cp-cf-card{background:#18181f;border:1.5px solid #2a2a36;border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:480px;box-shadow:0 -8px 40px rgba(0,0,0,.7)}
+#cpConfirm .cp-cf-title{font-size:16px;font-weight:800;color:#f5f5fa;margin-bottom:8px}
+#cpConfirm .cp-cf-msg{font-size:14px;color:#a0a0b0;margin-bottom:20px;line-height:1.5}
+#cpConfirm .cp-cf-btns{display:flex;gap:10px}
+#cpConfirm .cp-cf-cancel{flex:1;padding:14px;border-radius:12px;border:1.5px solid #33333c;background:transparent;color:#a0a0b0;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+#cpConfirm .cp-cf-yes{flex:1;padding:14px;border-radius:12px;border:none;background:var(--gold,#FFB800);color:#1a1208;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit}
+#cpConfirm .cp-cf-yes.danger{background:#e53e3e;color:#fff}
 #qrOverlay{display:none;position:fixed;inset:0;z-index:100060;background:rgba(0,0,0,.93);flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:32px}
 #qrOverlay.open{display:flex}
 .erase-card{max-width:380px;width:100%;background:#0a0608;border:1.5px solid #ff2b4a;border-radius:18px;padding:26px 22px;text-align:center;box-shadow:0 0 30px rgba(255,43,74,.45),inset 0 0 22px rgba(255,43,74,.08)}
@@ -1131,6 +1140,16 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
     <div class="erase-actions">
       <button class="erase-cancel" onclick="closeEraseModal()">Keep my data</button>
       <button class="erase-go" onclick="confirmErase()">Erase all</button>
+    </div>
+  </div>
+</div>
+<div id="cpConfirm" onclick="if(event.target===this)_closeCPConfirm()">
+  <div class="cp-cf-card">
+    <div class="cp-cf-title" id="cpCfTitle">Are you sure?</div>
+    <div class="cp-cf-msg" id="cpCfMsg"></div>
+    <div class="cp-cf-btns">
+      <button class="cp-cf-cancel" onclick="_closeCPConfirm()">Cancel</button>
+      <button class="cp-cf-yes" id="cpCfYes" onclick="_fireCPConfirm()">Confirm</button>
     </div>
   </div>
 </div>
@@ -2154,14 +2173,25 @@ async function save(){
 }
 function delAppt(id){
   var _r=(typeof data!=='undefined'&&data)?data.find(function(x){return String(x.id)===String(id);}):null;
-  if(_r&&_r._src==='appt'){alert('This booking lives in Appointments — delete it there.');return;}
-  if(!confirm('Delete this appointment?'))return;
-  try{
-    var arr=loadAppts().filter(function(x){return String(x.id)!==String(id);});
-    saveAppts(arr);
-    if(String(editingId)===String(id))resetForm();
-    setSyncBadge('ok','Saved');loadAll();
-  }catch(err){setSyncBadge('err','Error');console.error(err);}
+  if(_r&&_r._src==='appt'){
+    askConfirm('Delete this appointment?',function(){
+      try{
+        var apArr=JSON.parse(localStorage.getItem('ap_appts')||'[]');
+        apArr=apArr.filter(function(x){return String(x.id)!==String(id);});
+        localStorage.setItem('ap_appts',JSON.stringify(apArr));
+        setSyncBadge('ok','Deleted');loadAll();
+      }catch(err){setSyncBadge('err','Error');console.error(err);}
+    },{danger:true});
+    return;
+  }
+  askConfirm('Delete this appointment?',function(){
+    try{
+      var arr=loadAppts().filter(function(x){return String(x.id)!==String(id);});
+      saveAppts(arr);
+      if(String(editingId)===String(id))resetForm();
+      setSyncBadge('ok','Saved');loadAll();
+    }catch(err){setSyncBadge('err','Error');console.error(err);}
+  },{danger:true});
 }
 function editAppt(id){
   const a=data.find(x=>String(x.id)===String(id));if(!a)return;
@@ -2683,18 +2713,22 @@ function importData(input){
     try{
       var d=JSON.parse(reader.result);
       if(d&&d.kind==='full'&&d.store&&typeof d.store==='object'){
-        if(!confirm('Restore this backup? It will replace ALL bookings, prices, clients and settings on this device.'))return;
-        try{localStorage.clear();}catch(_e){}
-        Object.keys(d.store).forEach(function(k){try{localStorage.setItem(k,d.store[k]);}catch(_e){}});
-        alert('Backup restored. The app will now reload.');location.reload();return;
+        askConfirm('Restore this backup? It will replace ALL bookings, prices, clients and settings on this device.',function(){
+          try{localStorage.clear();}catch(_e){}
+          Object.keys(d.store).forEach(function(k){try{localStorage.setItem(k,d.store[k]);}catch(_e){}});
+          location.reload();
+        },{title:'Restore full backup',danger:true});
+        return;
       }
       if(d&&d.app==='CommissionPro'){
-        if(!confirm('Restore this backup? It will replace the bookings, prices and client cards currently on this device.'))return;
-        if(Array.isArray(d.appts))localStorage.setItem(APPTS_KEY,JSON.stringify(d.appts));
-        if(d.paid&&typeof d.paid==='object')localStorage.setItem(PAID_KEY,JSON.stringify(d.paid));
-        if(d.prefs&&typeof d.prefs==='object')localStorage.setItem('cp_prefs',JSON.stringify(d.prefs));
-        if(Array.isArray(d.clients))localStorage.setItem('cp_clients',JSON.stringify(d.clients));
-        alert('Backup restored. The app will now reload.');location.reload();return;
+        askConfirm('Restore this backup? It will replace the bookings, prices and client cards currently on this device.',function(){
+          if(Array.isArray(d.appts))localStorage.setItem(APPTS_KEY,JSON.stringify(d.appts));
+          if(d.paid&&typeof d.paid==='object')localStorage.setItem(PAID_KEY,JSON.stringify(d.paid));
+          if(d.prefs&&typeof d.prefs==='object')localStorage.setItem('cp_prefs',JSON.stringify(d.prefs));
+          if(Array.isArray(d.clients))localStorage.setItem('cp_clients',JSON.stringify(d.clients));
+          location.reload();
+        },{title:'Restore backup',danger:true});
+        return;
       }
       throw new Error('unrecognised backup');
     }catch(e){alert('That file does not look like a Your Salon backup.');console.error(e);}
@@ -2834,8 +2868,9 @@ function cleanupDragClones(){
   var ph=document.querySelectorAll('.chip-placeholder');for(var j=0;j<ph.length;j++)ph[j].classList.remove('chip-placeholder');
 }
 function resetQuickPicks(){
-  if(!confirm('Reset your Quick Picks to the default set and order?'))return;
-  saveFavorites(DEFAULT_FAVES.slice());buildServiceChips();
+  askConfirm('Reset your Quick Picks to the default set and order?',function(){
+    saveFavorites(DEFAULT_FAVES.slice());buildServiceChips();
+  });
 }
 function flyGhost(srcRect,tgtRect,name){
   try{
@@ -3294,9 +3329,10 @@ function exportClient(){
 }
 function deleteClientConfirm(){
   var id=$('clId').value;if(!id)return;
-  if(!confirm('Delete this client card permanently?'))return;
-  var clients=getClients().filter(function(c){return c.id!==id;});
-  saveClients(clients);closeClientForm();renderClientList();
+  askConfirm('Delete this client card permanently?',function(){
+    var clients=getClients().filter(function(c){return c.id!==id;});
+    saveClients(clients);closeClientForm();renderClientList();
+  },{danger:true});
 }
 
 applyFx(getFx());
@@ -3428,14 +3464,11 @@ function payBuy(){
     if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.iapHandler){
       window.webkit.messageHandlers.iapHandler.postMessage({action:'purchase',productId:'com.yoursalon.pro.monthly'});
     }else{
-      /* IAP bridge not available — open website in Safari */
-      window.open('https://getcommissionpro.com','_blank');
+      /* PWA context — IAP only available in the App Store build */
+      window.open('https://apps.apple.com/app/id6748930947','_blank');
     }
     return;
   }
-  if(!UNLOCK.stripeUrl||UNLOCK.stripeUrl.indexOf('PASTE')===0){alert('Payment link is not set up yet — coming soon!');return;}
-  /* Open Stripe in new tab/window — avoids WKWebView navigation freeze */
-  window.open(UNLOCK.stripeUrl,'_blank');
 }
 /* Called by native Swift after successful Apple IAP */
 function onAppleIAPSuccess(productId){
@@ -3592,15 +3625,16 @@ function showUpdateBanner(){
 }
 // Force a clean update: drop service worker + caches, then reload
 function forceUpdate(){
-  if(!confirm('Refresh the app to the latest version? This clears the local app cache (your saved data stays).'))return;
-  var done=function(){location.reload();};
-  try{
-    var jobs=[];
-    if('caches' in window){jobs.push(caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k);}));}));}
-    if(navigator.serviceWorker){jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister();}));}));}
-    Promise.all(jobs).then(done).catch(done);
-    setTimeout(done,1500);
-  }catch(e){done();}
+  askConfirm('Refresh to the latest version? This clears the local app cache — your saved data stays safe.',function(){
+    var done=function(){location.reload();};
+    try{
+      var jobs=[];
+      if('caches' in window){jobs.push(caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k);}));}));}
+      if(navigator.serviceWorker){jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister();}));}));}
+      Promise.all(jobs).then(done).catch(done);
+      setTimeout(done,1500);
+    }catch(e){done();}
+  });
 }
 // Idle pause for decorative animations (cuts CPU/heat when not interacting)
 var _idleT=null;
@@ -4057,13 +4091,27 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.58 · restore fix + paywall timing fix';
+var VERSION='app v2.61 · revert Stripe — Apple IAP only; PWA taps ✨x5 for dev access';
+/* ===== In-app confirm (native confirm() silently fails in iOS PWA / WKWebView) ===== */
+var _cpCfFn=null;
+function askConfirm(msg,onYes,opts){
+  opts=opts||{};
+  var t=document.getElementById('cpCfTitle'),m=document.getElementById('cpCfMsg'),y=document.getElementById('cpCfYes');
+  if(t)t.textContent=opts.title||'Are you sure?';
+  if(m)m.textContent=msg;
+  if(y){y.textContent=opts.yesLabel||'Confirm';y.className='cp-cf-yes'+(opts.danger?' danger':'');}
+  _cpCfFn=onYes;
+  var el=document.getElementById('cpConfirm');if(el)el.classList.add('open');
+}
+function _closeCPConfirm(){var el=document.getElementById('cpConfirm');if(el)el.classList.remove('open');_cpCfFn=null;}
+function _fireCPConfirm(){var fn=_cpCfFn;_closeCPConfirm();if(fn)fn();}
 function deleteMyAccount(){
-  if(!confirm('Delete your account and all data?\n\nThis will permanently erase everything on this device and cannot be undone.'))return;
-  if(!confirm('Are you sure? This is permanent — all your bookings, clients, and settings will be deleted.'))return;
-  try{localStorage.clear();}catch(e){}
-  alert('Your account and all data have been deleted. The app will now restart.');
-  window.location.reload(true);
+  askConfirm('Delete your account and all data? This permanently erases everything on this device and cannot be undone.',function(){
+    askConfirm('Last chance — are you sure? All bookings, clients and settings will be deleted.',function(){
+      try{localStorage.clear();}catch(e){}
+      window.location.reload(true);
+    },{title:'Final confirmation',danger:true,yesLabel:'Delete everything'});
+  },{title:'Delete account',danger:true,yesLabel:'Yes, delete'});
 }
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */

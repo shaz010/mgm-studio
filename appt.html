@@ -2722,9 +2722,11 @@ function commitSave(){
 function cancelEdit(){editingId=null;showView('day')}
 function deleteFromSheet(){
   if(!sheetId)return;
+  var _id=sheetId;
   askConfirm('Delete this appointment?',function(){
-    appts=appts.filter(function(a){return a.id!==sheetId});save(APPTS,appts);
+    appts=appts.filter(function(a){return a.id!==_id});save(APPTS,appts);
     closeSheet('apptModal');sheetId=null;toast('Deleted');
+    if(typeof renderDay==='function')renderDay();
     if(typeof publishAvailability==='function')publishAvailability();
   },{title:'Delete appointment',yesLabel:'Delete',danger:true});
 }
@@ -3490,7 +3492,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.16 · fix deleteClient confirm → askConfirm modal (WKWebView)';
+var VERSION='v6.22 · fix delete-all: reload sibling earn frame so ER clears stale in-memory data';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3566,7 +3568,14 @@ function _lockSplit(){_splitUnlocked=false;var i=$('setSplit'),b=$('splitLockBtn
 function saveSplit(){
   var p=getPrefs();var old=(p.splitPct!=null?p.splitPct:60);var v=parseFloat($('setSplit').value);
   if(isNaN(v))v=60; v=Math.max(0,Math.min(100,v));
-  if(v!==old && !confirm('Change your split from '+old+'% to '+v+'%?\n\nThis recalculates all your take-home figures.')){$('setSplit').value=old;_lockSplit();return;}
+  if(v!==old){
+    askConfirm('Change your split from '+old+'% to '+v+'%? This recalculates all your take-home figures.',function(){
+      p.splitPct=v;setPrefs(p);$('setSplit').value=v;_lockSplit();
+      toast(v>=100?'Pay saved — you keep 100%':'Pay saved');
+      if(typeof dayMode!=='undefined'&&dayMode==='day')renderDay();
+    });
+    return;
+  }
   p.splitPct=v;setPrefs(p);$('setSplit').value=v;_lockSplit();
   toast(v>=100?'Pay saved — you keep 100%':'Pay saved');
   if(typeof dayMode!=='undefined'&&dayMode==='day')renderDay();
@@ -3581,7 +3590,7 @@ function applyTheme(){
   var st=$('noirStatus'); if(st)st.textContent=on?'On — holographic noir':'Off — classic dark';
 }
 function forceUpdate(){
-  if(!confirm('Refresh the app to the latest version? This clears the local app cache (your saved data stays).'))return;
+  askConfirm('Refresh to the latest version? This clears the local app cache — your saved data stays safe.',function(){
   /* location.reload() is blocked in iOS PWA iframes — use hard nav instead */
   var done=function(){
     try{
@@ -3598,6 +3607,7 @@ function forceUpdate(){
     Promise.all(jobs).then(done).catch(done);
     setTimeout(done,1500);
   }catch(e){done();}
+  });
 }
 function toggleNoir(){
   var p=getPrefs();p.noir=!p.noir;setPrefs(p);applyTheme();
@@ -3810,10 +3820,17 @@ function _hardReload(){
   }
 }
 function _nukeStorage(){
+  var wasUnlocked=false;
+  try{wasUnlocked=localStorage.getItem('cp_unlocked')==='1';}catch(_){}
   var keys=[];
   try{for(var i=0;i<localStorage.length;i++){keys.push(localStorage.key(i));}}catch(_){}
   keys.forEach(function(k){try{localStorage.removeItem(k);}catch(_){}});
   try{localStorage.clear();}catch(_){}
+  if(wasUnlocked){try{localStorage.setItem('cp_unlocked','1');}catch(_){}}
+  /* prevent demo data re-injection after wipe — _nukeStorage clears _ys_demo_seen,
+     which causes the first-run IIFE to re-fire and inject Lisa Park (today, In Progress).
+     Mark demo as already seen so the ghost appointment never comes back. */
+  try{localStorage.setItem('_ys_demo_seen','1');}catch(_){}
   /* write erase TIMESTAMP after clearing — survives multiple reloads for 60 s,
      so rapid reloads (update checks, room-switches) can't bypass the guard */
   var _eraseNow=Date.now();
@@ -3822,12 +3839,18 @@ function _nukeStorage(){
      even if Firestore clear fails or is slow.  Never removed.               */
   try{localStorage.setItem('_ap_eraseTime',String(_eraseNow));}catch(_){}
 }
+function _reloadSibling(){
+  /* Tell the shell to reload the earn iframe so it picks up clean localStorage
+     instead of rendering stale in-memory data when the user switches rooms. */
+  try{window.parent.postMessage({salon:'reloadRoom',room:'earn'},'*');}catch(_){}
+}
 function deleteAllClients(){
   askConfirm('Delete ALL clients and ALL appointments on this device? Cannot be undone.',function(){
     closeSheet('settingsModal');
     if(_reqUnsub){_reqUnsub();_reqUnsub=null;}
     clearFirestoreRequests(function(){
       _nukeStorage();
+      _reloadSibling();
       toast('All cleared');
       setTimeout(_hardReload,600);
     });
@@ -3839,6 +3862,7 @@ function startFresh(){
       if(_reqUnsub){_reqUnsub();_reqUnsub=null;}
       clearFirestoreRequests(function(){
         _nukeStorage();
+        _reloadSibling();
         toast('Fresh start — all clear');
         setTimeout(_hardReload,400);
       });
