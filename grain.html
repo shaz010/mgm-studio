@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Grain v1.4</title>
+<title>Grain v1.5</title>
 <style>
 :root{--bg:#0a0608;--fg:#f5e6c8;--gold:#f5b942;--purple:#c084fc;--red:#ef4444;color-scheme:dark}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -21,8 +21,8 @@ canvas{display:block;image-rendering:pixelated}
 @keyframes rSpin{0%,100%{transform:rotate(0deg)}50%{transform:rotate(90deg)}}
 #hud{position:absolute;top:0;left:0;width:100%;pointer-events:none}
 /* Touch controls */
-#touch{position:absolute;bottom:0;left:0;width:100%;height:40%;display:none;pointer-events:none}
-.tc{position:absolute;pointer-events:all;opacity:.35;font-size:22px;
+#touch{position:absolute;bottom:0;left:0;width:100%;height:40%;display:none;pointer-events:auto;z-index:50}
+.tc{position:absolute;pointer-events:auto;opacity:.35;font-size:22px;
   background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.25);border-radius:50%;
   width:52px;height:52px;display:flex;align-items:center;justify-content:center;cursor:pointer;
   -webkit-tap-highlight-color:transparent;color:#fff;font-weight:700;line-height:1}
@@ -120,6 +120,15 @@ function bindTouch(id,prop){
   el.addEventListener('touchend',e=>{touch[prop]=false;e.preventDefault()},{passive:false});
 }
 bindTouch('btnL','left');bindTouch('btnR','right');bindTouch('btnJ','jump');bindTouch('btnA','attack');
+// Safari: touchcancel (interrupted touch) must reset state
+['btnL','btnR','btnJ','btnA'].forEach((id,i)=>{
+  const prop=['left','right','jump','attack'][i];
+  document.getElementById(id).addEventListener('touchcancel',()=>{touch[prop]=false;});
+});
+// Force-show on any touch device (covers landscape + all screen sizes)
+if('ontouchstart' in window||navigator.maxTouchPoints>0){
+  document.getElementById('touch').style.display='block';
+}
 
 // ═══════════════════════════════════════════════════════════
 // PARTICLES
@@ -790,7 +799,7 @@ function drawCredits(){
   ctx.textAlign='center';ctx.fillStyle='#f5b942';ctx.font='bold 28px sans-serif';
   ctx.fillText('GRAIN',W/2,80);
   ctx.fillStyle='#a78bfa';ctx.font='16px sans-serif';
-  const lines=['A game by Shaz & Roxana','','Inspired by Rygar (Atari, 1990)','','Phase 1: The Ancient Warrior','Phase 2: Starfield Expansion   [coming]','Phase 3: Black Holes & Gravity Wells   [coming]','','Press Enter to return'];
+  const lines=['A game by Shaz & Roxana','','Inspired by Rygar (Atari, 1990)','','Phase 1: The Ancient Warrior',oPhase 2: Starfield Expansion   [coming]','Phase 3: Black Holes & Gravity Wells   [coming]','','Press Enter to return'];
   lines.forEach((l,i)=>ctx.fillText(l,W/2,130+i*28));
 }
 
