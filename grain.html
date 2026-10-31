@@ -3,13 +3,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Grain</title>
+<title>Grain v1.3</title>
 <style>
 :root{--bg:#0a0608;--fg:#f5e6c8;--gold:#f5b942;--purple:#c084fc;--red:#ef4444;color-scheme:dark}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);touch-action:none;user-select:none;margin:0;padding:0}
-#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;line-height:0}
+#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;line-height:0;
+  background:linear-gradient(to bottom,#0a0610 0%,#1a0d2e 60%,#2d1040 100%)}
 canvas{display:block;image-rendering:pixelated}
+/* Portrait: ask user to rotate */
+#rotateMsg{display:none;position:fixed;inset:0;z-index:9998;background:#0a0608;
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;pointer-events:none}
+@media(orientation:portrait){#rotateMsg{display:flex}}
+#rotateMsg p{color:#f5b942;font:bold 22px sans-serif;text-align:center;letter-spacing:.05em}
+#rotateMsg .ricon{font-size:56px;display:block;animation:rSpin 2s ease-in-out infinite}
+@keyframes rSpin{0%,100%{transform:rotate(0deg)}50%{transform:rotate(90deg)}}
 #hud{position:absolute;top:0;left:0;width:100%;pointer-events:none}
 /* Touch controls */
 #touch{position:absolute;bottom:0;left:0;width:100%;height:40%;display:none;pointer-events:none}
@@ -21,7 +29,6 @@ canvas{display:block;image-rendering:pixelated}
 #btnR{bottom:max(16px,env(safe-area-inset-bottom,0px));left:max(80px,calc(env(safe-area-inset-left,0px) + 64px))}
 #btnJ{bottom:max(16px,env(safe-area-inset-bottom,0px));right:max(80px,calc(env(safe-area-inset-right,0px) + 64px))}
 #btnA{bottom:max(16px,env(safe-area-inset-bottom,0px));right:max(16px,env(safe-area-inset-right,0px))}
-
 @media(max-width:600px){#touch{display:block}}
 @media(hover:none)and(pointer:coarse){#touch{display:block}}
 /* Focus overlay */
@@ -31,6 +38,10 @@ canvas{display:block;image-rendering:pixelated}
 #focusOverlay small{color:#a78bfa;font:14px sans-serif;margin-top:8px;}
 @keyframes pulse{0%,100%{opacity:.5;text-shadow:0 0 20px #f5b942}50%{opacity:1;text-shadow:0 0 40px #f5b942,0 0 80px #f5b942}}
 </style>
+<div id="rotateMsg">
+  <span class="ricon">↻</span>
+  <p>Rotate your device<br>to play GRAIN</p>
+</div>
 <div id="focusOverlay">
   <p>▶ TAP TO PLAY</p>
   <small>GRAIN · by Shaz &amp; Roxana</small>
@@ -63,7 +74,20 @@ const C=document.getElementById('c'),ctx=C.getContext('2d');
 const W=800,H=400;
 C.width=W;C.height=H;
 
-// Scale canvas to fit screen
+// Polyfill ctx.roundRect for older Safari/WKWebView
+if(!CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+    const rad=Math.min(r,w/2,h/2);
+    this.moveTo(x+rad,y);
+    this.lineTo(x+w-rad,y);this.quadraticCurveTo(x+w,y,x+w,y+rad);
+    this.lineTo(x+w,y+h-rad);this.quadraticCurveTo(x+w,y+h,x+w-rad,y+h);
+    this.lineTo(x+rad,y+h);this.quadraticCurveTo(x,y+h,x,y+h-rad);
+    this.lineTo(x,y+rad);this.quadraticCurveTo(x,y,x+rad,y);
+    this.closePath();return this;
+  };
+}
+
+// Scale canvas to fit screen (contain, landscape-optimised)
 function resize(){
   const s=Math.min(window.innerWidth/W,window.innerHeight/H);
   C.style.width=W*s+'px';C.style.height=H*s+'px';
@@ -216,7 +240,7 @@ function pRect(p){return{x:p.x-p.char.sz/2,y:p.y-p.char.sz*1.6,w:p.char.sz,h:p.c
 function eRect(e){return{x:e.x-e.w/2,y:e.y-e.h,w:e.w,h:e.h};}
 function rects(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
 
-function applyPhysics(obj,isPlayer){
+function applyPhysics(obj+isPlayer){
   obj.vy+=G;
   obj.x+=obj.vx;
   obj.y+=obj.vy;
@@ -293,9 +317,9 @@ function updatePlayer(p,gs){
     d.angle+=0.3;
     if(!d.returning){
       d.x+=d.vx;d.y+=d.vy;d.vy+=0.1;
-      if(d.x<0||d.x>LEVEL_W||d.y>GROUND+10||(Math.abs(d.x-p.x)>250)){d.returning=true;}
+      if(d.x>0||d.x>LEVEL_W||d.y>GROUND+10||(Math.abs(d.x-p.x)>250)){d.returning=true;}
     } else {
-      const dx=p.x-d.x, dy=(p.y-p.char.sz)-d.y;
+      const dx=p.x-d.x. dy=(p.y-p.char.sz)-d.y;
       const dist=Math.sqrt(dx*dx+dy*dy);
       if(dist<20){p.disc=null;}
       else{const spd2=8+dist*0.05;d.x+=dx/dist*spd2;d.y+=dy/dist*spd2;}
@@ -612,7 +636,7 @@ function drawPlayer(p,cam){
   }
 }
 
-function drawHUD(gs){
+function drawHUD+gs){
   // P1 HUD
   drawPlayerHUD(gs.p1,16,16,'left');
   // P2 HUD (if coop)
@@ -743,7 +767,7 @@ function drawCharSelect(tick){
     ctx.font='italic 12px sans-serif';ctx.fillStyle='#9ca3af';
     ctx.fillText(ch.sub,cx,cy+88);
     ctx.font='11px sans-serif';ctx.fillStyle='#6d28d9';
-    ctx.fillText('SPD: '+(ch.spd>4?'★★★':'★★☆')+'  HP: '+(ch.hp>100?'★★★':'★★☆'),cx,cy+108);
+    ctx.fillText('SPD: '+(ch.spd>4?'★★★':'★★☆')'  HP: '+(ch.hp>100?'★★★':'★★☆'),cx,cy)+108);
     if(sel){
       ctx.font='bold 13px sans-serif';ctx.fillStyle=ch.col;
       ctx.fillText('— SELECTED —',cx,cy+128);
@@ -765,7 +789,7 @@ function drawCredits(){
   ctx.textAlign='center';ctx.fillStyle='#f5b942';ctx.font='bold 28px sans-serif';
   ctx.fillText('GRAIN',W/2,80);
   ctx.fillStyle='#a78bfa';ctx.font='16px sans-serif';
-  const lines=['A game by Shaz & Roxana','','Inspired by Rygar (Atari, 1990)','','Phase 1: The Ancient Warrior','Phase 2: Starfield Expansion   [coming]','Phase 3: Black Holes & Gravity Wells   [coming]','','Press Enter to return'];
+  const lines=['A game by Shaz & Roxana','','Inspired by Rygar (Atari, 1990)','','Phase 1: The Ancient Warrior',�Phase 2: Starfield Expansion   [coming]','Phase 3: Black Holes & Gravity Wells   [coming]','','Press Enter to return'];
   lines.forEach((l,i)=>ctx.fillText(l,W/2,130+i*28));
 }
 
@@ -937,7 +961,14 @@ function canvasPoint(e){
 }
 
 C.addEventListener('click', handleTap);
-C.addEventListener('touchend', e=>{e.preventDefault();handleTap(e.changedTouches[0]||e);},{passive:false});
+// Listen on document so taps on the letterbox bars also navigate menus.
+// Skip touch-button taps (#touch children handle those separately).
+document.addEventListener('touchend', e=>{
+  if(e.target.closest && e.target.closest('#touch')) return; // let touch buttons handle themselves
+  if(e.target.closest && e.target.closest('#focusOverlay')) return; // overlay handles itself
+  e.preventDefault();
+  handleTap(e.changedTouches[0]||e);
+},{passive:false});
 
 function handleTap(e){
   dismissOverlay();
