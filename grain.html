@@ -3,10 +3,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Grain v1.3</title>
+<title>Grain v1.4</title>
 <style>
 :root{--bg:#0a0608;--fg:#f5e6c8;--gold:#f5b942;--purple:#c084fc;--red:#ef4444;color-scheme:dark}
 *{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);touch-action:none;user-select:none;margin:0;padding:0}
 #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;line-height:0;
   background:linear-gradient(to bottom,#0a0610 0%,#1a0d2e 60%,#2d1040 100%)}
@@ -87,9 +88,9 @@ if(!CanvasRenderingContext2D.prototype.roundRect){
   };
 }
 
-// Scale canvas to fit screen (contain, landscape-optimised)
+// Scale canvas to fill width in landscape (portrait shows rotate overlay)
 function resize(){
-  const s=Math.min(window.innerWidth/W,window.innerHeight/H);
+  const s=window.innerWidth/W;
   C.style.width=W*s+'px';C.style.height=H*s+'px';
 }
 window.addEventListener('resize',resize);resize();
@@ -240,7 +241,7 @@ function pRect(p){return{x:p.x-p.char.sz/2,y:p.y-p.char.sz*1.6,w:p.char.sz,h:p.c
 function eRect(e){return{x:e.x-e.w/2,y:e.y-e.h,w:e.w,h:e.h};}
 function rects(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
 
-function applyPhysics(obj+isPlayer){
+function applyPhysics(obj,isPlayer){
   obj.vy+=G;
   obj.x+=obj.vx;
   obj.y+=obj.vy;
@@ -317,9 +318,9 @@ function updatePlayer(p,gs){
     d.angle+=0.3;
     if(!d.returning){
       d.x+=d.vx;d.y+=d.vy;d.vy+=0.1;
-      if(d.x>0||d.x>LEVEL_W||d.y>GROUND+10||(Math.abs(d.x-p.x)>250)){d.returning=true;}
+      if(d.x<0||d.x>LEVEL_W||d.y>GROUND+10||(Math.abs(d.x-p.x)>250)){d.returning=true;}
     } else {
-      const dx=p.x-d.x. dy=(p.y-p.char.sz)-d.y;
+      const dx=p.x-d.x, dy=(p.y-p.char.sz)-d.y;
       const dist=Math.sqrt(dx*dx+dy*dy);
       if(dist<20){p.disc=null;}
       else{const spd2=8+dist*0.05;d.x+=dx/dist*spd2;d.y+=dy/dist*spd2;}
@@ -636,7 +637,7 @@ function drawPlayer(p,cam){
   }
 }
 
-function drawHUD+gs){
+function drawHUD(gs){
   // P1 HUD
   drawPlayerHUD(gs.p1,16,16,'left');
   // P2 HUD (if coop)
@@ -767,7 +768,7 @@ function drawCharSelect(tick){
     ctx.font='italic 12px sans-serif';ctx.fillStyle='#9ca3af';
     ctx.fillText(ch.sub,cx,cy+88);
     ctx.font='11px sans-serif';ctx.fillStyle='#6d28d9';
-    ctx.fillText('SPD: '+(ch.spd>4?'★★★':'★★☆')'  HP: '+(ch.hp>100?'★★★':'★★☆'),cx,cy)+108);
+    ctx.fillText('SPD: '+(ch.spd>4?'★★★':'★★☆')+'  HP: '+(ch.hp>100?'★★★':'★★☆'),cx,cy+108);
     if(sel){
       ctx.font='bold 13px sans-serif';ctx.fillStyle=ch.col;
       ctx.fillText('— SELECTED —',cx,cy+128);
@@ -789,7 +790,7 @@ function drawCredits(){
   ctx.textAlign='center';ctx.fillStyle='#f5b942';ctx.font='bold 28px sans-serif';
   ctx.fillText('GRAIN',W/2,80);
   ctx.fillStyle='#a78bfa';ctx.font='16px sans-serif';
-  const lines=['A game by Shaz & Roxana','','Inspired by Rygar (Atari, 1990)','','Phase 1: The Ancient Warrior',�Phase 2: Starfield Expansion   [coming]','Phase 3: Black Holes & Gravity Wells   [coming]','','Press Enter to return'];
+  const lines=['A game by Shaz & Roxana','','Inspired by Rygar (Atari, 1990)','','Phase 1: The Ancient Warrior','Phase 2: Starfield Expansion   [coming]','Phase 3: Black Holes & Gravity Wells   [coming]','','Press Enter to return'];
   lines.forEach((l,i)=>ctx.fillText(l,W/2,130+i*28));
 }
 
