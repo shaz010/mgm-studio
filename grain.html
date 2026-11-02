@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Grain v1.8</title>
+<title>Grain v1.9</title>
 <style>
 :root{--bg:#0a0608;--fg:#f5e6c8;--gold:#f5b942;--purple:#c084fc;--red:#ef4444;color-scheme:dark}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -58,6 +58,15 @@ canvas{display:block;image-rendering:pixelated}
 </div>
 <script>
 'use strict';
+// ── Error banner (iOS silent errors become visible) ──────────────────────────
+window.onerror=function(msg,src,line,col){
+  let b=document.getElementById('errBanner');
+  if(!b){b=document.createElement('div');b.id='errBanner';
+    b.style='position:fixed;top:0;left:0;right:0;background:#b91c1c;color:#fff;font:11px monospace;padding:6px 8px;z-index:999999;white-space:pre-wrap;word-break:break-all;touch-action:auto';
+    document.body.appendChild(b);}
+  b.textContent='JS ERR L'+line+': '+msg;
+};
+// ─────────────────────────────────────────────────────────────────────────────
 // Focus overlay — must click/tap before keyboard works in iframe
 const focusOverlay=document.getElementById('focusOverlay');
 function dismissOverlay(){
@@ -66,8 +75,14 @@ function dismissOverlay(){
     document.getElementById('c').focus();
   }
 }
-focusOverlay.addEventListener('click',dismissOverlay);
-focusOverlay.addEventListener('touchstart',e=>{e.preventDefault();dismissOverlay();handleTap(e.touches[0]||e);},{passive:false});
+focusOverlay.addEventListener('click',()=>{dismissOverlay();});
+// touchstart: dismiss overlay AND advance the screen in one gesture
+// (on iOS, preventDefault on touchstart can suppress the touchend that follows)
+focusOverlay.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  dismissOverlay();
+  try{handleTap(e.touches[0]||e);}catch(ex){window.onerror&&window.onerror(ex.message,'',0,0);}
+},{passive:false});
 // Also dismiss on any keypress
 document.addEventListener('keydown',()=>dismissOverlay(),{once:true});
 
@@ -80,7 +95,7 @@ if(!CanvasRenderingContext2D.prototype.roundRect){
   CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
     const rad=Math.min(r,w/2,h/2);
     this.moveTo(x+rad,y);
-    this.lineTo(x+w-rad,y);this.quadraticCurveTo(x+w,y,x+w,y+rad);
+    this.lineTo(x+w-rad,y);this.quadraticCurveTo(x+w,x,x+w,y+rad);
     this.lineTo(x+w,y+h-rad);this.quadraticCurveTo(x+w,y+h,x+w-rad,y+h);
     this.lineTo(x+rad,y+h);this.quadraticCurveTo(x,y+h,x,y+h-rad);
     this.lineTo(x,y+rad);this.quadraticCurveTo(x,y,x+rad,y);
@@ -327,7 +342,7 @@ function updatePlayer(p,gs){
     d.angle+=0.3;
     if(!d.returning){
       d.x+=d.vx;d.y+=d.vy;d.vy+=0.1;
-      if(d.x>0||d.x>LEVEL_W||d.y>GROUND+10||(Math.abs(d.x-p.x)>250)){d.returning=true;}
+      if(d.x<0||d.x>LEVEL_W||d.y>GROUND+10||(Math.abs(d.x-p.x)>250)){d.returning=true;}
     } else {
       const dx=p.x-d.x, dy=(p.y-p.char.sz)-d.y;
       const dist=Math.sqrt(dx*dx+dy*dy);
@@ -461,7 +476,7 @@ function drawRuins(ox,y){
   // simple silhouette columns
   for(let i=0;i<8;i++){
     const x=ox+i*130;const h=30+Math.sin(i*2.3)*20;
-    ctx.fillRect(x,y-h,18,h+40);
+    ctx.fillRect(x,y-h,18,H+40);
     ctx.fillRect(x-6,y-h-8,30,10);
   }
 }
@@ -706,7 +721,7 @@ function drawTitle(tick){
   // stars
   stars.forEach(s=>{
     ctx.fillStyle='#f5e6c8';ctx.globalAlpha=0.4+0.3*Math.sin(s.twinkle+tick*0.02);
-    ctx.beginPath();ctx.arc((s.x*0.3)%W,s.y,s.r,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc((s.x*0.2)%W,s.y,s.r,0,Math.PI*2);ctx.fill();
   });
   ctx.globalAlpha=1;
 
@@ -733,7 +748,7 @@ function drawTitle(tick){
     ctx.font=`${sel?'bold ':''}20px sans-serif`;
     ctx.fillStyle=sel?'#f5b942':'#a78bfa';
     if(sel){ctx.shadowColor='#f5b942';ctx.shadowBlur=10;}
-    ctx.fillText((sel?'▶ ':' ')+o+(sel?' ◀':''),W/2,H*0.52+i*44);
+    ctx.fillText((sel?'▶ ':' ')+o+(sel=' ◀':''),W/2,H*0.52+i*44);
     ctx.restore();
   });
 
@@ -799,7 +814,7 @@ function drawCredits(){
   ctx.textAlign='center';ctx.fillStyle='#f5b942';ctx.font='bold 28px sans-serif';
   ctx.fillText('GRAIN',W/2,80);
   ctx.fillStyle='#a78bfa';ctx.font='16px sans-serif';
-  const lines=['A game by Shaz & Roxana','','Inspired by Rygar (Atari, 1990)','','Phase 1: The Ancient Warrior',�Phase 2: Starfield Expansion   [coming]','Phase 3: Black Holes & Gravity Wells   [coming]','','Press Enter to return'];
+  const lines=['A game by Shaz & Roxana','','Inspired by Rygar (Atari, 1990)','','Phase 1: The Ancient Warrior','Phase 2: Starfield Expansion   [coming]','Phase 3: Black Holes & Gravity Wells   [coming]','','Press Enter to return'];
   lines.forEach((l,i)=>ctx.fillText(l,W/2,130+i*28));
 }
 
@@ -863,12 +878,18 @@ function initGame(){
 }
 
 function loop(){
+  try{_loop();}catch(ex){
+    window.onerror&&window.onerror(ex.message,'loop',0,0);
+    requestAnimationFrame(loop); // keep ticking so error stays visible
+  }
+}
+function _loop(){
   const g=gstate;
   g.tick++;
 
   // ─── TITLE ───
   if(g.screen==='title'){
-    drawTitle(g.tick	;
+    drawTitle(g.tick);
     if(selectCooldown>0)selectCooldown--;
     if(keys['ArrowUp']&&selectCooldown<=0){g.cursor=Math.max(0,g.cursor-1);selectCooldown=10;}
     if(keys['ArrowDown']&&selectCooldown<=0){g.cursor=Math.min(2,g.cursor+1);selectCooldown=10;}
@@ -975,7 +996,8 @@ C.addEventListener('click', handleTap);
 // Skip touch-button taps (#touch children handle those separately).
 document.addEventListener('touchend', e=>{
   if(e.target.closest && e.target.closest('#touch')) return; // let touch buttons handle themselves
-  if(e.target.closest && e.target.closest('#focusOverlay')) return; // overlay handles itself
+  // NOTE: focusOverlay guard removed — overlay's touchstart handler already called handleTap
+  // The touchend for that same gesture may still fire here; selectCooldown prevents double-advance
   e.preventDefault();
   handleTap(e.changedTouches[0]||e);
 },{passive:false});
@@ -999,7 +1021,7 @@ function handleTap(e){
     }
     // Tap anywhere else = solo start
     g.mode='solo';g.screen='charselect';selectCooldown=15;
-  } else if(g.screen==='charselect'){
+  } else if(g.screen==='charselect'&&selectCooldown<=0){
     // Left char zone cx=W/2-180, right cx=W/2+180, each ±80px
     if(pt.x<W/2){g.p1sel=0;}else{g.p1sel=1;}
     if(g.mode==='coop') g.p2sel=g.p1sel===0?1:0;
@@ -1013,5 +1035,5 @@ function handleTap(e){
   }
 }
 
-l�p();
+loop();
 </script>
