@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Grain v1.7</title>
+<title>Grain v1.8</title>
 <style>
 :root{--bg:#0a0608;--fg:#f5e6c8;--gold:#f5b942;--purple:#c084fc;--red:#ef4444;color-scheme:dark}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -686,8 +686,8 @@ function drawPlayerHUD(p,x,y,side){
   ctx.textAlign=side;ctx.fillStyle='#f5b942';
   ctx.fillText('♥'.repeat(Math.max(0,p.lives)),x,y+38);
   // Controls hint (first few seconds)
-  if(gs&&gs.tick<240){
-    ctx.globalAlpha=Math.min(1,(240-gs.tick)/60);
+  if(gstate&&gstate.tick<240){
+    ctx.globalAlpha=Math.min(1,(240-gstate.tick)/60);
     ctx.font='9px sans-serif';ctx.fillStyle='#a78bfa';ctx.textAlign=side;
     if(side==='left')ctx.fillText('ARROWS/WASD  Z=attack  X=jump',x,H-60);
     else ctx.fillText('IJKL  U=attack  O=jump',x,H-60);
@@ -777,7 +777,7 @@ function drawCharSelect(tick){
     ctx.font='italic 12px sans-serif';ctx.fillStyle='#9ca3af';
     ctx.fillText(ch.sub,cx,cy+88);
     ctx.font='11px sans-serif';ctx.fillStyle='#6d28d9';
-    ctx.fillText('SPD: '+(ch:spd>4?'★★★':'★★☆')+'  HP: '+(ch.hp>100?'★★★':'★★☆'),cx,cy+108);
+    ctx.fillText('SPD: '+(ch.spd>4?'★★★':'★★☆')+'  HP: '+(ch.hp>100?'★★★':'★★☆'),cx,cy+108);
     if(sel){
       ctx.font='bold 13px sans-serif';ctx.fillStyle=ch.col;
       ctx.fillText('— SELECTED —',cx,cy+128);
@@ -868,7 +868,7 @@ function loop(){
 
   // ─── TITLE ───
   if(g.screen==='title'){
-    drawTitle(g.tick);
+    drawTitle(g.tick	;
     if(selectCooldown>0)selectCooldown--;
     if(keys['ArrowUp']&&selectCooldown<=0){g.cursor=Math.max(0,g.cursor-1);selectCooldown=10;}
     if(keys['ArrowDown']&&selectCooldown<=0){g.cursor=Math.min(2,g.cursor+1);selectCooldown=10;}
@@ -1013,5 +1013,5 @@ function handleTap(e){
   }
 }
 
-loop();
+l�p();
 </script>
