@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Grain v1.6</title>
+<title>Grain v1.7</title>
 <style>
 :root{--bg:#0a0608;--fg:#f5e6c8;--gold:#f5b942;--purple:#c084fc;--red:#ef4444;color-scheme:dark}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -67,7 +67,7 @@ function dismissOverlay(){
   }
 }
 focusOverlay.addEventListener('click',dismissOverlay);
-focusOverlay.addEventListener('touchstart',e=>{e.preventDefault();dismissOverlay();},{passive:false});
+focusOverlay.addEventListener('touchstart',e=>{e.preventDefault();dismissOverlay();handleTap(e.touches[0]||e);},{passive:false});
 // Also dismiss on any keypress
 document.addEventListener('keydown',()=>dismissOverlay(),{once:true});
 
@@ -777,7 +777,7 @@ function drawCharSelect(tick){
     ctx.font='italic 12px sans-serif';ctx.fillStyle='#9ca3af';
     ctx.fillText(ch.sub,cx,cy+88);
     ctx.font='11px sans-serif';ctx.fillStyle='#6d28d9';
-    ctx.fillText('SPD: '+(ch.spd>4?'★★★':'★★☆')+'  HP: '+(ch.hp>100?'★★★':'★★☆'),cx,cy+108);
+    ctx.fillText('SPD: '+(ch:spd>4?'★★★':'★★☆')+'  HP: '+(ch.hp>100?'★★★':'★★☆'),cx,cy+108);
     if(sel){
       ctx.font='bold 13px sans-serif';ctx.fillStyle=ch.col;
       ctx.fillText('— SELECTED —',cx,cy+128);
