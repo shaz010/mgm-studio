@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. On `main` right now, after the audit log (PR #6): Earnings v2.64, Appointments v6.25, salon v0.53, service worker `yoursalon-v78`, booking v3.55. This change ships when it is merged:
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. On `main` right now, after Stripe was removed (PR #8): Earnings v2.65, Appointments v6.26, salon v0.53, service worker `yoursalon-v79`, booking v3.56. This pull request, once merged, ships Appointments v6.27 and service worker `yoursalon-v80`. Firestore rules are **not** deployed.
 
-| Room | File | Version in this change |
+| Room | File | Live version |
 |---|---|---|
 | Earnings | `app.html` | v2.65 |
-| Appointments | `appt.html` | v6.26 |
+| Appointments | `appt.html` | v6.27 (this pull request; v6.26 is what is live) |
 | Shell | `salon.html` | v0.53 (unchanged; `SHELL_V` matches the page) |
-| Service worker | `sw.js` | `yoursalon-v79` |
+| Service worker | `sw.js` | `yoursalon-v80` (this pull request; `yoursalon-v79` is what is live) |
 | Booking page | `book.html` | v3.56 |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
@@ -100,13 +100,11 @@ Do not deploy functions. Do not deploy rules. Nothing in this change was deploye
 - The App Store paywall stays. On iPhone it buys `com.yoursalon.pro.monthly` through StoreKit. The old Stripe Checkout URL in the paywall was not used by that button; it has been removed. `thankyou.html` no longer links to a Stripe payment page.
 - The five-tap owner unlock is unchanged.
 
-**Shahbaz still has to do these by hand:**
+**Done on Firebase, Nov 16:** `stripeSk` and `stripePk` were removed from the live `public/mgm-studio` document, and `createPaymentIntent` was deleted. Rules were not deployed.
 
-1. In the Stripe dashboard, revoke `rk_live_…Z84J` (it is in public git history, in `MGMStudio.html` from June 15, 2026) and any other live or restricted keys for this account.
-2. Run the `firebase functions:delete` command above, from a machine where he is logged in.
-3. Open the appointments page once while signed in, so the publish scrub deletes Stripe fields off the live `public/{salonId}` document.
+**Still by hand:** in the Stripe dashboard, revoke `rk_live_…Z84J` (it is in public git history, in `MGMStudio.html` from June 15, 2026) and any other live or restricted keys, if that revoke is not already done.
 
-Firestore rules are a separate pull request and are not deployed. That request still refuses client writes that set a secret field. Clearing those fields (this publish) has to stay allowed, or the scrub and the rest of the publish would be rejected together.
+Firestore rules are in this pull request and are not deployed. They refuse a client write that sets a secret field, and they allow the owner to clear those fields.
 
 **Later.**
 
@@ -142,10 +140,45 @@ The September 2026 review (submission `2e5902ac-e4fd-4c4d-8aa5-513b73907f3c`) is
 
 ---
 
+## Firestore rules (in the repo, not deployed)
+
+`firestore.rules` and a `firebase.json` that points at it are in the repo as of Nov 16. They are **not live**. Deploying them changes who can read and write the real database, so that waits for Shahbaz to log in and approve. Do not deploy Cloud Functions. `createPaymentIntent` is already deleted, and the live public salon document no longer has `stripeSk` or `stripePk`.
+
+Appointments (`appt.html`) now loads Firebase Auth, the same project as the shell. The shell’s email sign-in is optional — the top bar says “Sign in to sync” until the owner signs in, including inside the iOS app, which loads this same site. The owner does not have to sign in to use appointments on the device. Auth persistence is the Firebase default (kept on the device). The appointments frame is the same origin as `salon.html`, so a sign-in in the shell is the sign-in in the frame. Booking publish, the full inbox, and approve / decline / dismiss wait for that sign-in. If there is no user, the booking panel says “Sign in to sync bookings” and those cloud writes are not attempted. Appointments already on the device stay.
+
+The approve price is stored on the appointment on the device. Nothing writes `price` onto a `requests` document. The live rules happen to allow a `price` update; these rules do not, and no current flow needs it.
+
+Deploying these rules is safe only after this appointments change is on `main`. Before that, the live page has no Auth, so the owner’s publish and inbox would be denied. After it is on `main`, a signed-in owner can publish, approve, decline, dismiss, and list every request. A visitor can still read the public profile, create a request, and list pending requests. Someone who never signs in keeps the app on the device and loses cloud booking sync until they tap Sign in to sync. That is the remaining change in behavior, not a silent failure.
+
+What the rules allow, matching the pages that are actually live:
+
+- `users/{uid}` and anything under it — only that signed-in owner. This is the cloud copy of the salon’s own books.
+- `public/{salonId}` — anyone can read one salon profile (the booking page does). Only a signed-in owner can publish it. A client cannot add `stripeSk`, `stripePk`, or the other secret field names. The owner can delete those fields (the appointments publish does that). A write that sets a new value is refused. Rules cannot hide a field that is already stored, so a secret must not be kept on this document at all.
+- `requests` — a visitor can create one pending request with the fields the booking form sends, and can read a single request by its id (the confirmation watcher). A visitor can list only requests that are still pending (the page shades those times). They cannot approve, decline, dismiss, or delete. The signed-in owner can list the inbox and change status to approved, declined, or dismissed, and nothing else on the row.
+- `trial_requests`, `founder_unlocks`, `trial_activations` — the paywall can create a log row. Nobody can read them back.
+- Everything else is denied. There is no Cloud Function left in this project.
+
+Pending requests are still readable by anyone who queries status `pending`. That is the existing slot-shading flow, and those rows include a name and phone. Tightening that further would need a small booking-page change, which this rules pass does not do.
+
+Check them locally (this does not touch production):
+
+```
+npm install
+npm run test:rules
+```
+
+Deploy later, only after approval, and only the rules:
+
+```
+firebase deploy --only firestore:rules --project telemetry-eagle
+```
+
+---
+
 ## Ops
 
 - Domain getcommissionpro.com renews about June 2027 (Namecheap).
-- Firestore rules: console only, not this repo. Keep them permanent (no expiring test rules).
+- Firestore rules now live in this repo (`firestore.rules`). They are not deployed. When they are, keep them permanent (no expiring test rules).
 - `privacy.html` still opens with “does not collect any personal data”. Optional Firebase sync does collect an email. Soften that line sometime.
 
 ---

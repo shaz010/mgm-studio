@@ -1852,6 +1852,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 <div class="toast" id="toast"><i class="ti ti-check"></i><span id="toastMsg">Saved</span></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="yoursalon-settle.js"></script>
 <script>
@@ -3573,7 +3574,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.26 · booking profile no longer stores Stripe';
+var VERSION='v6.27 · booking sync waits for sign-in';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4202,20 +4203,47 @@ var FB_CONFIG={
   appId:"1:216199298094:web:665c061ebe07d3c23373bf"
 };
 var SALON_ID='mgm-studio';
-var db=null, fbReady=false, pendingReqs=[], _reqUnsub=null;
+var db=null, fbReady=false, fbUser=null, pendingReqs=[], _reqUnsub=null;
 
 function bookingOpen(){return getPrefs().bookingOpen!==false;}
 function bookingLink(){return location.origin+location.pathname.replace(/appt\.html$/,'book.html');}
+/* Localhost test hook only. Production hostnames never talk to the emulator. */
+function localEmulatorMode(){
+  try{
+    var h=location.hostname;
+    if(h!=='127.0.0.1'&&h!=='localhost')return false;
+    return /(?:^|[?&])emu=1(?:&|$)/.test(location.search);
+  }catch(e){return false;}
+}
 
 function initFB(){
   try{
-    if(typeof firebase==='undefined'||!firebase.initializeApp){setConnState('off','Offline — open this on the internet to sync');return false;}
+    if(typeof firebase==='undefined'||!firebase.initializeApp||!firebase.auth){setConnState('off','Offline — open this on the internet to sync');return false;}
     if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(FB_CONFIG);
     db=firebase.firestore();
-    fbReady=true;
-    setConnState('live','Connected — self-booking ready');
-    publishAvailability();
-    listenRequests();
+    var auth=firebase.auth();
+    if(localEmulatorMode()){
+      db.useEmulator('127.0.0.1',8080);
+      auth.useEmulator('http://127.0.0.1:9099',{disableWarnings:true});
+    }
+    /* Same origin as salon.html, so a sign-in there is already in this frame.
+       Do not publish or list until that first answer — request.auth is null until then. */
+    auth.onAuthStateChanged(function(u){
+      fbUser=u||null;
+      if(_reqUnsub){try{_reqUnsub();}catch(e){} _reqUnsub=null;}
+      if(u){
+        fbReady=true;
+        setConnState('live','Connected — self-booking ready');
+        publishAvailability();
+        listenRequests();
+      }else{
+        fbReady=false;
+        pendingReqs=[];
+        try{renderReqBadge();}catch(e){}
+        setConnState('off','Sign in to sync bookings');
+        try{if($('requestsModal')&&$('requestsModal').classList.contains('show'))renderRequests();}catch(e){}
+      }
+    });
     return true;
   }catch(e){console.warn('Firebase init failed',e);setConnState('off','Couldn’t connect — try again later');return false;}
 }
@@ -4330,6 +4358,8 @@ function publishAvailability(){
         Object.keys(doc.data()||{}).forEach(function(k){
           if(/stripe|whsec/i.test(k))payload[k]=del;
         });
+      }else{
+        ['stripeSk','stripePk','stripeSecret','stripeWebhook','webhookSecret','whsec','sk','depositAmount'].forEach(function(k){delete payload[k];});
       }
       return ref.set(payload,{merge:true});
     }).catch(function(e){
@@ -4514,7 +4544,8 @@ function commitApproved(r,silent){
   save(APPTS,appts);
   addClientFromBooking(r);
   if(apptPrice>0){var _c2=clientForReq(r);if(_c2){_c2.savedPrice=apptPrice;save(CLIENTS,clients);}}
-  if(fbReady&&r._id)db.collection('requests').doc(r._id).update({status:'approved'}).catch(function(e){console.warn('approve notify rejected',e);toast("Booked here — but the cloud refused the update, so the client wasn't notified",1,4200);});
+  if(!fbUser){toast('Booked on this device. Sign in to sync bookings so the client is notified.',1,4200);}
+  else if(fbReady&&r._id)db.collection('requests').doc(r._id).update({status:'approved'}).catch(function(e){console.warn('approve notify rejected',e);toast("Booked here — but the cloud refused the update, so the client wasn't notified",1,4200);});
   pendingReqs=pendingReqs.filter(function(x){return x._id!==r._id;});
   if(!silent){
     viewDate=parseDate(r.date);dayMode='day';
@@ -4639,7 +4670,8 @@ function confirmApprovePrice(){
 function declineRequest(id){
   var r=pendingReqs.find(function(x){return x._id===id;});if(!r)return;
   try{softChimeDown();}catch(e){}
-  if(fbReady&&r._id){
+  if(!fbUser){toast('Sign in to sync bookings — the client was not notified',1,4200);}
+  else if(fbReady&&r._id){
     db.collection('requests').doc(r._id).update({status:'declined',declinedAt:Date.now()})
       .then(function(){toast('Declined — the client sees it instantly',2);})
       .catch(function(e){console.warn('decline rejected',e);toast("Cloud refused the decline — check Firestore rules (card will return)",1,4200);});
@@ -4652,6 +4684,7 @@ function declineRequest(id){
 function openRequests(){renderRequests();$('requestsModal').classList.add('show');}
 function renderRequests(){
   var el=$('reqList');if(!el)return;
+  if(!fbUser){el.innerHTML='<div class="req-empty"><i class="ti ti-cloud-off"></i>Sign in to sync bookings.<br>Tap “Sign in to sync” in the top bar. Appointments on this device still work.</div>';return;}
   if(!fbReady){el.innerHTML='<div class="req-empty"><i class="ti ti-wifi-off"></i>Not connected yet.<br>Open this page on the internet and turn self-booking on.</div>';return;}
   if(!pendingReqs.length){el.innerHTML='<div class="req-empty"><i class="ti ti-inbox"></i>No requests right now.<br>Share your booking link to get started.</div>';return;}
   el.innerHTML=pendingReqs.map(function(r){
