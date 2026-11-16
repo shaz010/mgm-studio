@@ -1997,7 +1997,7 @@ document.addEventListener('DOMContentLoaded',function(){
   }
 });
 var stock=load(STOCK,[]);        /* [{id,name,qty,min,unit,used}] inventory */
-function reload(){appts=load(APPTS,[]);clients=load(CLIENTS,[]);customSvc=load(CUSTOM,[]);stock=load(STOCK,[]);}
+function reload(){appts=load(APPTS,[]);clients=load(CLIENTS,[]);customSvc=load(CUSTOM,[]);stock=load(STOCK,[]);try{stripTombstonedAppts();}catch(e){}}
 
 /* ===== prefs: favourites + last mode ===== */
 function getPrefs(){return load(PREFS,{});}
@@ -2773,6 +2773,7 @@ function commitSave(){
   if(editingId){appts=appts.map(function(a){return a.id===editingId?rec:a})}
   else{appts.push(rec)}
   save(APPTS,appts);
+  try{(YS.planSaveEvents(prevRec,rec)||[]).forEach(function(p){p.source='appt';logAudit(p);});}catch(e){}
   viewDate=parseDate(date);
   editingId=null;
   toast(wasEdit?'Updated':'Booked in');
@@ -2784,7 +2785,10 @@ function deleteFromSheet(){
   if(!sheetId)return;
   var _id=sheetId;
   askConfirm('Delete this appointment?',function(){
+    var victim=appts.find(function(a){return a.id===_id;});
     appts=appts.filter(function(a){return a.id!==_id});save(APPTS,appts);
+    buryAppt(_id,'Deleted '+((victim&&victim.name)||'appointment'));
+    logAudit({type:'appointment.delete',entityType:'ap_appt',entityId:_id,summary:'Deleted '+((victim&&victim.name)||'appointment'),before:victim?YS.moneySnap(victim):null,source:'appt'});
     closeSheet('apptModal');sheetId=null;toast('Deleted');
     if(typeof renderDay==='function')renderDay();
     if(typeof publishAvailability==='function')publishAvailability();
@@ -2793,7 +2797,11 @@ function deleteFromSheet(){
 function deleteAppt(){
   if(!editingId)return;
   askConfirm('Delete this appointment?',function(){
+    var victim=appts.find(function(a){return a.id===editingId;});
+    var gone=editingId;
     appts=appts.filter(function(a){return a.id!==editingId});save(APPTS,appts);
+    buryAppt(gone,'Deleted '+((victim&&victim.name)||'appointment'));
+    logAudit({type:'appointment.delete',entityType:'ap_appt',entityId:gone,summary:'Deleted '+((victim&&victim.name)||'appointment'),before:victim?YS.moneySnap(victim):null,source:'appt'});
     editingId=null;toast('Deleted');showView('day');
     if(typeof publishAvailability==='function')publishAvailability();
   },{title:'Delete appointment',yesLabel:'Delete',danger:true});
@@ -2825,6 +2833,7 @@ function setApptStatusById(id,s){
   if(s==='done'){applyStockForAppt(realId);}
   else if(was==='done'){revertStockForAppt(realId);}
   save(APPTS,appts);
+  try{var saved=appts.find(function(a){return a.id===realId;});logAudit(YS.planStatusEvent(Object.assign({_src:'appt'},saved||prev),was,s));}catch(e){}
   if(String(sheetId)===String(realId)){
     document.querySelectorAll('#statusGrid .status-opt').forEach(function(o){o.classList.toggle('sel',o.dataset.s===s)});
   }
@@ -3564,7 +3573,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.24 · split freezes when an appointment is marked Done';
+var VERSION='v6.25 · audit log for bookings, status, and split changes';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3623,6 +3632,28 @@ function getSplit(){var p=getPrefs();var s=parseFloat(p.splitPct);return isNaN(s
 function takeHome(price){return YS.splitCharge(price,getSplit()).me;}
 function pctOf(a){return (a&&a.splitPct!=null&&isFinite(+a.splitPct))?+a.splitPct:getSplit();}
 function takeHomeOf(a){return YS.splitCharge(+((a&&(a.price!=null?a.price:a.charge))||0),pctOf(a)).me;}
+function logAudit(partial){
+  partial=partial||{};
+  if(!partial.actor){try{partial.actor=localStorage.getItem('ys_actor_email')||'';}catch(e){} if(!partial.actor)partial.actor='this device';}
+  if(!partial.source)partial.source='appt';
+  try{return YS.storeAudit(function(k){return localStorage.getItem(k);},function(k,v){localStorage.setItem(k,v);},partial);}catch(e){return null;}
+}
+function buryAppt(id,summary){
+  try{
+    var list=JSON.parse(localStorage.getItem('ys_tombstones')||'[]');
+    if(!Array.isArray(list))list=[];
+    var next=YS.appendAudit(list,YS.makeTombstone('ap_appt',id,Date.now(),summary||''));
+    localStorage.setItem('ys_tombstones',JSON.stringify(next));
+  }catch(e){}
+}
+function stripTombstonedAppts(){
+  try{
+    var tombs=JSON.parse(localStorage.getItem('ys_tombstones')||'[]');
+    if(!Array.isArray(tombs)||!tombs.length)return;
+    var left=YS.filterTombstones(appts,tombs,'ap_appt');
+    if(left.length!==appts.length){appts=left;save(APPTS,appts);}
+  }catch(e){}
+}
 function apCalc(){
   var charge=parseFloat($('fPrice').value)||0;
   var tip=parseFloat($('fTip').value)||0;
@@ -3648,6 +3679,7 @@ function saveSplit(){
   if(v!==old){
     askConfirm('Change your split from '+old+'% to '+v+'%? Appointments already marked Done keep their rate. Only new work uses '+v+'%.',function(){
       p.splitPct=v;setPrefs(p);$('setSplit').value=v;_lockSplit();
+      try{logAudit({type:'split.change',entityType:'settings',entityId:'split',summary:'Split '+old+'% → '+v+'%. Finished appointments keep their old rate.',before:{splitPct:old},after:{splitPct:v},source:'appt'});}catch(e){}
       toast(v>=100?'Pay saved — you keep 100%':'Pay saved');
       if(typeof dayMode!=='undefined'&&dayMode==='day')renderDay();
     });

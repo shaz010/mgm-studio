@@ -1,5 +1,5 @@
 # YOUR SALON PRO — HANDOFF
-**Last updated: Nov 16, 2026 · 10:54 AM PT**
+**Last updated: Nov 16, 2026 · evening PT**
 Read this first in any new session about Your Salon Pro (the live app and the site).
 
 This file is the canonical handoff. Two older copies were **not** rewritten on Nov 16 and still describe September:
@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live right now, from PR #2 (`07f3caf`, 10:36 AM PT), is Earnings v2.62, Appointments v6.23, salon v0.51, service worker `yoursalon-v76`. The payments change ships these versions once it is merged:
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live right now, after the payments change (PR #5), is Earnings v2.63, Appointments v6.24, salon v0.52, service worker `yoursalon-v77`. The audit-log change ships these versions once it is merged:
 
-| Room | File | Live version |
+| Room | File | Version in this change |
 |---|---|---|
-| Earnings | `app.html` | v2.63 |
-| Appointments | `appt.html` | v6.24 |
-| Shell | `salon.html` | v0.52 (`SHELL_V` matches the page) |
-| Service worker | `sw.js` | `yoursalon-v77` |
+| Earnings | `app.html` | v2.64 |
+| Appointments | `appt.html` | v6.25 |
+| Shell | `salon.html` | v0.53 (`SHELL_V` matches the page) |
+| Service worker | `sw.js` | `yoursalon-v78` |
 | Booking page | `book.html` | v3.55 (not changed in PR #2) |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
@@ -56,7 +56,7 @@ Run the check with `node yoursalon-settle.test.js`. Run it again with `TZ=Americ
 
 ## Roadmap — not in PR #2
 
-**Step 2 — running-balance ledger, built in the payments pull request (lands on `main` when that pull request is merged).**
+**Step 2 — running-balance ledger. Shipped and live (PR #5).**
 
 Clarified Nov 16, 2026: salon payments are not a monthly settlement. They may arrive daily, weekly, or monthly, for any amount. A payment is the date the money was received and the amount received. It is not tied to a settlement month. A month label, if shown, is derived from that date. It is not required.
 
@@ -70,12 +70,18 @@ Clarified Nov 16, 2026: salon payments are not a monthly settlement. They may ar
 - Invoices list payments received that month and the all-time balance still due.
 - `cp_payments` is in the shell `SYNC_KEYS`. Records merge by id. If both devices have the same payment, the one with the later `updatedAt` wins, so a void is not undone by an older copy.
 
-**Step 3. Append-only audit log.** Still not built.
+**Step 3 — audit log. Built in the audit pull request (lands on `main` when that pull request is merged).**
 
-**Step 3 detail (not built).**
+Follow the money for a date: what changed, who was paid, and the balance before and after.
 
-- Entries are added, never edited or removed.
-- A view by date, and a CSV export.
+- Append-only. Events are never edited or deleted. They are stored by month (`ys_audit_YYYY-MM`) so one cloud document does not grow without a bound. Months are listed in `ys_audit_months`. Sync unions events by id and keeps the original if both devices have the same id.
+- Each event has an id, a timestamp, the device’s local date and time, a type, what it refers to, a plain summary, before/after for the fields that matter, a source (`earn`, `appt`, or `shell`), and an actor (the signed-in email, or “this device”).
+- Recorded: creating, editing, and deleting an appointment; status changes, including the needs-closing taps; price and tip changes; a payment recorded or voided; the one-time mark-paid migration; split and name/salon setting changes; backup restore; erasing data on the device; deleting the account.
+- “What happened” on the Salon owes me screen: pick a date, and optionally an end date. Events are in time order. That range also shows Done work with the frozen split, tips, payments received, and the running balance before the first day and after the last day.
+- CSV export of payments, appointments (with the frozen split and cent amounts), and the audit log, filtered to the same dates. It uses the share sheet when the phone allows files, and a single download otherwise. It does not use `alert()` or `confirm()`.
+- Deleted appointments get a tombstone (`ys_tombstones`). Sync unions those by id. After a merge, a tombstoned appointment is removed again, so another device or an older cloud copy does not bring it back. The deletion is also in the audit log.
+
+The existing owner unlock is unchanged. It is not synced, not written into the audit log, and not described in the app.
 
 **Later.**
 

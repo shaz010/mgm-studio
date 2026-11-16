@@ -262,7 +262,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.52 · payments ledger syncs across devices</div>
+    <div class="ver">salon v0.53 · audit log syncs by month</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -307,6 +307,7 @@
     </div>
   </div>
 
+<script src="yoursalon-settle.js"></script>
 <script src="yoursalon-settle.js"></script>
 <script>
   /* shell guard: if the shell ever gets served INTO its own iframe
@@ -437,6 +438,7 @@
     var pill=document.getElementById('acctPill');
     var txt=document.getElementById('acctTxt');
     var ic=pill?pill.querySelector('i'):null;
+    try{if(u&&u.email)localStorage.setItem('ys_actor_email',u.email);else localStorage.removeItem('ys_actor_email');}catch(e){}
     if(u){
       if(txt)txt.textContent=_lastSync?('Synced '+relTime(_lastSync)):'Syncing…';
       if(ic)ic.className='ti ti-cloud-check';
@@ -477,8 +479,14 @@
     }).then(function(){
       return u.delete();                                        // Firebase Auth account
     }).then(function(){
+      try{
+        if(window.YS&&YS.storeAudit)YS.storeAudit(function(k){return localStorage.getItem(k);},function(k,v){localStorage.setItem(k,v);},{type:'account.delete',entityType:'account',entityId:'shell',summary:'Deleted the account on this device',source:'shell',actor:(u&&u.email)||'this device'});
+      }catch(e){}
       try{localStorage.clear();}catch(e){}                      // on-device data
       try{sessionStorage.clear();}catch(e){}
+      try{
+        if(window.YS&&YS.storeAudit)YS.storeAudit(function(k){return localStorage.getItem(k);},function(k,v){localStorage.setItem(k,v);},{type:'account.delete',entityType:'account',entityId:'shell',summary:'Deleted the account on this device',source:'shell',actor:(u&&u.email)||'this device'});
+      }catch(e){}
       var me=document.getElementById('authMe'),f=document.getElementById('authForm'),dn=document.getElementById('delDone');
       if(me)me.style.display='none'; if(f)f.style.display='none'; if(dn)dn.style.display='block';
       var x=document.querySelector('.auth-x'); if(x)x.style.display='none';
@@ -508,8 +516,35 @@
   function lsSet(k,v){try{ if(v==null)localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){}}
   function getMeta(){try{return JSON.parse(localStorage.getItem(META_KEY)||'{}');}catch(e){return {};}}
   function setMeta(m){try{localStorage.setItem(META_KEY,JSON.stringify(m));}catch(e){}}
-  function snapshotLocal(){var s={};SYNC_KEYS.forEach(function(k){s[k]=lsGet(k);});return s;}
-  function detectChanges(){var ch=[];SYNC_KEYS.forEach(function(k){if(lsGet(k)!==_snap[k])ch.push(k);});return ch;}
+  function syncKeyList(cloudKeys){
+    var keys=SYNC_KEYS.slice(), seen={};
+    keys.forEach(function(k){seen[k]=1;});
+    function add(k){
+      if(!k||seen[k])return;
+      if(k==='ys_audit_months'||k==='ys_tombstones'||/^ys_audit_\d{4}-\d{2}$/.test(k)){seen[k]=1;keys.push(k);}
+    }
+    add('ys_audit_months'); add('ys_tombstones');
+    try{var months=JSON.parse(lsGet('ys_audit_months')||'[]'); if(Array.isArray(months))months.forEach(function(m){add('ys_audit_'+m);});}catch(e){}
+    try{for(var i=0;i<localStorage.length;i++)add(localStorage.key(i));}catch(e){}
+    if(cloudKeys)Object.keys(cloudKeys).forEach(add);
+    return keys;
+  }
+  function snapshotLocal(){var s={};syncKeyList().forEach(function(k){s[k]=lsGet(k);});return s;}
+  function detectChanges(){var ch=[];syncKeyList().forEach(function(k){if(lsGet(k)!==_snap[k])ch.push(k);});return ch;}
+  function applyStoredTombstones(){
+    var tombs=[];
+    try{tombs=JSON.parse(lsGet('ys_tombstones')||'[]')||[];}catch(e){tombs=[];}
+    if(!Array.isArray(tombs)||!tombs.length||!(window.YS&&YS.filterTombstones))return false;
+    var did=false;
+    [['ap_appts','ap_appt'],['cp_appts','cp_appt']].forEach(function(pair){
+      var arr=[];
+      try{arr=JSON.parse(lsGet(pair[0])||'[]')||[];}catch(e){arr=[];}
+      if(!Array.isArray(arr))return;
+      var next=YS.filterTombstones(arr,tombs,pair[1]);
+      if(next.length!==arr.length){lsSet(pair[0],JSON.stringify(next));did=true;}
+    });
+    return did;
+  }
 
   function isRecArray(val){try{var a=JSON.parse(val);return Array.isArray(a)&&a.length>0&&a[0]&&typeof a[0]==='object'&&('id' in a[0]);}catch(e){return false;}}
   // Union two record arrays by id. The "winner" side overrides conflicting ids; non-conflicts from both survive (never lose a record).
@@ -524,10 +559,32 @@
   // Merge the cloud's keys into local. Returns true if local changed (so we can refresh the room).
   function mergeFromCloud(cloudKeys){
     cloudKeys=cloudKeys||{}; var meta=getMeta(), changed=false;
-    SYNC_KEYS.forEach(function(k){
+    syncKeyList(cloudKeys).forEach(function(k){
       var lv=lsGet(k), lt=meta[k]||0;
       var c=cloudKeys[k], cv=c?c.v:null, ct=c?(c.t||0):0;
       if(cv==null) return;                    // nothing in cloud for this key -> keep local
+      if(k==='ys_audit_months'){
+        var lm=[],cm=[];
+        try{lm=JSON.parse(lv||'[]')||[];}catch(e){lm=[];}
+        try{cm=JSON.parse(cv||'[]')||[];}catch(e){cm=[];}
+        if(!Array.isArray(lm))lm=[]; if(!Array.isArray(cm))cm=[];
+        var months=(window.YS&&YS.mergeMonthIndex)?YS.mergeMonthIndex(lm,cm):lm.concat(cm);
+        var monthStr=JSON.stringify(months);
+        if(monthStr!==lv){lsSet(k,monthStr);changed=true;}
+        meta[k]=Math.max(lt,ct);
+        return;
+      }
+      if(k==='ys_tombstones'||/^ys_audit_\d{4}-\d{2}$/.test(k)){
+        var la=[],ca=[];
+        try{la=JSON.parse(lv||'[]')||[];}catch(e){la=[];}
+        try{ca=JSON.parse(cv||'[]')||[];}catch(e){ca=[];}
+        if(!Array.isArray(la))la=[]; if(!Array.isArray(ca))ca=[];
+        var ev=(window.YS&&YS.mergeAuditLists)?YS.mergeAuditLists(la,ca):la.concat(ca);
+        function ids(list){return (list||[]).map(function(e){return e&&e.id;}).sort().join(',');}
+        if(ids(ev)!==ids(la)){lsSet(k,JSON.stringify(ev));changed=true;}
+        meta[k]=Math.max(lt,ct);
+        return;
+      }
       if(k==='cp_payments'){
         var lp=[],cp=[];
         try{lp=JSON.parse(lv||'[]')||[];}catch(e){lp=[];}
@@ -554,6 +611,7 @@
         if(ct>lt){ lsSet(k,cv); meta[k]=ct; changed=true; }
       }
     });
+    if(applyStoredTombstones())changed=true;
     setMeta(meta); return changed;
   }
   function pushKeys(keys){
@@ -586,7 +644,7 @@
       var ck=data.keys||{};
       var changed=mergeFromCloud(ck);                 // pull cloud down, merge-safe
       var toPush=[];                                  // seed/refresh cloud with anything local that differs
-      SYNC_KEYS.forEach(function(k){ var lv=lsGet(k); if(lv!=null){ var cv=ck[k]?ck[k].v:null; if(cv!==lv)toPush.push(k); } });
+      syncKeyList(ck).forEach(function(k){ var lv=lsGet(k); if(lv!=null){ var cv=ck[k]?ck[k].v:null; if(cv!==lv)toPush.push(k); } });
       if(toPush.length)pushKeys(toPush);
       _snap=snapshotLocal();
       if(changed)reloadRoomSoon();
@@ -623,7 +681,7 @@
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.52';
+  var SHELL_V='v0.53';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{

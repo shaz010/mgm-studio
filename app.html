@@ -686,6 +686,11 @@ td{padding:12px 10px;vertical-align:middle}
 .pay-row.voided .pay-amt{text-decoration:line-through}
 .pay-meta{font-size:11px;color:#999;margin-top:2px}
 .pay-voidbtn{border:1px solid #6a3030;background:#2a1414;color:#f0a0a0;border-radius:8px;padding:6px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+.audit-row{padding:8px 0;border-top:1px solid #2a2a2a;font-size:13px}
+.audit-time{font-size:11px;color:#9ab;font-weight:700}
+.audit-sum{margin-top:2px;line-height:1.35}
+.audit-money{margin-top:8px;padding:8px 10px;border:1px solid #2a3a4a;border-radius:10px;font-size:12px;line-height:1.45}
+.audit-status{font-size:12px;color:#9ab;margin-top:6px}
 body.theme-light .pay-seg button{background:#fff;color:#333;border-color:#ccc}
 body.theme-light .pay-row{border-color:#e4e0d4}
 body.theme-light .bal-line{color:#334}
@@ -1868,6 +1873,19 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
         </div>
         <div id="payList"></div>
       </div>
+      <div class="card" id="auditCard" style="margin-bottom:14px">
+        <div class="ctitle"><i class="ti ti-history"></i>What happened</div>
+        <div class="pay-form">
+          <div><label>From <input id="auditFrom" type="date"></label></div>
+          <div><label>To <input id="auditTo" type="date"></label></div>
+          <div class="pay-wide" style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-paid-main" type="button" onclick="showAudit()">Show this date</button>
+            <button class="btn-invoice" type="button" onclick="exportAuditCsv()">Export CSV</button>
+          </div>
+        </div>
+        <div class="audit-status" id="auditStatus"></div>
+        <div id="auditOut"></div>
+      </div>
       <div id="needsClose" class="nc-box" style="display:none"></div>
       <div class="card" id="owedCard" style="margin-bottom:14px">
         <div class="ctitle"><i class="ti ti-calculator"></i>Earnings breakdown — what's owed</div>
@@ -1948,6 +1966,19 @@ function loadAppts(){
   var seen={},out=[];
   own.forEach(function(x){if(x&&x.id!=null)seen[x.id]=1;out.push(x);});
   shared.forEach(function(x){if(x&&x.id!=null&&!seen[x.id])out.push(x);});
+  var tombs=loadTombs();
+  if(tombs.length){
+    var ownLeft=YS.filterTombstones(own,tombs,'cp_appt');
+    if(ownLeft.length!==own.length){try{localStorage.setItem(APPTS_KEY,JSON.stringify(ownLeft));}catch(e){}}
+    var shareLeft=YS.filterTombstones(shared,tombs,'ap_appt');
+    if(shareLeft.length!==shared.length){
+      try{
+        var raw=JSON.parse(localStorage.getItem('ap_appts')||'[]');
+        localStorage.setItem('ap_appts',JSON.stringify(YS.filterTombstones(raw,tombs,'ap_appt')));
+      }catch(e){}
+    }
+    out=out.filter(function(x){return !YS.isTombstoned(tombs,x&&x._src==='appt'?'ap_appt':'cp_appt',x&&x.id);});
+  }
   return out;
 }
 function saveAppts(arr){try{var own=(arr||[]).filter(function(x){return !(x&&x._src);});localStorage.setItem(APPTS_KEY,JSON.stringify(own));}catch(e){alert('Could not save — storage may be full.');}}
@@ -1956,6 +1987,19 @@ function loadPayments(){try{var a=JSON.parse(localStorage.getItem(PAY_KEY)||'[]'
 function savePayments(arr){try{localStorage.setItem(PAY_KEY,JSON.stringify(arr||[]));}catch(e){alert('Could not save — storage may be full.');}}
 function loadPaid(){try{var o=JSON.parse(localStorage.getItem(PAID_KEY)||'{}');return (o&&typeof o==='object'&&!Array.isArray(o))?o:{};}catch(e){return{};}}
 function savePaid(o){try{localStorage.setItem(PAID_KEY,JSON.stringify(o));}catch(e){}}
+function loadTombs(){try{var a=JSON.parse(localStorage.getItem('ys_tombstones')||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
+function saveTombs(a){try{localStorage.setItem('ys_tombstones',JSON.stringify(a||[]));}catch(e){}}
+function bury(entityType,entityId,summary){
+  var next=YS.appendAudit(loadTombs(),YS.makeTombstone(entityType,entityId,Date.now(),summary||''));
+  saveTombs(next);
+}
+function logAudit(partial){
+  partial=partial||{};
+  if(!partial.actor){try{partial.actor=localStorage.getItem('ys_actor_email')||'';}catch(e){} if(!partial.actor)partial.actor='this device';}
+  if(!partial.source)partial.source='earn';
+  try{return YS.storeAudit(function(k){return localStorage.getItem(k);},function(k,v){localStorage.setItem(k,v);},partial);}catch(e){return null;}
+}
+function logPlans(plans,source){(plans||[]).forEach(function(p){if(source)p.source=source;logAudit(p);});}
 function backfillSplits(){
   var pct=myPct();
   function rewrite(key,map){
@@ -1983,7 +2027,12 @@ function backfillSplits(){
 function ensureLedger(){
   backfillSplits();
   var mig=YS.migratePaidMonths(loadPaid(),loadAppts(),loadPayments());
-  if(mig.added&&mig.added.length)savePayments(mig.payments);
+  if(mig.added&&mig.added.length){
+    savePayments(mig.payments);
+    mig.added.forEach(function(p){
+      logAudit({type:'payment.migrate',entityType:'payment',entityId:p.id,summary:'Migrated mark-paid '+String(p.id).replace('mig-cp_paid-','')+' into a payment of $'+(p.amountCents/100).toFixed(2),after:{amountCents:p.amountCents,date:p.date,note:p.note}});
+    });
+  }
 }
 function localToday(){return YS.localYMD(new Date());}
 document.getElementById('cDate').value=localToday();
@@ -2285,6 +2334,7 @@ async function save(){
     var arr=loadAppts();var i=arr.findIndex(function(x){return String(x.id)===String(rec.id);});
     if(i>=0)arr[i]=rec;else arr.push(rec);
     saveAppts(arr);
+    logPlans(YS.planSaveEvents(prior,rec),'earn');
     setSyncBadge('ok','Saved ✓');resetForm();loadAll();showTab('hist');
     if(typeof eyeBloom==='function') eyeBloom();
   }catch(err){setSyncBadge('err','Save failed');alert('Could not save — storage may be full.');console.error(err);}
@@ -2297,6 +2347,8 @@ function delAppt(id){
         var apArr=JSON.parse(localStorage.getItem('ap_appts')||'[]');
         apArr=apArr.filter(function(x){return String(x.id)!==String(id);});
         localStorage.setItem('ap_appts',JSON.stringify(apArr));
+        bury('ap_appt',id,'Deleted '+((_r&&_r.name)||'appointment'));
+        logAudit({type:'appointment.delete',entityType:'ap_appt',entityId:id,summary:'Deleted '+((_r&&_r.name)||'appointment'),before:_r?YS.moneySnap(_r):null});
         setSyncBadge('ok','Deleted');loadAll();
       }catch(err){setSyncBadge('err','Error');console.error(err);}
     },{danger:true});
@@ -2306,6 +2358,8 @@ function delAppt(id){
     try{
       var arr=loadAppts().filter(function(x){return String(x.id)!==String(id);});
       saveAppts(arr);
+      bury('cp_appt',id,'Deleted '+((_r&&_r.name)||'earnings entry'));
+      logAudit({type:'appointment.delete',entityType:'cp_appt',entityId:id,summary:'Deleted '+((_r&&_r.name)||'earnings entry'),before:_r?YS.moneySnap(_r):null});
       if(String(editingId)===String(id))resetForm();
       setSyncBadge('ok','Saved');loadAll();
     }catch(err){setSyncBadge('err','Error');console.error(err);}
@@ -2526,8 +2580,11 @@ function writeApptStatus(id,status){
   arr=arr.map(function(a){
     if(String(a.id)!==String(id))return a;
     hit=true;
-    var next=Object.assign({},a,{status:status});
+    var was=a.status||'confirmed';
+    var next=Object.assign({},a,{status:status,_src:'appt'});
     if(String(status).toLowerCase()==='done')next=YS.applyFrozenSplit(next,myPct(),'price');
+    try{if(was!==status)logAudit(YS.planStatusEvent(next,was,status));}catch(e){}
+    delete next._src;
     return next;
   });
   if(!hit)return false;
@@ -2687,12 +2744,80 @@ function recordPayment(){
   var now=Date.now();
   var rec={id:'pay-'+now.toString(36)+Math.random().toString(36).slice(2,6),amountCents:cents,date:date,method:method,note:note,createdAt:now,updatedAt:now,voided:false,voidReason:'',voidedAt:null};
   var all=loadPayments();all.push(rec);savePayments(all);
+  logAudit({type:'payment.record',entityType:'payment',entityId:rec.id,summary:'Payment '+moneyLabel(rec.amountCents)+' on '+rec.date+' ('+payMethodLabel(rec.method)+')',after:{amountCents:rec.amountCents,date:rec.date,method:rec.method,note:rec.note}});
   if($('payNote'))$('payNote').value='';
   _payDefault=null;
   if($('payAmt'))$('payAmt').value='';
   setSyncBadge('ok','Saved');
   renderMgm();
   if(typeof eyeBloom==='function')eyeBloom();
+}
+function centsText(c){return moneyLabel(c);}
+function showAudit(){
+  var from=$('auditFrom')&&$('auditFrom').value||localToday();
+  var to=$('auditTo')&&$('auditTo').value||from;
+  if(to<from){var s=from;from=to;to=s;}
+  if($('auditFrom')&&!$('auditFrom').value)$('auditFrom').value=from;
+  var events=YS.readAudit(function(k){return localStorage.getItem(k);},from,to);
+  var money=YS.followMoney(data,loadPayments(),from,to);
+  var html='<div class="audit-money">Balance before '+esc(from)+': <b>'+centsText(money.beforeCents)+'</b><br>Balance after '+esc(to)+': <b>'+centsText(money.afterCents)+'</b></div>';
+  (money.days||[]).forEach(function(day){
+    if(!day.lines.length)return;
+    html+='<div class="audit-money"><b>'+esc(day.date)+'</b> · Earned '+centsText(day.earnedCents)+' · Tips '+centsText(day.tipCents)+' · Received '+centsText(day.paidCents)+' · Due '+centsText(day.dueCents);
+    day.lines.forEach(function(l){
+      if(l.kind==='work')html+='<div>'+esc(l.name||'Visit')+' · commission '+centsText(l.meCents)+' · tip '+centsText(l.tipCents)+(l.splitPct!=null?' · '+l.splitPct+'% kept':'')+'</div>';
+      else html+='<div>Payment '+centsText(l.amountCents)+' · '+esc(l.method||'')+(l.note?' · '+esc(l.note):'')+'</div>';
+    });
+    html+='</div>';
+  });
+  if(!events.length)html+='<div class="mgm-rule">No recorded events in this range.</div>';
+  else html+=events.map(function(e){
+    return '<div class="audit-row"><div class="audit-time">'+esc(e.localDate||'')+' '+esc(e.localTime||'')+' · '+esc(e.type||'')+'</div><div class="audit-sum">'+esc(e.summary||'')+'</div><div class="pay-meta">'+esc(e.actor||'this device')+' · '+esc(e.source||'')+'</div></div>';
+  }).join('');
+  if($('auditOut'))$('auditOut').innerHTML=html;
+  if($('auditStatus'))$('auditStatus').textContent='';
+}
+function exportAuditCsv(){
+  var from=$('auditFrom')&&$('auditFrom').value||'';
+  var to=$('auditTo')&&$('auditTo').value||from;
+  if(from&&to&&to<from){var s=from;from=to;to=s;}
+  var files=[
+    {name:'yoursalon-payments.csv',text:YS.csvPayments(loadPayments(),from,to)},
+    {name:'yoursalon-appointments.csv',text:YS.csvAppointments(loadAppts(),from,to)},
+    {name:'yoursalon-audit.csv',text:YS.csvAudit(YS.readAudit(function(k){return localStorage.getItem(k);},from,to),from,to)}
+  ];
+  var status=$('auditStatus');
+  function say(t){if(status)status.textContent=t;}
+  try{
+    var blobs=files.map(function(f){return new File([f.text],f.name,{type:'text/csv'});});
+    if(navigator.canShare&&navigator.canShare({files:blobs})){
+      navigator.share({files:blobs,title:'Your Salon export'}).then(function(){say('Export shared.');}).catch(function(err){if(err&&err.name==='AbortError'){say('');return;}downloadCsvBundle(files);});
+      return;
+    }
+  }catch(e){}
+  downloadCsvBundle(files);
+}
+function downloadCsvBundle(files){
+  var combined=files.map(function(f){return '# '+f.name+'\r\n'+f.text;}).join('\r\n\r\n');
+  var name='yoursalon-export.csv';
+  var say=function(t){if($('auditStatus'))$('auditStatus').textContent=t;};
+  try{
+    var blob=new Blob([combined],{type:'text/csv'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download=name;
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){try{a.remove();}catch(e){}URL.revokeObjectURL(url);},800);
+    say('Download started. It includes payments, appointments, and the audit log.');
+    return;
+  }catch(e){}
+  try{
+    var a2=document.createElement('a');
+    a2.href='data:text/csv;charset=utf-8,'+encodeURIComponent(combined);
+    a2.download=name;
+    document.body.appendChild(a2);a2.click();
+    setTimeout(function(){try{a2.remove();}catch(err){}},800);
+    say('Export ready.');
+  }catch(e2){say('Could not export on this device.');}
 }
 function voidPayment(id,reason){
   var now=Date.now();
@@ -2701,6 +2826,8 @@ function voidPayment(id,reason){
     return Object.assign({},p,{voided:true,voidReason:reason||'Voided',voidedAt:now,updatedAt:now});
   });
   savePayments(all);
+  var gone=all.filter(function(p){return String(p.id)===String(id);})[0];
+  logAudit({type:'payment.void',entityType:'payment',entityId:id,summary:'Voided payment'+(gone?' '+moneyLabel(gone.amountCents):'')+(reason?' · '+reason:''),before:{voided:false},after:{voided:true,voidReason:reason||'Voided',amountCents:gone&&gone.amountCents}});
   setSyncBadge('ok','Saved');
   renderMgm();
 }
@@ -2957,6 +3084,7 @@ function confirmErase(){
   try{for(var i=0;i<localStorage.length;i++){keys.push(localStorage.key(i));}}catch(_){}
   keys.forEach(function(k){try{localStorage.removeItem(k);}catch(_){}});
   try{localStorage.clear();}catch(_){}
+  try{logAudit({type:'data.erase',entityType:'device',entityId:'local',summary:'Erased all data on this device'});}catch(e){}
   var em=document.getElementById('eraseModal');if(em){var eg=em.querySelector('.erase-go');if(eg)eg.textContent='Erasing…';}
   setTimeout(function(){
     try{
@@ -3043,6 +3171,7 @@ function importData(input){
         askConfirm('Restore this backup? It will replace ALL bookings, prices, clients and settings on this device.',function(){
           try{localStorage.clear();}catch(_e){}
           Object.keys(d.store).forEach(function(k){try{localStorage.setItem(k,d.store[k]);}catch(_e){}});
+          try{logAudit({type:'backup.restore',entityType:'backup',entityId:'full',summary:'Restored a full backup'});}catch(_e){}
           location.reload();
         },{title:'Restore full backup',danger:true});
         return;
@@ -3053,6 +3182,7 @@ function importData(input){
           if(d.paid&&typeof d.paid==='object')localStorage.setItem(PAID_KEY,JSON.stringify(d.paid));
           if(d.prefs&&typeof d.prefs==='object')localStorage.setItem('cp_prefs',JSON.stringify(d.prefs));
           if(Array.isArray(d.clients))localStorage.setItem('cp_clients',JSON.stringify(d.clients));
+          try{logAudit({type:'backup.restore',entityType:'backup',entityId:'bookings',summary:'Restored a bookings backup'});}catch(_e){}
           location.reload();
         },{title:'Restore backup',danger:true});
         return;
@@ -4160,10 +4290,13 @@ function saveSettings(){
   if(n) prefs.name = n;
   if(s) prefs.salon = s;
   var _newRate=parseInt(r,10)||60,_oldRate=prefs.rate||60;
+  var _oldName=prefs.name||'',_oldSalon=prefs.salon||'';
   var finish=function(){
     try{var _ap=JSON.parse(localStorage.getItem('ap_prefs')||'{}');_ap.splitPct=prefs.rate;localStorage.setItem('ap_prefs',JSON.stringify(_ap));}catch(e){}
     prefs.setup = true;
     savePrefsToStorage();
+    if((prefs.rate||60)!==_oldRate)logAudit({type:'split.change',entityType:'settings',entityId:'split',summary:'Commission rate '+_oldRate+'% → '+(prefs.rate||60)+'%. Finished work keeps its old rate.',before:{splitPct:_oldRate},after:{splitPct:prefs.rate||60}});
+    if((prefs.name||'')!==_oldName||(prefs.salon||'')!==_oldSalon)logAudit({type:'settings.change',entityType:'settings',entityId:'profile',summary:'Updated name or salon',before:{name:_oldName,salon:_oldSalon},after:{name:prefs.name||'',salon:prefs.salon||''}});
     applyWallpaper(prefs.wallpaper||'none');
     updateBranding(prefs.name, prefs.salon);
     updateCommissionRate(Math.round(myPct()));
@@ -4437,7 +4570,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.63 · running payment balance; split frozen on finished work';
+var VERSION='app v2.64 · audit log of what happened, with CSV export';
 /* ===== In-app confirm (native confirm() silently fails in iOS PWA / WKWebView) ===== */
 var _cpCfFn=null,_cpCfNo=null;
 function askConfirm(msg,onYes,opts){
@@ -4461,6 +4594,7 @@ function deleteMyAccount(){
   askConfirm('Delete your account and all data? This permanently erases everything on this device and cannot be undone.',function(){
     askConfirm('Last chance — are you sure? All bookings, clients and settings will be deleted.',function(){
       try{localStorage.clear();}catch(e){}
+      try{logAudit({type:'account.delete',entityType:'account',entityId:'local',summary:'Deleted the on-device account data',source:'earn'});}catch(err){}
       window.location.reload(true);
     },{title:'Final confirmation',danger:true,yesLabel:'Delete everything'});
   },{title:'Delete account',danger:true,yesLabel:'Yes, delete'});

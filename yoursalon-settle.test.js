@@ -195,6 +195,80 @@ check('week and month period bounds are local calendar ranges', function () {
   assert.strictEqual(month.to, '2026-11-30');
 });
 
+check('audit log only appends and will not rewrite an existing event', function () {
+  var mem = {};
+  var get = function (k) { return mem[k] == null ? null : mem[k]; };
+  var set = function (k, v) { mem[k] = v; };
+  var first = YS.storeAudit(get, set, { id: 'e1', at: new Date(2026, 10, 16, 9, 5, 0).getTime(), type: 'payment.record', summary: 'Paid $10', source: 'earn', actor: 'this device', entityType: 'payment', entityId: 'p1' });
+  assert.strictEqual(first.stored, true);
+  assert.strictEqual(first.event.localDate, '2026-11-16');
+  assert.strictEqual(first.event.localTime, '09:05:00');
+  var second = YS.storeAudit(get, set, { id: 'e1', at: new Date(2026, 10, 16, 18, 0, 0).getTime(), type: 'payment.void', summary: 'changed', source: 'earn' });
+  assert.strictEqual(second.stored, false);
+  var saved = JSON.parse(mem['ys_audit_2026-11']);
+  assert.strictEqual(saved.length, 1);
+  assert.strictEqual(saved[0].summary, 'Paid $10');
+  assert.strictEqual(saved[0].type, 'payment.record');
+  var merged = YS.mergeAuditLists(saved, [{ id: 'e1', at: saved[0].at + 10, type: 'payment.void', summary: 'nope' }, { id: 'e2', at: saved[0].at + 20, type: 'note', summary: 'later', localDate: '2026-11-16' }]);
+  assert.strictEqual(merged.length, 2);
+  assert.strictEqual(merged[0].summary, 'Paid $10');
+});
+
+check('saving, status, price, and tip each plan an audit event', function () {
+  var created = YS.planSaveEvents(null, { id: 'a1', name: 'Ada', date: '2026-11-16', charge: 100, tip: 5, splitPct: 60, splitFrozen: true, meCents: 6000, salonCents: 4000, chargeCents: 10000, tipCents: 500 });
+  assert.strictEqual(created.length, 1);
+  assert.strictEqual(created[0].type, 'appointment.create');
+  var priced = YS.planSaveEvents(
+    { id: 'a1', name: 'Ada', date: '2026-11-16', charge: 100, tip: 5, splitPct: 60, chargeCents: 10000, meCents: 6000, tipCents: 500 },
+    { id: 'a1', name: 'Ada', date: '2026-11-16', charge: 120, tip: 8, splitPct: 60, chargeCents: 12000, meCents: 7200, tipCents: 800 }
+  );
+  var types = priced.map(function (e) { return e.type; }).sort();
+  assert.deepStrictEqual(types, ['price.change', 'tip.change']);
+  var st = YS.planStatusEvent({ id: 'a1', name: 'Ada', _src: 'appt', splitPct: 60 }, 'confirmed', 'done');
+  assert.strictEqual(st.type, 'status.change');
+  assert.strictEqual(st.summary, 'Ada confirmed → done');
+});
+
+check('day follow-through shows frozen work, tips, payments, and the balance before and after', function () {
+  var rows = [
+    { _src: 'appt', status: 'done', name: 'Ada', date: '2026-11-15', me: 30, tip: 0, splitPct: 60 },
+    { _src: 'appt', status: 'done', name: 'Bea', date: '2026-11-16', me: 60, tip: 15, splitPct: 60 },
+    { _src: 'appt', status: 'cancelled', name: 'No', date: '2026-11-16', me: 40, tip: 10 }
+  ];
+  var pays = [{ id: 'p', date: '2026-11-16', amountCents: 2000, voided: false, method: 'cash' }];
+  var day = YS.followMoney(rows, pays, '2026-11-16', '2026-11-16');
+  assert.strictEqual(day.beforeCents, 3000);
+  assert.strictEqual(day.days[0].earnedCents, 6000);
+  assert.strictEqual(day.days[0].tipCents, 1500);
+  assert.strictEqual(day.days[0].paidCents, 2000);
+  assert.strictEqual(day.afterCents, 3000 + 6000 + 1500 - 2000);
+  assert.strictEqual(day.days[0].lines.filter(function (l) { return l.kind === 'work'; }).length, 1);
+});
+
+check('csv export quotes commas and includes frozen cents', function () {
+  var pay = YS.csvPayments([{ id: 'p1', date: '2026-11-16', amountCents: 1050, method: 'check', note: 'Nov, final', voided: false }], '2026-11-01', '2026-11-30');
+  assert.ok(pay.indexOf('"Nov, final"') >= 0);
+  assert.ok(pay.indexOf('1050') >= 0);
+  var ap = YS.csvAppointments([{ id: 'a', date: '2026-11-16', name: 'Ada', status: 'done', charge: 33.33, splitPct: 50, splitFrozen: true, chargeCents: 3333, meCents: 1667, salonCents: 1666, tipCents: 0 }], '2026-11-16', '2026-11-16');
+  assert.ok(ap.indexOf('1667') >= 0);
+  assert.ok(ap.indexOf('1666') >= 0);
+  assert.ok(ap.indexOf(',50,') >= 0);
+  var outside = YS.csvPayments([{ id: 'p2', date: '2026-12-01', amountCents: 1, voided: false }], '2026-11-01', '2026-11-30');
+  assert.strictEqual(outside.split('\r\n').length, 1);
+});
+
+check('a tombstone hides a deleted appointment and does not duplicate', function () {
+  var tombs = [];
+  var t = YS.makeTombstone('ap_appt', 'a9', 100, 'Deleted Ada');
+  tombs = YS.appendAudit(tombs, t);
+  tombs = YS.appendAudit(tombs, YS.makeTombstone('ap_appt', 'a9', 200, 'again'));
+  assert.strictEqual(tombs.length, 1);
+  assert.strictEqual(tombs[0].summary, 'Deleted Ada');
+  var left = YS.filterTombstones([{ id: 'a9', name: 'Ada' }, { id: 'b', name: 'Bea' }], tombs, 'ap_appt');
+  assert.strictEqual(left.length, 1);
+  assert.strictEqual(left[0].id, 'b');
+});
+
 if (failed) {
   console.error('\n' + failed + ' failed');
   process.exit(1);
