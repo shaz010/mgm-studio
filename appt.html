@@ -679,6 +679,26 @@ body.section-help-on .sec-help-inline{display:inline-flex}
 .pill.cancelled{background:var(--bgred);border:1px solid var(--bred);color:var(--red)}
 .pill.noshow{background:var(--bgred);border:1px solid var(--bred);color:var(--red)}
 .pill.ip{background:var(--gold-dim);border:1px solid var(--gold);color:var(--gold)}
+.nc-box{margin:0 0 12px;border:1px solid rgba(227,179,65,.45);background:rgba(227,179,65,.08);border-radius:12px;padding:12px 12px 4px}
+.nc-h{display:flex;gap:8px;align-items:flex-start;margin-bottom:4px}
+.nc-h .ti{color:#e3b341;font-size:16px;margin-top:1px;flex-shrink:0}
+.nc-title{font-size:13px;font-weight:800;color:#f0d48a}
+.nc-sub{font-size:12px;color:#b7a27a;line-height:1.4;margin-top:2px}
+.nc-list{max-height:280px;overflow:auto}
+.nc-item{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid rgba(227,179,65,.22)}
+@media(max-width:560px){.nc-item{flex-direction:column;align-items:flex-start}}
+.nc-who{font-size:13px;font-weight:700;color:var(--text,#f3f3f3)}
+.nc-meta{font-size:11px;color:#aaa;margin-top:2px}
+.nc-acts{display:flex;flex-wrap:wrap;gap:6px}
+.nc-btn{border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid #3a3a3a;background:#161616;color:#eee}
+.nc-btn.done{background:#14301f;border-color:#2f7a4a;color:#8ee0ad}
+.nc-btn.no{background:#2a2214;border-color:#6a5420;color:#e3b341}
+.nc-btn.cx{background:#2a1414;border-color:#6a3030;color:#f0a0a0}
+body.theme-light .nc-box{background:#fff8e8;border-color:#e3c98a}
+body.theme-light .nc-title{color:#6a4a10}
+body.theme-light .nc-sub,body.theme-light .nc-meta{color:#6a5a3a}
+body.theme-light .nc-who{color:#1a1a1a}
+body.theme-light .nc-btn{background:#fff;color:#222}
 .svc-selected{display:none;flex-wrap:wrap;align-items:center;gap:7px;margin:9px 0 2px}
 .svc-sel-lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
 .svc-tag{display:inline-flex;align-items:center;gap:7px;background:var(--gold-dim);border:1.5px solid var(--gold);color:var(--gold);border-radius:20px;padding:6px 8px 6px 12px;font-size:13.5px;font-weight:700}
@@ -1143,6 +1163,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
         <button class="demo-clear" style="flex:1;background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);color:#666" onclick="clearDemoData()"><i class="ti ti-trash"></i> Clear &amp; start</button>
       </div>
     </div>
+    <div id="needsClose" class="nc-box" style="display:none"></div>
     <div class="seg" id="daySeg">
       <button class="seg-btn on" data-m="day" onclick="setDayMode('day')"><i class="ti ti-calendar"></i> Day</button>
       <button class="seg-btn" data-m="week" onclick="setDayMode('week')"><i class="ti ti-calendar-week"></i> Week</button>
@@ -1832,6 +1853,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="yoursalon-settle.js"></script>
 <script>
 /* ===== service catalog — identical to CommissionPro ===== */
 const SERVICE_GROUPS=[
@@ -1929,7 +1951,7 @@ var customSvc=load(CUSTOM,[]);   /* [{name,mode}] your own services, kept foreve
 (function(){
   if(localStorage.getItem('_ys_demo_seen'))return;
   if(appts.length>0){localStorage.setItem('_ys_demo_seen','1');return;}
-  function relDay(n){var d=new Date();d.setDate(d.getDate()+n);d.setHours(12,0,0,0);return d.toISOString().split('T')[0];}
+  function relDay(n){var d=new Date();d.setDate(d.getDate()+n);var y=d.getFullYear(),m=d.getMonth()+1,da=d.getDate();return y+'-'+(m<10?'0':'')+m+'-'+(da<10?'0':'')+da;}
   var demoClients=[
     {id:'dc1',name:'Jessica Miller', phone:'555-0101',email:'',notes:''},
     {id:'dc2',name:'Sarah Thompson', phone:'555-0102',email:'',notes:''},
@@ -2019,8 +2041,8 @@ function maybeShowTradePicker(){
 
 /* ===== date helpers ===== */
 var viewDate=new Date();viewDate.setHours(12,0,0,0);
-function ymd(d){return d.toISOString().split('T')[0]}
-function todayStr(){var d=new Date();d.setHours(12,0,0,0);return ymd(d)}
+function ymd(d){d=d||new Date();return YS.localYMD(d);}
+function todayStr(){return ymd(new Date());}
 function parseDate(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2],12,0,0)}
 function fmt$(n){return '$'+Math.round(+n||0)}
 function to12(t){if(!t)return '';var p=t.split(':'),h=+p[0],m=p[1],ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+m+' '+ap}
@@ -2490,8 +2512,42 @@ function renderWeekGrid(){
   }
   $('weekGrid').innerHTML='<div class="wg-wrap"><div class="wg-grid" style="display:grid;grid-template-columns:46px repeat(7,minmax(42px,1fr));min-width:352px">'+head+rows+'</div></div>';
 }
+function renderNeedsClose(){
+  var box=$('needsClose');if(!box)return;
+  var now=new Date();
+  var list=appts.filter(function(a){return YS.needsClosing(a,now);});
+  list.sort(function(a,b){return ((a.date||'')+(a.time||'')).localeCompare((b.date||'')+(b.time||''));});
+  if(!list.length){box.style.display='none';box.innerHTML='';return;}
+  box.style.display='block';
+  var n=list.length;
+  box.innerHTML='<div class="nc-h"><i class="ti ti-alert-circle"></i><div><div class="nc-title">'+n+' need'+(n===1?'s':'')+' closing</div><div class="nc-sub">Past appointments still confirmed. They are not in what the salon owes you until you close them.</div></div></div><div class="nc-list">'+
+    list.map(function(a){
+      var when='';
+      try{when=fmtReqDate(a.date);}catch(e){when=a.date||'';}
+      var id=encodeURIComponent(String(a.id));
+      return '<div class="nc-item"><div><div class="nc-who">'+esc(a.name||'Client')+'</div><div class="nc-meta">'+esc(when)+(a.time?' · '+esc(to12(a.time)):'')+(a.service?' · '+esc(a.service):'')+'</div></div><div class="nc-acts">'+
+        '<button type="button" class="nc-btn done" data-nc="done" data-id="'+id+'">Mark Done</button>'+
+        '<button type="button" class="nc-btn no" data-nc="noshow" data-id="'+id+'">No-show</button>'+
+        '<button type="button" class="nc-btn cx" data-nc="cancelled" data-id="'+id+'">Cancelled</button></div></div>';
+    }).join('')+'</div>';
+}
+function bindNeedsClose(){
+  var box=$('needsClose');if(!box||box._ncBound)return;
+  box._ncBound=1;
+  box.addEventListener('click',function(e){
+    var t=e.target;
+    while(t&&t!==box){if(t.getAttribute&&t.getAttribute('data-nc'))break;t=t.parentNode;}
+    if(!t||t===box)return;
+    e.stopPropagation();
+    var id=decodeURIComponent(t.getAttribute('data-id')||'');
+    var st=t.getAttribute('data-nc');
+    if(!id||!st)return;
+    if(setApptStatusById(id,st))toast(st==='done'?'Done · stock updated':stLabel(st));
+  });
+}
 function renderDay(){
   reload();
+  try{renderNeedsClose();}catch(e){}
   renderWeekStrip();
   if(dayMode==='month'){
     $('dayPane').style.display='none';
@@ -2535,7 +2591,8 @@ function renderDay(){
   $('statCount').textContent=active.length;
   $('statHours').textContent=(mins/60).toFixed(mins%60?1:0)+'h';
   $('statRev').textContent=fmt$(rev);
-  $('statNet').textContent=fmt$(active.reduce(function(s,a){return s+takeHome(a.price)+(+a.tip||0)},0));
+  var netC=0;active.forEach(function(a){netC+=YS.centsOf(takeHome(a.price))+YS.centsOf(a.tip);});
+  $('statNet').textContent='$'+(netC/100).toFixed(2);
 
   if(!list.length){
     $('dayList').innerHTML='<div class="empty"><i class="ti ti-calendar-off"></i><div class="empty-t">No appointments '+(isToday?'today':'this day')+'</div><div class="empty-s">A clear chair. Tap Add to book someone in.</div><button id="emptyAddBtn" class="btn btn-sm" style="margin:0 auto;background:linear-gradient(135deg,#FFB800,#ff8a00);color:#160e00;font-weight:800;border:none;will-change:transform,box-shadow;transform-origin:center center;position:relative;overflow:hidden" onclick="openAdd()"><i class="ti ti-plus"></i> Add appointment</button></div>';
@@ -2745,23 +2802,31 @@ function openSheet(id){
   var a=appts.find(function(x){return x.id===id});if(!a)return;
   sheetId=id;
   $('dName').textContent=a.name;
-  $('dSub').textContent=to12(a.time)+' · '+(a.service||'')+' · '+fmt$(a.price)+((getSplit()<100&&(+a.price)>0)?' · '+fmt$(takeHome(a.price)+(+a.tip||0))+' take-home':'')+(a.phone?' · '+a.phone:'');
+  $('dSub').textContent=to12(a.time)+' · '+(a.service||'')+' · '+fmt$(a.price)+((getSplit()<100&&(+a.price)>0)?' · $'+YS.addMoney(takeHome(a.price),+a.tip||0).toFixed(2)+' take-home':'')+(a.phone?' · '+a.phone:'');
   if(a.notes){$('dNotes').textContent=a.notes;$('dNotes').style.display='block'}else{$('dNotes').style.display='none'}
   document.querySelectorAll('#statusGrid .status-opt').forEach(function(o){o.classList.toggle('sel',o.dataset.s===(a.status||'confirmed'))});
   $('apptModal').classList.add('show');
 }
+function setApptStatusById(id,s){
+  var prev=appts.find(function(a){return String(a.id)===String(id);});
+  if(!prev)return false;
+  var realId=prev.id;
+  var was=prev.status||'confirmed';
+  if(was===s){renderDay();return true;}
+  appts=appts.map(function(a){return a.id===realId?Object.assign({},a,{status:s}):a});
+  if(s==='done'){applyStockForAppt(realId);}
+  else if(was==='done'){revertStockForAppt(realId);}
+  save(APPTS,appts);
+  if(String(sheetId)===String(realId)){
+    document.querySelectorAll('#statusGrid .status-opt').forEach(function(o){o.classList.toggle('sel',o.dataset.s===s)});
+  }
+  renderDay();
+  if(typeof publishAvailability==='function')publishAvailability();
+  return true;
+}
 function setStatus(s){
   if(!sheetId)return;
-  var prev=appts.find(function(a){return a.id===sheetId});
-  var was=prev?prev.status:null;
-  appts=appts.map(function(a){return a.id===sheetId?Object.assign({},a,{status:s}):a});
-  if(s==='done'){applyStockForAppt(sheetId);}
-  else if(was==='done'){revertStockForAppt(sheetId);}
-  save(APPTS,appts);
-  document.querySelectorAll('#statusGrid .status-opt').forEach(function(o){o.classList.toggle('sel',o.dataset.s===s)});
-  renderDay();
-  toast(s==='done'?'Done · stock updated':stLabel(s));
-  if(typeof publishAvailability==='function')publishAvailability();
+  if(setApptStatusById(sheetId,s))toast(s==='done'?'Done · stock updated':stLabel(s));
 }
 function splitSvc(str){return (str||'').split('+').map(function(x){return x.trim()}).filter(Boolean);}
 function applyStockForAppt(id){
@@ -2943,17 +3008,16 @@ function _bkCharge(a){return (+a.price||+a.charge||0);}
 function _bkSvc(a){return a.service||a.cat||'—';}
 function renderSalonBreakdown(){
   if(!document.getElementById('csTotal'))return;
-  var all=appts.concat(_cpBookings());
+  var all=appts.concat(_cpBookings()).filter(function(a){return YS.countsTowardOwed(a);});
   var youPct=getSplit(),salonPct=100-youPct;
-  var charge=0,tip=0;
-  all.forEach(function(a){ if(a.status==='cancelled'||a.status==='noshow')return; charge+=_bkCharge(a); tip+=(+a.tip||0); });
-  var you=charge*youPct/100, salon=charge*salonPct/100;
+  var chargeC=0,meC=0,tipC=0;
+  all.forEach(function(a){var parts=YS.splitCharge(_bkCharge(a),youPct);chargeC+=parts.chargeC;meC+=parts.meC;tipC+=YS.centsOf(a.tip);});
   $('csSalonPct').textContent=salonPct+'% of charge';
   $('csYouPct').textContent=youPct+'% of charge';
-  $('csSalon').textContent='$'+Math.round(salon);
-  $('csYou').textContent='$'+Math.round(you);
-  $('csTipV').textContent='$'+tip.toFixed(2);
-  $('csTotal').textContent='$'+(you+tip).toFixed(2);
+  $('csSalon').textContent='$'+((chargeC-meC)/100).toFixed(2);
+  $('csYou').textContent='$'+(meC/100).toFixed(2);
+  $('csTipV').textContent='$'+(tipC/100).toFixed(2);
+  $('csTotal').textContent='$'+((meC+tipC)/100).toFixed(2);
 }
 function selectClient(id){
   if(window.matchMedia&&!window.matchMedia('(min-width:820px)').matches){ openClientBookings(id); return; }
@@ -3492,7 +3556,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.22 · fix delete-all: reload sibling earn frame so ER clears stale in-memory data';
+var VERSION='v6.23 · needs closing; local dates; take-home matches Earnings';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3548,19 +3612,20 @@ function saveBusiness(){
 }
 /* ----- take-home: booked price × your split % (renters set 100) ----- */
 function getSplit(){var p=getPrefs();var s=parseFloat(p.splitPct);return isNaN(s)?60:Math.max(0,Math.min(100,s));}
-function takeHome(price){return Math.round((+price||0)*getSplit())/100;}
+function takeHome(price){return YS.splitCharge(price,getSplit()).me;}
 function apCalc(){
   var charge=parseFloat($('fPrice').value)||0;
   var tip=parseFloat($('fTip').value)||0;
   var youPct=getSplit(),salonPct=100-youPct;
-  var you=charge*youPct/100,salon=charge*salonPct/100;
+  var parts=YS.splitCharge(charge,youPct);
+  var total=YS.addMoney(parts.me,tip);
   var sp=$('apSalonPct'),yp=$('apYouPct'),s=$('apSalon'),y=$('apYou'),tv=$('apTipV'),tt=$('apTotal');
   if(sp)sp.textContent=salonPct+'% of charge';
   if(yp)yp.textContent=youPct+'% of charge';
-  if(s)s.textContent='$'+Math.round(salon);
-  if(y)y.textContent='$'+Math.round(you);
+  if(s)s.textContent='$'+parts.salon.toFixed(2);
+  if(y)y.textContent='$'+parts.me.toFixed(2);
   if(tv)tv.textContent='$'+tip.toFixed(2);
-  if(tt)tt.textContent='$'+(you+tip).toFixed(2);
+  if(tt)tt.textContent='$'+total.toFixed(2);
 }
 var _splitUnlocked=false;
 function toggleSplitLock(){_splitUnlocked=!_splitUnlocked;var i=$('setSplit'),b=$('splitLockBtn');if(_splitUnlocked){if(i){i.removeAttribute('readonly');try{i.focus();i.select();}catch(e){}}if(b){b.classList.add('unlocked');b.innerHTML='<i class="ti ti-lock-open"></i>';}}else{_lockSplit();}}
@@ -3633,7 +3698,8 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
 function weekTotals(sow){
   var g=0,n=0,c=0;
   for(var i=0;i<7;i++){var d=new Date(sow);d.setDate(sow.getDate()+i);var ds=ymd(d);
-    appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'}).forEach(function(a){g+=(+a.price||0);n+=takeHome(a.price)+(+a.tip||0);c++;});}
+    appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'}).forEach(function(a){g+=(+a.price||0);n+=YS.centsOf(takeHome(a.price))+YS.centsOf(a.tip);c++;});}
+  n=n/100;
   return {g:g,n:n,c:c};
 }
 function weekRangeHTML(sow,end){
@@ -4623,6 +4689,7 @@ try{var _sv=load('ap_view',null);if(_sv){
   document.querySelectorAll('#weekSeg .seg-btn').forEach(function(b){b.classList.toggle('on',b.dataset.w===weekMode)});
 }}catch(e){}
 renderDay();
+try{bindNeedsClose();}catch(e){}
 syncBookingToggle();
 renderTradeLabel();
 maybeShowTradePicker();
@@ -4640,6 +4707,13 @@ window.addEventListener('message',function(ev){
       renderReqBadge();
     }catch(e){}
   }
+  if(d&&d.salon==='setApptStatus'&&d.id!=null&&d.status){
+    try{setApptStatusById(d.id,d.status);}catch(e){}
+  }
+});
+window.addEventListener('storage',function(e){
+  if(!e||e.key!=='ap_appts')return;
+  try{reload();renderDay();}catch(err){}
 });
 /* seedPrices moved to own isolated <script> block below main IIFE */
 /* ── Glow settings panel — separate keys for Add button vs Your Salon shell ── */
