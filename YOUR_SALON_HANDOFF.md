@@ -1,5 +1,5 @@
 # YOUR SALON PRO — HANDOFF
-**Last updated: Nov 16, 2026 · afternoon PT**
+**Last updated: Nov 16, 2026 · 10:54 AM PT**
 Read this first in any new session about Your Salon Pro (the live app and the site).
 
 This file is the canonical handoff. Two older copies were **not** rewritten on Nov 16 and still describe September:
@@ -56,15 +56,16 @@ Run the check with `node yoursalon-settle.test.js`. Run it again with `TZ=Americ
 
 ## Roadmap — not in PR #2
 
-**Step 2 — shipped in the payments-ledger change (not yet merged to `main` until that pull request lands).**
+**Step 2 — running-balance ledger, built in the payments pull request (lands on `main` when that pull request is merged).**
 
-Salon payments are a running balance. They are not a monthly settlement. A payment can arrive any day, for any amount.
+Clarified Nov 16, 2026: salon payments are not a monthly settlement. They may arrive daily, weekly, or monthly, for any amount. A payment is the date the money was received and the amount received. It is not tied to a settlement month. A month label, if shown, is derived from that date. It is not required.
 
-- `cp_payments`: id, `amountCents`, date received (local `YYYY-MM-DD`), method (`cash` / `check` / `transfer` / `other`), optional note, `createdAt`. Void sets `voided`, a reason, and `voidedAt`. A void stays in the history. It is not deleted.
-- Balance = owed for Done work (commission + tips, same rules as Nov 16) minus payments that are not voided. The Salon owes me screen shows owed, paid, and still due. A negative balance is shown as a credit.
-- Today, this week, and this month show what was earned and what was received in that period. The headline balance stays the all-time number.
+- `cp_payments` records, in integer cents: id, `amountCents`, date received (local `YYYY-MM-DD`), method (`cash` / `check` / `transfer` / `other`), optional note, `createdAt`.
+- Balance = total owed for Done work (commission + tips) minus payments that have not been voided. The Salon owes me screen shows owed, paid, and still due. A negative balance is a credit.
+- Day, week, and month are views of what was earned and what was received in that period. The headline balance stays the all-time number.
 - Record a payment defaults the amount to whatever is still due and the date to local today. “Mark this month paid” is gone.
-- Old `cp_paid` month flags are migrated once. Each becomes a payment for that month’s Done total, dated from the timestamp that was stored, note `Migrated from Mark paid`, id `mig-cp_paid-YYYY-MM`. Running it again, or on another device, does not add a second copy.
+- Void a payment. Do not delete it. A voided row stays in the history (`voided`, reason, `voidedAt`) and drops out of the balance.
+- Each old `cp_paid` flag becomes one payment so the balance does not jump. The flag meant that month’s Done total was paid and stored only a timestamp, so the amount is that total and the date is the timestamp already saved. The month is only an optional label. Note: `Migrated from Mark paid`. Id: `mig-cp_paid-YYYY-MM`. Running it again, or on another device, does not add a second copy. New payments do not need a month.
 - The split is frozen when an earnings entry is saved or an appointment is marked Done (`splitPct` plus the cent amounts). A later rate change does not rewrite that work. The first time this version runs, existing finished work is stamped with the **current** rate, because nothing older stored a rate and the app had been showing today’s rate on all history. That keeps the numbers he already sees, and only new work follows a new rate.
 - Invoices list payments received that month and the all-time balance still due.
 - `cp_payments` is in the shell `SYNC_KEYS`. Records merge by id. If both devices have the same payment, the one with the later `updatedAt` wins, so a void is not undone by an older copy.
