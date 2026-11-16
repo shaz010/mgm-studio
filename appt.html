@@ -2386,7 +2386,7 @@ function renderMonth(){
     var ds=ymd(d);
     var dayActive=appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'});
     var cnt=dayActive.length;
-    dayActive.forEach(function(a){mg+=(+a.price||0);mn+=takeHome(a.price)+(+a.tip||0);mc++;});
+    dayActive.forEach(function(a){mg+=(+a.price||0);mn+=takeHomeOf(a)+(+a.tip||0);mc++;});
     var dcls=densityClass(cnt);
     var cls='mcell'+(dcls?' '+dcls:'')+(ds===today?' today':'')+(ds===sel?' sel':'')+(ds<today?' past':'');
     html+='<div class="'+cls+'" onclick="pickMonthDay(\''+ds+'\')">'+
@@ -2591,7 +2591,7 @@ function renderDay(){
   $('statCount').textContent=active.length;
   $('statHours').textContent=(mins/60).toFixed(mins%60?1:0)+'h';
   $('statRev').textContent=fmt$(rev);
-  var netC=0;active.forEach(function(a){netC+=YS.centsOf(takeHome(a.price))+YS.centsOf(a.tip);});
+  var netC=0;active.forEach(function(a){netC+=YS.centsOf(takeHomeOf(a))+YS.centsOf(a.tip);});
   $('statNet').textContent='$'+(netC/100).toFixed(2);
 
   if(!list.length){
@@ -2753,7 +2753,8 @@ function saveAppt(){
 function commitSave(){
   var name=$('fName').value.trim(),date=$('fDate').value,time=$('fTime').value;
   var service=$('fService').value.trim();
-  var prevStatus=editingId?((appts.find(function(a){return a.id===editingId})||{}).status||'confirmed'):'confirmed';
+  var prevRec=editingId?(appts.find(function(a){return a.id===editingId})||null):null;
+  var prevStatus=prevRec?(prevRec.status||'confirmed'):'confirmed';
   var rec={
     id:editingId||uid(),
     name:name,phone:$('fPhone').value.trim(),
@@ -2761,6 +2762,8 @@ function commitSave(){
     date:date,time:time,dur:+$('fDur').value||0,price:+$('fPrice').value||0,tip:+$('fTip').value||0,
     notes:$('fNotes').value.trim(),status:prevStatus
   };
+  if(prevRec&&prevRec.splitFrozen){rec.splitPct=prevRec.splitPct;rec.splitFrozen=true;}
+  if(rec.status==='done'||rec.splitFrozen)rec=YS.applyFrozenSplit(rec,getSplit(),'price');
   var wasEdit=!!editingId;
   // link this booking to a stable client id (rename-safe) — create the client if new
   var _cn=normName(name);
@@ -2802,7 +2805,7 @@ function openSheet(id){
   var a=appts.find(function(x){return x.id===id});if(!a)return;
   sheetId=id;
   $('dName').textContent=a.name;
-  $('dSub').textContent=to12(a.time)+' · '+(a.service||'')+' · '+fmt$(a.price)+((getSplit()<100&&(+a.price)>0)?' · $'+YS.addMoney(takeHome(a.price),+a.tip||0).toFixed(2)+' take-home':'')+(a.phone?' · '+a.phone:'');
+  $('dSub').textContent=to12(a.time)+' · '+(a.service||'')+' · '+fmt$(a.price)+((pctOf(a)<100&&(+a.price)>0)?' · $'+YS.addMoney(takeHomeOf(a),+a.tip||0).toFixed(2)+' take-home':'')+(a.phone?' · '+a.phone:'');
   if(a.notes){$('dNotes').textContent=a.notes;$('dNotes').style.display='block'}else{$('dNotes').style.display='none'}
   document.querySelectorAll('#statusGrid .status-opt').forEach(function(o){o.classList.toggle('sel',o.dataset.s===(a.status||'confirmed'))});
   $('apptModal').classList.add('show');
@@ -2813,7 +2816,12 @@ function setApptStatusById(id,s){
   var realId=prev.id;
   var was=prev.status||'confirmed';
   if(was===s){renderDay();return true;}
-  appts=appts.map(function(a){return a.id===realId?Object.assign({},a,{status:s}):a});
+  appts=appts.map(function(a){
+    if(a.id!==realId)return a;
+    var next=Object.assign({},a,{status:s});
+    if(s==='done')next=YS.applyFrozenSplit(next,getSplit(),'price');
+    return next;
+  });
   if(s==='done'){applyStockForAppt(realId);}
   else if(was==='done'){revertStockForAppt(realId);}
   save(APPTS,appts);
@@ -3032,7 +3040,7 @@ function _ageFromDob(dob){if(!dob)return null;try{var d=new Date(dob);if(isNaN(d
 function _clientStats(c){
   var all=appts.concat(_cpBookings()).filter(function(a){return sameClient(a,c)&&a.status!=='cancelled';});
   var tc=0,tk=0,tp=0,first='',last='';
-  all.forEach(function(a){var ch=_bkCharge(a),tip=(+a.tip||0);tc+=ch;tk+=takeHome(ch)+tip;tp+=tip;var ds=a.date||'';if(ds){if(!first||ds<first)first=ds;if(!last||ds>last)last=ds;}});
+  all.forEach(function(a){var ch=_bkCharge(a),tip=(+a.tip||0);tc+=ch;tk+=takeHomeOf(a)+tip;tp+=tip;var ds=a.date||'';if(ds){if(!first||ds<first)first=ds;if(!last||ds>last)last=ds;}});
   return {visits:all.length,charge:tc,take:tk,tip:tp,first:first,last:last,avg:all.length?tc/all.length:0};
 }
 function buildClientProfileHTML(c){
@@ -3092,7 +3100,7 @@ function renderClientDetail(){
   if(!all.length){box.innerHTML=head+'<div class="cd-empty">No visits recorded yet.</div>';return;}
   var lim=_cdShowAll?all.length:12;
   var rows=all.slice(0,lim).map(function(a){
-    var ch=_bkCharge(a),tp=(+a.tip||0),th=takeHome(ch)+tp;
+    var ch=_bkCharge(a),tp=(+a.tip||0),th=takeHomeOf(a)+tp;
     return '<tr><td>'+fmtReqDate(a.date)+'</td><td>'+esc(_bkSvc(a))+'</td><td class="r">$'+ch.toFixed(2)+'</td><td class="r td-tip">$'+tp.toFixed(2)+'</td><td class="r td-take">$'+th.toFixed(2)+'</td></tr>';
   }).join('');
   var more=(!_cdShowAll&&all.length>12)?'<button class="cd-more" onclick="cdShowAll()">Show '+(all.length-12)+' more</button>':'';
@@ -3556,7 +3564,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.23 · needs closing; local dates; take-home matches Earnings';
+var VERSION='v6.24 · split freezes when an appointment is marked Done';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3613,10 +3621,14 @@ function saveBusiness(){
 /* ----- take-home: booked price × your split % (renters set 100) ----- */
 function getSplit(){var p=getPrefs();var s=parseFloat(p.splitPct);return isNaN(s)?60:Math.max(0,Math.min(100,s));}
 function takeHome(price){return YS.splitCharge(price,getSplit()).me;}
+function pctOf(a){return (a&&a.splitPct!=null&&isFinite(+a.splitPct))?+a.splitPct:getSplit();}
+function takeHomeOf(a){return YS.splitCharge(+((a&&(a.price!=null?a.price:a.charge))||0),pctOf(a)).me;}
 function apCalc(){
   var charge=parseFloat($('fPrice').value)||0;
   var tip=parseFloat($('fTip').value)||0;
-  var youPct=getSplit(),salonPct=100-youPct;
+  var youPct=getSplit();
+  if(typeof editingId!=='undefined'&&editingId){var _prev=appts.find(function(a){return a.id===editingId;});if(_prev&&_prev.splitFrozen&&_prev.splitPct!=null&&isFinite(+_prev.splitPct))youPct=+_prev.splitPct;}
+  var salonPct=100-youPct;
   var parts=YS.splitCharge(charge,youPct);
   var total=YS.addMoney(parts.me,tip);
   var sp=$('apSalonPct'),yp=$('apYouPct'),s=$('apSalon'),y=$('apYou'),tv=$('apTipV'),tt=$('apTotal');
@@ -3634,7 +3646,7 @@ function saveSplit(){
   var p=getPrefs();var old=(p.splitPct!=null?p.splitPct:60);var v=parseFloat($('setSplit').value);
   if(isNaN(v))v=60; v=Math.max(0,Math.min(100,v));
   if(v!==old){
-    askConfirm('Change your split from '+old+'% to '+v+'%? This recalculates all your take-home figures.',function(){
+    askConfirm('Change your split from '+old+'% to '+v+'%? Appointments already marked Done keep their rate. Only new work uses '+v+'%.',function(){
       p.splitPct=v;setPrefs(p);$('setSplit').value=v;_lockSplit();
       toast(v>=100?'Pay saved — you keep 100%':'Pay saved');
       if(typeof dayMode!=='undefined'&&dayMode==='day')renderDay();
@@ -3698,7 +3710,7 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
 function weekTotals(sow){
   var g=0,n=0,c=0;
   for(var i=0;i<7;i++){var d=new Date(sow);d.setDate(sow.getDate()+i);var ds=ymd(d);
-    appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'}).forEach(function(a){g+=(+a.price||0);n+=YS.centsOf(takeHome(a.price))+YS.centsOf(a.tip);c++;});}
+    appts.filter(function(a){return a.date===ds&&a.status!=='cancelled'&&a.status!=='noshow'}).forEach(function(a){g+=(+a.price||0);n+=YS.centsOf(takeHomeOf(a))+YS.centsOf(a.tip);c++;});}
   n=n/100;
   return {g:g,n:n,c:c};
 }

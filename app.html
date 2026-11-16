@@ -672,6 +672,23 @@ td{padding:12px 10px;vertical-align:middle}
 .mgm-owed-lbl{font-size:11px;color:#7eb8ff;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:700}
 .mgm-owed-val{font-size:clamp(30px,8.5vw,44px);font-weight:700;color:#7eb8ff;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
 .mgm-rule{font-size:11px;color:#8aa4c4;margin-top:6px;line-height:1.4}
+.bal-line{font-size:13px;color:#c5d7ee;margin-top:8px;line-height:1.4}
+.bal-line b{color:#fff;font-weight:700}
+.pay-seg{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}
+.pay-seg button{border:1px solid #334;background:#12161c;color:#c5d7ee;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.pay-seg button.on{background:#1c3a55;border-color:#7eb8ff;color:#fff}
+.pay-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.pay-form label{font-size:11px;color:#8aa4c4;font-weight:700}
+.pay-form input,.pay-form select{width:100%;margin-top:3px}
+.pay-form .pay-wide{grid-column:1/-1}
+.pay-row{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;padding:8px 52px 8px 0;border-top:1px solid #2a2a2a;font-size:13px}
+.pay-row.voided{opacity:.5}
+.pay-row.voided .pay-amt{text-decoration:line-through}
+.pay-meta{font-size:11px;color:#999;margin-top:2px}
+.pay-voidbtn{border:1px solid #6a3030;background:#2a1414;color:#f0a0a0;border-radius:8px;padding:6px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+body.theme-light .pay-seg button{background:#fff;color:#333;border-color:#ccc}
+body.theme-light .pay-row{border-color:#e4e0d4}
+body.theme-light .bal-line{color:#334}
 .sum-note{font-size:12px;color:#9a8a62;margin:-8px 0 14px;line-height:1.4}
 .settle-tag{display:inline-block;margin-left:6px;font-size:10px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:#e3b341;border:1px solid rgba(227,179,65,.5);border-radius:20px;padding:1px 6px;vertical-align:1px}
 tr.not-owed{opacity:.72}
@@ -1815,15 +1832,41 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
         <div>
           <div class="mgm-owed-lbl"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Salon owes me</div>
           <div class="mgm-owed-val" id="mgmOwed">$0.00</div>
-          <div class="mgm-sub" id="mgmSubtext">Unpaid commission accumulating</div>
-          <div class="mgm-rule" id="mgmRule">Counts appointments marked Done, plus earnings you logged in this room.</div>
+          <div class="mgm-sub" id="mgmSubtext">Still due from Done work</div>
+          <div class="bal-line" id="balLine">Owed <b id="balOwed">$0.00</b> · Paid <b id="balPaid">$0.00</b> · Still due <b id="balDue">$0.00</b></div>
+          <div class="mgm-rule" id="mgmRule">Counts appointments marked Done, plus earnings you logged in this room. Payments can arrive any day.</div>
         </div>
         <div class="mgm-right">
-          <div class="mgm-month-lbl">Next payment due</div>
-          <div class="mgm-month-val" id="mgmNextDue">—</div>
-          <div style="font-size:11px;color:#666;margin-top:3px">End of current month</div>
-          <button class="btn-paid-main" onclick="markThisMonthPaid()"><i class="ti ti-check" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Mark this month paid</button>
+          <div class="mgm-month-lbl">Running balance</div>
+          <div class="mgm-month-val" id="mgmNextDue">Still due</div>
+          <div style="font-size:11px;color:#666;margin-top:3px">Not tied to a calendar month</div>
+          <button class="btn-paid-main" type="button" onclick="openPayForm()"><i class="ti ti-cash" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Record a payment</button>
         </div>
+      </div>
+      <div class="card" id="payCard" style="margin-bottom:14px">
+        <div class="ctitle"><i class="ti ti-cash"></i>Payments from the salon</div>
+        <div class="pay-seg" id="paySeg">
+          <button type="button" data-pv="all" class="on" onclick="setPayView('all',this)">All</button>
+          <button type="button" data-pv="today" onclick="setPayView('today',this)">Today</button>
+          <button type="button" data-pv="week" onclick="setPayView('week',this)">This week</button>
+          <button type="button" data-pv="month" onclick="setPayView('month',this)">This month</button>
+        </div>
+        <div class="mgm-rule" id="payPeriodLine" style="margin-top:0"></div>
+        <div id="payForm" class="pay-form" style="display:none">
+          <div><label>Amount <input id="payAmt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></label></div>
+          <div><label>Date received <input id="payDate" type="date"></label></div>
+          <div><label>Method
+            <select id="payMethod">
+              <option value="cash">Cash</option>
+              <option value="check">Check</option>
+              <option value="transfer">Transfer</option>
+              <option value="other">Other</option>
+            </select>
+          </label></div>
+          <div><label>Note <input id="payNote" type="text" placeholder="Optional"></label></div>
+          <div class="pay-wide"><button class="btn-paid-main" type="button" onclick="recordPayment()"><i class="ti ti-check" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Save payment</button></div>
+        </div>
+        <div id="payList"></div>
       </div>
       <div id="needsClose" class="nc-box" style="display:none"></div>
       <div class="card" id="owedCard" style="margin-bottom:14px">
@@ -1877,18 +1920,20 @@ function openQR(){
 function closeQR(){var ov=document.getElementById('qrOverlay');if(ov)ov.classList.remove('open');document.body.classList.remove('modal-open');}
 let data=[],paidMonths={},activeFilter='all',editingId=null;
 var APPTS_KEY='cp_appts',PAID_KEY='cp_paid';
-function splitOf(charge){return YS.splitCharge(charge,myPct());}
+function splitOf(charge,rec){return YS.splitCharge(charge,rateFor(rec));}
+function rateFor(rec){
+  if(rec&&rec.splitPct!=null&&rec.splitPct!==''&&isFinite(+rec.splitPct))return +rec.splitPct;
+  return myPct();
+}
 function loadAppts(){
-  // Single rate read for the whole load — both cp_appts and ap_appts use the same current rate.
-  // cp_appts entries are recalculated on every load (same as ap_appts) so a rate change
-  // reflects immediately across all history without needing a manual re-save.
+  // A frozen splitPct is kept. Only work that has not been frozen uses today's rate.
   // Appointment rows keep status and duration so settlement can ignore anything not Done
   // and the needs-closing list can see a booking whose time has passed.
   var own=[];
   try{
     var a=JSON.parse(localStorage.getItem(APPTS_KEY)||'[]');
     if(Array.isArray(a)){own=a.map(function(r){
-      var charge=+r.charge||0,tip=+r.tip||0,parts=splitOf(charge);
+      var charge=+r.charge||0,tip=+r.tip||0,parts=splitOf(charge,r);
       return Object.assign({},r,{charge:parts.charge,salon:parts.salon,me:parts.me,mytotal:YS.addMoney(parts.me,tip)});
     });}
   }catch(e){}
@@ -1896,8 +1941,8 @@ function loadAppts(){
   try{
     var b=JSON.parse(localStorage.getItem('ap_appts')||'[]');
     if(Array.isArray(b)){shared=b.map(function(r){
-      var charge=+r.price||0,tip=+r.tip||0,parts=splitOf(charge);
-      return {id:r.id,name:r.name||'',date:r.date||'',time:r.time||'',dur:+r.dur||0,charge:parts.charge,tip:tip,salon:parts.salon,me:parts.me,mytotal:YS.addMoney(parts.me,tip),cat:r.service||'',status:r.status||'',_src:'appt'};
+      var charge=+r.price||0,tip=+r.tip||0,parts=splitOf(charge,r);
+      return {id:r.id,name:r.name||'',date:r.date||'',time:r.time||'',dur:+r.dur||0,charge:parts.charge,tip:tip,salon:parts.salon,me:parts.me,mytotal:YS.addMoney(parts.me,tip),cat:r.service||'',status:r.status||'',splitPct:r.splitPct,splitFrozen:!!r.splitFrozen,_src:'appt'};
     });}
   }catch(e){}
   var seen={},out=[];
@@ -1906,8 +1951,40 @@ function loadAppts(){
   return out;
 }
 function saveAppts(arr){try{var own=(arr||[]).filter(function(x){return !(x&&x._src);});localStorage.setItem(APPTS_KEY,JSON.stringify(own));}catch(e){alert('Could not save — storage may be full.');}}
-function loadPaid(){try{var o=JSON.parse(localStorage.getItem(PAID_KEY)||'{}');return (o&&typeof o==='object')?o:{};}catch(e){return{};}}
+var PAY_KEY='cp_payments';
+function loadPayments(){try{var a=JSON.parse(localStorage.getItem(PAY_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
+function savePayments(arr){try{localStorage.setItem(PAY_KEY,JSON.stringify(arr||[]));}catch(e){alert('Could not save — storage may be full.');}}
+function loadPaid(){try{var o=JSON.parse(localStorage.getItem(PAID_KEY)||'{}');return (o&&typeof o==='object'&&!Array.isArray(o))?o:{};}catch(e){return{};}}
 function savePaid(o){try{localStorage.setItem(PAID_KEY,JSON.stringify(o));}catch(e){}}
+function backfillSplits(){
+  var pct=myPct();
+  function rewrite(key,map){
+    var raw;try{raw=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){return;}
+    if(!Array.isArray(raw))return;
+    var changed=false;
+    var next=raw.map(function(r){
+      var stamped=map(r);
+      if(stamped!==r)changed=true;
+      return stamped;
+    });
+    if(changed){try{localStorage.setItem(key,JSON.stringify(next));}catch(e){}}
+  }
+  rewrite(APPTS_KEY,function(r){
+    if(!r||r.splitFrozen)return r;
+    if(!YS.countsTowardOwed(r))return r;
+    return YS.applyFrozenSplit(r,pct,'charge');
+  });
+  rewrite('ap_appts',function(r){
+    if(!r||r.splitFrozen)return r;
+    if(String(r.status||'').toLowerCase()!=='done')return r;
+    return YS.applyFrozenSplit(r,pct,'price');
+  });
+}
+function ensureLedger(){
+  backfillSplits();
+  var mig=YS.migratePaidMonths(loadPaid(),loadAppts(),loadPayments());
+  if(mig.added&&mig.added.length)savePayments(mig.payments);
+}
 function localToday(){return YS.localYMD(new Date());}
 document.getElementById('cDate').value=localToday();
 function $(i){return document.getElementById(i)}
@@ -2174,6 +2251,7 @@ function setSyncBadge(state,msg){
 }
 function loadAll(){
   try{
+    ensureLedger();
     var appts=loadAppts();
     appts.sort(function(x,y){var dx=String(x.date||''),dy=String(y.date||'');if(dx!==dy)return dx<dy?-1:1;return String(x.time||'').localeCompare(String(y.time||''));});
     data=appts.map(function(a){return Object.assign({},a,{myTotal:YS.addMoney(a.me,a.tip)});});
@@ -2198,12 +2276,13 @@ async function save(){
   const charge=parseFloat($('cCharge').value)||0,tip=parseFloat($('cTip').value)||0;
   const cat=$('cCat').value.trim();
   if(!name||!date||!charge){alert('Please fill in client name, date and charge.');return;}
-  const parts=splitOf(charge);
-  const salon=parts.salon,me=parts.me;
-  const id=editingId||Date.now();
-  const rec={id,name,date,time,charge:parts.charge,tip,salon,me,mytotal:YS.addMoney(me,tip),cat};
+  var prior=editingId!=null?(loadAppts().filter(function(x){return String(x.id)===String(editingId);})[0]||null):null;
+  var pct=(prior&&prior.splitPct!=null&&isFinite(+prior.splitPct))?+prior.splitPct:myPct();
+  var draft={id:editingId||Date.now(),name:name,date:date,time:time,charge:charge,tip:tip,cat:cat,splitPct:pct,splitFrozen:true};
+  draft=YS.applyFrozenSplit(draft,pct,'charge');
+  const rec={id:draft.id,name:name,date:date,time:time,charge:draft.chargeCents/100,tip:tip,salon:draft.salonCents/100,me:draft.meCents/100,mytotal:YS.addMoney(draft.meCents/100,tip),cat:cat,splitPct:draft.splitPct,splitFrozen:true,chargeCents:draft.chargeCents,meCents:draft.meCents,salonCents:draft.salonCents,tipCents:draft.tipCents};
   try{
-    var arr=loadAppts();var i=arr.findIndex(function(x){return x.id===id;});
+    var arr=loadAppts();var i=arr.findIndex(function(x){return String(x.id)===String(rec.id);});
     if(i>=0)arr[i]=rec;else arr.push(rec);
     saveAppts(arr);
     setSyncBadge('ok','Saved ✓');resetForm();loadAll();showTab('hist');
@@ -2447,7 +2526,9 @@ function writeApptStatus(id,status){
   arr=arr.map(function(a){
     if(String(a.id)!==String(id))return a;
     hit=true;
-    return Object.assign({},a,{status:status});
+    var next=Object.assign({},a,{status:status});
+    if(String(status).toLowerCase()==='done')next=YS.applyFrozenSplit(next,myPct(),'price');
+    return next;
   });
   if(!hit)return false;
   try{localStorage.setItem('ap_appts',JSON.stringify(arr));}catch(e){alert('Could not save — storage may be full.');return false;}
@@ -2472,61 +2553,162 @@ function closeApptFromEarn(id,status){
     setSyncBadge('ok','Saved');
   },450);
 }
+var payView='all',_payDefault=null;
+function setPayView(v,el){
+  payView=v||'all';
+  document.querySelectorAll('#paySeg button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-pv')===payView);});
+  if(el)el.classList.add('on');
+  renderMgm();
+}
+function openPayForm(){
+  var f=$('payForm');if(f)f.style.display='grid';
+  var d=$('payDate');if(d&&!d.value)d.value=localToday();
+  try{f.scrollIntoView({block:'nearest'});}catch(e){}
+}
+function moneyLabel(cents){
+  var n=Math.round(+cents||0)/100;
+  return (n<0?'−':'')+fmt(Math.abs(n));
+}
 function renderMgm(){
   const byMonth={};
+  var earnedC=0,uMeC=0,uTipC=0,uChargeC=0;
   owedOnly(data).forEach(a=>{
-    const ym=toYM(a.date);
+    const ym=toYM(a.date||'');
+    if(!ym)return;
     if(!byMonth[ym])byMonth[ym]={ym,appts:0,meC:0,tipC:0,chargeC:0};
-    byMonth[ym].appts++;byMonth[ym].meC+=YS.centsOf(a.me);byMonth[ym].tipC+=YS.centsOf(a.tip);byMonth[ym].chargeC+=YS.centsOf(a.charge);
+    var mc=YS.centsOf(a.me),tc=YS.centsOf(a.tip),cc=YS.centsOf(a.charge);
+    byMonth[ym].appts++;byMonth[ym].meC+=mc;byMonth[ym].tipC+=tc;byMonth[ym].chargeC+=cc;
+    earnedC+=mc+tc;uMeC+=mc;uTipC+=tc;uChargeC+=cc;
   });
-  let owedC=0,uMeC=0,uTipC=0,uChargeC=0;
-  Object.entries(byMonth).forEach(([ym,mo])=>{if(!paidMonths[ym]){owedC+=mo.meC+mo.tipC;uMeC+=mo.meC;uTipC+=mo.tipC;uChargeC+=mo.chargeC;}});
-  const totalOwed=owedC/100,uMe=uMeC/100,uTip=uTipC/100,uCharge=uChargeC/100;
-  $('mgmOwed').textContent=fmt(totalOwed);
-  if(document.getElementById('oTotal')){$('oSalon').textContent=fmt((uChargeC-uMeC)/100);$('oMe').textContent=fmt(uMe);$('oTip').textContent=fmt(uTip);$('oTotal').textContent=fmt(totalOwed);}
+  var pays=loadPayments();
+  var bal=YS.runningBalance(earnedC,pays);
+  var due=bal.dueCents;
+  $('mgmOwed').textContent=due<0?moneyLabel(due):moneyLabel(due);
+  if($('balLine'))$('balLine').innerHTML='Owed <b>'+moneyLabel(bal.owedCents)+'</b> · Paid <b>'+moneyLabel(bal.paidCents)+'</b> · '+(due<0?'Credit':'Still due')+' <b>'+moneyLabel(Math.abs(due))+'</b>';
+  if(document.getElementById('oTotal')){
+    $('oSalon').textContent=moneyLabel(uChargeC-uMeC);
+    $('oMe').textContent=moneyLabel(uMeC);
+    $('oTip').textContent=moneyLabel(uTipC);
+    $('oTotal').textContent=moneyLabel(earnedC);
+  }
   var osp=$('oSalonPct'),omp=$('oMePct');
-  if(osp)osp.textContent='their '+_sp()+'%';
-  if(omp)omp.textContent='your '+_mp()+'%';
+  if(osp)osp.textContent='salon share';
+  if(omp)omp.textContent='your share';
+  var cardLbl=document.querySelector('#owedCard .total-rb .box-lbl');
+  if(cardLbl)cardLbl.textContent='Earned from Done work';
   renderNeedsClose();
-  const now=new Date();
-  $('mgmNextDue').textContent=new Date(now.getFullYear(),now.getMonth()+1,0).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   var openPast=(data||[]).some(function(a){return YS.needsClosing(a);});
-  $('mgmSubtext').textContent=totalOwed>0?'Unpaid commission + tips from Done work':(openPast?'Nothing owed yet — past appointments still need closing':'All paid — you\'re square!');
+  if(due<0){
+    $('mgmSubtext').textContent='Credit — the salon has paid this much ahead';
+    if($('mgmNextDue'))$('mgmNextDue').textContent='Credit';
+  }else if(due===0){
+    $('mgmSubtext').textContent=openPast?'You are square — past appointments still need closing':'You are square';
+    if($('mgmNextDue'))$('mgmNextDue').textContent='Square';
+  }else{
+    $('mgmSubtext').textContent='Still due from Done work';
+    if($('mgmNextDue'))$('mgmNextDue').textContent='Still due';
+  }
+  fillPayDefault(due);
+  renderPayPeriod(pays);
+  renderPayList(pays);
   const sorted=Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0]));
   if(!sorted.length){$('monthRows').innerHTML='<div class="empty"><i class="ti ti-building-store"></i>Start booking clients to track what the Salon owes you.</div>';return;}
   $('monthRows').innerHTML=sorted.map(([ym,mo])=>{
-    const paid=!!paidMonths[ym];
-    const paidDate=paid?new Date(paidMonths[ym]).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):null;
-    return`<div class="month-item ${paid?'paid':'unpaid'}">
+    var got=YS.sumPaymentCents(pays,{from:ym+'-01',to:ym+'-31'});
+    return`<div class="month-item unpaid">
       <div>
         <div class="mi-month">${fmtMonth(ym)}</div>
         <div class="mi-appts">${mo.appts} done &nbsp;·&nbsp; Commission $${(mo.meC/100).toFixed(2)} &nbsp;·&nbsp; Tips $${(mo.tipC/100).toFixed(2)}</div>
-        <div class="mi-date-lbl ${paid?'sp':'su'}">${paid?'Paid on '+paidDate:'Awaiting payment from the Salon'}</div>
+        <div class="mi-date-lbl su">Earned ${moneyLabel(mo.meC+mo.tipC)} · Received ${moneyLabel(got)}</div>
       </div>
       <div style="text-align:right">
-        <div class="mi-amt ${paid?'pa':'ua'}">$${((mo.meC+mo.tipC)/100).toFixed(2)}</div>
-        <div class="mi-status ${paid?'sp':'su'}" style="margin-bottom:8px">${paid?'✓ Paid':'Unpaid'}</div>
+        <div class="mi-amt ua">${moneyLabel(mo.meC+mo.tipC)}</div>
         <div class="mi-actions" style="justify-content:flex-end">
-          ${!paid?`<button class="btn-invoice" onclick="openExport('${ym}')"><i class="ti ti-file-invoice" style="font-size:12px;vertical-align:-1px;margin-right:4px"></i>Invoice</button>`:''}
-          ${!paid?`<button class="btn-mark-paid" onclick="markPaid('${ym}')"><i class="ti ti-check" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>Mark paid</button>`:''}
+          <button class="btn-invoice" onclick="openExport('${ym}')"><i class="ti ti-file-invoice" style="font-size:12px;vertical-align:-1px;margin-right:4px"></i>Invoice</button>
         </div>
       </div>
     </div>`;
   }).join('');
 }
-function markPaid(ym){
-  const paid_at=Date.now();
-  try{
-    var p=loadPaid();p[ym]=paid_at;savePaid(p);
-    paidMonths[ym]=paid_at;setSyncBadge('ok','Saved');renderMgm();
-    if(typeof eyeBloom==='function') eyeBloom();
-  }catch(err){setSyncBadge('err','Error');console.error(err);}
+function fillPayDefault(dueCents){
+  var el=$('payAmt');if(!el)return;
+  var def=dueCents>0?(dueCents/100).toFixed(2):'';
+  if(document.activeElement!==el&&(!el.value||el.value===_payDefault))el.value=def;
+  _payDefault=def;
+  var d=$('payDate');if(d&&!d.value)d.value=localToday();
 }
-function markThisMonthPaid(){markPaid(YS.localYM(new Date()));}
+function renderPayPeriod(pays){
+  var line=$('payPeriodLine');if(!line)return;
+  var b=YS.periodBounds(payView,new Date());
+  var earned=0;
+  owedOnly(data).forEach(function(a){
+    var ds=String(a.date||'');
+    if(b.from&&ds<b.from)return;
+    if(b.to&&ds>b.to)return;
+    earned+=YS.centsOf(a.me)+YS.centsOf(a.tip);
+  });
+  var got=YS.sumPaymentCents(pays,{from:b.from,to:b.to});
+  line.textContent=b.label+' · Earned '+moneyLabel(earned)+' · Received '+moneyLabel(got);
+}
+function payMethodLabel(m){return {cash:'Cash',check:'Check',transfer:'Transfer',other:'Other'}[m]||'Other';}
+function renderPayList(pays){
+  var box=$('payList');if(!box)return;
+  var list=(pays||[]).slice().sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))||((b.createdAt||0)-(a.createdAt||0));});
+  if(!list.length){box.innerHTML='<div class="mgm-rule">No payments recorded yet.</div>';return;}
+  box.innerHTML=list.map(function(p){
+    var id=encodeURIComponent(String(p.id));
+    var when=p.date||'';
+    try{when=new Date(p.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}catch(e){}
+    var voidNote=p.voided?('Voided'+(p.voidReason?(' · '+esc(p.voidReason)):'')):'';
+    return '<div class="pay-row'+(p.voided?' voided':'')+'"><div><div>'+esc(when)+' · '+esc(payMethodLabel(p.method))+'</div><div class="pay-meta">'+esc(p.note||'')+(voidNote?(' '+voidNote):'')+'</div>'+(p.voided?'':'<div class="pay-meta"><input data-void-reason="'+id+'" placeholder="Reason if you void this" style="max-width:220px"></div>')+'</div><div style="text-align:right"><div class="pay-amt">'+moneyLabel(p.amountCents)+'</div>'+(p.voided?'':'<button type="button" class="pay-voidbtn" data-void="'+id+'">Void</button>')+'</div></div>';
+  }).join('');
+}
+function bindPayList(){
+  var box=$('payList');if(!box||box._bound)return;
+  box._bound=1;
+  box.addEventListener('click',function(e){
+    var t=e.target;
+    while(t&&t!==box){if(t.getAttribute&&t.getAttribute('data-void'))break;t=t.parentNode;}
+    if(!t||t===box)return;
+    var id=decodeURIComponent(t.getAttribute('data-void')||'');
+    var reasonEl=box.querySelector('[data-void-reason="'+t.getAttribute('data-void')+'"]');
+    var reason=reasonEl?(reasonEl.value||'').trim():'';
+    askConfirm('Void this payment? It stays in the history and comes off what has been paid.',function(){voidPayment(id,reason||'Voided');},{title:'Void payment',yesLabel:'Void payment',danger:true});
+  });
+}
+function recordPayment(){
+  var dollars=parseFloat($('payAmt').value);
+  var cents=Math.round(dollars*100);
+  if(!isFinite(cents)||cents<=0){alert('Enter an amount greater than zero.');return;}
+  var date=$('payDate').value||localToday();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){alert('Pick the date you received it.');return;}
+  var method=$('payMethod').value||'cash';
+  var note=($('payNote').value||'').trim();
+  var now=Date.now();
+  var rec={id:'pay-'+now.toString(36)+Math.random().toString(36).slice(2,6),amountCents:cents,date:date,method:method,note:note,createdAt:now,updatedAt:now,voided:false,voidReason:'',voidedAt:null};
+  var all=loadPayments();all.push(rec);savePayments(all);
+  if($('payNote'))$('payNote').value='';
+  _payDefault=null;
+  if($('payAmt'))$('payAmt').value='';
+  setSyncBadge('ok','Saved');
+  renderMgm();
+  if(typeof eyeBloom==='function')eyeBloom();
+}
+function voidPayment(id,reason){
+  var now=Date.now();
+  var all=loadPayments().map(function(p){
+    if(String(p.id)!==String(id))return p;
+    return Object.assign({},p,{voided:true,voidReason:reason||'Voided',voidedAt:now,updatedAt:now});
+  });
+  savePayments(all);
+  setSyncBadge('ok','Saved');
+  renderMgm();
+}
 function openExport(ym){
   const sel=$('exportMonth');sel.innerHTML='';
   const byMonth={};
-  owedOnly(data).forEach(a=>{const k=toYM(a.date);if(!byMonth[k])byMonth[k]=true;});
+  owedOnly(data).forEach(a=>{const k=toYM(a.date||'');if(k)byMonth[k]=true;});
+  loadPayments().forEach(function(p){var k=String(p&&p.date||'').slice(0,7);if(/^\d{4}-\d{2}$/.test(k))byMonth[k]=true;});
   const months=Object.keys(byMonth).sort((a,b)=>b.localeCompare(a));
   if(!months.length){alert('No appointments to export yet.');return;}
   months.forEach(m=>{
@@ -2540,13 +2722,19 @@ function openExport(ym){
 function closeExport(){$('exportModal').classList.remove('open');}
 function renderInvoice(){
   const ym=$('exportMonth').value;if(!ym)return;
-  const appts=owedOnly(data).filter(a=>toYM(a.date)===ym).sort((a,b)=>a.date.localeCompare(b.date));
-  if(!appts.length){$('invoicePreview').innerHTML='<p style="color:#888;text-align:center;padding:20px">No finished appointments this month. Only work marked Done is invoiced.</p>';return;}
+  const appts=owedOnly(data).filter(a=>toYM(a.date||'')===ym).sort((a,b)=>a.date.localeCompare(b.date));
+  const monthPays=loadPayments().filter(function(p){return p&&!p.voided&&String(p.date||'').slice(0,7)===ym;});
+  if(!appts.length&&!monthPays.length){$('invoicePreview').innerHTML='<p style="color:#888;text-align:center;padding:20px">No finished appointments this month. Only work marked Done is invoiced.</p>';return;}
   const totCharge=sumCents(appts,function(a){return a.charge;});
   const totSalon=sumCents(appts,function(a){return a.salon;});
   const totMe=sumCents(appts,function(a){return a.me;});
   const totTip=sumCents(appts,function(a){return a.tip;});
   const totOwed=YS.addMoney(totMe,totTip);
+  const payC=monthPays.reduce(function(s,p){return s+Math.round(+p.amountCents||0);},0);
+  const overall=YS.runningBalance(YS.owedCentsForRows(data),loadPayments());
+  const payRows=monthPays.map(function(p){
+    return '<div class="inv-total-row"><span>'+esc(p.date)+' · '+esc(payMethodLabel(p.method))+(p.note?(' · '+esc(p.note)):'')+'</span><span>− $'+(p.amountCents/100).toFixed(2)+'</span></div>';
+  }).join('');
   const issued=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   const[y,m]=ym.split('-');
   const dueDate=new Date(+y,+m,0).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
@@ -2562,7 +2750,7 @@ function renderInvoice(){
   $('invoicePreview').innerHTML=`
     <div class="inv-header">
       <div><div class="inv-from-name">${getName()||'Your name'}</div>
-        <div class="inv-from-detail">Hair Stylist &nbsp;·&nbsp; Salon<br>${fmtMonth(ym)} &nbsp;·&nbsp; Commission rate: ${Math.round(myRate()*100)}%<br>Invoice #: ${invNum}</div></div>
+        <div class="inv-from-detail">Hair Stylist &nbsp;·&nbsp; Salon<br>${fmtMonth(ym)} &nbsp;·&nbsp; Each visit keeps the split it was saved with<br>Invoice #: ${invNum}</div></div>
       <div class="inv-to"><div class="inv-to-label">Payment request to</div>
         <div class="inv-to-salon">Salon</div>
         <div style="font-size:11px;color:#888;margin-top:4px;line-height:1.6">Issued: ${issued}<br>Due by: ${dueDate}</div></div>
@@ -2582,7 +2770,10 @@ function renderInvoice(){
       <div class="inv-total-row"><span>Salon share (${_sp()}%)</span><span style="color:#1e40af">– $${totSalon.toFixed(2)}</span></div>
       <div class="inv-total-row"><span>Your commission (${_mp()}%)</span><span style="color:#166534">$${totMe.toFixed(2)}</span></div>
       <div class="inv-total-row"><span>Tips collected by salon</span><span style="color:#166534">+ $${totTip.toFixed(2)}</span></div>
-      <div class="inv-total-row final"><span>Amount owed to ${getName()||'Your name'}</span><span style="color:#166534">$${totOwed.toFixed(2)}</span></div>
+      <div class="inv-total-row"><span>Earned this month</span><span style="color:#166534">$${totOwed.toFixed(2)}</span></div>
+      ${payRows}
+      <div class="inv-total-row"><span>Payments received this month</span><span>− $${(payC/100).toFixed(2)}</span></div>
+      <div class="inv-total-row final"><span>${overall.dueCents<0?'Credit — salon is ahead':'Balance still due (all dates)'}</span><span style="color:#166534">${overall.dueCents<0?('− $'+((-overall.dueCents)/100).toFixed(2)):('$'+(overall.dueCents/100).toFixed(2))}</span></div>
     </div>
     <div class="inv-note"><strong>Note:</strong> Tips totalling $${totTip.toFixed(2)} were collected by the salon and are included in the amount owed above.</div>
     <div class="inv-taxbox">
@@ -3474,7 +3665,7 @@ function deleteClientConfirm(){
 applyFx(getFx());
 buildServiceChips();
 initFavDrag();
-calc();loadAll();try{bindNeedsClose();}catch(e){}try{applyBigText();}catch(e){}try{maybeShowBackupNudge();}catch(e){}if(document.documentElement.classList.contains('in-shell')){try{showTab('hist');}catch(e){}}
+calc();loadAll();try{bindNeedsClose();bindPayList();}catch(e){}try{applyBigText();}catch(e){}try{maybeShowBackupNudge();}catch(e){}if(document.documentElement.classList.contains('in-shell')){try{showTab('hist');}catch(e){}}
 /* shell keeps this room alive in the background — re-read shared data + repaint when shown */
 var _audioCtx=null;
 function _unlockAudio(){try{if(!_audioCtx)_audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(_audioCtx.state==='suspended')_audioCtx.resume();}catch(e){}}
@@ -3507,7 +3698,7 @@ window.addEventListener('message',function(ev){
   }
 });
 window.addEventListener('storage',function(e){
-  if(!e||(e.key!=='ap_appts'&&e.key!=='cp_appts'&&e.key!=='cp_paid'&&e.key!=='ap_prefs'&&e.key!=='cp_prefs'))return;
+  if(!e||(e.key!=='ap_appts'&&e.key!=='cp_appts'&&e.key!=='cp_paid'&&e.key!=='cp_payments'&&e.key!=='ap_prefs'&&e.key!=='cp_prefs'))return;
   try{refreshSettle();}catch(err){}
 });
 
@@ -3980,7 +4171,7 @@ function saveSettings(){
     try{refreshSettle();}catch(e){}
   };
   if(r && _newRate!==_oldRate){
-    askConfirm('Change your commission rate from '+_oldRate+'% to '+_newRate+'%? This recalculates all your take-home and commission figures.',function(){
+    askConfirm('Change your commission rate from '+_oldRate+'% to '+_newRate+'%? Work already saved or marked Done keeps its rate. Only new work uses '+_newRate+'%.',function(){
       prefs.rate=_newRate;
       finish();
     },{title:'Change commission rate',yesLabel:'Change rate',onNo:function(){
@@ -4246,7 +4437,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.62 · owed totals count only Done; local dates; cents on what is owed';
+var VERSION='app v2.63 · running payment balance; split frozen on finished work';
 /* ===== In-app confirm (native confirm() silently fails in iOS PWA / WKWebView) ===== */
 var _cpCfFn=null,_cpCfNo=null;
 function askConfirm(msg,onYes,opts){

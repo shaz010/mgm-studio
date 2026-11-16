@@ -1,5 +1,5 @@
 # YOUR SALON PRO — HANDOFF
-**Last updated: Nov 16, 2026 · 10:40 AM PT**
+**Last updated: Nov 16, 2026 · 10:54 AM PT**
 Read this first in any new session about Your Salon Pro (the live app and the site).
 
 This file is the canonical handoff. Two older copies were **not** rewritten on Nov 16 and still describe September:
@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. After the Nov 16 merge (commit `07f3caf`, PR #2, 10:36 AM PT) the live pages are:
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live right now, from PR #2 (`07f3caf`, 10:36 AM PT), is Earnings v2.62, Appointments v6.23, salon v0.51, service worker `yoursalon-v76`. The payments change ships these versions once it is merged:
 
 | Room | File | Live version |
 |---|---|---|
-| Earnings | `app.html` | v2.62 |
-| Appointments | `appt.html` | v6.23 |
-| Shell | `salon.html` | v0.51 (`SHELL_V` is v0.51 too; it had been stuck at v0.38 while the page said v0.50) |
-| Service worker | `sw.js` | `yoursalon-v76` |
+| Earnings | `app.html` | v2.63 |
+| Appointments | `appt.html` | v6.24 |
+| Shell | `salon.html` | v0.52 (`SHELL_V` matches the page) |
+| Service worker | `sw.js` | `yoursalon-v77` |
 | Booking page | `book.html` | v3.55 (not changed in PR #2) |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
@@ -44,7 +44,7 @@ Settlement only. No native build. No partial payments, no frozen rates, no audit
 
 **Needs closing.** A confirmed appointment whose local date and time have already passed shows a short list in Earnings (under “Salon owes me”) and in Appointments. Each row has one tap: Mark Done, No-show, Cancelled. The tap writes `ap_appts` through the Appointments save path, including the stock update when that room is open, so sync keeps working. If the booking has a duration, the list waits until that window ends, so a client still in the chair is not flagged as forgotten.
 
-**Local dates.** A calendar day or month uses the device’s local date, not `toISOString()`. The owner is in Pacific time. This covers “today”, the default date on a new earnings entry, the week and month filters, “Mark this month paid”, and the same date helper in Appointments. The week filter still starts on Sunday, and it starts at local midnight instead of “now”, so a Sunday booking stays in “this week” after noon. `book.html` already used local dates.
+**Local dates.** A calendar day or month uses the device’s local date, not `toISOString()`. The owner is in Pacific time. This covers “today”, the default date on a new earnings entry, the week and month filters, and the same date helper in Appointments. “Mark this month paid” was removed when payments were added. The week filter still starts on Sunday, and it starts at local midnight instead of “now”, so a Sunday booking stays in “this week” after noon. `book.html` already used local dates.
 
 **Cents and the split.** “Salon owes me” shows cents and matches the breakdown under it. The stylist’s share is rounded to the cent. The salon’s share is the remainder, so the two shares add up to the charge (a 50% split of $33.33 is $16.67 and $16.66, not two rounded halves). Appointments `takeHome()` uses that same split. The math is integer cents in `yoursalon-settle.js`.
 
@@ -56,19 +56,23 @@ Run the check with `node yoursalon-settle.test.js`. Run it again with `TZ=Americ
 
 ## Roadmap — not in PR #2
 
-**Step 2. Running-balance payment ledger, and freeze the split on each appointment.**
+**Step 2 — running-balance ledger, built in the payments pull request (lands on `main` when that pull request is merged).**
 
-Clarified Nov 16, 2026, after PR #3: salon payments are not a monthly settlement. They may arrive daily, weekly, or monthly, for any amount.
+Clarified Nov 16, 2026: salon payments are not a monthly settlement. They may arrive daily, weekly, or monthly, for any amount. A payment is the date the money was received and the amount received. It is not tied to a settlement month. A month label, if shown, is derived from that date. It is not required.
 
-- New `cp_payments` records, stored in integer cents.
-- Each payment is the date the money was received and the amount received. It is not tied to a settlement month.
-- Balance = total owed for Done work, minus total payments that have not been voided.
-- Views and filters by day, week, and month. A month “period” on a payment is optional, and if shown it is derived from the received date. It is not required to record the payment.
-- Void a payment. Do not delete it. A voided payment stays in the log and drops out of the balance.
-- Migrate each old `cp_paid` flag into a payment so the balance does not jump. That flag meant the month’s Done total was paid and stored only a timestamp, so the payment amount is that month’s Done total and the date is the timestamp already saved. The month is only an optional label on that migrated row. New payments do not need a month.
-- Save the split rate on the appointment when the work is done, so a later rate change does not rewrite what was already owed.
+- `cp_payments` records, in integer cents: id, `amountCents`, date received (local `YYYY-MM-DD`), method (`cash` / `check` / `transfer` / `other`), optional note, `createdAt`.
+- Balance = total owed for Done work (commission + tips) minus payments that have not been voided. The Salon owes me screen shows owed, paid, and still due. A negative balance is a credit.
+- Day, week, and month are views of what was earned and what was received in that period. The headline balance stays the all-time number.
+- Record a payment defaults the amount to whatever is still due and the date to local today. “Mark this month paid” is gone.
+- Void a payment. Do not delete it. A voided row stays in the history (`voided`, reason, `voidedAt`) and drops out of the balance.
+- Each old `cp_paid` flag becomes one payment so the balance does not jump. The flag meant that month’s Done total was paid and stored only a timestamp, so the amount is that total and the date is the timestamp already saved. The month is only an optional label. Note: `Migrated from Mark paid`. Id: `mig-cp_paid-YYYY-MM`. Running it again, or on another device, does not add a second copy. New payments do not need a month.
+- The split is frozen when an earnings entry is saved or an appointment is marked Done (`splitPct` plus the cent amounts). A later rate change does not rewrite that work. The first time this version runs, existing finished work is stamped with the **current** rate, because nothing older stored a rate and the app had been showing today’s rate on all history. That keeps the numbers he already sees, and only new work follows a new rate.
+- Invoices list payments received that month and the all-time balance still due.
+- `cp_payments` is in the shell `SYNC_KEYS`. Records merge by id. If both devices have the same payment, the one with the later `updatedAt` wins, so a void is not undone by an older copy.
 
-**Step 3. Append-only audit log.**
+**Step 3. Append-only audit log.** Still not built.
+
+**Step 3 detail (not built).**
 
 - Entries are added, never edited or removed.
 - A view by date, and a CSV export.
