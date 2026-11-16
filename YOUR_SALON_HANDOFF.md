@@ -1,5 +1,5 @@
 # YOUR SALON PRO — HANDOFF
-**Last updated: Nov 16, 2026 · 10:36 AM PT**
+**Last updated: Nov 16, 2026 · 10:40 AM PT**
 Read this first in any new session about Your Salon Pro (the live app and the site).
 
 This file is the canonical handoff. Two older copies were **not** rewritten on Nov 16 and still describe September:
@@ -56,11 +56,16 @@ Run the check with `node yoursalon-settle.test.js`. Run it again with `TZ=Americ
 
 ## Roadmap — not in PR #2
 
-**Step 2. Partial-payment ledger, and freeze the split on each appointment.**
+**Step 2. Running-balance payment ledger, and freeze the split on each appointment.**
+
+Clarified Nov 16, 2026, after PR #3: salon payments are not a monthly settlement. They may arrive daily, weekly, or monthly, for any amount.
 
 - New `cp_payments` records, stored in integer cents.
-- Void a payment. Do not delete it.
-- Migrate the existing `cp_paid` “this month is paid” flags into that ledger.
+- Each payment is the date the money was received and the amount received. It is not tied to a settlement month.
+- Balance = total owed for Done work, minus total payments that have not been voided.
+- Views and filters by day, week, and month. A month “period” on a payment is optional, and if shown it is derived from the received date. It is not required to record the payment.
+- Void a payment. Do not delete it. A voided payment stays in the log and drops out of the balance.
+- Migrate each old `cp_paid` flag into a payment so the balance does not jump. That flag meant the month’s Done total was paid and stored only a timestamp, so the payment amount is that month’s Done total and the date is the timestamp already saved. The month is only an optional label on that migrated row. New payments do not need a month.
 - Save the split rate on the appointment when the work is done, so a later rate change does not rewrite what was already owed.
 
 **Step 3. Append-only audit log.**
