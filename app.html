@@ -1826,6 +1826,64 @@ function myRate(){
 }
 function _mp(){return Math.round(myRate()*100);}
 function _sp(){return 100-_mp();}
+/* === salon-settle:start ===
+   Pure helpers shared by the settlement screen, tax, and insights.
+   Tested by tests/salon-settlement.test.js — keep this block free of DOM calls.
+*/
+// Charge in integer cents. Stylist share is rounded half-up; salon share is the remainder
+// so the two halves always add back to the charge (no separately rounded 50/50 pennies).
+function _splitCents(price, pct){
+  var cents=Math.round((+price||0)*100);
+  var neg=cents<0; if(neg)cents=-cents;
+  var p=+pct; if(isNaN(p))p=60; if(p<0)p=0; if(p>100)p=100;
+  var pBps=Math.round(p*100); // 6000 = 60.00%
+  var me=Math.floor((cents*pBps+5000)/10000);
+  if(me>cents)me=cents; if(me<0)me=0;
+  var salon=cents-me;
+  if(neg){me=-me;salon=-salon;cents=-cents;}
+  return {charge:cents,me:me,salon:salon};
+}
+function moneyParts(charge, tip, pct){
+  var parts=_splitCents(charge, pct);
+  var tipC=Math.round((+tip||0)*100);
+  return {charge:parts.charge/100,tip:tipC/100,salon:parts.salon/100,me:parts.me/100,mytotal:(parts.me+tipC)/100};
+}
+// What the salon owes. Appointments-room rows count only when status is exactly "done"
+// (a blank status there is still "not done" — the schedule treats it as confirmed).
+// Earnings logs in cp_appts were typed in as finished work and usually have no status,
+// so a missing status still counts. An explicit cancelled / no-show / confirmed does not.
+function countsTowardOwed(a){
+  if(!a)return false;
+  var st=a.status==null?'':String(a.status).trim();
+  if(a._src==='appt')return st==='done';
+  if(!st)return true;
+  return st==='done';
+}
+function localYMD(d){
+  d=d||new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function localYM(d){
+  d=d||new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+// Sunday 00:00 local, as YYYY-MM-DD. Earnings "This week" has always started on Sunday.
+function startOfLocalWeekYMD(d){
+  d=d||new Date();
+  var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  x.setDate(x.getDate()-x.getDay());
+  x.setHours(0,0,0,0);
+  return localYMD(x);
+}
+/* === salon-settle:end === */
+function ledgerTag(a){
+  if(!a||countsTowardOwed(a))return '';
+  var st=String(a.status||'').trim(),label,color;
+  if(st==='cancelled'){label='Cancelled';color='#9a9aa8';}
+  else if(st==='noshow'){label='No-show';color='#e07a7a';}
+  else {label='Not done';color='#c9a227';}
+  return ' <span style="display:inline-block;margin-left:6px;font-size:10px;font-weight:700;letter-spacing:.02em;color:'+color+';vertical-align:1px">'+label+'</span>';
+}
 function saveName(v){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');p.name=v;localStorage.setItem('cp_prefs',JSON.stringify(p));}catch(e){}if(typeof prefs==='object'&&prefs)prefs.name=v;applyName();}
 function applyName(){var l=document.getElementById('eMeLbl');if(l)l.textContent=getName()||'You';}
 function getBookLink(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.bookLink||'').trim();}catch(e){return '';}}
@@ -1850,23 +1908,23 @@ function loadAppts(){
   // Single rate read for the whole load — both cp_appts and ap_appts use the same current rate.
   // cp_appts entries are recalculated on every load (same as ap_appts) so a rate change
   // reflects immediately across all history without needing a manual re-save.
-  var mr=myRate();
+  // Appointments-room rows keep their status so settlement can ignore anything not Done.
+  var pct=myRate()*100;
   var own=[];
   try{
     var a=JSON.parse(localStorage.getItem(APPTS_KEY)||'[]');
     if(Array.isArray(a)){own=a.map(function(r){
-      var charge=+r.charge||0,tip=+r.tip||0;
-      var salon=+(charge*(1-mr)).toFixed(2),me=+(charge*mr).toFixed(2);
-      return Object.assign({},r,{salon:salon,me:me,mytotal:+(me+tip).toFixed(2)});
+      return Object.assign({},r,moneyParts(r.charge,r.tip,pct));
     });}
   }catch(e){}
   var shared=[];
   try{
     var b=JSON.parse(localStorage.getItem('ap_appts')||'[]');
     if(Array.isArray(b)){shared=b.map(function(r){
-      var charge=+r.price||0,tip=+r.tip||0;
-      var salon=+(charge*(1-mr)).toFixed(2),me=+(charge*mr).toFixed(2);
-      return {id:r.id,name:r.name||'',date:r.date||'',time:r.time||'',charge:charge,tip:tip,salon:salon,me:me,mytotal:+(me+tip).toFixed(2),cat:r.service||'',_src:'appt'};
+      return Object.assign({
+        id:r.id,name:r.name||'',date:r.date||'',time:r.time||'',
+        cat:r.service||'',status:(r.status==null?'':r.status),_src:'appt'
+      },moneyParts(r.price,r.tip,pct));
     });}
   }catch(e){}
   var seen={},out=[];
@@ -1877,15 +1935,14 @@ function loadAppts(){
 function saveAppts(arr){try{var own=(arr||[]).filter(function(x){return !(x&&x._src);});localStorage.setItem(APPTS_KEY,JSON.stringify(own));}catch(e){alert('Could not save — storage may be full.');}}
 function loadPaid(){try{var o=JSON.parse(localStorage.getItem(PAID_KEY)||'{}');return (o&&typeof o==='object')?o:{};}catch(e){return{};}}
 function savePaid(o){try{localStorage.setItem(PAID_KEY,JSON.stringify(o));}catch(e){}}
-const todayDate=new Date();
-document.getElementById('cDate').value=todayDate.toISOString().split('T')[0];
+document.getElementById('cDate').value=localYMD(new Date());
 function $(i){return document.getElementById(i)}
 function fmt(n){return '$'+(+n||0).toFixed(2)}
 function fmtR(n){return '$'+Math.round(+n||0)}
 function _tyYears(){var ys={},cy=new Date().getFullYear();ys[cy]=1;loadAppts().forEach(function(a){if(a&&a.date)ys[String(a.date).slice(0,4)]=1;});return Object.keys(ys).sort().reverse();}
 function _tyFmt(n){return '$'+(Math.round((+n||0)*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function _tySupplySpend(){try{var st=JSON.parse(localStorage.getItem('ap_stock')||'[]');return st.reduce(function(t,s){return t+((+s.used||0)*(+s.cost||0));},0);}catch(e){return 0;}}
-function renderTaxYear(){var sel=document.getElementById('taxYearSel'),out=document.getElementById('taxYearOut');if(!sel||!out)return;var y=sel.value||String(new Date().getFullYear()),me=0,tip=0,n=0;loadAppts().forEach(function(a){if(a&&a.date&&String(a.date).slice(0,4)===y){me+=(+a.me||0);tip+=(+a.tip||0);n++;}});var spend=_tySupplySpend();var spendRow=spend>0?'<div class="ty-row ty-deduct"><span>Supply expenses (deductible) <span style="font-size:10px;color:var(--muted);font-weight:400">· from inventory</span></span><span style="color:#5ddb7c">'+_tyFmt(spend)+'</span></div>':'';out.innerHTML='<div class="ty-row"><span>Appointments</span><span>'+n+'</span></div><div class="ty-row"><span>Service commission (taxable)</span><span>'+_tyFmt(me)+'</span></div><div class="ty-row"><span>Tips received</span><span>'+_tyFmt(tip)+'</span></div><div class="ty-row ty-total"><span>Total income '+y+'</span><span>'+_tyFmt(me+tip)+'</span></div>'+spendRow;}
+function renderTaxYear(){var sel=document.getElementById('taxYearSel'),out=document.getElementById('taxYearOut');if(!sel||!out)return;var y=sel.value||String(new Date().getFullYear()),me=0,tip=0,n=0;loadAppts().forEach(function(a){if(a&&a.date&&countsTowardOwed(a)&&String(a.date).slice(0,4)===y){me+=(+a.me||0);tip+=(+a.tip||0);n++;}});var spend=_tySupplySpend();var spendRow=spend>0?'<div class="ty-row ty-deduct"><span>Supply expenses (deductible) <span style="font-size:10px;color:var(--muted);font-weight:400">· from inventory</span></span><span style="color:#5ddb7c">'+_tyFmt(spend)+'</span></div>':'';out.innerHTML='<div class="ty-row"><span>Appointments</span><span>'+n+'</span></div><div class="ty-row"><span>Service commission (taxable)</span><span>'+_tyFmt(me)+'</span></div><div class="ty-row"><span>Tips received</span><span>'+_tyFmt(tip)+'</span></div><div class="ty-row ty-total"><span>Total income '+y+'</span><span>'+_tyFmt(me+tip)+'</span></div>'+spendRow;}
 function buildTaxYear(){var sel=document.getElementById('taxYearSel');if(!sel)return;var ys=_tyYears(),cur=sel.value;sel.innerHTML=ys.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');if(cur&&ys.indexOf(cur)>=0)sel.value=cur;else sel.value=String(new Date().getFullYear());renderTaxYear();}
 /* ===== Message composer (personalised, copy/send — no SMS infra) ===== */
 var MSG_TPL={
@@ -1950,8 +2007,10 @@ function _winbackData(){
     var key=(a.name||'').trim().toLowerCase();if(!key)return;
     var d=_inDate(a.date);if(!d)return;
     if(!byName[key])byName[key]={name:a.name,last:null,svc:'',upcoming:false};
-    if(d.getTime()>today.getTime())byName[key].upcoming=true;                       // has a future booking → not lost
-    else if(!byName[key].last||d>byName[key].last){byName[key].last=d;byName[key].svc=a.cat||'';}
+    var st=String(a.status||'').trim();
+    var dropped=st==='cancelled'||st==='noshow';
+    if(d.getTime()>today.getTime()){ if(!dropped)byName[key].upcoming=true; }       // future booking still on the books → not lost
+    else if(countsTowardOwed(a)&&(!byName[key].last||d>byName[key].last)){byName[key].last=d;byName[key].svc=a.cat||'';}
   });
   var cardBy={};(typeof getClients==='function'?getClients():[]).forEach(function(c){if(c.name)cardBy[c.name.trim().toLowerCase()]={id:c.id,phone:c.phone||''};});
   var out=[];
@@ -1978,8 +2037,11 @@ function _retentionData(){
   var today=new Date();today.setHours(0,0,0,0);
   var by={};
   all.forEach(function(a){var k=(a.name||'').trim().toLowerCase();if(!k)return;var d=_inDate(a.date);if(!d)return;
+    var st=String(a.status||'').trim();
+    if(st==='cancelled'||st==='noshow')return;
     if(!by[k])by[k]={past:0,future:0};
-    if(d.getTime()>today.getTime())by[k].future++;else by[k].past++;});
+    if(d.getTime()>today.getTime())by[k].future++;
+    else if(countsTowardOwed(a))by[k].past++;});
   var keys=Object.keys(by).filter(function(k){return by[k].past>0;});
   var total=keys.length,repeat=0,visits=0,ahead=0;
   keys.forEach(function(k){var o=by[k];visits+=o.past;if(o.past>=2)repeat++;if(o.future>0)ahead++;});
@@ -1990,7 +2052,7 @@ function _reviewData(){
   var today=new Date();today.setHours(0,0,0,0);
   var cut=today.getTime()-14*86400000;
   var byName={};
-  all.forEach(function(a){var k=(a.name||'').trim().toLowerCase();if(!k)return;var d=_inDate(a.date);if(!d||d.getTime()>today.getTime())return;
+  all.forEach(function(a){var k=(a.name||'').trim().toLowerCase();if(!k)return;if(!countsTowardOwed(a))return;var d=_inDate(a.date);if(!d||d.getTime()>today.getTime())return;
     if(!byName[k]||d>byName[k].last)byName[k]={name:a.name,last:d,svc:a.cat||''};});
   var cardBy={};(typeof getClients==='function'?getClients():[]).forEach(function(c){if(c.name)cardBy[c.name.trim().toLowerCase()]={id:c.id,phone:c.phone||''};});
   var out=[];
@@ -2006,10 +2068,11 @@ function _inFilter(bks){
 }
 function renderInsightsBoard(){
   var body=$('inBody');if(!body)return;
-  var all=loadAppts().filter(function(a){return a.date;});
+  var allRaw=loadAppts().filter(function(a){return a.date;});
+  var all=allRaw.filter(countsTowardOwed);
   var bks=_inFilter(all);
   var seg='<div class="in-seg">'+[['month','This month'],['year','This year'],['all','All time']].map(function(p){return '<button class="'+(p[0]===_inPeriod?'on':'')+'" onclick="insSetPeriod(\''+p[0]+'\')">'+p[1]+'</button>';}).join('')+'</div>';
-  if(!bks.length){body.innerHTML=seg+'<div class="in-empty">No bookings in this period yet.<br>Once you log some, your numbers show up here.</div>';return;}
+  if(!bks.length){var pending=_inFilter(allRaw).length;body.innerHTML=seg+'<div class="in-empty">'+(pending?'No completed appointments in this period yet.<br>Mark a booking Done and the income shows up here.':'No bookings in this period yet.<br>Once you log some, your numbers show up here.')+'</div>';return;}
   var com=0,tip=0,charge=0,n=bks.length;
   bks.forEach(function(a){com+=(+a.me||0);tip+=(+a.tip||0);charge+=(+a.charge||0);});
   var inc=com+tip, avg=n?charge/n:0;
@@ -2058,7 +2121,7 @@ function renderInsightsBoard(){
   }
   var rv=_reviewData();
   var rvSec=rv.length?('<div class="in-sec">⭐ Ask for a review — seen in last 14 days ('+rv.length+')</div>'+rv.slice(0,20).map(function(o){var msg='<button class="wb-msg" onclick="event.stopPropagation();openMsg(\''+_js(o.name)+'\',\''+_js(o.phone||'')+'\',\'review\')">Ask</button>';return '<div class="wb-row"'+(o.id?(' onclick="wbOpen(\''+o.id+'\')"'):'')+'><div class="wb-main"><div class="wb-nm">'+escHtml(o.name)+'</div><div class="wb-sub">Seen '+_inDayLbl(o.last)+(o.svc?(' · '+escHtml(o.svc)):'')+'</div></div>'+msg+'</div>';}).join('')):'';
-  body.innerHTML=seg+cards+wbSec+bdSec+rvSec+svcSec+monthSec+daySec+timeSec+retSec+'<div class="in-hint">Revenue = full service price. Income = your commission + tips. Win-back = 90+ days since last visit with nothing booked. Retention is all-time.</div>';
+  body.innerHTML=seg+cards+wbSec+bdSec+rvSec+svcSec+monthSec+daySec+timeSec+retSec+'<div class="in-hint">Revenue = full service price of completed visits. Income = your commission + tips. Cancelled, no-show, and not-yet-done bookings are left out. Win-back = 90+ days since last completed visit with nothing booked. Retention is all-time.</div>';
 }
 /* ===== Global search (Earnings — clients + bookings) ===== */
 function openEarnSearch(){var o=$('esOv');if(!o)return;o.classList.add('open');document.body.classList.add('modal-open');var i=$('esIn');if(i){i.value='';setTimeout(function(){i.focus();},80);}runEarnSearch('');}
@@ -2079,7 +2142,7 @@ function esGoClient(id){closeEarnSearch();if(typeof editClient==='function')edit
 function esGoBooking(name){closeEarnSearch();if(typeof showTab==='function')showTab('hist');setTimeout(function(){var i=$('apptSearch');if(i)i.value=name;if(typeof onApptSearch==='function')onApptSearch(name);},90);}
 function _tyData(){
   var by={}; loadAppts().forEach(function(a){
-    if(!a||!a.date)return; var y=String(a.date).slice(0,4); if(!/^\d{4}$/.test(y))return;
+    if(!a||!a.date||!countsTowardOwed(a))return; var y=String(a.date).slice(0,4); if(!/^\d{4}$/.test(y))return;
     if(!by[y])by[y]={y:y,n:0,me:0,tip:0}; by[y].n++; by[y].me+=(+a.me||0); by[y].tip+=(+a.tip||0);
   });
   return Object.keys(by).sort().map(function(y){var r=by[y];r.total=r.me+r.tip;return r;});
@@ -2144,14 +2207,13 @@ function loadAll(){
 }
 function calc(){
   const charge=parseFloat($('cCharge').value)||0,tip=parseFloat($('cTip').value)||0;
-  const mr=myRate(),pct=Math.round(mr*100);
-  const me=charge*mr;
-  $('eSalon').textContent=fmtR(charge*(1-mr));
-  $('eMe').textContent=fmtR(me);
-  $('eTip').textContent=fmt(tip);
-  $('eTotal').textContent=fmt(me+tip);
+  const pct=myRate()*100, parts=moneyParts(charge,tip,pct);
+  $('eSalon').textContent=fmt(parts.salon);
+  $('eMe').textContent=fmt(parts.me);
+  $('eTip').textContent=fmt(parts.tip);
+  $('eTotal').textContent=fmt(parts.mytotal);
   $('calcHint').innerHTML=(charge||tip)?
-    `Charge <strong style="color:var(--text)">$${charge.toFixed(2)}</strong> &times; ${pct}% = <span style="color:#5ddb7c;font-weight:700">$${me.toFixed(2)}</span><br>+ Tip <span style="color:#f59ed6;font-weight:700">$${tip.toFixed(2)}</span> <span style="color:#888">(100% yours)</span><br>= Your take-home <span style="color:var(--gold);font-weight:700">$${(me+tip).toFixed(2)}</span>`
+    `Charge <strong style="color:var(--text)">$${parts.charge.toFixed(2)}</strong> &times; ${Math.round(pct*100)/100}% = <span style="color:#5ddb7c;font-weight:700">$${parts.me.toFixed(2)}</span><br>+ Tip <span style="color:#f59ed6;font-weight:700">$${parts.tip.toFixed(2)}</span> <span style="color:#888">(100% yours)</span><br>= Your take-home <span style="color:var(--gold);font-weight:700">$${parts.mytotal.toFixed(2)}</span>`
     :'Enter a charge and tip above to see the breakdown';
 }
 async function save(){
@@ -2159,10 +2221,10 @@ async function save(){
   const charge=parseFloat($('cCharge').value)||0,tip=parseFloat($('cTip').value)||0;
   const cat=$('cCat').value.trim();
   if(!name||!date||!charge){alert('Please fill in client name, date and charge.');return;}
-  const mr=myRate();
-  const salon=+(charge*(1-mr)).toFixed(2),me=+(charge*mr).toFixed(2);
+  const m=moneyParts(charge,tip,myRate()*100);
   const id=editingId||Date.now();
-  const rec={id,name,date,time,charge,tip,salon,me,mytotal:+(me+tip).toFixed(2),cat};
+  // Logged here as finished work. Existing cp_appts rows with no status still count (see countsTowardOwed).
+  const rec=Object.assign({id:id,name:name,date:date,time:time,cat:cat,status:'done'},m);
   try{
     var arr=loadAppts();var i=arr.findIndex(function(x){return x.id===id;});
     if(i>=0)arr[i]=rec;else arr.push(rec);
@@ -2205,7 +2267,7 @@ function editAppt(id){
 function cancelEdit(){resetForm();}
 function resetForm(){
   editingId=null;['cName','cCharge','cTip','cCat'].forEach(i=>$(i).value='');
-  $('cDate').value=todayDate.toISOString().split('T')[0];$('cTime').value='09:00';
+  $('cDate').value=localYMD(new Date());$('cTime').value='09:00';
   $('editBanner').style.display='none';$('btnCancel').style.display='none';
   $('btnLbl').textContent='Save appointment';calc();syncServiceChips();
 }
@@ -2218,15 +2280,15 @@ function newBooking(){
 }
 let searchQuery='';
 function getFiltered(){
-  const now=new Date(),ts=now.toISOString().split('T')[0];
-  const sow=new Date(now);sow.setDate(now.getDate()-now.getDay());
-  const som=new Date(now.getFullYear(),now.getMonth(),1);
+  const now=new Date(),ts=localYMD(now);
+  const sow=startOfLocalWeekYMD(now);
+  const som=localYMD(new Date(now.getFullYear(),now.getMonth(),1));
   return data.filter(a=>{
     if(activeFilter!=='all'&&activeFilter!=='weekly'){
-      const d=new Date(a.date+'T12:00:00');
-      if(activeFilter==='today'&&a.date!==ts)return false;
-      if(activeFilter==='week'&&!(d>=sow))return false;
-      if(activeFilter==='month'&&!(d>=som))return false;
+      const ds=String(a.date||'');
+      if(activeFilter==='today'&&ds!==ts)return false;
+      if(activeFilter==='week'&&ds<sow)return false;
+      if(activeFilter==='month'&&ds<som)return false;
     }
     if(searchQuery){
       const hay=((a.name||'')+' '+(a.cat||'')).toLowerCase();
@@ -2277,7 +2339,7 @@ function renderTable(){
     const ts=(hr%12||12)+':'+m+(hr>=12?'pm':'am');
     const _op=String(_lhOpenId)===String(a.id);
     return`<tr class="led-row${_op?' open':''}" onclick="toggleLedgerHistory('${a.id}')">
-      <td class="td-c" data-label="Client">${a.name}</td><td class="td-m" data-label="Date">${ds}</td>
+      <td class="td-c" data-label="Client">${a.name}${ledgerTag(a)}</td><td class="td-m" data-label="Date">${ds}</td>
       <td class="td-m" style="color:#555" data-label="Week">Wk${weekNum(a.date)}</td>
       <td class="td-cat" data-label="Category">${a.cat||'—'}</td>
       <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td>
@@ -2324,7 +2386,7 @@ function renderWeekly(){
     const myT=wk.totM+wk.totT;
     const rows=wk.appts.map(a=>{
       const ds=new Date(a.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
-      return`<tr><td class="td-c" data-label="Client">${a.name}</td><td class="td-m" data-label="Date">${ds}</td>
+      return`<tr><td class="td-c" data-label="Client">${a.name}${ledgerTag(a)}</td><td class="td-m" data-label="Date">${ds}</td>
         <td class="td-cat" data-label="Category">${a.cat||'—'}</td>
         <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td><td class="td-b r" data-label="Salon ${_sp()}%">${fmt(a.salon)}</td>
         <td class="td-gr r" data-label="Me ${_mp()}%">${fmt(a.me)}</td><td class="td-tip r" data-label="Tip">${fmt(a.tip)}</td>
@@ -2346,30 +2408,36 @@ function renderWeekly(){
 function renderMgm(){
   const byMonth={};
   data.forEach(a=>{
+    if(!countsTowardOwed(a)||!a.date)return;
     const ym=toYM(a.date);
-    if(!byMonth[ym])byMonth[ym]={ym,appts:0,totMe:0,totTip:0,totCharge:0};
-    byMonth[ym].appts++;byMonth[ym].totMe+=a.me;byMonth[ym].totTip+=a.tip;byMonth[ym].totCharge+=a.charge;
+    if(!byMonth[ym])byMonth[ym]={ym,appts:0,meC:0,tipC:0,chargeC:0};
+    byMonth[ym].appts++;
+    byMonth[ym].meC+=Math.round((+a.me||0)*100);
+    byMonth[ym].tipC+=Math.round((+a.tip||0)*100);
+    byMonth[ym].chargeC+=Math.round((+a.charge||0)*100);
   });
-  let totalOwed=0,uMe=0,uTip=0,uCharge=0;
-  Object.entries(byMonth).forEach(([ym,mo])=>{if(!paidMonths[ym]){totalOwed+=mo.totMe+mo.totTip;uMe+=mo.totMe;uTip+=mo.totTip;uCharge+=mo.totCharge;}});
-  $('mgmOwed').textContent=fmtR(totalOwed);
-  if(document.getElementById('oTotal')){$('oSalon').textContent=fmtR(uCharge-uMe);$('oMe').textContent=fmtR(uMe);$('oTip').textContent=fmt(uTip);$('oTotal').textContent=fmt(totalOwed);}
+  let owedC=0,uMe=0,uTip=0,uCharge=0;
+  Object.entries(byMonth).forEach(([ym,mo])=>{if(!paidMonths[ym]){owedC+=mo.meC+mo.tipC;uMe+=mo.meC;uTip+=mo.tipC;uCharge+=mo.chargeC;}});
+  const totalOwed=owedC/100;
+  $('mgmOwed').textContent=fmt(totalOwed);
+  if(document.getElementById('oTotal')){$('oSalon').textContent=fmt((uCharge-uMe)/100);$('oMe').textContent=fmt(uMe/100);$('oTip').textContent=fmt(uTip/100);$('oTotal').textContent=fmt(totalOwed);}
   const now=new Date();
   $('mgmNextDue').textContent=new Date(now.getFullYear(),now.getMonth()+1,0).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   $('mgmSubtext').textContent=totalOwed>0?'Unpaid commission + tips accumulating':'All paid — you\'re square!';
   const sorted=Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0]));
-  if(!sorted.length){$('monthRows').innerHTML='<div class="empty"><i class="ti ti-building-store"></i>Start booking clients to track what the Salon owes you.</div>';return;}
+  if(!sorted.length){$('monthRows').innerHTML='<div class="empty"><i class="ti ti-building-store"></i>'+(data.length?'Nothing owed yet. Mark appointments Done and they count here.':'Start booking clients to track what the Salon owes you.')+'</div>';return;}
   $('monthRows').innerHTML=sorted.map(([ym,mo])=>{
     const paid=!!paidMonths[ym];
     const paidDate=paid?new Date(paidMonths[ym]).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):null;
+    const meD=mo.meC/100,tipD=mo.tipC/100;
     return`<div class="month-item ${paid?'paid':'unpaid'}">
       <div>
         <div class="mi-month">${fmtMonth(ym)}</div>
-        <div class="mi-appts">${mo.appts} appointment${mo.appts!==1?'s':''} &nbsp;·&nbsp; Commission $${mo.totMe.toFixed(2)} &nbsp;·&nbsp; Tips $${mo.totTip.toFixed(2)}</div>
+        <div class="mi-appts">${mo.appts} appointment${mo.appts!==1?'s':''} &nbsp;·&nbsp; Commission $${meD.toFixed(2)} &nbsp;·&nbsp; Tips $${tipD.toFixed(2)}</div>
         <div class="mi-date-lbl ${paid?'sp':'su'}">${paid?'Paid on '+paidDate:'Awaiting payment from the Salon'}</div>
       </div>
       <div style="text-align:right">
-        <div class="mi-amt ${paid?'pa':'ua'}">$${(mo.totMe+mo.totTip).toFixed(2)}</div>
+        <div class="mi-amt ${paid?'pa':'ua'}">$${(meD+tipD).toFixed(2)}</div>
         <div class="mi-status ${paid?'sp':'su'}" style="margin-bottom:8px">${paid?'✓ Paid':'Unpaid'}</div>
         <div class="mi-actions" style="justify-content:flex-end">
           ${!paid?`<button class="btn-invoice" onclick="openExport('${ym}')"><i class="ti ti-file-invoice" style="font-size:12px;vertical-align:-1px;margin-right:4px"></i>Invoice</button>`:''}
@@ -2387,11 +2455,11 @@ function markPaid(ym){
     if(typeof eyeBloom==='function') eyeBloom();
   }catch(err){setSyncBadge('err','Error');console.error(err);}
 }
-function markThisMonthPaid(){markPaid(new Date().toISOString().slice(0,7));}
+function markThisMonthPaid(){markPaid(localYM(new Date()));}
 function openExport(ym){
   const sel=$('exportMonth');sel.innerHTML='';
   const byMonth={};
-  data.forEach(a=>{const k=toYM(a.date);if(!byMonth[k])byMonth[k]=true;});
+  data.forEach(a=>{if(!countsTowardOwed(a)||!a.date)return;const k=toYM(a.date);if(!byMonth[k])byMonth[k]=true;});
   const months=Object.keys(byMonth).sort((a,b)=>b.localeCompare(a));
   if(!months.length){alert('No appointments to export yet.');return;}
   months.forEach(m=>{
@@ -2405,12 +2473,13 @@ function openExport(ym){
 function closeExport(){$('exportModal').classList.remove('open');}
 function renderInvoice(){
   const ym=$('exportMonth').value;if(!ym)return;
-  const appts=data.filter(a=>toYM(a.date)===ym).sort((a,b)=>a.date.localeCompare(b.date));
+  const appts=data.filter(a=>a.date&&toYM(a.date)===ym&&countsTowardOwed(a)).sort((a,b)=>a.date.localeCompare(b.date));
   if(!appts.length){$('invoicePreview').innerHTML='<p style="color:#888;text-align:center;padding:20px">No appointments this month.</p>';return;}
-  const totCharge=appts.reduce((s,a)=>s+a.charge,0);
-  const totSalon=appts.reduce((s,a)=>s+a.salon,0);
-  const totMe=appts.reduce((s,a)=>s+a.me,0);
-  const totTip=appts.reduce((s,a)=>s+a.tip,0);
+  const totChargeC=appts.reduce((s,a)=>s+Math.round((+a.charge||0)*100),0);
+  const totSalonC=appts.reduce((s,a)=>s+Math.round((+a.salon||0)*100),0);
+  const totMeC=appts.reduce((s,a)=>s+Math.round((+a.me||0)*100),0);
+  const totTipC=appts.reduce((s,a)=>s+Math.round((+a.tip||0)*100),0);
+  const totCharge=totChargeC/100,totSalon=totSalonC/100,totMe=totMeC/100,totTip=totTipC/100;
   const issued=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   const[y,m]=ym.split('-');
   const dueDate=new Date(+y,+m,0).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
@@ -2444,7 +2513,7 @@ function renderInvoice(){
     <div class="inv-totals">
       <div class="inv-total-row"><span>Total revenue generated</span><span>$${totCharge.toFixed(2)}</span></div>
       <div class="inv-total-row"><span>Salon share (${_sp()}%)</span><span style="color:#1e40af">– $${totSalon.toFixed(2)}</span></div>
-      <div class="inv-total-row"><span>Your commission (60%)</span><span style="color:#166534">$${totMe.toFixed(2)}</span></div>
+      <div class="inv-total-row"><span>Your commission (${_mp()}%)</span><span style="color:#166534">$${totMe.toFixed(2)}</span></div>
       <div class="inv-total-row"><span>Tips collected by salon</span><span style="color:#166534">+ $${totTip.toFixed(2)}</span></div>
       <div class="inv-total-row final"><span>Amount owed to ${getName()||'Your name'}</span><span style="color:#166534">$${(totMe+totTip).toFixed(2)}</span></div>
     </div>
@@ -2646,7 +2715,7 @@ function exportData(){
     for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);all[k]=localStorage.getItem(k);}
     var payload={app:'YourSalon',kind:'full',version:2,exportedAt:new Date().toISOString(),store:all};
     var json=JSON.stringify(payload,null,2);
-    var fname='yoursalon-backup-'+new Date().toISOString().slice(0,10)+'.json';
+    var fname='yoursalon-backup-'+localYMD(new Date())+'.json';
     try{
       var file=new File([json],fname,{type:'application/json'});
       if(navigator.canShare&&navigator.canShare({files:[file]})){
@@ -3236,7 +3305,7 @@ function saveClient(){
   var i=clients.map(function(c){return c.id;}).indexOf(id);
   var prev=i>-1?clients[i]:null;
   var sig=sigHasInk?$('sigPad').toDataURL('image/png'):(_editingSig||'');
-  var today=new Date().toISOString().slice(0,10);
+  var today=localYMD(new Date());
   var tg=gatherTradeFields();
   var mergedTf=Object.assign({},(prev&&prev.tf)||{});
   (TRADE_FIELDS[tg.trade]||[]).forEach(function(f){delete mergedTf[f.id];});
@@ -3815,19 +3884,7 @@ function closeSettings(){
   if(typeof WARP!=='undefined'&&WARP.resume)WARP.resume();
 }
 
-function saveSettings(){
-  loadPrefs();
-  const n = document.getElementById('settingName').value.trim();
-  const s = document.getElementById('settingSalon').value.trim();
-  const r = document.getElementById('settingRate').value;
-  if(n) prefs.name = n;
-  if(s) prefs.salon = s;
-  var _newRate=parseInt(r)||60,_oldRate=prefs.rate||60;
-  if(r && _newRate!==_oldRate){
-    if(confirm('Change your commission rate from '+_oldRate+'% to '+_newRate+'%?\n\nThis recalculates all your take-home and commission figures.')){
-      prefs.rate=_newRate;
-    }else{ var _ri=document.getElementById('settingRate'); if(_ri)_ri.value=_oldRate; }
-  }
+function _commitSettings(){
   try{var _ap=JSON.parse(localStorage.getItem('ap_prefs')||'{}');_ap.splitPct=prefs.rate;localStorage.setItem('ap_prefs',JSON.stringify(_ap));}catch(e){}
   prefs.setup = true;
   savePrefsToStorage();
@@ -3835,6 +3892,27 @@ function saveSettings(){
   updateBranding(prefs.name, prefs.salon);
   updateCommissionRate(Math.round(myRate()*100));
   closeSettings();
+}
+function saveSettings(){
+  loadPrefs();
+  const n = document.getElementById('settingName').value.trim();
+  const s = document.getElementById('settingSalon').value.trim();
+  const r = document.getElementById('settingRate').value;
+  if(n) prefs.name = n;
+  if(s) prefs.salon = s;
+  var _newRate=parseInt(r,10)||60,_oldRate=prefs.rate||60;
+  if(r && _newRate!==_oldRate){
+    // Native confirm() returns false with no dialog inside the iOS WKWebView, so a rate change was dropped silently.
+    askConfirm('Change your commission rate from '+_oldRate+'% to '+_newRate+'%? This recalculates all your take-home and commission figures.',function(){
+      prefs.rate=_newRate;
+      _commitSettings();
+    },{title:'Change commission rate',yesLabel:'Change rate',onNo:function(){
+      var _ri=document.getElementById('settingRate'); if(_ri)_ri.value=_oldRate;
+      _commitSettings();
+    }});
+    return;
+  }
+  _commitSettings();
 }
 
 // ── EYE REST engine: deep 670nm-red starburst + 22s rest cue ──
@@ -4091,9 +4169,9 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.61 · revert Stripe — Apple IAP only; PWA taps ✨x5 for dev access';
+var VERSION='app v2.62 · owed totals count only Done work; local dates; cent-accurate splits';
 /* ===== In-app confirm (native confirm() silently fails in iOS PWA / WKWebView) ===== */
-var _cpCfFn=null;
+var _cpCfFn=null,_cpCfNo=null;
 function askConfirm(msg,onYes,opts){
   opts=opts||{};
   var t=document.getElementById('cpCfTitle'),m=document.getElementById('cpCfMsg'),y=document.getElementById('cpCfYes');
@@ -4101,10 +4179,18 @@ function askConfirm(msg,onYes,opts){
   if(m)m.textContent=msg;
   if(y){y.textContent=opts.yesLabel||'Confirm';y.className='cp-cf-yes'+(opts.danger?' danger':'');}
   _cpCfFn=onYes;
-  var el=document.getElementById('cpConfirm');if(el)el.classList.add('open');
+  _cpCfNo=opts.onNo||null;
+  var el=document.getElementById('cpConfirm');
+  if(!el){var no=_cpCfNo;_cpCfFn=null;_cpCfNo=null;if(no)no();return;}
+  el.classList.add('open');
 }
-function _closeCPConfirm(){var el=document.getElementById('cpConfirm');if(el)el.classList.remove('open');_cpCfFn=null;}
-function _fireCPConfirm(){var fn=_cpCfFn;_closeCPConfirm();if(fn)fn();}
+function _closeCPConfirm(fired){
+  var el=document.getElementById('cpConfirm');if(el)el.classList.remove('open');
+  var no=_cpCfNo;
+  _cpCfFn=null;_cpCfNo=null;
+  if(fired!==true&&no)no();
+}
+function _fireCPConfirm(){var fn=_cpCfFn;_closeCPConfirm(true);if(fn)fn();}
 function deleteMyAccount(){
   askConfirm('Delete your account and all data? This permanently erases everything on this device and cannot be undone.',function(){
     askConfirm('Last chance — are you sure? All bookings, clients and settings will be deleted.',function(){

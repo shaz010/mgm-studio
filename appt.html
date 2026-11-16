@@ -1929,7 +1929,7 @@ var customSvc=load(CUSTOM,[]);   /* [{name,mode}] your own services, kept foreve
 (function(){
   if(localStorage.getItem('_ys_demo_seen'))return;
   if(appts.length>0){localStorage.setItem('_ys_demo_seen','1');return;}
-  function relDay(n){var d=new Date();d.setDate(d.getDate()+n);d.setHours(12,0,0,0);return d.toISOString().split('T')[0];}
+  function relDay(n){var d=new Date();d.setDate(d.getDate()+n);return ymd(d);}
   var demoClients=[
     {id:'dc1',name:'Jessica Miller', phone:'555-0101',email:'',notes:''},
     {id:'dc2',name:'Sarah Thompson', phone:'555-0102',email:'',notes:''},
@@ -2019,8 +2019,26 @@ function maybeShowTradePicker(){
 
 /* ===== date helpers ===== */
 var viewDate=new Date();viewDate.setHours(12,0,0,0);
-function ymd(d){return d.toISOString().split('T')[0]}
-function todayStr(){var d=new Date();d.setHours(12,0,0,0);return ymd(d)}
+/* === salon-settle:start ===
+   Local calendar day (not UTC). Same cent-split as Earnings so both rooms agree.
+*/
+function _splitCents(price, pct){
+  var cents=Math.round((+price||0)*100);
+  var neg=cents<0; if(neg)cents=-cents;
+  var p=+pct; if(isNaN(p))p=60; if(p<0)p=0; if(p>100)p=100;
+  var pBps=Math.round(p*100); // 6000 = 60.00%
+  var me=Math.floor((cents*pBps+5000)/10000);
+  if(me>cents)me=cents; if(me<0)me=0;
+  var salon=cents-me;
+  if(neg){me=-me;salon=-salon;cents=-cents;}
+  return {charge:cents,me:me,salon:salon};
+}
+function ymd(d){
+  d=d||new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+/* === salon-settle:end === */
+function todayStr(){return ymd(new Date())}
 function parseDate(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2],12,0,0)}
 function fmt$(n){return '$'+Math.round(+n||0)}
 function to12(t){if(!t)return '';var p=t.split(':'),h=+p[0],m=p[1],ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+m+' '+ap}
@@ -3492,7 +3510,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.22 · fix delete-all: reload sibling earn frame so ER clears stale in-memory data';
+var VERSION='v6.23 · take-home cent split matches Earnings; local calendar dates';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3548,19 +3566,21 @@ function saveBusiness(){
 }
 /* ----- take-home: booked price × your split % (renters set 100) ----- */
 function getSplit(){var p=getPrefs();var s=parseFloat(p.splitPct);return isNaN(s)?60:Math.max(0,Math.min(100,s));}
-function takeHome(price){return Math.round((+price||0)*getSplit())/100;}
+function takeHome(price){return _splitCents(price, getSplit()).me/100;}
 function apCalc(){
   var charge=parseFloat($('fPrice').value)||0;
   var tip=parseFloat($('fTip').value)||0;
   var youPct=getSplit(),salonPct=100-youPct;
-  var you=charge*youPct/100,salon=charge*salonPct/100;
+  var parts=_splitCents(charge, youPct);
+  var you=parts.me/100, salon=parts.salon/100;
+  var tipC=Math.round(tip*100)/100;
   var sp=$('apSalonPct'),yp=$('apYouPct'),s=$('apSalon'),y=$('apYou'),tv=$('apTipV'),tt=$('apTotal');
   if(sp)sp.textContent=salonPct+'% of charge';
   if(yp)yp.textContent=youPct+'% of charge';
-  if(s)s.textContent='$'+Math.round(salon);
-  if(y)y.textContent='$'+Math.round(you);
-  if(tv)tv.textContent='$'+tip.toFixed(2);
-  if(tt)tt.textContent='$'+(you+tip).toFixed(2);
+  if(s)s.textContent='$'+salon.toFixed(2);
+  if(y)y.textContent='$'+you.toFixed(2);
+  if(tv)tv.textContent='$'+tipC.toFixed(2);
+  if(tt)tt.textContent='$'+(you+tipC).toFixed(2);
 }
 var _splitUnlocked=false;
 function toggleSplitLock(){_splitUnlocked=!_splitUnlocked;var i=$('setSplit'),b=$('splitLockBtn');if(_splitUnlocked){if(i){i.removeAttribute('readonly');try{i.focus();i.select();}catch(e){}}if(b){b.classList.add('unlocked');b.innerHTML='<i class="ti ti-lock-open"></i>';}}else{_lockSplit();}}
