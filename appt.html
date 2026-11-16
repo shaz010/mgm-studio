@@ -3573,7 +3573,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.25 · audit log for bookings, status, and split changes';
+var VERSION='v6.26 · booking profile no longer stores Stripe';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4309,7 +4309,8 @@ function publishAvailability(){
     var taken=appts.filter(function(a){return a.status!=='cancelled'&&a.status!=='noshow'})
       .map(function(a){return {date:a.date,time:a.time,dur:(+a.dur||60)};});
     var svc=bookableServices();
-    db.collection('public').doc(SALON_ID).set({
+    var del=firebase.firestore.FieldValue.delete();
+    var payload={
       bookingOpen:bookingOpen(),
       salonName:getBizName()||'Salon',
       hours:getHours(),
@@ -4319,7 +4320,22 @@ function publishAvailability(){
       contact:((p.bookContact||'')+'').trim(),
       bookingHiddenSvcs:getBookingHiddenSvcs(),
       updatedAt:Date.now()
-    },{merge:true}).catch(function(e){console.warn('publish',e);});
+    };
+    // Drop any Stripe or deposit fields already stored on the public profile.
+    // A merge that names FieldValue.delete removes the key. Rules cannot hide a field.
+    ['stripeSk','stripePk','stripeSecret','stripeWebhook','webhookSecret','whsec','sk','depositAmount'].forEach(function(k){payload[k]=del;});
+    var ref=db.collection('public').doc(SALON_ID);
+    ref.get().then(function(doc){
+      if(doc.exists){
+        Object.keys(doc.data()||{}).forEach(function(k){
+          if(/stripe|whsec/i.test(k))payload[k]=del;
+        });
+      }
+      return ref.set(payload,{merge:true});
+    }).catch(function(e){
+      console.warn('publish',e);
+      ref.set(payload,{merge:true}).catch(function(e2){console.warn('publish',e2);});
+    });
   }catch(e){console.warn('publish err',e);}
 }
 function saveBookContact(){

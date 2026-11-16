@@ -116,29 +116,6 @@ textarea{resize:vertical;min-height:60px}
 .passport-card .pc-history{margin-top:10px;border-top:1px solid rgba(167,139,250,.15);padding-top:8px}
 .passport-card .pc-prev{font-size:11px;color:#6a6a7a;line-height:1.8}
 .passport-card .pc-prev span{color:#9a8aaa;font-weight:600}
-.pay-sheet{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .25s}
-.pay-sheet.open{opacity:1;pointer-events:all}
-.pay-inner{background:#0d0d18;border-radius:22px 22px 0 0;padding:22px 20px 40px;max-height:90vh;overflow-y:auto;transform:translateY(30px);transition:transform .3s cubic-bezier(.2,0,.2,1)}
-.pay-sheet.open .pay-inner{transform:translateY(0)}
-.pay-drag{width:36px;height:4px;border-radius:2px;background:#2a2a3a;margin:0 auto 18px}
-.pay-hdr{font-size:17px;font-weight:800;color:#e8e8f0;margin-bottom:3px}
-.pay-sub{font-size:12.5px;color:#6a6a7a;margin-bottom:18px;line-height:1.5}
-.pay-amount{font-size:32px;font-weight:800;color:#d4af37;text-align:center;margin:0 0 20px;letter-spacing:-.5px}
-.pay-amount span{font-size:16px;color:#7a7a8a;font-weight:600;margin-left:4px}
-#stripeElement{min-height:48px;margin-bottom:14px}
-.pay-btn{width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,#c9a227,#f5d77e);color:#1a1208;font-size:16px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:8px}
-.pay-btn:disabled{opacity:.45;cursor:default}
-.pay-btn:active:not(:disabled){opacity:.85}
-.pay-skip{text-align:center;margin-top:14px;font-size:13.5px;color:#7a7a8a;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:8px;text-decoration:underline;text-underline-offset:3px}
-.pay-skip:active{color:#8a8a9a}
-.pay-lock{text-align:center;margin-top:10px;font-size:11px;color:#3a3a4a;line-height:1.5}
-#expressCheckoutElement{margin-bottom:4px;min-height:0}
-#expressCheckoutElement:empty{display:none}
-.pay-divider{display:flex;align-items:center;gap:10px;margin:10px 0;color:#3a3a4a;font-size:11.5px}
-.pay-divider::before,.pay-divider::after{content:'';flex:1;border-top:1px solid #2a2a3a}
-.pay-divider:empty+#stripeElement,.pay-divider.hidden{display:none}
-.pay-err{background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.3);border-radius:10px;padding:10px 12px;font-size:12px;color:#ff9999;margin-bottom:12px;display:none}
-.pay-err.show{display:block}
 .center-screen{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
 .cs-ic{width:64px;height:64px;border-radius:16px;background:var(--gold-dim);border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:32px;margin-bottom:16px}
 .cs-ic.green{background:rgba(93,219,124,.12);border-color:var(--green);color:var(--green)}
@@ -414,8 +391,6 @@ textarea{resize:vertical;min-height:60px}
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
-<script src="https://js.stripe.com/v3/"></script>
 <script>
 var DEMO_SVCS={
   women:{
@@ -710,10 +685,8 @@ var FB_CONFIG={
 var SALON_ID='mgm-studio';
 var WEEKS_AHEAD=6, STEP=30;
 var db=null, info=null, pendingMap={}, selSvcArr=[], selDate='', selTime='', customMode=false, otherSvcMode=false, _lastBooking=null;
-var STRIPE_PK='pk_live_51Ti0soDvwJdoHdEZNZkU5qSjuHxIJlL3kqee3BBVWOYFtv9fPgW63hwTbVRCcJ79x7EMmceD9sbUQAAWJMOVqSaG00vBDF7xUc';
-var _stripe=null,_stripeElements=null,_stripePayEl=null,_stripeECEl=null,_pendingRec=null,_depositAmt=50;
 function $(id){return document.getElementById(id);}
-var VERSION='book v3.55 · fallback contact always visible';
+var VERSION='book v3.56 · request only';
 
 // ── Progressive reveal — strict sequential ─────────────────────────────────
 var _stepsRevealed={details:false,hair:false,day:false,time:false,visit:false};
@@ -1246,97 +1219,7 @@ function _sendRec(rec){
   }).catch(function(e){
     console.warn(e);
     $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Confirm & book';
-    closePaySheet();
     alert('Could not send — please try again.');
-  });
-}
-function showPaymentStep(rec){
-  _pendingRec=rec;
-  _depositAmt=(info&&info.depositAmount)||50;
-  var pk=(info&&info.stripePk)||STRIPE_PK||'';
-  var ps=$('paySheet');if(!ps)return;
-  var amt=$('paySheetAmt');if(amt)amt.innerHTML='$'+_depositAmt.toFixed(0)+' <span>deposit</span>';
-  var ba=$('payBtnAmt');if(ba)ba.textContent=_depositAmt.toFixed(0);
-  var sub=$('paySheetSvc');if(sub)sub.textContent=rec.service;
-  var err=$('payErr');if(err){err.textContent='';err.classList.remove('show');}
-  var pb=$('payConfirmBtn');if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
-  ps.classList.add('open');
-  if(!pk){console.warn('No Stripe PK in Firestore info.stripePk');return;}
-  if(!_stripe||_stripe._pk!==pk){
-    _stripe=Stripe(pk);_stripe._pk=pk;
-    _stripeElements=null;_stripePayEl=null;_stripeECEl=null;
-  }
-  if(!_stripeElements){
-    _stripeElements=_stripe.elements({
-      mode:'payment',amount:Math.round(_depositAmt*100),currency:'usd',
-      appearance:{theme:'night',variables:{colorBackground:'#0d0d18',colorPrimary:'#d4af37',colorText:'#e8e8f0',fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif',borderRadius:'10px'}}
-    });
-    // Express Checkout Element — shows Apple Pay / Google Pay button natively
-    _stripeECEl=_stripeElements.create('expressCheckout',{buttonHeight:48,buttonTheme:{applePay:'black',googlePay:'black'}});
-    var eceEl=$('expressCheckoutElement');
-    if(eceEl){eceEl.innerHTML='';_stripeECEl.mount('#expressCheckoutElement');}
-    _stripeECEl.on('confirm',function(){
-      var fn=firebase.functions().httpsCallable('createPaymentIntent');
-      var err=$('payErr');
-      fn({amount:Math.round(_depositAmt*100),currency:'usd',salonId:SALON_ID}).then(function(res){
-        var clientSecret=res.data&&res.data.clientSecret;
-        if(!clientSecret){throw new Error('No client secret');}
-        return _stripe.confirmPayment({elements:_stripeElements,clientSecret:clientSecret,redirect:'if_required'});
-      }).then(function(res2){
-        if(res2&&res2.error){if(err){err.textContent=res2.error.message;err.classList.add('show');}return;}
-        var pi=res2&&res2.paymentIntent;
-        if(_pendingRec&&pi){_pendingRec.depositPaid=true;_pendingRec.depositAmount=_depositAmt;_pendingRec.paymentIntentId=pi.id||'';}
-        closePaySheet();
-        if(_pendingRec){_sendRec(_pendingRec);_pendingRec=null;}
-      }).catch(function(e){if(err){err.textContent=e.message||'Payment error';err.classList.add('show');}});
-    });
-    // Card input element
-    _stripePayEl=_stripeElements.create('payment',{layout:'tabs'});
-    var container=$('stripeElement');if(container){container.innerHTML='';_stripePayEl.mount('#stripeElement');setTimeout(function(){if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();},80);}
-  }
-}
-function closePaySheet(){
-  var ps=$('paySheet');if(ps)ps.classList.remove('open');
-  $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Confirm & book';
-}
-function skipDeposit(){
-  closePaySheet();
-  if(_pendingRec){_sendRec(_pendingRec);_pendingRec=null;}
-}
-function confirmPayment(){
-  if(!_stripe||!_stripeElements){skipDeposit();return;}
-  var pb=$('payConfirmBtn');if(pb){pb.disabled=true;pb.innerHTML='<i class="ti ti-loader"></i> Processing…';}
-  var err=$('payErr');if(err){err.textContent='';err.classList.remove('show');}
-  _stripeElements.submit().then(function(r){
-    if(r.error){
-      if(err){err.textContent=r.error.message;err.classList.add('show');}
-      if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
-      return;
-    }
-    var fn=firebase.functions().httpsCallable('createPaymentIntent');
-    fn({amount:Math.round(_depositAmt*100),currency:'usd',salonId:SALON_ID}).then(function(res){
-      var clientSecret=res.data&&res.data.clientSecret;
-      if(!clientSecret){throw new Error('No client secret returned');}
-      return _stripe.confirmPayment({elements:_stripeElements,clientSecret:clientSecret,redirect:'if_required'});
-    }).then(function(res2){
-      if(res2&&res2.error){
-        if(err){err.textContent=res2.error.message;err.classList.add('show');}
-        if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
-        return;
-      }
-      var pi=res2&&res2.paymentIntent;
-      if(_pendingRec&&pi){_pendingRec.depositPaid=true;_pendingRec.depositAmount=_depositAmt;_pendingRec.paymentIntentId=pi.id||'';}
-      closePaySheet();
-      if(_pendingRec){_sendRec(_pendingRec);_pendingRec=null;}
-    }).catch(function(e){
-      console.warn(e);
-      if(err){err.textContent=(e&&e.message)||'Payment failed — please try again.';err.classList.add('show');}
-      if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
-    });
-  }).catch(function(e){
-    console.warn(e);
-    if(err){err.textContent=(e&&e.message)||'Payment failed — please try again.';err.classList.add('show');}
-    if(pb){pb.disabled=false;pb.innerHTML='<i class="ti ti-brand-apple-pay" style="font-size:22px"></i> Pay $'+_depositAmt.toFixed(0)+' deposit';}
   });
 }
 /* ── Main submit ─────────────────────────────────────────────── */
@@ -1363,11 +1246,7 @@ function submitBooking(){
     status:'pending',createdAt:Date.now(),
     consent:{agreed:true,agreedAt:Date.now(),conditions:gatherConsentFlags(),notes:consentNotes}
   };
-  var proceed=function(){
-    var pk=(info&&info.stripePk)||'';
-    if(pk){showPaymentStep(rec);}
-    else{_sendRec(rec);}
-  };
+  var proceed=function(){_sendRec(rec);};
   if(isCustom){proceed();return;}
   db.collection('public').doc(SALON_ID).get().then(function(doc){
     var fresh=doc.exists?(doc.data()||{}):{};
@@ -1525,24 +1404,5 @@ setTimeout(checkForUpdate,8000);
 setInterval(checkForUpdate,60000);
 init();
 </script>
-
-<!-- ── Payment sheet ───────────────────────────────────────── -->
-<div class="pay-sheet" id="paySheet" onclick="if(event.target===this)closePaySheet()">
-  <div class="pay-inner">
-    <div class="pay-drag"></div>
-    <div class="pay-hdr">Secure your spot</div>
-    <p class="pay-sub" id="paySheetSvc">Hold your appointment with a deposit — the rest you pay at the salon.</p>
-    <div class="pay-amount" id="paySheetAmt">$50 <span>deposit</span></div>
-    <div id="payErr" class="pay-err"></div>
-    <div id="expressCheckoutElement"></div>
-    <div class="pay-divider" id="payDivider"><span>or pay by card</span></div>
-    <div id="stripeElement"></div>
-    <button class="pay-btn" id="payConfirmBtn" onclick="confirmPayment()">
-      <i class="ti ti-credit-card" style="font-size:18px"></i> Pay $<span id="payBtnAmt">50</span> by card
-    </button>
-    <div class="pay-skip" onclick="skipDeposit()">Pay at the salon instead →</div>
-    <div class="pay-lock"><i class="ti ti-lock" style="font-size:11px"></i> Secured by Stripe · Apple Pay &amp; Google Pay accepted</div>
-  </div>
-</div>
 </body>
 </html>
