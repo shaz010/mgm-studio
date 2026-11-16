@@ -253,6 +253,319 @@
     return { from: '', to: '', label: 'All' };
   }
 
+  function auditMonthKey(localDate) { return 'ys_audit_' + String(localDate || '').slice(0, 7); }
+
+  function makeAuditEvent(partial) {
+    partial = partial || {};
+    var at = +partial.at;
+    if (!isFinite(at) || at <= 0) at = Date.now();
+    var d = new Date(at);
+    var localDate = partial.localDate || localYMD(d);
+    var localTime = partial.localTime || (pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds()));
+    return {
+      id: partial.id || ('aud-' + at.toString(36) + '-' + Math.random().toString(36).slice(2, 8)),
+      at: at,
+      localDate: localDate,
+      localTime: localTime,
+      type: partial.type || 'note',
+      entityType: partial.entityType || '',
+      entityId: partial.entityId == null ? '' : String(partial.entityId),
+      summary: partial.summary || '',
+      before: partial.before == null ? null : partial.before,
+      after: partial.after == null ? null : partial.after,
+      source: partial.source || 'earn',
+      actor: partial.actor || 'this device'
+    };
+  }
+
+  /* Append only. An id that already exists is left untouched. */
+  function appendAudit(list, event) {
+    var id = String(event && event.id);
+    var src = Array.isArray(list) ? list : [];
+    for (var i = 0; i < src.length; i++) if (src[i] && String(src[i].id) === id) return src;
+    var copy = src.slice();
+    copy.push(event);
+    return copy;
+  }
+
+  /* Union by id. The earlier event wins whole, so a later sync cannot rewrite history. */
+  function mergeAuditLists(a, b) {
+    var byId = {};
+    var order = [];
+    function take(list) {
+      (list || []).forEach(function (r) {
+        if (!r || r.id == null) return;
+        var id = String(r.id);
+        var prev = byId[id];
+        if (!prev) { byId[id] = r; order.push(id); return; }
+        var pt = +prev.at || 0;
+        var rt = +r.at || 0;
+        if (rt < pt) byId[id] = r;
+      });
+    }
+    take(a);
+    take(b);
+    return order.map(function (id) { return byId[id]; }).sort(function (x, y) { return (+x.at || 0) - (+y.at || 0); });
+  }
+
+  function mergeMonthIndex(a, b) {
+    var set = {};
+    function take(list) {
+      (list || []).forEach(function (m) { if (/^\d{4}-\d{2}$/.test(String(m))) set[String(m)] = 1; });
+    }
+    take(a);
+    take(b);
+    return Object.keys(set).sort();
+  }
+
+  function storeAudit(getItem, setItem, partial) {
+    var event = makeAuditEvent(partial);
+    var key = auditMonthKey(event.localDate);
+    var list = [];
+    try { list = JSON.parse(getItem(key) || '[]'); } catch (e) { list = []; }
+    if (!Array.isArray(list)) list = [];
+    var next = appendAudit(list, event);
+    if (next !== list) setItem(key, JSON.stringify(next));
+    var months = [];
+    try { months = JSON.parse(getItem('ys_audit_months') || '[]'); } catch (e) { months = []; }
+    if (!Array.isArray(months)) months = [];
+    var ym = String(event.localDate).slice(0, 7);
+    if (/^\d{4}-\d{2}$/.test(ym) && months.indexOf(ym) < 0) {
+      months.push(ym);
+      months.sort();
+      setItem('ys_audit_months', JSON.stringify(months));
+    }
+    return { event: event, stored: next !== list };
+  }
+
+  function readAudit(getItem, from, to) {
+    var months = [];
+    try { months = JSON.parse(getItem('ys_audit_months') || '[]'); } catch (e) { months = []; }
+    if (!Array.isArray(months)) months = [];
+    var all = [];
+    months.forEach(function (m) {
+      if (from && m < String(from).slice(0, 7)) return;
+      if (to && m > String(to).slice(0, 7)) return;
+      var chunk = [];
+      try { chunk = JSON.parse(getItem(auditMonthKey(m + '-01')) || '[]'); } catch (e) { chunk = []; }
+      if (Array.isArray(chunk)) all = all.concat(chunk);
+    });
+    return all.filter(function (e) {
+      var ds = e && e.localDate || '';
+      if (from && ds < from) return false;
+      if (to && ds > to) return false;
+      return true;
+    }).sort(function (x, y) { return (+x.at || 0) - (+y.at || 0); });
+  }
+
+  function moneySnap(rec) {
+    if (!rec) return null;
+    var charge = rec.charge != null ? +rec.charge : +rec.price || 0;
+    var pct = rec.splitPct != null && isFinite(+rec.splitPct) ? +rec.splitPct : null;
+    var parts = pct == null ? null : splitCharge(charge, pct);
+    return {
+      name: rec.name || '',
+      date: rec.date || '',
+      status: rec.status || '',
+      chargeCents: rec.chargeCents != null ? rec.chargeCents : (parts ? parts.chargeC : centsOf(charge)),
+      meCents: rec.meCents != null ? rec.meCents : (parts ? parts.meC : centsOf(rec.me)),
+      salonCents: rec.salonCents != null ? rec.salonCents : (parts ? parts.salonC : null),
+      tipCents: rec.tipCents != null ? rec.tipCents : centsOf(rec.tip),
+      splitPct: pct
+    };
+  }
+
+  function planSaveEvents(before, after) {
+    var events = [];
+    if (!after) return events;
+    var kind = after._src === 'appt' ? 'ap_appt' : 'cp_appt';
+    var name = after.name || 'Appointment';
+    if (!before) {
+      var snap = moneySnap(after);
+      events.push({
+        type: 'appointment.create',
+        entityType: kind,
+        entityId: after.id,
+        summary: 'Added ' + name + (after.date ? (' on ' + after.date) : ''),
+        before: null,
+        after: snap
+      });
+      return events;
+    }
+    var b = moneySnap(before), a = moneySnap(after);
+    if (b.chargeCents !== a.chargeCents) {
+      events.push({
+        type: 'price.change',
+        entityType: kind,
+        entityId: after.id,
+        summary: name + ' price changed',
+        before: { chargeCents: b.chargeCents, meCents: b.meCents, salonCents: b.salonCents, splitPct: b.splitPct },
+        after: { chargeCents: a.chargeCents, meCents: a.meCents, salonCents: a.salonCents, splitPct: a.splitPct }
+      });
+    }
+    if (b.tipCents !== a.tipCents) {
+      events.push({
+        type: 'tip.change',
+        entityType: kind,
+        entityId: after.id,
+        summary: name + ' tip changed',
+        before: { tipCents: b.tipCents },
+        after: { tipCents: a.tipCents }
+      });
+    }
+    var bits = [];
+    if ((before.name || '') !== (after.name || '')) bits.push('name');
+    if ((before.date || '') !== (after.date || '')) bits.push('date');
+    if ((before.time || '') !== (after.time || '')) bits.push('time');
+    var bs = before.service || before.cat || '';
+    var as = after.service || after.cat || '';
+    if (bs !== as) bits.push('service');
+    if (bits.length) {
+      events.push({
+        type: 'appointment.edit',
+        entityType: kind,
+        entityId: after.id,
+        summary: 'Edited ' + name + ' (' + bits.join(', ') + ')',
+        before: { name: before.name || '', date: before.date || '', time: before.time || '', service: bs },
+        after: { name: after.name || '', date: after.date || '', time: after.time || '', service: as }
+      });
+    }
+    return events;
+  }
+
+  function planStatusEvent(rec, fromStatus, toStatus) {
+    var name = (rec && rec.name) || 'Appointment';
+    return {
+      type: 'status.change',
+      entityType: rec && rec._src === 'appt' ? 'ap_appt' : (rec && rec.price != null && rec.charge == null ? 'ap_appt' : 'ap_appt'),
+      entityId: rec && rec.id,
+      summary: name + ' ' + (fromStatus || 'confirmed') + ' → ' + toStatus,
+      before: { status: fromStatus || 'confirmed' },
+      after: { status: toStatus, splitPct: rec && rec.splitPct != null ? rec.splitPct : null, meCents: rec && rec.meCents != null ? rec.meCents : null, tipCents: rec && rec.tipCents != null ? rec.tipCents : centsOf(rec && rec.tip) }
+    };
+  }
+
+  function prevYMD(ymd) {
+    var p = String(ymd || '').split('-');
+    if (p.length < 3) return '';
+    var d = new Date(+p[0], +p[1] - 1, +p[2]);
+    d.setDate(d.getDate() - 1);
+    return localYMD(d);
+  }
+
+  function nextYMD(ymd) {
+    var p = String(ymd || '').split('-');
+    if (p.length < 3) return '';
+    var d = new Date(+p[0], +p[1] - 1, +p[2]);
+    d.setDate(d.getDate() + 1);
+    return localYMD(d);
+  }
+
+  function followMoney(rows, payments, from, to) {
+    if (!from) return { beforeCents: 0, afterCents: 0, days: [] };
+    if (!to || to < from) to = from;
+    function owedAsOf(date, inclusive) {
+      var list = (rows || []).filter(function (a) {
+        if (!countsTowardOwed(a)) return false;
+        var ds = String(a.date || '');
+        if (!ds) return false;
+        return inclusive ? ds <= date : ds < date;
+      });
+      return owedCentsForRows(list);
+    }
+    var beforeDate = prevYMD(from);
+    var beforeCents = owedAsOf(from, false) - sumPaymentCents(payments, { to: beforeDate });
+    var afterCents = owedAsOf(to, true) - sumPaymentCents(payments, { to: to });
+    var days = [];
+    var cursor = from;
+    var guard = 0;
+    while (cursor && cursor <= to && guard < 400) {
+      var earned = 0, tips = 0, lines = [];
+      (rows || []).forEach(function (a) {
+        if (!countsTowardOwed(a) || String(a.date || '') !== cursor) return;
+        var me = centsOf(a.me), tip = centsOf(a.tip);
+        earned += me;
+        tips += tip;
+        lines.push({ kind: 'work', name: a.name || '', meCents: me, tipCents: tip, splitPct: a.splitPct != null ? a.splitPct : null });
+      });
+      var paid = 0;
+      (payments || []).forEach(function (p) {
+        if (!p || p.voided || String(p.date || '') !== cursor) return;
+        var n = Math.round(+p.amountCents);
+        if (!isFinite(n)) n = 0;
+        paid += n;
+        lines.push({ kind: 'payment', method: p.method || '', amountCents: n, note: p.note || '' });
+      });
+      var due = owedAsOf(cursor, true) - sumPaymentCents(payments, { to: cursor });
+      if (lines.length || cursor === from || cursor === to) {
+        days.push({ date: cursor, earnedCents: earned, tipCents: tips, paidCents: paid, dueCents: due, lines: lines });
+      }
+      cursor = nextYMD(cursor);
+      guard++;
+    }
+    return { beforeCents: beforeCents, afterCents: afterCents, days: days };
+  }
+
+  function csvEscape(v) {
+    var s = v == null ? '' : String(v);
+    if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function toCsv(headers, rows) {
+    var lines = [headers.map(csvEscape).join(',')];
+    (rows || []).forEach(function (r) { lines.push((r || []).map(csvEscape).join(',')); });
+    return lines.join('\r\n');
+  }
+
+  function inDateRange(ds, from, to) {
+    ds = String(ds || '');
+    if (!ds) return !from && !to;
+    if (from && ds < from) return false;
+    if (to && ds > to) return false;
+    return true;
+  }
+
+  function csvPayments(payments, from, to) {
+    var headers = ['date', 'amountCents', 'method', 'note', 'voided', 'voidReason', 'id'];
+    var rows = (payments || []).filter(function (p) { return p && inDateRange(p.date, from, to); }).map(function (p) {
+      return [p.date || '', Math.round(+p.amountCents) || 0, p.method || '', p.note || '', p.voided ? 'yes' : 'no', p.voidReason || '', p.id || ''];
+    });
+    return toCsv(headers, rows);
+  }
+
+  function csvAppointments(rows, from, to) {
+    var headers = ['date', 'name', 'status', 'chargeCents', 'meCents', 'salonCents', 'tipCents', 'splitPct', 'splitFrozen', 'id'];
+    var out = (rows || []).filter(function (a) { return a && inDateRange(a.date, from, to); }).map(function (a) {
+      var snap = moneySnap(a);
+      return [a.date || '', a.name || '', a.status || '', snap.chargeCents, snap.meCents, snap.salonCents == null ? '' : snap.salonCents, snap.tipCents, snap.splitPct == null ? '' : snap.splitPct, a.splitFrozen ? 'yes' : 'no', a.id || ''];
+    });
+    return toCsv(headers, out);
+  }
+
+  function csvAudit(events, from, to) {
+    var headers = ['localDate', 'localTime', 'type', 'summary', 'entityType', 'entityId', 'actor', 'source', 'before', 'after'];
+    var rows = (events || []).filter(function (e) { return e && inDateRange(e.localDate, from, to); }).map(function (e) {
+      return [e.localDate || '', e.localTime || '', e.type || '', e.summary || '', e.entityType || '', e.entityId || '', e.actor || '', e.source || '', e.before ? JSON.stringify(e.before) : '', e.after ? JSON.stringify(e.after) : ''];
+    });
+    return toCsv(headers, rows);
+  }
+
+  function tombstoneId(entityType, entityId) { return 'tomb-' + entityType + '-' + String(entityId); }
+
+  function makeTombstone(entityType, entityId, at, summary) {
+    return { id: tombstoneId(entityType, entityId), entityType: entityType, entityId: String(entityId), at: at || Date.now(), summary: summary || '' };
+  }
+
+  function isTombstoned(list, entityType, entityId) {
+    var id = tombstoneId(entityType, entityId);
+    return (list || []).some(function (t) { return t && String(t.id) === id; });
+  }
+
+  function filterTombstones(records, tombs, entityType) {
+    return (records || []).filter(function (r) { return r && !isTombstoned(tombs, entityType, r.id); });
+  }
+
   var api = {
     localYMD: localYMD,
     localYM: localYM,
@@ -271,7 +584,27 @@
     migratedPaymentId: migratedPaymentId,
     migratePaidMonths: migratePaidMonths,
     mergePaymentLists: mergePaymentLists,
-    periodBounds: periodBounds
+    periodBounds: periodBounds,
+    auditMonthKey: auditMonthKey,
+    makeAuditEvent: makeAuditEvent,
+    appendAudit: appendAudit,
+    mergeAuditLists: mergeAuditLists,
+    mergeMonthIndex: mergeMonthIndex,
+    storeAudit: storeAudit,
+    readAudit: readAudit,
+    moneySnap: moneySnap,
+    planSaveEvents: planSaveEvents,
+    planStatusEvent: planStatusEvent,
+    followMoney: followMoney,
+    csvEscape: csvEscape,
+    toCsv: toCsv,
+    csvPayments: csvPayments,
+    csvAppointments: csvAppointments,
+    csvAudit: csvAudit,
+    tombstoneId: tombstoneId,
+    makeTombstone: makeTombstone,
+    isTombstoned: isTombstoned,
+    filterTombstones: filterTombstones
   };
 
   root.YS = api;
