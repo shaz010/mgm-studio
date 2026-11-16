@@ -21,6 +21,12 @@ UE_5.8/
 # Embedded git repos (track separately)
 SHAHZAD/
 
+# Rules tests
+node_modules/
+firestore-debug.log
+firebase-debug.log
+*-debug.log
+
 # Large media
 *.mov
 *.mp4

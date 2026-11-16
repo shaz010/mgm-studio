@@ -1,0 +1,112 @@
+rules_version = '2';
+// Your Salon — least privilege. Not deployed until Shahbaz approves.
+// Rules cannot hide individual fields. A secret stored on public/{salonId}
+// is still returned to anyone allowed to read that document, so stripeSk
+// must not be stored there. These rules only stop clients from writing one.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+    function secretFields() {
+      return ['stripeSk', 'stripeSecret', 'webhookSecret', 'whsec', 'sk'];
+    }
+    function noNewSecrets() {
+      return !request.resource.data.keys().hasAny(secretFields());
+    }
+    function secretsUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(secretFields());
+    }
+
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+      match /{document=**} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+
+    // Booking page reads this. Owner publishes it. Anyone signed in on this
+    // project is the stylist (only the owner signs in).
+    match /public/{salonId} {
+      allow get: if true;
+      allow create: if signedIn() && noNewSecrets();
+      allow update: if signedIn() && secretsUnchanged();
+      allow delete: if signedIn();
+    }
+
+    function requestFieldsOk() {
+      let d = request.resource.data;
+      return d.keys().hasOnly([
+          'salon', 'name', 'phone', 'service', 'date', 'time', 'dur', 'price',
+          'notes', 'hair', 'hairData', 'custom', 'customTime', 'customSvc',
+          'status', 'createdAt', 'consent', 'depositPaid', 'depositAmount',
+          'paymentIntentId'
+        ])
+        && d.salon is string && d.salon.size() > 0 && d.salon.size() < 80
+        && d.name is string && d.name.size() > 0 && d.name.size() < 120
+        && d.phone is string && d.phone.size() > 0 && d.phone.size() < 40
+        && d['service'] is string && d['service'].size() > 0 && d['service'].size() < 400
+        && d.date is string && d.date.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && d.time is string && d.time.size() > 0 && d.time.size() < 12
+        && d.dur is number && d.price is number && d.createdAt is number
+        && d.status == 'pending'
+        && (!('notes' in d) || d.notes is string)
+        && (!('hair' in d) || d.hair is string)
+        && (!('hairData' in d) || d.hairData == null || d.hairData is map)
+        && (!('custom' in d) || d.custom is bool)
+        && (!('customTime' in d) || d.customTime is string)
+        && (!('customSvc' in d) || d.customSvc is bool)
+        && (!('consent' in d) || d.consent is map)
+        && (!('depositPaid' in d) || d.depositPaid is bool)
+        && (!('depositAmount' in d) || d.depositAmount is number)
+        && (!('paymentIntentId' in d) || d.paymentIntentId is string)
+        && noNewSecrets();
+    }
+
+    match /requests/{requestId} {
+      // The visitor who just booked watches this one document by id.
+      // They cannot list the inbox or change anyone's request.
+      allow get: if true;
+      // Slot shading queries only pending requests. Any other list
+      // (the owner's full inbox, including approved) requires sign-in,
+      // because a non-pending document fails this rule for anonymous users.
+      allow list: if signedIn() || resource.data.status == 'pending';
+      allow create: if requestFieldsOk();
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'dismissedAt', 'declinedAt'])
+        && request.resource.data.status in ['approved', 'declined', 'dismissed'];
+      allow delete: if false;
+    }
+
+    // Logged from the paywall with the public REST API. Create only.
+    match /trial_requests/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['requestedAt', 'app', 'ua'])
+        && request.resource.data.app is string
+        && request.resource.data.ua is string
+        && request.resource.data.requestedAt is timestamp;
+      allow read, update, delete: if false;
+    }
+    match /founder_unlocks/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['code', 'at', 'app'])
+        && request.resource.data.code is string
+        && request.resource.data.app is string
+        && request.resource.data.at is timestamp;
+      allow read, update, delete: if false;
+    }
+    match /trial_activations/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['code', 'at', 'app'])
+        && request.resource.data.code is string
+        && request.resource.data.app is string
+        && request.resource.data.at is timestamp;
+      allow read, update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -16,9 +16,9 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. On `main` right now, after the audit log (PR #6): Earnings v2.64, Appointments v6.25, salon v0.53, service worker `yoursalon-v78`, booking v3.55. This change ships when it is merged:
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. On `main` right now, after Stripe was removed (PR #8): Earnings v2.65, Appointments v6.26, salon v0.53, service worker `yoursalon-v79`, booking v3.56. Firestore rules in this pull request are **not** deployed.
 
-| Room | File | Version in this change |
+| Room | File | Live version |
 |---|---|---|
 | Earnings | `app.html` | v2.65 |
 | Appointments | `appt.html` | v6.26 |
@@ -142,10 +142,39 @@ The September 2026 review (submission `2e5902ac-e4fd-4c4d-8aa5-513b73907f3c`) is
 
 ---
 
+## Firestore rules (in the repo, not deployed)
+
+`firestore.rules` and a `firebase.json` that points at it are in the repo as of Nov 16. They are **not live**. Deploying them changes who can read and write the real database, so that waits for Shahbaz to log in and approve. Do not deploy Cloud Functions with the rules command. The function still reads a Stripe secret off `public/{salonId}`; moving that secret is a separate change and is not in this rules file.
+
+What the rules allow, matching the pages that are actually live:
+
+- `users/{uid}` and anything under it — only that signed-in owner. This is the cloud copy of the salon’s own books.
+- `public/{salonId}` — anyone can read one salon profile (the booking page does). Only a signed-in owner can publish it. A client cannot add `stripeSk` or the other secret field names. Rules cannot hide a field that is already stored, so a secret must not be kept on this document at all.
+- `requests` — a visitor can create one pending request with the fields the booking form sends, and can read a single request by its id (the confirmation watcher). A visitor can list only requests that are still pending (the page shades those times). They cannot approve, decline, dismiss, or delete. The signed-in owner can list the inbox and change status to approved, declined, or dismissed, and nothing else on the row.
+- `trial_requests`, `founder_unlocks`, `trial_activations` — the paywall can create a log row. Nobody can read them back.
+- Everything else is denied. The Cloud Function uses the Admin SDK, which does not consult these rules.
+
+Pending requests are still readable by anyone who queries status `pending`. That is the existing slot-shading flow, and those rows include a name and phone. Tightening that further would need a small booking-page change, which this rules pass does not do.
+
+Check them locally (this does not touch production):
+
+```
+npm install
+npm run test:rules
+```
+
+Deploy later, only after approval, and only the rules:
+
+```
+firebase deploy --only firestore:rules --project telemetry-eagle
+```
+
+---
+
 ## Ops
 
 - Domain getcommissionpro.com renews about June 2027 (Namecheap).
-- Firestore rules: console only, not this repo. Keep them permanent (no expiring test rules).
+- Firestore rules now live in this repo (`firestore.rules`). They are not deployed. When they are, keep them permanent (no expiring test rules).
 - `privacy.html` still opens with “does not collect any personal data”. Optional Firebase sync does collect an email. Soften that line sometime.
 
 ---
