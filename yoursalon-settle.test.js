@@ -116,6 +116,85 @@ if (process.env.TZ === 'America/Los_Angeles') {
   });
 }
 
+check('running balance subtracts only live payments', function () {
+  var rows = [
+    { _src: 'appt', status: 'done', me: 60, tip: 15 },
+    { _src: 'appt', status: 'cancelled', me: 40, tip: 10 },
+    { charge: 33.33, me: 20, tip: 0 }
+  ];
+  var owed = YS.owedCentsForRows(rows);
+  assert.strictEqual(owed, 60 * 100 + 15 * 100 + 20 * 100);
+  var pays = [
+    { id: 'a', amountCents: 5000, voided: false, date: '2026-11-16' },
+    { id: 'b', amountCents: 1000, voided: true, date: '2026-11-16' }
+  ];
+  var bal = YS.runningBalance(owed, pays);
+  assert.strictEqual(bal.paidCents, 5000);
+  assert.strictEqual(bal.dueCents, owed - 5000);
+});
+
+check('overpayment is a credit', function () {
+  var bal = YS.runningBalance(1000, [{ id: 'a', amountCents: 2500, voided: false }]);
+  assert.strictEqual(bal.dueCents, -1500);
+});
+
+check('mark-paid migration is idempotent and dated from the old timestamp', function () {
+  var rows = [
+    { _src: 'appt', status: 'done', date: '2026-11-10', me: 60, tip: 15 },
+    { _src: 'appt', status: 'done', date: '2026-12-02', me: 30, tip: 0 }
+  ];
+  var ts = new Date(2026, 10, 30, 17, 0, 0).getTime();
+  var first = YS.migratePaidMonths({ '2026-11': ts }, rows, []);
+  assert.strictEqual(first.added.length, 1);
+  assert.strictEqual(first.added[0].id, 'mig-cp_paid-2026-11');
+  assert.strictEqual(first.added[0].amountCents, 7500);
+  assert.strictEqual(first.added[0].date, '2026-11-30');
+  assert.strictEqual(first.added[0].note, 'Migrated from Mark paid');
+  var second = YS.migratePaidMonths({ '2026-11': ts }, rows, first.payments);
+  assert.strictEqual(second.added.length, 0);
+  assert.strictEqual(second.payments.length, 1);
+  var again = YS.migratePaidMonths({ '2026-11': ts + 99999 }, rows, second.payments);
+  assert.strictEqual(again.payments.length, 1);
+  assert.strictEqual(again.payments[0].amountCents, 7500);
+});
+
+check('a later void wins over an older copy of the same payment', function () {
+  var older = { id: 'p1', amountCents: 4000, voided: false, updatedAt: 100, date: '2026-11-01' };
+  var newer = { id: 'p1', amountCents: 4000, voided: true, voidReason: 'wrong amount', updatedAt: 200, date: '2026-11-01' };
+  var other = { id: 'p2', amountCents: 100, voided: false, updatedAt: 50, date: '2026-11-02' };
+  var merged = YS.mergePaymentLists([older, other], [newer]);
+  assert.strictEqual(merged.length, 2);
+  var p1 = merged.filter(function (p) { return p.id === 'p1'; })[0];
+  assert.strictEqual(p1.voided, true);
+  assert.strictEqual(p1.voidReason, 'wrong amount');
+  var back = YS.mergePaymentLists([newer], [older]);
+  assert.strictEqual(back.filter(function (p) { return p.id === 'p1'; })[0].voided, true);
+});
+
+check('freezing a split keeps the old percent when the rate changes', function () {
+  var saved = YS.applyFrozenSplit({ price: 33.33, tip: 1 }, 50, 'price');
+  assert.strictEqual(saved.splitPct, 50);
+  assert.strictEqual(saved.splitFrozen, true);
+  assert.strictEqual(saved.meCents + saved.salonCents, saved.chargeCents);
+  assert.strictEqual(saved.meCents, 1667);
+  var later = YS.applyFrozenSplit(saved, 70, 'price');
+  assert.strictEqual(later.splitPct, 50);
+  assert.strictEqual(later.meCents, 1667);
+  var repriced = YS.applyFrozenSplit(Object.assign({}, saved, { price: 10 }), 70, 'price');
+  assert.strictEqual(repriced.splitPct, 50);
+  assert.strictEqual(repriced.meCents, 500);
+});
+
+check('week and month period bounds are local calendar ranges', function () {
+  var wed = new Date(2026, 10, 18, 15, 30, 0);
+  var week = YS.periodBounds('week', wed);
+  assert.strictEqual(week.from, '2026-11-15');
+  assert.strictEqual(week.to, '2026-11-21');
+  var month = YS.periodBounds('month', new Date(2026, 10, 30, 17, 0, 0));
+  assert.strictEqual(month.from, '2026-11-01');
+  assert.strictEqual(month.to, '2026-11-30');
+});
+
 if (failed) {
   console.error('\n' + failed + ' failed');
   process.exit(1);

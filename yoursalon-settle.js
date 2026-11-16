@@ -113,6 +113,146 @@
     return now.getTime() >= endMs;
   }
 
+  /* Freeze the split that applies to this charge. A record that already has
+     splitFrozen keeps that percent; the cents are refreshed from the current
+     charge so a price correction stays on the old rate. */
+  function applyFrozenSplit(rec, currentPct, chargeKey) {
+    if (!rec || typeof rec !== 'object') return rec;
+    var charge = chargeKey ? +rec[chargeKey] : NaN;
+    if (!isFinite(charge)) charge = +rec.charge;
+    if (!isFinite(charge)) charge = +rec.price;
+    if (!isFinite(charge)) charge = 0;
+    var sticky = rec.splitFrozen && rec.splitPct != null && isFinite(+rec.splitPct);
+    var pct = sticky ? +rec.splitPct : +currentPct;
+    if (!isFinite(pct)) pct = 60;
+    var parts = splitCharge(charge, pct);
+    var out = {};
+    var k;
+    for (k in rec) if (Object.prototype.hasOwnProperty.call(rec, k)) out[k] = rec[k];
+    out.splitPct = pct;
+    out.splitFrozen = true;
+    out.chargeCents = parts.chargeC;
+    out.meCents = parts.meC;
+    out.salonCents = parts.salonC;
+    out.tipCents = centsOf(rec.tip);
+    return out;
+  }
+
+  function owedCentsForRows(rows) {
+    var c = 0;
+    (rows || []).forEach(function (a) {
+      if (!countsTowardOwed(a)) return;
+      c += centsOf(a.me) + centsOf(a.tip);
+    });
+    return c;
+  }
+
+  function sumPaymentCents(payments, opts) {
+    opts = opts || {};
+    var c = 0;
+    (payments || []).forEach(function (p) {
+      if (!p) return;
+      if (!opts.includeVoid && p.voided) return;
+      var ds = String(p.date || '');
+      if (opts.from && ds < opts.from) return;
+      if (opts.to && ds > opts.to) return;
+      var n = Math.round(+p.amountCents);
+      if (!isFinite(n)) return;
+      c += n;
+    });
+    return c;
+  }
+
+  function runningBalance(owedC, payments) {
+    var owed = Math.round(+owedC);
+    if (!isFinite(owed)) owed = 0;
+    var paid = sumPaymentCents(payments);
+    return { owedCents: owed, paidCents: paid, dueCents: owed - paid };
+  }
+
+  function migratedPaymentId(ym) { return 'mig-cp_paid-' + ym; }
+
+  /* Each old "this month is paid" flag becomes one payment. The id is the
+     month, so a second run or another device does not add a copy. */
+  function migratePaidMonths(paidMap, rows, payments) {
+    var out = [];
+    var have = {};
+    (payments || []).forEach(function (p) {
+      if (!p || p.id == null) return;
+      out.push(p);
+      have[String(p.id)] = 1;
+    });
+    var added = [];
+    if (!paidMap || typeof paidMap !== 'object') return { payments: out, added: added };
+    Object.keys(paidMap).sort().forEach(function (ym) {
+      if (!/^\d{4}-\d{2}$/.test(ym)) return;
+      var id = migratedPaymentId(ym);
+      if (have[id]) return;
+      var ts = +paidMap[ym];
+      if (!isFinite(ts) || ts <= 0) return;
+      var amount = owedCentsForRows((rows || []).filter(function (a) {
+        return String(a && a.date || '').slice(0, 7) === ym;
+      }));
+      var rec = {
+        id: id,
+        amountCents: amount,
+        date: localYMD(new Date(ts)),
+        method: 'other',
+        note: 'Migrated from Mark paid',
+        createdAt: ts,
+        updatedAt: ts,
+        voided: false,
+        voidReason: '',
+        voidedAt: null
+      };
+      out.push(rec);
+      added.push(rec);
+      have[id] = 1;
+    });
+    return { payments: out, added: added };
+  }
+
+  /* Union by id. The record with the later updatedAt wins, including a void. */
+  function mergePaymentLists(a, b) {
+    var byId = {};
+    function take(list) {
+      (list || []).forEach(function (r) {
+        if (!r || r.id == null) return;
+        var id = String(r.id);
+        var prev = byId[id];
+        if (!prev) { byId[id] = r; return; }
+        var pt = +prev.updatedAt || +prev.createdAt || 0;
+        var rt = +r.updatedAt || +r.createdAt || 0;
+        if (rt > pt) byId[id] = r;
+        else if (rt === pt && r.voided && !prev.voided) byId[id] = r;
+      });
+    }
+    take(a);
+    take(b);
+    return Object.keys(byId).map(function (id) { return byId[id]; }).sort(function (x, y) {
+      var d = String(y.date || '').localeCompare(String(x.date || ''));
+      if (d) return d;
+      return String(x.id).localeCompare(String(y.id));
+    });
+  }
+
+  function periodBounds(period, now) {
+    now = now || new Date();
+    var today = localYMD(now);
+    if (period === 'today') return { from: today, to: today, label: 'Today' };
+    if (period === 'week') {
+      var sow = startOfLocalWeek(now);
+      var eow = new Date(sow.getFullYear(), sow.getMonth(), sow.getDate() + 6);
+      return { from: localYMD(sow), to: localYMD(eow), label: 'This week' };
+    }
+    if (period === 'month') {
+      var start = new Date(now.getFullYear(), now.getMonth(), 1);
+      var end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      return { from: localYMD(start), to: localYMD(end), label: 'This month' };
+    }
+    return { from: '', to: '', label: 'All' };
+  }
+
   var api = {
     localYMD: localYMD,
     localYM: localYM,
@@ -123,7 +263,15 @@
     isSchedulingRecord: isSchedulingRecord,
     countsTowardOwed: countsTowardOwed,
     visitEndMs: visitEndMs,
-    needsClosing: needsClosing
+    needsClosing: needsClosing,
+    applyFrozenSplit: applyFrozenSplit,
+    owedCentsForRows: owedCentsForRows,
+    sumPaymentCents: sumPaymentCents,
+    runningBalance: runningBalance,
+    migratedPaymentId: migratedPaymentId,
+    migratePaidMonths: migratePaidMonths,
+    mergePaymentLists: mergePaymentLists,
+    periodBounds: periodBounds
   };
 
   root.YS = api;

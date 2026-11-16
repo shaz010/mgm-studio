@@ -262,7 +262,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.51 · shell version matches this page</div>
+    <div class="ver">salon v0.52 · payments ledger syncs across devices</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -307,6 +307,7 @@
     </div>
   </div>
 
+<script src="yoursalon-settle.js"></script>
 <script>
   /* shell guard: if the shell ever gets served INTO its own iframe
      (e.g. offline fallback), self-heal by loading a room instead
@@ -495,7 +496,7 @@
   }
 
   /* ===== SYNC ENGINE (Step 2) — mirrors shared localStorage <-> Firestore, merge-safe ===== */
-  var SYNC_KEYS=['ap_appts','ap_clients','ap_custom','ap_stock','ap_prefs','cp_appts','cp_clients','cp_prefs','cp_paid','combo_trade'];
+  var SYNC_KEYS=['ap_appts','ap_clients','ap_custom','ap_stock','ap_prefs','cp_appts','cp_clients','cp_prefs','cp_paid','cp_payments','combo_trade'];
   var META_KEY='salon_sync_meta';
   var _uid=null, _userUnsub=null, _pushTimer=null, _reloadTimer=null, _snap={};
   var _lastSync=parseInt((function(){try{return localStorage.getItem('salon_lastSync');}catch(e){return '0';}})()||'0',10)||0;
@@ -527,6 +528,22 @@
       var lv=lsGet(k), lt=meta[k]||0;
       var c=cloudKeys[k], cv=c?c.v:null, ct=c?(c.t||0):0;
       if(cv==null) return;                    // nothing in cloud for this key -> keep local
+      if(k==='cp_payments'){
+        var lp=[],cp=[];
+        try{lp=JSON.parse(lv||'[]')||[];}catch(e){lp=[];}
+        try{cp=JSON.parse(cv||'[]')||[];}catch(e){cp=[];}
+        if(!Array.isArray(lp))lp=[];
+        if(!Array.isArray(cp))cp=[];
+        function _paySig(list){return (list||[]).map(function(p){return [p&&p.id,p&&p.amountCents,p&&p.voided?1:0,p&&(p.updatedAt||p.createdAt)||0,p&&p.voidReason||'',p&&p.date||''].join(':');}).sort().join('\n');}
+        var mergedList=(window.YS&&YS.mergePaymentLists)?YS.mergePaymentLists(lp,cp):(function(){
+          var by={};
+          function take(list){list.forEach(function(r){if(!r||r.id==null)return;var id=String(r.id);var prev=by[id];var pt=prev?(+prev.updatedAt||+prev.createdAt||0):-1;var rt=+r.updatedAt||+r.createdAt||0;if(!prev||rt>pt||(rt===pt&&r.voided&&!prev.voided))by[id]=r;});}
+          take(lp);take(cp);return Object.keys(by).map(function(id){return by[id];});
+        })();
+        if(_paySig(mergedList)!==_paySig(lp)){ lsSet(k,JSON.stringify(mergedList)); changed=true; }
+        meta[k]=Math.max(lt,ct);
+        return;
+      }
       if(lv==null){ lsSet(k,cv); meta[k]=ct; changed=true; return; }
       if(lv===cv){ if(ct>lt)meta[k]=ct; return; }
       if(isRecArray(lv)||isRecArray(cv)){      // record arrays -> union (no record ever lost)
@@ -606,7 +623,7 @@
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.51';
+  var SHELL_V='v0.52';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{
