@@ -269,6 +269,107 @@ check('a tombstone hides a deleted appointment and does not duplicate', function
   assert.strictEqual(left[0].id, 'b');
 });
 
+function doneRow(id, meCents, date) {
+  return { id: id, name: 'Client ' + id, date: date, status: 'done', _src: 'appt', me: meCents / 100, tip: 0, charge: meCents / 50 };
+}
+function pay(id, cents, createdAt) {
+  return { id: id, amountCents: cents, date: '2026-11-16', method: 'transfer', voided: false, createdAt: createdAt, updatedAt: createdAt };
+}
+
+check('with no settlements everything stays in the current period', function () {
+  var rows = [];
+  for (var i = 0; i < 10; i++) rows.push(doneRow('d' + i, 3510, '2026-11-0' + (i < 9 ? i + 1 : 9)));
+  rows[9].date = '2026-11-10';
+  assert.strictEqual(YS.owedCentsForRows(rows), 35100);
+  var pays = [pay('old', 26800, 1000)];
+  var open = YS.allocateSettlements(rows, [], pays);
+  assert.strictEqual(open.settlements.length, 0);
+  assert.strictEqual(open.current.owedCents, 35100);
+  assert.strictEqual(open.current.paidCents, 26800);
+  assert.strictEqual(open.pastRemainingCents, 0);
+  assert.strictEqual(open.dueCents, 8300);
+  assert.strictEqual(open.dueCents, YS.runningBalance(35100, pays).dueCents);
+});
+
+check('closing $351 with $268 paid leaves $83, then new work and a payment stay FIFO', function () {
+  var rows = [];
+  for (var i = 0; i < 10; i++) rows.push(doneRow('d' + i, 3510, '2026-11-' + (i < 9 ? '0' + (i + 1) : '10')));
+  var pays = [pay('old', 26800, 1000)];
+  var plan = YS.planCloseSettlement(rows, [], '2026-11-16', 5000);
+  assert.strictEqual(plan.ok, true);
+  assert.strictEqual(plan.settlement.owedCents, 35100);
+  assert.strictEqual(plan.settlement.ids.length, 10);
+  var closed = YS.allocateSettlements(rows, [plan.settlement], pays);
+  assert.strictEqual(closed.pastRemainingCents, 8300);
+  assert.strictEqual(closed.settlements[0].status, 'Partly paid');
+  assert.strictEqual(closed.current.owedCents, 0);
+  assert.strictEqual(closed.dueCents, 8300);
+
+  rows.push(doneRow('new', 4000, '2026-11-20'));
+  var withJob = YS.allocateSettlements(rows, [plan.settlement], pays);
+  assert.strictEqual(withJob.pastRemainingCents, 8300);
+  assert.strictEqual(withJob.current.owedCents, 4000);
+  assert.strictEqual(withJob.current.paidCents, 0);
+  assert.strictEqual(withJob.dueCents, 12300);
+  assert.strictEqual(withJob.dueCents, YS.runningBalance(39100, pays).dueCents);
+
+  pays = pays.concat([pay('next', 10000, 9000)]);
+  var afterPay = YS.allocateSettlements(rows, [plan.settlement], pays);
+  assert.strictEqual(afterPay.settlements[0].status, 'Paid');
+  assert.strictEqual(afterPay.settlements[0].remainingCents, 0);
+  assert.strictEqual(afterPay.current.owedCents, 4000);
+  assert.strictEqual(afterPay.current.paidCents, 1700);
+  assert.strictEqual(afterPay.current.remainingCents, 2300);
+  assert.strictEqual(afterPay.pastRemainingCents, 0);
+  assert.strictEqual(afterPay.dueCents, 2300);
+  assert.strictEqual(YS.canUndoSettlement([plan.settlement], pays).ok, false);
+
+  var dropped = pays.filter(function (p) { return p.id !== 'next'; });
+  var back = YS.allocateSettlements(rows, [plan.settlement], dropped);
+  assert.strictEqual(back.pastRemainingCents, 8300);
+  assert.strictEqual(back.current.remainingCents, 4000);
+  assert.strictEqual(back.dueCents, 12300);
+  assert.strictEqual(YS.canUndoSettlement([plan.settlement], dropped).ok, true);
+});
+
+check('undo, overpayment, and a voided later payment', function () {
+  var rows = [doneRow('a', 35100, '2026-11-10'), doneRow('b', 4000, '2026-11-20')];
+  var plan = YS.planCloseSettlement([rows[0]], [], '2026-11-16', 5000);
+  var undone = YS.undoSettlementRecord(plan.settlement, 6000);
+  assert.strictEqual(undone.undone, true);
+  var open = YS.allocateSettlements(rows, [undone], [pay('old', 26800, 1000)]);
+  assert.strictEqual(open.settlements.length, 0);
+  assert.strictEqual(open.current.owedCents, 39100);
+  assert.strictEqual(open.dueCents, 12300);
+
+  var again = YS.planCloseSettlement(rows, [], '2026-11-20', 7000);
+  assert.strictEqual(again.settlement.ids.length, 2);
+  assert.strictEqual(again.settlement.owedCents, 39100);
+  var over = YS.allocateSettlements(rows, [again.settlement], [pay('old', 26800, 1000), pay('big', 20000, 8000)]);
+  assert.strictEqual(over.settlements[0].status, 'Paid');
+  assert.strictEqual(over.current.owedCents, 0);
+  assert.strictEqual(over.creditCents, 7700);
+  assert.strictEqual(over.dueCents, -7700);
+  assert.strictEqual(over.dueCents, YS.runningBalance(39100, [pay('old', 26800, 1000), pay('big', 20000, 8000)]).dueCents);
+
+  var later = pay('later', 100, 9000);
+  later.voided = true;
+  assert.strictEqual(YS.canUndoSettlement([again.settlement], [pay('old', 1000, 1000), later]).ok, true);
+  var merged = YS.mergeSettlementLists([plan.settlement], [undone]);
+  assert.strictEqual(merged.length, 1);
+  assert.strictEqual(merged[0].undone, true);
+});
+
+check('a settlement close shows up in the day view and the csv', function () {
+  var settlement = { id: 'set-1', startDate: '2026-11-01', endDate: '2026-11-16', owedCents: 35100, closedAt: new Date(2026, 10, 16, 15, 0, 0).getTime(), undone: false, ids: ['d0'] };
+  var day = YS.followMoney([], [], '2026-11-16', '2026-11-16', [settlement]);
+  assert.strictEqual(day.days[0].lines.filter(function (l) { return l.kind === 'settlement'; }).length, 1);
+  var csv = YS.csvSettlements([settlement], [doneRow('d0', 35100, '2026-11-10')], [], '2026-11-01', '2026-11-30');
+  assert.ok(csv.indexOf('set-1') >= 0);
+  assert.ok(csv.indexOf('35100') >= 0);
+  assert.ok(csv.indexOf('Partly paid') >= 0 || csv.indexOf('Unpaid') >= 0);
+});
+
 if (failed) {
   console.error('\n' + failed + ' failed');
   process.exit(1);

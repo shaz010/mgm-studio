@@ -170,6 +170,181 @@
     return { owedCents: owed, paidCents: paid, dueCents: owed - paid };
   }
 
+  /* Settlements group finished work so an old unpaid balance is not mixed
+     with new visits. Membership is the id list saved at close. Appointments
+     and payments are not rewritten. Allocation is recomputed from those lists. */
+  function activeSettlements(settlements) {
+    return (settlements || []).filter(function (s) { return s && !s.undone; }).slice().sort(function (a, b) {
+      var d = String(a.endDate || '').localeCompare(String(b.endDate || ''));
+      if (d) return d;
+      var c = (+a.closedAt || 0) - (+b.closedAt || 0);
+      if (c) return c;
+      return String(a.id || '').localeCompare(String(b.id || ''));
+    });
+  }
+
+  function claimedSettlementIds(settlements) {
+    var map = {};
+    activeSettlements(settlements).forEach(function (s) {
+      (s.ids || []).forEach(function (id) { map[String(id)] = String(s.id); });
+    });
+    return map;
+  }
+
+  function planCloseSettlement(rows, settlements, endDate, now) {
+    now = now || Date.now();
+    endDate = endDate || localYMD(new Date(now));
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(endDate))) return { ok: false, reason: 'date' };
+    var claimed = claimedSettlementIds(settlements);
+    var picked = [];
+    (rows || []).forEach(function (a) {
+      if (!countsTowardOwed(a) || a.id == null || a.id === '') return;
+      if (claimed[String(a.id)]) return;
+      var ds = String(a.date || '');
+      if (ds && ds > endDate) return;
+      picked.push(a);
+    });
+    if (!picked.length) return { ok: false, reason: 'empty' };
+    var dates = picked.map(function (a) { return String(a.date || ''); }).filter(Boolean).sort();
+    var owed = owedCentsForRows(picked);
+    return {
+      ok: true,
+      settlement: {
+        id: 'set-' + String(endDate).replace(/-/g, '') + '-' + now.toString(36),
+        startDate: dates.length ? dates[0] : endDate,
+        endDate: endDate,
+        owedCents: owed,
+        closedAt: now,
+        createdAt: now,
+        updatedAt: now,
+        undone: false,
+        undoneAt: null,
+        ids: picked.map(function (a) { return String(a.id); })
+      }
+    };
+  }
+
+  function latestSettlement(settlements) {
+    var list = activeSettlements(settlements);
+    return list.length ? list[list.length - 1] : null;
+  }
+
+  function paymentBlocksUndo(payment, settlement) {
+    if (!payment || payment.voided || !settlement) return false;
+    var closed = +settlement.closedAt || 0;
+    var created = +payment.createdAt;
+    if (isFinite(created) && created > 0) return created > closed;
+    return String(payment.date || '') > localYMD(new Date(closed));
+  }
+
+  function canUndoSettlement(settlements, payments) {
+    var last = latestSettlement(settlements);
+    if (!last) return { ok: false, reason: 'none', settlement: null };
+    var blocked = (payments || []).some(function (p) { return paymentBlocksUndo(p, last); });
+    if (blocked) return { ok: false, reason: 'payment', settlement: last };
+    return { ok: true, reason: '', settlement: last };
+  }
+
+  function undoSettlementRecord(settlement, now) {
+    now = now || Date.now();
+    var out = {};
+    var k;
+    for (k in settlement) if (Object.prototype.hasOwnProperty.call(settlement, k)) out[k] = settlement[k];
+    out.undone = true;
+    out.undoneAt = now;
+    out.updatedAt = now;
+    return out;
+  }
+
+  function settlementStatus(paid, remaining) {
+    if (remaining <= 0) return 'Paid';
+    if (paid > 0) return 'Partly paid';
+    return 'Unpaid';
+  }
+
+  /* Oldest settlement is filled first. Leftover pays the open period.
+     Anything beyond that is credit. Nothing is written back onto payments. */
+  function allocateSettlements(rows, settlements, payments) {
+    var claimed = claimedSettlementIds(settlements);
+    var pool = sumPaymentCents(payments);
+    var lines = activeSettlements(settlements).map(function (s) {
+      var members = (rows || []).filter(function (a) {
+        return countsTowardOwed(a) && a.id != null && claimed[String(a.id)] === String(s.id);
+      });
+      var owed = owedCentsForRows(members);
+      return {
+        id: s.id,
+        startDate: s.startDate || '',
+        endDate: s.endDate || '',
+        closedAt: s.closedAt || 0,
+        owedCents: owed,
+        snapshotCents: Math.round(+s.owedCents) || 0,
+        paidCents: 0,
+        remainingCents: owed,
+        status: 'Unpaid'
+      };
+    });
+    lines.forEach(function (line) {
+      var take = Math.min(Math.max(pool, 0), line.owedCents);
+      line.paidCents = take;
+      line.remainingCents = line.owedCents - take;
+      line.status = settlementStatus(line.paidCents, line.remainingCents);
+      pool -= take;
+    });
+    var currentRows = (rows || []).filter(function (a) {
+      return countsTowardOwed(a) && (a.id == null || a.id === '' || !claimed[String(a.id)]);
+    });
+    var currentOwed = owedCentsForRows(currentRows);
+    if (pool < 0) pool = 0;
+    var applied = Math.min(pool, currentOwed);
+    var credit = pool - currentOwed;
+    if (credit < 0) credit = 0;
+    var pastRemaining = 0;
+    var pastOwed = 0;
+    lines.forEach(function (line) {
+      pastRemaining += line.remainingCents;
+      pastOwed += line.owedCents;
+    });
+    var totalOwed = pastOwed + currentOwed;
+    var paid = sumPaymentCents(payments);
+    return {
+      settlements: lines,
+      pastRemainingCents: pastRemaining,
+      current: {
+        owedCents: currentOwed,
+        paidCents: applied,
+        remainingCents: currentOwed - applied
+      },
+      creditCents: credit,
+      dueCents: totalOwed - paid,
+      owedCents: totalOwed,
+      paidCents: paid
+    };
+  }
+
+  function mergeSettlementLists(a, b) {
+    var byId = {};
+    function take(list) {
+      (list || []).forEach(function (r) {
+        if (!r || r.id == null) return;
+        var id = String(r.id);
+        var prev = byId[id];
+        if (!prev) { byId[id] = r; return; }
+        var pt = +prev.updatedAt || +prev.closedAt || 0;
+        var rt = +r.updatedAt || +r.closedAt || 0;
+        if (rt > pt) byId[id] = r;
+        else if (rt === pt && r.undone && !prev.undone) byId[id] = r;
+      });
+    }
+    take(a);
+    take(b);
+    return Object.keys(byId).map(function (id) { return byId[id]; }).sort(function (x, y) {
+      var d = String(x.endDate || '').localeCompare(String(y.endDate || ''));
+      if (d) return d;
+      return (+x.closedAt || 0) - (+y.closedAt || 0);
+    });
+  }
+
   function migratedPaymentId(ym) { return 'mig-cp_paid-' + ym; }
 
   /* Each old "this month is paid" flag becomes one payment. The id is the
@@ -461,7 +636,7 @@
     return localYMD(d);
   }
 
-  function followMoney(rows, payments, from, to) {
+  function followMoney(rows, payments, from, to, settlements) {
     if (!from) return { beforeCents: 0, afterCents: 0, days: [] };
     if (!to || to < from) to = from;
     function owedAsOf(date, inclusive) {
@@ -495,6 +670,11 @@
         if (!isFinite(n)) n = 0;
         paid += n;
         lines.push({ kind: 'payment', method: p.method || '', amountCents: n, note: p.note || '' });
+      });
+      (settlements || []).forEach(function (s) {
+        if (!s || s.undone || !s.closedAt) return;
+        if (localYMD(new Date(+s.closedAt)) !== cursor) return;
+        lines.push({ kind: 'settlement', endDate: s.endDate || '', owedCents: Math.round(+s.owedCents) || 0, id: s.id || '' });
       });
       var due = owedAsOf(cursor, true) - sumPaymentCents(payments, { to: cursor });
       if (lines.length || cursor === from || cursor === to) {
@@ -543,6 +723,32 @@
     return toCsv(headers, out);
   }
 
+  function csvSettlements(settlements, rows, payments, from, to) {
+    var alloc = allocateSettlements(rows || [], settlements || [], payments || []);
+    var byId = {};
+    (alloc.settlements || []).forEach(function (line) { byId[String(line.id)] = line; });
+    var headers = ['id', 'startDate', 'endDate', 'closedAt', 'owedCents', 'paidCents', 'remainingCents', 'status', 'undone'];
+    var out = (settlements || []).filter(function (s) {
+      if (!s) return false;
+      var ds = s.closedAt ? localYMD(new Date(+s.closedAt)) : (s.endDate || '');
+      return inDateRange(ds, from, to);
+    }).map(function (s) {
+      var line = byId[String(s.id)];
+      return [
+        s.id || '',
+        s.startDate || '',
+        s.endDate || '',
+        s.closedAt || '',
+        line ? line.owedCents : (Math.round(+s.owedCents) || 0),
+        line ? line.paidCents : '',
+        line ? line.remainingCents : '',
+        line ? line.status : (s.undone ? 'Undone' : ''),
+        s.undone ? 'yes' : 'no'
+      ];
+    });
+    return toCsv(headers, out);
+  }
+
   function csvAudit(events, from, to) {
     var headers = ['localDate', 'localTime', 'type', 'summary', 'entityType', 'entityId', 'actor', 'source', 'before', 'after'];
     var rows = (events || []).filter(function (e) { return e && inDateRange(e.localDate, from, to); }).map(function (e) {
@@ -581,6 +787,12 @@
     owedCentsForRows: owedCentsForRows,
     sumPaymentCents: sumPaymentCents,
     runningBalance: runningBalance,
+    activeSettlements: activeSettlements,
+    planCloseSettlement: planCloseSettlement,
+    canUndoSettlement: canUndoSettlement,
+    undoSettlementRecord: undoSettlementRecord,
+    allocateSettlements: allocateSettlements,
+    mergeSettlementLists: mergeSettlementLists,
     migratedPaymentId: migratedPaymentId,
     migratePaidMonths: migratePaidMonths,
     mergePaymentLists: mergePaymentLists,
@@ -599,6 +811,7 @@
     csvEscape: csvEscape,
     toCsv: toCsv,
     csvPayments: csvPayments,
+    csvSettlements: csvSettlements,
     csvAppointments: csvAppointments,
     csvAudit: csvAudit,
     tombstoneId: tombstoneId,
