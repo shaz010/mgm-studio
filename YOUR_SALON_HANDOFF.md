@@ -1,5 +1,5 @@
 # YOUR SALON PRO — HANDOFF
-**Last updated: Nov 16, 2026 · evening PT**
+**Last updated: Nov 16, 2026 · 12:06 PM PT**
 Read this first in any new session about Your Salon Pro (the live app and the site).
 
 This file is the canonical handoff. Two older copies were **not** rewritten on Nov 16 and still describe September:
@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. On `main` right now, after Stripe was removed (PR #8): Earnings v2.65, Appointments v6.26, salon v0.53, service worker `yoursalon-v79`, booking v3.56. This pull request, once merged, ships Appointments v6.27 and service worker `yoursalon-v80`. Firestore rules are **not** deployed.
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live right now: Earnings v2.65, Appointments v6.27, salon v0.53, service worker `yoursalon-v80`, booking v3.56. Firestore rules from `main` are deployed on `telemetry-eagle`.
 
 | Room | File | Live version |
 |---|---|---|
 | Earnings | `app.html` | v2.65 |
-| Appointments | `appt.html` | v6.27 (this pull request; v6.26 is what is live) |
-| Shell | `salon.html` | v0.53 (unchanged; `SHELL_V` matches the page) |
-| Service worker | `sw.js` | `yoursalon-v80` (this pull request; `yoursalon-v79` is what is live) |
+| Appointments | `appt.html` | v6.27 |
+| Shell | `salon.html` | v0.53 (`SHELL_V` matches the page) |
+| Service worker | `sw.js` | `yoursalon-v80` |
 | Booking page | `book.html` | v3.56 |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
@@ -87,29 +87,18 @@ The existing owner unlock is unchanged. It is not synced, not written into the a
 
 Shahbaz sells Your Salon only through the App Store. He does not take booking deposits. The booking page is a request form again: name, phone, service, time, then send. There is no card step.
 
-- `book.html` no longer loads Stripe.js, no longer has the publishable key, and no longer calls `createPaymentIntent`.
-- Appointments publish still writes the public salon profile (hours, services, prices, taken slots). The same write now deletes `stripeSk`, `stripePk`, `depositAmount`, and any other field whose name contains “stripe” or “whsec”. That scrub runs the next time the owner publishes, which the appointments page already does when hours or services change. Until then, a secret already stored on `public/{salonId}` is still readable, because rules cannot hide one field.
-- `functions-index.js` no longer contains `createPaymentIntent`. The function that is already deployed stays in Firebase until Shahbaz runs:
-
-```
-firebase functions:delete createPaymentIntent --project telemetry-eagle
-```
-
-Do not deploy functions. Do not deploy rules. Nothing in this change was deployed.
-
-- The App Store paywall stays. On iPhone it buys `com.yoursalon.pro.monthly` through StoreKit. The old Stripe Checkout URL in the paywall was not used by that button; it has been removed. `thankyou.html` no longer links to a Stripe payment page.
+- `book.html` no longer loads Stripe.js, no longer has a publishable key, and no longer calls `createPaymentIntent`.
+- Appointments publish still writes the public salon profile (hours, services, prices, taken slots). That write also deletes `stripeSk`, `stripePk`, `depositAmount`, and any other field whose name contains “stripe” or “whsec”, so those names cannot sit on the public document again.
+- `functions-index.js` no longer contains `createPaymentIntent`. The deployed function has been deleted from Firebase.
+- The App Store paywall stays. On iPhone it buys `com.yoursalon.pro.monthly` through StoreKit. `thankyou.html` no longer links to a Stripe payment page.
 - The five-tap owner unlock is unchanged.
 
-**Done on Firebase, Nov 16:** `stripeSk` and `stripePk` were removed from the live `public/mgm-studio` document, and `createPaymentIntent` was deleted. Rules were not deployed.
-
-**Still by hand:** in the Stripe dashboard, revoke `rk_live_…Z84J` (it is in public git history, in `MGMStudio.html` from June 15, 2026) and any other live or restricted keys, if that revoke is not already done.
-
-Firestore rules are in this pull request and are not deployed. They refuse a client write that sets a secret field, and they allow the owner to clear those fields.
+**Stripe is fully unused.** The app sells through the App Store only. As of Nov 16, 2026: `stripeSk` and `stripePk` are gone from the live `public/mgm-studio` document, `createPaymentIntent` is deleted, and Shahbaz rolled both Stripe live standard keys (secret and publishable). No restricted keys remain (`rk_live_…Z84J` is gone). Do not put a Stripe secret on `public/{salonId}`. Rules cannot hide one field of a document people are allowed to read.
 
 **Later.**
 
 - Sync delete-tombstones, so a delete on one device is not brought back by an older copy on another.
-- Firestore security rules are in a separate pull request. They are not deployed. A secret must not be stored on `public/{salonId}`.
+- A secret must not be stored on `public/{salonId}`. Rules are already deployed and cannot hide one field.
 - Google Cloud billing free trial may have expired around **Oct 8, 2026**. If sign-in or sync is down, check billing. The Spark free tier was expected to cost nothing at this scale, but the trial itself needed a billing account on the project.
 - Android stays parked. Closed testing still wanted 12 opted-in testers, and that was not pursued. Android users can install the PWA from Chrome. Details from September are in `your-salon-google-play-handoff.md`.
 
@@ -140,15 +129,13 @@ The September 2026 review (submission `2e5902ac-e4fd-4c4d-8aa5-513b73907f3c`) is
 
 ---
 
-## Firestore rules (in the repo, not deployed)
+## Firestore rules (deployed)
 
-`firestore.rules` and a `firebase.json` that points at it are in the repo as of Nov 16. They are **not live**. Deploying them changes who can read and write the real database, so that waits for Shahbaz to log in and approve. Do not deploy Cloud Functions. `createPaymentIntent` is already deleted, and the live public salon document no longer has `stripeSk` or `stripePk`.
+`firestore.rules` from `main` was deployed to `telemetry-eagle` on Nov 16, 2026, about 12:06 PM PT, with Shahbaz’s approval. Checked live: a public read returned 200, an anonymous write to a public salon doc returned 403, and an anonymous list of pending requests returned 200. The previous open rules were backed up off-repo so they can be rolled back. Keep the deployed rules permanent (no expiring test rules).
 
-Appointments (`appt.html`) now loads Firebase Auth, the same project as the shell. The shell’s email sign-in is optional — the top bar says “Sign in to sync” until the owner signs in, including inside the iOS app, which loads this same site. The owner does not have to sign in to use appointments on the device. Auth persistence is the Firebase default (kept on the device). The appointments frame is the same origin as `salon.html`, so a sign-in in the shell is the sign-in in the frame. Booking publish, the full inbox, and approve / decline / dismiss wait for that sign-in. If there is no user, the booking panel says “Sign in to sync bookings” and those cloud writes are not attempted. Appointments already on the device stay.
+Appointments (`appt.html` v6.27) loads Firebase Auth, the same project as the shell. The shell’s email sign-in is optional — the top bar says “Sign in to sync” until the owner signs in, including inside the iOS app, which loads this same site. The owner does not have to sign in to use appointments on the device. Auth persistence is the Firebase default (kept on the device). The appointments frame is the same origin as `salon.html`, so a sign-in in the shell is the sign-in in the frame. Booking publish, the full inbox, and approve / decline / dismiss wait for that sign-in. If there is no user, the booking panel says “Sign in to sync bookings” and those cloud writes are not attempted. Appointments already on the device stay. Someone who never signs in keeps the app on the device and loses cloud booking sync until they tap Sign in to sync.
 
-The approve price is stored on the appointment on the device. Nothing writes `price` onto a `requests` document. The live rules happen to allow a `price` update; these rules do not, and no current flow needs it.
-
-Deploying these rules is safe only after this appointments change is on `main`. Before that, the live page has no Auth, so the owner’s publish and inbox would be denied. After it is on `main`, a signed-in owner can publish, approve, decline, dismiss, and list every request. A visitor can still read the public profile, create a request, and list pending requests. Someone who never signs in keeps the app on the device and loses cloud booking sync until they tap Sign in to sync. That is the remaining change in behavior, not a silent failure.
+The approve price is stored on the appointment on the device. Nothing writes `price` onto a `requests` document. The deployed rules do not allow a `price` update on a request.
 
 What the rules allow, matching the pages that are actually live:
 
@@ -160,17 +147,11 @@ What the rules allow, matching the pages that are actually live:
 
 Pending requests are still readable by anyone who queries status `pending`. That is the existing slot-shading flow, and those rows include a name and phone. Tightening that further would need a small booking-page change, which this rules pass does not do.
 
-Check them locally (this does not touch production):
+The same checks can be re-run locally without touching production:
 
 ```
 npm install
 npm run test:rules
-```
-
-Deploy later, only after approval, and only the rules:
-
-```
-firebase deploy --only firestore:rules --project telemetry-eagle
 ```
 
 ---
@@ -178,7 +159,7 @@ firebase deploy --only firestore:rules --project telemetry-eagle
 ## Ops
 
 - Domain getcommissionpro.com renews about June 2027 (Namecheap).
-- Firestore rules now live in this repo (`firestore.rules`). They are not deployed. When they are, keep them permanent (no expiring test rules).
+- Firestore rules in `firestore.rules` are deployed on `telemetry-eagle` (Nov 16, 2026, ~12:06 PM PT). Keep them permanent (no expiring test rules). Another deploy still needs Shahbaz’s approval.
 - `privacy.html` still opens with “does not collect any personal data”. Optional Firebase sync does collect an email. Soften that line sometime.
 
 ---
