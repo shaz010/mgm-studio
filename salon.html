@@ -262,7 +262,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.50 · in-app account deletion for App Review</div>
+    <div class="ver">salon v0.51 · shell version matches this page</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -367,6 +367,18 @@
   var pendingView=null;
   window.addEventListener('message', function(ev){
     var d=ev.data||{};
+    if(d&&d.salon==='setApptStatus'&&d.id!=null&&d.status){
+      var delivered=false;
+      try{
+        if(loaded.appt&&FRAMES.appt&&FRAMES.appt.contentWindow){
+          FRAMES.appt.contentWindow.postMessage({salon:'setApptStatus',id:d.id,status:d.status},'*');
+          delivered=true;
+        }
+      }catch(e){}
+      if(!delivered){
+        try{if(ev.source)ev.source.postMessage({salon:'setApptStatusMiss',id:d.id,status:d.status},'*');}catch(e){}
+      }
+    }
     if(d&&d.salon==='goRoom'&&d.room&&ROOMS[d.room]){
       pendingView=d.view||null;
       var target=d.room, wasLoaded=loaded[target];
@@ -594,7 +606,7 @@
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.38';
+  var SHELL_V='v0.51';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{
