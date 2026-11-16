@@ -345,6 +345,94 @@
     });
   }
 
+  /* Latest payment the salon actually made. Voided rows do not count.
+     A payment with no clock time sorts as the end of its calendar day. */
+  function paymentMoment(p) {
+    if (!p) return 0;
+    var created = +p.createdAt;
+    if (isFinite(created) && created > 0) return created;
+    var pds = String(p.date || '').split('-');
+    if (pds.length >= 3 && +pds[0] && +pds[1] && +pds[2]) {
+      return new Date(+pds[0], +pds[1] - 1, +pds[2], 23, 59, 59).getTime();
+    }
+    return 0;
+  }
+
+  function latestLivePayment(payments) {
+    var best = null;
+    (payments || []).forEach(function (p) {
+      if (!p || p.voided) return;
+      if (!best || paymentMoment(p) > paymentMoment(best) || (paymentMoment(p) === paymentMoment(best) && String(p.id || '') > String(best.id || ''))) best = p;
+    });
+    return best;
+  }
+
+  /* Latest time a visit was marked Done, from status-change events. */
+  function doneMillisFromEvents(events) {
+    var map = {};
+    (events || []).forEach(function (e) {
+      if (!e || e.entityId == null || e.entityId === '') return;
+      if (e.type !== 'status.change' || !e.after || String(e.after.status || '').toLowerCase() !== 'done') return;
+      var at = +e.at;
+      if (!isFinite(at) || at <= 0) return;
+      var id = String(e.entityId);
+      if (!map[id] || at >= map[id]) map[id] = at;
+    });
+    return map;
+  }
+
+  function doneMillisForRow(row, map) {
+    if (row && row.doneAt != null && isFinite(+row.doneAt) && +row.doneAt > 0) return +row.doneAt;
+    if (row && row.id != null && map && map[String(row.id)]) return map[String(row.id)];
+    return null;
+  }
+
+  /* A visit is new work when it was marked Done after the latest payment.
+     No clock time: compare calendar dates, and the payment's own day counts as before.
+     Visits already inside a closed settlement stay in the before pile. */
+  function isNewSinceLastPayment(row, payment, doneMs, inSettlement) {
+    if (inSettlement || !payment) return false;
+    var payAt = +payment.createdAt;
+    var payDate = String(payment.date || '');
+    if (doneMs != null) {
+      if (isFinite(payAt) && payAt > 0) return doneMs > payAt;
+      return localYMD(new Date(doneMs)) > payDate;
+    }
+    var ds = String(row && row.date || '');
+    if (!ds || !payDate) return false;
+    return ds > payDate;
+  }
+
+  function splitAtLastPayment(rows, payments, opts) {
+    opts = opts || {};
+    var doneMap = doneMillisFromEvents(opts.events);
+    var latest = latestLivePayment(payments);
+    var claimed = claimedSettlementIds(opts.settlements || []);
+    var beforeOwed = 0;
+    var newOwed = 0;
+    (rows || []).forEach(function (a) {
+      if (!countsTowardOwed(a)) return;
+      var cents = centsOf(a.me) + centsOf(a.tip);
+      var inSettlement = a && a.id != null && !!claimed[String(a.id)];
+      var doneMs = doneMillisForRow(a, doneMap);
+      if (isNewSinceLastPayment(a, latest, doneMs, inSettlement)) newOwed += cents;
+      else beforeOwed += cents;
+    });
+    var paid = sumPaymentCents(payments);
+    var beforeRem = Math.max(0, beforeOwed - paid);
+    var over = Math.max(0, paid - beforeOwed);
+    var newRem = newOwed - over;
+    return {
+      hasPayments: !!latest,
+      beforeCents: beforeRem,
+      newCents: newRem,
+      beforeOwedCents: beforeOwed,
+      newOwedCents: newOwed,
+      totalCents: beforeRem + newRem,
+      paidCents: paid
+    };
+  }
+
   function migratedPaymentId(ym) { return 'mig-cp_paid-' + ym; }
 
   /* Each old "this month is paid" flag becomes one payment. The id is the
@@ -793,6 +881,9 @@
     undoSettlementRecord: undoSettlementRecord,
     allocateSettlements: allocateSettlements,
     mergeSettlementLists: mergeSettlementLists,
+    latestLivePayment: latestLivePayment,
+    doneMillisFromEvents: doneMillisFromEvents,
+    splitAtLastPayment: splitAtLastPayment,
     migratedPaymentId: migratedPaymentId,
     migratePaidMonths: migratePaidMonths,
     mergePaymentLists: mergePaymentLists,

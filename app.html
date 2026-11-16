@@ -1835,9 +1835,18 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
     <div class="mgm-wrap">
       <div class="mgm-hero">
         <div>
-          <div class="mgm-owed-lbl"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Salon owes me</div>
-          <div class="mgm-owed-val" id="mgmOwed">$0.00</div>
-          <div class="mgm-sub" id="mgmSubtext">Still due from Done work</div>
+          <div id="mgmSingle">
+            <div class="mgm-owed-lbl"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Salon owes me</div>
+            <div class="mgm-owed-val" id="mgmOwed">$0.00</div>
+            <div class="mgm-sub" id="mgmSubtext">Still due from Done work</div>
+          </div>
+          <div id="mgmSplit" style="display:none">
+            <div class="mgm-owed-lbl">Still owed from before</div>
+            <div class="mgm-owed-val" id="mgmBefore">$0.00</div>
+            <div class="mgm-owed-lbl" style="margin-top:14px">New work since last payment</div>
+            <div class="mgm-owed-val" id="mgmNew">$0.00</div>
+            <div class="mgm-sub" id="mgmTotalLine">Total $0.00</div>
+          </div>
           <div class="bal-line" id="balLine">Owed <b id="balOwed">$0.00</b> · Paid <b id="balPaid">$0.00</b> · Still due <b id="balDue">$0.00</b></div>
           <div class="mgm-rule" id="mgmRule">Counts appointments marked Done, plus earnings you logged in this room. Payments can arrive any day.</div>
         </div>
@@ -2655,7 +2664,7 @@ function renderMgm(){
   var pays=loadPayments();
   var bal=YS.runningBalance(earnedC,pays);
   var due=bal.dueCents;
-  $('mgmOwed').textContent=due<0?moneyLabel(due):moneyLabel(due);
+  renderOwedSplit(pays, due);
   if($('balLine'))$('balLine').innerHTML='Owed <b>'+moneyLabel(bal.owedCents)+'</b> · Paid <b>'+moneyLabel(bal.paidCents)+'</b> · '+(due<0?'Credit':'Still due')+' <b>'+moneyLabel(Math.abs(due))+'</b>';
   if(document.getElementById('oTotal')){
     $('oSalon').textContent=moneyLabel(uChargeC-uMeC);
@@ -2702,6 +2711,26 @@ function renderMgm(){
       </div>
     </div>`;
   }).join('');
+}
+function renderOwedSplit(pays, due){
+  var single=$('mgmSingle'), box=$('mgmSplit');
+  var dated=owedOnly(data).filter(function(a){return a&&a.date&&toYM(a.date);});
+  var events=[];
+  try{events=YS.readAudit(function(k){return localStorage.getItem(k);},'','');}catch(e){events=[];}
+  var split=YS.splitAtLastPayment(dated,pays,{settlements:loadSettlements(),events:events});
+  if(!split.hasPayments){
+    if(single)single.style.display='';
+    if(box)box.style.display='none';
+    if($('mgmOwed'))$('mgmOwed').textContent=moneyLabel(due);
+    if($('mgmRule'))$('mgmRule').textContent='Counts appointments marked Done, plus earnings you logged in this room. Payments can arrive any day.';
+    return;
+  }
+  if(single)single.style.display='none';
+  if(box)box.style.display='';
+  if($('mgmBefore'))$('mgmBefore').textContent=moneyLabel(split.beforeCents);
+  if($('mgmNew'))$('mgmNew').textContent=split.newCents<0?('Credit '+moneyLabel(Math.abs(split.newCents))):moneyLabel(split.newCents);
+  if($('mgmTotalLine'))$('mgmTotalLine').textContent=(due<0?'Total credit ':'Total ')+moneyLabel(Math.abs(due));
+  if($('mgmRule'))$('mgmRule').textContent='Before is finished work from before the last payment. New work was marked Done after that payment. If a visit has no time recorded, the same calendar day counts as before.';
 }
 function renderSettlements(pays){
   var box=$('settleBody');if(!box)return;
@@ -4649,7 +4678,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.66 · settlements keep old balances separate';
+var VERSION='app v2.67 · before and new work at the top';
 /* ===== In-app confirm (native confirm() silently fails in iOS PWA / WKWebView) ===== */
 var _cpCfFn=null,_cpCfNo=null;
 function askConfirm(msg,onYes,opts){

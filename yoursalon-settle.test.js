@@ -370,6 +370,84 @@ check('a settlement close shows up in the day view and the csv', function () {
   assert.ok(csv.indexOf('Partly paid') >= 0 || csv.indexOf('Unpaid') >= 0);
 });
 
+function doneAt(id, at) {
+  return { id: 'e-' + id, type: 'status.change', entityId: id, at: at, after: { status: 'done' } };
+}
+
+check('before and new work split around the latest payment', function () {
+  var rows = [];
+  var events = [];
+  for (var i = 0; i < 10; i++) {
+    rows.push(doneRow('old' + i, 3510, '2026-11-16'));
+    events.push(doneAt('old' + i, 1000 + i));
+  }
+  rows.push(doneRow('n1', 4000, '2026-11-16'));
+  rows.push(doneRow('n2', 4000, '2026-11-16'));
+  rows.push(doneRow('n3', 4000, '2026-11-16'));
+  events.push(doneAt('n1', 8000));
+  events.push(doneAt('n2', 8001));
+  events.push(doneAt('n3', 8002));
+  var pays = [pay('salon', 26800, 5000)];
+  pays[0].date = '2026-11-16';
+  var split = YS.splitAtLastPayment(rows, pays, { events: events });
+  assert.strictEqual(split.beforeOwedCents, 35100);
+  assert.strictEqual(split.newOwedCents, 12000);
+  assert.strictEqual(split.beforeCents, 8300);
+  assert.strictEqual(split.newCents, 12000);
+  assert.strictEqual(split.totalCents, 20300);
+  assert.strictEqual(split.totalCents, YS.runningBalance(47100, pays).dueCents);
+});
+
+check('same calendar day without a done time counts as before', function () {
+  var rows = [
+    doneRow('same', 5000, '2026-11-16'),
+    doneRow('later', 2000, '2026-11-17')
+  ];
+  var pays = [pay('p', 1000, 0)];
+  pays[0].createdAt = null;
+  pays[0].date = '2026-11-16';
+  var split = YS.splitAtLastPayment(rows, pays, { events: [] });
+  assert.strictEqual(split.beforeOwedCents, 5000);
+  assert.strictEqual(split.newOwedCents, 2000);
+  assert.strictEqual(split.beforeCents, 4000);
+  assert.strictEqual(split.newCents, 2000);
+});
+
+check('no payments yet is a single balance', function () {
+  var rows = [doneRow('a', 35100, '2026-11-10')];
+  var split = YS.splitAtLastPayment(rows, [], { events: [] });
+  assert.strictEqual(split.hasPayments, false);
+  assert.strictEqual(split.beforeCents, 35100);
+  assert.strictEqual(split.newCents, 0);
+  assert.strictEqual(split.totalCents, 35100);
+});
+
+check('overpayment past the old work becomes credit on the new work', function () {
+  var rows = [doneRow('old', 10000, '2026-11-01'), doneRow('neu', 4000, '2026-11-20')];
+  var events = [doneAt('old', 1000), doneAt('neu', 9000)];
+  var pays = [pay('p', 15000, 5000)];
+  var split = YS.splitAtLastPayment(rows, pays, { events: events });
+  assert.strictEqual(split.beforeCents, 0);
+  assert.strictEqual(split.newCents, -1000);
+  assert.strictEqual(split.totalCents, -1000);
+  assert.strictEqual(split.totalCents, YS.runningBalance(14000, pays).dueCents);
+});
+
+check('a voided latest payment is ignored and closed settlements stay before', function () {
+  var rows = [doneRow('old', 10000, '2026-11-01'), doneRow('held', 3000, '2026-11-20'), doneRow('neu', 4000, '2026-11-20')];
+  var events = [doneAt('old', 1000), doneAt('held', 9000), doneAt('neu', 9001)];
+  var pays = [pay('first', 4000, 2000), pay('voided', 9000, 8000)];
+  pays[1].voided = true;
+  var plan = YS.planCloseSettlement([rows[1]], [], '2026-11-20', 8500);
+  var split = YS.splitAtLastPayment(rows, pays, { events: events, settlements: [plan.settlement] });
+  assert.strictEqual(YS.latestLivePayment(pays).id, 'first');
+  assert.strictEqual(split.beforeOwedCents, 13000);
+  assert.strictEqual(split.newOwedCents, 4000);
+  assert.strictEqual(split.beforeCents, 9000);
+  assert.strictEqual(split.newCents, 4000);
+  assert.strictEqual(split.totalCents, YS.runningBalance(17000, pays).dueCents);
+});
+
 if (failed) {
   console.error('\n' + failed + ' failed');
   process.exit(1);
