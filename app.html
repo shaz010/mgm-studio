@@ -674,6 +674,18 @@ td{padding:12px 10px;vertical-align:middle}
 .mgm-rule{font-size:11px;color:#8aa4c4;margin-top:6px;line-height:1.4}
 .bal-line{font-size:13px;color:#c5d7ee;margin-top:8px;line-height:1.4}
 .bal-line b{color:#fff;font-weight:700}
+.prev-unpaid{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:8px 0 10px;padding:9px 10px;border-radius:10px;background:rgba(255,184,0,.14);border:1px solid rgba(255,184,0,.55);color:#ffe08a;font-size:13px;font-weight:700;line-height:1.35}
+.prev-unpaid b{margin-left:auto;font-size:18px;white-space:nowrap;color:#ffb800}
+.prev-badge{flex:none;font-size:10px;letter-spacing:.4px;text-transform:uppercase;background:#ffb800;color:#1a1208;border-radius:999px;padding:3px 7px}
+.bal-rows{display:flex;flex-direction:column;margin-top:2px}
+.bal-row{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:15px;color:#c5d7ee;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.bal-row b{color:#fff;font-variant-numeric:tabular-nums}
+.mgm-total-line{font-size:13px;color:#9ab;margin-top:8px}
+.mgm-total-line b{color:#fff}
+body.theme-light .prev-unpaid{background:#fff6df;border-color:#e2b340;color:#6a4b00}
+body.theme-light .prev-unpaid b{color:#8a5a00}
+body.theme-light .bal-row{color:#334;border-bottom-color:#e4e0d4}
+body.theme-light .bal-row b{color:#111}
 .pay-seg{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}
 .pay-seg button{border:1px solid #334;background:#12161c;color:#c5d7ee;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
 .pay-seg button.on{background:#1c3a55;border-color:#7eb8ff;color:#fff}
@@ -1833,12 +1845,30 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
     <!-- MGM OWES ME -->
     <div id="pMgm" style="display:none">
     <div class="mgm-wrap">
+      <div id="mgmSplit" class="mgm-hero" style="display:none">
+        <div>
+          <div class="mgm-owed-lbl">Still owed from before</div>
+          <div class="mgm-owed-val" id="mgmSplitBefore">$0.00</div>
+          <div class="mgm-owed-lbl" style="margin-top:14px">New work since last payment</div>
+          <div class="mgm-owed-val" id="mgmSplitNew">$0.00</div>
+          <div class="mgm-sub" id="mgmSplitTotal">Total $0.00</div>
+        </div>
+      </div>
       <div class="mgm-hero">
         <div>
           <div class="mgm-owed-lbl"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Salon owes me</div>
-          <div class="mgm-owed-val" id="mgmOwed">$0.00</div>
-          <div class="mgm-sub" id="mgmSubtext">Still due from Done work</div>
+          <div id="mgmSingle">
+            <div class="mgm-owed-val" id="mgmOwed">$0.00</div>
+            <div class="mgm-sub" id="mgmSubtext">Still due from Done work</div>
+          </div>
+          <div id="mgmPrev" class="prev-unpaid" style="display:none"><span class="prev-badge">Before</span><span>Previous unpaid (from before last payment)</span><b id="mgmBefore">$0.00</b></div>
+          <div class="bal-rows" id="balRows" style="display:none">
+            <div class="bal-row"><span>Owed</span><b id="rowOwed">$0.00</b></div>
+            <div class="bal-row"><span>Paid</span><b id="rowPaid">$0.00</b></div>
+            <div class="bal-row"><span id="rowDueLbl">Still due</span><b id="rowDue">$0.00</b></div>
+          </div>
           <div class="bal-line" id="balLine">Owed <b id="balOwed">$0.00</b> · Paid <b id="balPaid">$0.00</b> · Still due <b id="balDue">$0.00</b></div>
+          <div class="mgm-total-line" id="mgmTotalLine" style="display:none">Total due $0.00</div>
           <div class="mgm-rule" id="mgmRule">Counts appointments marked Done, plus earnings you logged in this room. Payments can arrive any day.</div>
         </div>
         <div class="mgm-right">
@@ -2655,8 +2685,7 @@ function renderMgm(){
   var pays=loadPayments();
   var bal=YS.runningBalance(earnedC,pays);
   var due=bal.dueCents;
-  $('mgmOwed').textContent=due<0?moneyLabel(due):moneyLabel(due);
-  if($('balLine'))$('balLine').innerHTML='Owed <b>'+moneyLabel(bal.owedCents)+'</b> · Paid <b>'+moneyLabel(bal.paidCents)+'</b> · '+(due<0?'Credit':'Still due')+' <b>'+moneyLabel(Math.abs(due))+'</b>';
+  var splitOn=renderOwedSplit(pays, due, bal);
   if(document.getElementById('oTotal')){
     $('oSalon').textContent=moneyLabel(uChargeC-uMeC);
     $('oMe').textContent=moneyLabel(uMeC);
@@ -2670,15 +2699,19 @@ function renderMgm(){
   if(cardLbl)cardLbl.textContent='Earned from Done work';
   renderNeedsClose();
   var openPast=(data||[]).some(function(a){return YS.needsClosing(a);});
-  if(due<0){
-    $('mgmSubtext').textContent='Credit — the salon has paid this much ahead';
-    if($('mgmNextDue'))$('mgmNextDue').textContent='Credit';
-  }else if(due===0){
-    $('mgmSubtext').textContent=openPast?'You are square — past appointments still need closing':'You are square';
-    if($('mgmNextDue'))$('mgmNextDue').textContent='Square';
-  }else{
-    $('mgmSubtext').textContent='Still due from Done work';
-    if($('mgmNextDue'))$('mgmNextDue').textContent='Still due';
+  if(!splitOn){
+    if(due<0){
+      $('mgmSubtext').textContent='Credit — the salon has paid this much ahead';
+      if($('mgmNextDue'))$('mgmNextDue').textContent='Credit';
+    }else if(due===0){
+      $('mgmSubtext').textContent=openPast?'You are square — past appointments still need closing':'You are square';
+      if($('mgmNextDue'))$('mgmNextDue').textContent='Square';
+    }else{
+      $('mgmSubtext').textContent='Still due from Done work';
+      if($('mgmNextDue'))$('mgmNextDue').textContent='Still due';
+    }
+  }else if($('mgmNextDue')){
+    $('mgmNextDue').textContent=due<0?'Credit':moneyLabel(due);
   }
   fillPayDefault(due);
   renderPayPeriod(pays);
@@ -2702,6 +2735,49 @@ function renderMgm(){
       </div>
     </div>`;
   }).join('');
+}
+function renderOwedSplit(pays, due, bal){
+  var single=$('mgmSingle'), prev=$('mgmPrev'), rows=$('balRows'), line=$('balLine'), total=$('mgmTotalLine');
+  var dated=owedOnly(data).filter(function(a){return a&&a.date&&toYM(a.date);});
+  var events=[];
+  try{events=YS.readAudit(function(k){return localStorage.getItem(k);},'','');}catch(e){events=[];}
+  var split=YS.splitAtLastPayment(dated,pays,{settlements:loadSettlements(),events:events});
+  var splitBox=$('mgmSplit');
+  if(!split.hasPayments){
+    if(single)single.style.display='';
+    if(splitBox)splitBox.style.display='none';
+    if(prev)prev.style.display='none';
+    if(rows)rows.style.display='none';
+    if(total)total.style.display='none';
+    if(line){
+      line.style.display='';
+      line.innerHTML='Owed <b>'+moneyLabel(bal.owedCents)+'</b> · Paid <b>'+moneyLabel(bal.paidCents)+'</b> · '+(due<0?'Credit':'Still due')+' <b>'+moneyLabel(Math.abs(due))+'</b>';
+    }
+    if($('mgmOwed'))$('mgmOwed').textContent=moneyLabel(due);
+    if($('mgmRule'))$('mgmRule').textContent='Counts appointments marked Done, plus earnings you logged in this room. Payments can arrive any day.';
+    return false;
+  }
+  if(single)single.style.display='none';
+  if(splitBox)splitBox.style.display='';
+  if(prev)prev.style.display='flex';
+  if(rows)rows.style.display='flex';
+  if(line)line.style.display='none';
+  if(total)total.style.display='';
+  var beforeLabel=moneyLabel(split.beforeCents);
+  var newLabel=split.newCents<0?('Credit '+moneyLabel(Math.abs(split.newCents))):moneyLabel(split.newCents);
+  var totalLabel=(due<0?'Total credit ':'Total ')+moneyLabel(Math.abs(due));
+  if($('mgmSplitBefore'))$('mgmSplitBefore').textContent=beforeLabel;
+  if($('mgmSplitNew'))$('mgmSplitNew').textContent=newLabel;
+  if($('mgmSplitTotal'))$('mgmSplitTotal').textContent=totalLabel;
+  if($('mgmBefore'))$('mgmBefore').textContent=beforeLabel;
+  var spilled=Math.max(0, split.paidCents-split.beforeOwedCents);
+  if($('rowOwed'))$('rowOwed').textContent=moneyLabel(split.newOwedCents);
+  if($('rowPaid'))$('rowPaid').textContent=moneyLabel(spilled);
+  if($('rowDueLbl'))$('rowDueLbl').textContent=split.newCents<0?'Credit':'Still due';
+  if($('rowDue'))$('rowDue').textContent=moneyLabel(Math.abs(split.newCents));
+  if(total)total.innerHTML=(due<0?'Total credit ':'Total due ')+'<b>'+moneyLabel(Math.abs(due))+'</b>';
+  if($('mgmRule'))$('mgmRule').textContent='Owed, paid, and still due are the new work since the last payment. Previous unpaid is what was already owed then. If a visit has no time recorded, the same calendar day counts as before.';
+  return true;
 }
 function renderSettlements(pays){
   var box=$('settleBody');if(!box)return;
@@ -4649,7 +4725,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.66 · settlements keep old balances separate';
+var VERSION='app v2.68 · before and new, plus previous unpaid';
 /* ===== In-app confirm (native confirm() silently fails in iOS PWA / WKWebView) ===== */
 var _cpCfFn=null,_cpCfNo=null;
 function askConfirm(msg,onYes,opts){
