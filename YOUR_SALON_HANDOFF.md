@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live right now: Earnings v2.65, Appointments v6.27, salon v0.53, service worker `yoursalon-v80`, booking v3.56. Firestore rules from `main` are deployed on `telemetry-eagle`.
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` before this change: Earnings v2.65, Appointments v6.27, salon v0.53, service worker `yoursalon-v80`, booking v3.56. This change ships Earnings v2.66, salon v0.54, and `yoursalon-v81` when it is merged. Firestore rules from `main` are deployed on `telemetry-eagle`.
 
 | Room | File | Live version |
 |---|---|---|
-| Earnings | `app.html` | v2.65 |
+| Earnings | `app.html` | v2.66 (this change; v2.65 is what is live) |
 | Appointments | `appt.html` | v6.27 |
-| Shell | `salon.html` | v0.53 (`SHELL_V` matches the page) |
-| Service worker | `sw.js` | `yoursalon-v80` |
+| Shell | `salon.html` | v0.54 (this change; v0.53 is what is live) |
+| Service worker | `sw.js` | `yoursalon-v81` (this change; `yoursalon-v80` is what is live) |
 | Booking page | `book.html` | v3.56 |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
@@ -82,6 +82,12 @@ Follow the money for a date: what changed, who was paid, and the balance before 
 - Deleted appointments get a tombstone (`ys_tombstones`). Sync unions those by id. After a merge, a tombstoned appointment is removed again, so another device or an older cloud copy does not bring it back. The deletion is also in the audit log.
 
 The existing owner unlock is unchanged. It is not synced, not written into the audit log, and not described in the app.
+
+**Settlements.** A closed settlement groups finished visits that were not already in one, up to a chosen end date (today if you leave the date). The record keeps an id, start date, end date, the owed cents at close, when it was closed, and the visit ids. Appointments and payments are not rewritten. Nothing is closed automatically. Until the first close, the whole balance stays in the current period.
+
+Payments are poured into the oldest settlement first. Whatever is left pays the open period. Anything beyond that is a credit. That split is calculated each time, so editing or voiding a payment recalculates it. The headline balance stays the same running balance as before: all Done work minus payments that are not voided.
+
+The Salon owes me screen lists each past settlement as Paid, Partly paid, or Unpaid, with what is still owed on it, and separately the current period since the last close (done, and how much of the payments landed there). Undo is only for the latest close, and only until a payment is recorded after it. Closing and undoing are written to the audit log and show on What happened. Settlements are in the CSV export and in cloud sync (`cp_settlements`, owner-only, same per-record merge as payments, and an undo is not undone by an older copy).
 
 ## Nov 16, 2026 — Stripe and booking deposits removed
 

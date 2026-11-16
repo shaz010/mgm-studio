@@ -262,7 +262,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.53 · audit log syncs by month</div>
+    <div class="ver">salon v0.54 · settlements sync with the ledger</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -504,7 +504,7 @@
   }
 
   /* ===== SYNC ENGINE (Step 2) — mirrors shared localStorage <-> Firestore, merge-safe ===== */
-  var SYNC_KEYS=['ap_appts','ap_clients','ap_custom','ap_stock','ap_prefs','cp_appts','cp_clients','cp_prefs','cp_paid','cp_payments','combo_trade'];
+  var SYNC_KEYS=['ap_appts','ap_clients','ap_custom','ap_stock','ap_prefs','cp_appts','cp_clients','cp_prefs','cp_paid','cp_payments','cp_settlements','combo_trade'];
   var META_KEY='salon_sync_meta';
   var _uid=null, _userUnsub=null, _pushTimer=null, _reloadTimer=null, _snap={};
   var _lastSync=parseInt((function(){try{return localStorage.getItem('salon_lastSync');}catch(e){return '0';}})()||'0',10)||0;
@@ -582,6 +582,18 @@
         var ev=(window.YS&&YS.mergeAuditLists)?YS.mergeAuditLists(la,ca):la.concat(ca);
         function ids(list){return (list||[]).map(function(e){return e&&e.id;}).sort().join(',');}
         if(ids(ev)!==ids(la)){lsSet(k,JSON.stringify(ev));changed=true;}
+        meta[k]=Math.max(lt,ct);
+        return;
+      }
+      if(k==='cp_settlements'){
+        var ls=[],cs=[];
+        try{ls=JSON.parse(lv||'[]')||[];}catch(e){ls=[];}
+        try{cs=JSON.parse(cv||'[]')||[];}catch(e){cs=[];}
+        if(!Array.isArray(ls))ls=[];
+        if(!Array.isArray(cs))cs=[];
+        function _setSig(list){return (list||[]).map(function(s){return [s&&s.id,s&&s.owedCents,s&&s.undone?1:0,s&&(s.updatedAt||s.closedAt)||0,s&&s.endDate||''].join(':');}).sort().join('\n');}
+        var setMerged=(window.YS&&YS.mergeSettlementLists)?YS.mergeSettlementLists(ls,cs):ls.concat(cs);
+        if(_setSig(setMerged)!==_setSig(ls)){ lsSet(k,JSON.stringify(setMerged)); changed=true; }
         meta[k]=Math.max(lt,ct);
         return;
       }
@@ -681,7 +693,7 @@
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.53';
+  var SHELL_V='v0.54';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{

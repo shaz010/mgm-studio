@@ -1848,6 +1848,18 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
           <button class="btn-paid-main" type="button" onclick="openPayForm()"><i class="ti ti-cash" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Record a payment</button>
         </div>
       </div>
+      <div class="card" id="settleCard" style="margin-bottom:14px">
+        <div class="ctitle"><i class="ti ti-calendar-check"></i>Settlements</div>
+        <div id="settleBody"></div>
+        <div class="pay-form" style="margin-top:10px">
+          <div><label>Close through <input id="settleEnd" type="date"></label></div>
+          <div class="pay-wide" style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-paid-main" type="button" onclick="closeSettlementAsk()">Close settlement</button>
+            <button class="btn-invoice" type="button" id="settleUndo" onclick="undoSettlementAsk()" style="display:none">Undo last close</button>
+          </div>
+        </div>
+        <div class="mgm-rule" id="settleNote"></div>
+      </div>
       <div class="card" id="payCard" style="margin-bottom:14px">
         <div class="ctitle"><i class="ti ti-cash"></i>Payments from the salon</div>
         <div class="pay-seg" id="paySeg">
@@ -1983,6 +1995,9 @@ function loadAppts(){
 }
 function saveAppts(arr){try{var own=(arr||[]).filter(function(x){return !(x&&x._src);});localStorage.setItem(APPTS_KEY,JSON.stringify(own));}catch(e){alert('Could not save — storage may be full.');}}
 var PAY_KEY='cp_payments';
+var SETTLE_KEY='cp_settlements';
+function loadSettlements(){try{var a=JSON.parse(localStorage.getItem(SETTLE_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
+function saveSettlements(arr){try{localStorage.setItem(SETTLE_KEY,JSON.stringify(arr||[]));}catch(e){alert('Could not save — storage may be full.');}}
 function loadPayments(){try{var a=JSON.parse(localStorage.getItem(PAY_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
 function savePayments(arr){try{localStorage.setItem(PAY_KEY,JSON.stringify(arr||[]));}catch(e){alert('Could not save — storage may be full.');}}
 function loadPaid(){try{var o=JSON.parse(localStorage.getItem(PAID_KEY)||'{}');return (o&&typeof o==='object'&&!Array.isArray(o))?o:{};}catch(e){return{};}}
@@ -2668,6 +2683,7 @@ function renderMgm(){
   fillPayDefault(due);
   renderPayPeriod(pays);
   renderPayList(pays);
+  renderSettlements(pays);
   const sorted=Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0]));
   if(!sorted.length){$('monthRows').innerHTML='<div class="empty"><i class="ti ti-building-store"></i>Start booking clients to track what the Salon owes you.</div>';return;}
   $('monthRows').innerHTML=sorted.map(([ym,mo])=>{
@@ -2686,6 +2702,68 @@ function renderMgm(){
       </div>
     </div>`;
   }).join('');
+}
+function renderSettlements(pays){
+  var box=$('settleBody');if(!box)return;
+  var settlements=loadSettlements();
+  var alloc=YS.allocateSettlements(data,settlements,pays);
+  var undo=YS.canUndoSettlement(settlements,pays);
+  var btn=$('settleUndo');
+  if(btn)btn.style.display=undo.ok?'inline-flex':'none';
+  var end=$('settleEnd');if(end&&!end.value)end.value=localToday();
+  var html='<div class="mgm-rule" style="margin-top:0">Still owed from past settlements: <b>'+moneyLabel(alloc.pastRemainingCents)+'</b></div>';
+  if(!alloc.settlements.length){
+    html+='<div class="mgm-rule">No settlement has been closed. Everything finished so far is in the current period.</div>';
+  }else{
+    html+=alloc.settlements.map(function(line){
+      var when=(line.startDate||'')+(line.endDate&&line.endDate!==line.startDate?(' – '+line.endDate):'');
+      return '<div class="pay-row"><div><div>'+esc(when||'Settlement')+'</div><div class="pay-meta">'+esc(line.status)+' · '+moneyLabel(line.remainingCents)+' remaining</div></div><div class="pay-amt">'+moneyLabel(line.owedCents)+'</div></div>';
+    }).join('');
+  }
+  var cur=alloc.current;
+  html+='<div class="mgm-rule">Current period (since last settlement): <b>'+moneyLabel(cur.owedCents)+'</b> done / <b>'+moneyLabel(cur.paidCents)+'</b> paid</div>';
+  if(alloc.creditCents>0)html+='<div class="mgm-rule">Credit on the current period: <b>'+moneyLabel(alloc.creditCents)+'</b></div>';
+  box.innerHTML=html;
+  var note=$('settleNote');
+  if(note){
+    if(undo.ok)note.textContent='Undo is available until a payment is recorded after this close.';
+    else if(undo.reason==='payment')note.textContent='A payment was recorded after the last close, so that settlement stays.';
+    else note.textContent='Closing groups finished visits up to the date you pick. Nothing is closed until you do this.';
+  }
+}
+function closeSettlementAsk(){
+  var end=($('settleEnd')&&$('settleEnd').value)||localToday();
+  var plan=YS.planCloseSettlement(data,loadSettlements(),end,Date.now());
+  if(!plan.ok){
+    askConfirm(plan.reason==='empty'?'Nothing new to close. Finished visits are already in a settlement, or they are dated after the day you picked.':'Pick the last day this settlement should cover.',function(){},{title:'Close settlement',yesLabel:'OK'});
+    return;
+  }
+  var n=plan.settlement.ids.length;
+  askConfirm('Close a settlement through '+end+'? It groups '+n+' finished visit'+(n===1?'':'s')+', '+moneyLabel(plan.settlement.owedCents)+' owed. Payments already recorded stay put. You can undo this until you record another payment.',function(){
+    var all=loadSettlements();
+    all.push(plan.settlement);
+    saveSettlements(all);
+    logAudit({type:'settlement.close',entityType:'settlement',entityId:plan.settlement.id,summary:'Closed settlement '+plan.settlement.startDate+' to '+plan.settlement.endDate+' · owed '+moneyLabel(plan.settlement.owedCents),after:{startDate:plan.settlement.startDate,endDate:plan.settlement.endDate,owedCents:plan.settlement.owedCents,count:n}});
+    setSyncBadge('ok','Saved');
+    renderMgm();
+  },{title:'Close settlement',yesLabel:'Close settlement'});
+}
+function undoSettlementAsk(){
+  var settlements=loadSettlements();
+  var gate=YS.canUndoSettlement(settlements,loadPayments());
+  if(!gate.ok){
+    askConfirm('That close stays. A payment was recorded after it.',function(){},{title:'Undo settlement',yesLabel:'OK'});
+    return;
+  }
+  var s=gate.settlement;
+  askConfirm('Undo the settlement through '+(s.endDate||'')+'? Those visits go back to the current period. Payments are not changed.',function(){
+    var now=Date.now();
+    var next=settlements.map(function(row){return String(row.id)===String(s.id)?YS.undoSettlementRecord(row,now):row;});
+    saveSettlements(next);
+    logAudit({type:'settlement.undo',entityType:'settlement',entityId:s.id,summary:'Undid settlement '+(s.startDate||'')+' to '+(s.endDate||''),before:{undone:false,owedCents:s.owedCents},after:{undone:true}});
+    setSyncBadge('ok','Saved');
+    renderMgm();
+  },{title:'Undo settlement',yesLabel:'Undo close',danger:true});
 }
 function fillPayDefault(dueCents){
   var el=$('payAmt');if(!el)return;
@@ -2759,13 +2837,14 @@ function showAudit(){
   if(to<from){var s=from;from=to;to=s;}
   if($('auditFrom')&&!$('auditFrom').value)$('auditFrom').value=from;
   var events=YS.readAudit(function(k){return localStorage.getItem(k);},from,to);
-  var money=YS.followMoney(data,loadPayments(),from,to);
+  var money=YS.followMoney(data,loadPayments(),from,to,loadSettlements());
   var html='<div class="audit-money">Balance before '+esc(from)+': <b>'+centsText(money.beforeCents)+'</b><br>Balance after '+esc(to)+': <b>'+centsText(money.afterCents)+'</b></div>';
   (money.days||[]).forEach(function(day){
     if(!day.lines.length)return;
     html+='<div class="audit-money"><b>'+esc(day.date)+'</b> · Earned '+centsText(day.earnedCents)+' · Tips '+centsText(day.tipCents)+' · Received '+centsText(day.paidCents)+' · Due '+centsText(day.dueCents);
     day.lines.forEach(function(l){
       if(l.kind==='work')html+='<div>'+esc(l.name||'Visit')+' · commission '+centsText(l.meCents)+' · tip '+centsText(l.tipCents)+(l.splitPct!=null?' · '+l.splitPct+'% kept':'')+'</div>';
+      else if(l.kind==='settlement')html+='<div>Closed settlement through '+esc(l.endDate||'')+' · owed '+centsText(l.owedCents)+'</div>';
       else html+='<div>Payment '+centsText(l.amountCents)+' · '+esc(l.method||'')+(l.note?' · '+esc(l.note):'')+'</div>';
     });
     html+='</div>';
@@ -2784,6 +2863,7 @@ function exportAuditCsv(){
   var files=[
     {name:'yoursalon-payments.csv',text:YS.csvPayments(loadPayments(),from,to)},
     {name:'yoursalon-appointments.csv',text:YS.csvAppointments(loadAppts(),from,to)},
+    {name:'yoursalon-settlements.csv',text:YS.csvSettlements(loadSettlements(),loadAppts(),loadPayments(),from,to)},
     {name:'yoursalon-audit.csv',text:YS.csvAudit(YS.readAudit(function(k){return localStorage.getItem(k);},from,to),from,to)}
   ];
   var status=$('auditStatus');
@@ -2807,7 +2887,7 @@ function downloadCsvBundle(files){
     var a=document.createElement('a');a.href=url;a.download=name;
     document.body.appendChild(a);a.click();
     setTimeout(function(){try{a.remove();}catch(e){}URL.revokeObjectURL(url);},800);
-    say('Download started. It includes payments, appointments, and the audit log.');
+    say('Download started. It includes payments, appointments, settlements, and the audit log.');
     return;
   }catch(e){}
   try{
@@ -3828,7 +3908,7 @@ window.addEventListener('message',function(ev){
   }
 });
 window.addEventListener('storage',function(e){
-  if(!e||(e.key!=='ap_appts'&&e.key!=='cp_appts'&&e.key!=='cp_paid'&&e.key!=='cp_payments'&&e.key!=='ap_prefs'&&e.key!=='cp_prefs'))return;
+  if(!e||(e.key!=='ap_appts'&&e.key!=='cp_appts'&&e.key!=='cp_paid'&&e.key!=='cp_payments'&&e.key!=='cp_settlements'&&e.key!=='ap_prefs'&&e.key!=='cp_prefs'))return;
   try{refreshSettle();}catch(err){}
 });
 
@@ -4569,7 +4649,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.65 · App Store paywall only';
+var VERSION='app v2.66 · settlements keep old balances separate';
 /* ===== In-app confirm (native confirm() silently fails in iOS PWA / WKWebView) ===== */
 var _cpCfFn=null,_cpCfNo=null;
 function askConfirm(msg,onYes,opts){
