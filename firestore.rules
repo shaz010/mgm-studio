@@ -12,13 +12,24 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
     function secretFields() {
-      return ['stripeSk', 'stripeSecret', 'webhookSecret', 'whsec', 'sk'];
+      return ['stripeSk', 'stripePk', 'stripeSecret', 'webhookSecret', 'whsec', 'sk'];
     }
     function noNewSecrets() {
       return !request.resource.data.keys().hasAny(secretFields());
     }
-    function secretsUnchanged() {
-      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(secretFields());
+    // A secret may stay untouched, or be removed. It may not be set to a value.
+    // The appointments page deletes these fields on publish.
+    function secretClearedOrUntouched(name) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([name])
+        || !(name in request.resource.data);
+    }
+    function secretsOk() {
+      return secretClearedOrUntouched('stripeSk')
+        && secretClearedOrUntouched('stripePk')
+        && secretClearedOrUntouched('stripeSecret')
+        && secretClearedOrUntouched('webhookSecret')
+        && secretClearedOrUntouched('whsec')
+        && secretClearedOrUntouched('sk');
     }
 
     match /users/{uid} {
@@ -33,7 +44,7 @@ service cloud.firestore {
     match /public/{salonId} {
       allow get: if true;
       allow create: if signedIn() && noNewSecrets();
-      allow update: if signedIn() && secretsUnchanged();
+      allow update: if signedIn() && secretsOk();
       allow delete: if signedIn();
     }
 

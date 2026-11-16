@@ -9,7 +9,7 @@ const {
 } = require('@firebase/rules-unit-testing');
 const {
   doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc,
-  collection, query, where, getDocs, Timestamp,
+  collection, query, where, getDocs, Timestamp, deleteField,
 } = require('firebase/firestore');
 
 const OWNER = 'owner-uid';
@@ -86,6 +86,26 @@ check('an existing secret left in place does not block the owner from publishing
   }));
   const snap = await getDoc(doc(db(null), 'public', 'mgm-studio'));
   if (snap.data().stripeSk !== 'sk_live_already_there') throw new Error('secret field was rewritten');
+});
+
+check('owner can clear stored Stripe fields and cannot write them back', async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), 'public', 'mgm-studio'), {
+      salonName: 'Old', bookingOpen: true, stripeSk: 'sk_live_already_there', stripePk: 'pk_live_already',
+    });
+  });
+  await assertSucceeds(updateDoc(doc(db(OWNER), 'public', 'mgm-studio'), {
+    salonName: 'Your Salon',
+    bookingOpen: true,
+    updatedAt: 4,
+    stripeSk: deleteField(),
+    stripePk: deleteField(),
+  }));
+  const snap = await getDoc(doc(db(null), 'public', 'mgm-studio'));
+  if (snap.data().stripeSk) throw new Error('stripeSk still present');
+  if (snap.data().stripePk) throw new Error('stripePk still present');
+  await assertFails(updateDoc(doc(db(OWNER), 'public', 'mgm-studio'), { stripeSk: 'sk_live_new' }));
+  await assertFails(updateDoc(doc(db(OWNER), 'public', 'mgm-studio'), { stripePk: 'pk_live_new' }));
 });
 
 check('nobody can write a Stripe secret onto a public salon doc', async () => {

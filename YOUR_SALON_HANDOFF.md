@@ -149,7 +149,7 @@ The September 2026 review (submission `2e5902ac-e4fd-4c4d-8aa5-513b73907f3c`) is
 What the rules allow, matching the pages that are actually live:
 
 - `users/{uid}` and anything under it — only that signed-in owner. This is the cloud copy of the salon’s own books.
-- `public/{salonId}` — anyone can read one salon profile (the booking page does). Only a signed-in owner can publish it. A client cannot add `stripeSk` or the other secret field names. Rules cannot hide a field that is already stored, so a secret must not be kept on this document at all.
+- `public/{salonId}` — anyone can read one salon profile (the booking page does). Only a signed-in owner can publish it. A client cannot add `stripeSk`, `stripePk`, or the other secret field names. The owner can delete those fields (the appointments publish does that). A write that sets a new value is refused. Rules cannot hide a field that is already stored, so a secret must not be kept on this document at all.
 - `requests` — a visitor can create one pending request with the fields the booking form sends, and can read a single request by its id (the confirmation watcher). A visitor can list only requests that are still pending (the page shades those times). They cannot approve, decline, dismiss, or delete. The signed-in owner can list the inbox and change status to approved, declined, or dismissed, and nothing else on the row.
 - `trial_requests`, `founder_unlocks`, `trial_activations` — the paywall can create a log row. Nobody can read them back.
 - Everything else is denied. The Cloud Function uses the Admin SDK, which does not consult these rules.
