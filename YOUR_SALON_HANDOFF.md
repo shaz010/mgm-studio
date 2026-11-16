@@ -16,15 +16,15 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live right now, after the payments change (PR #5), is Earnings v2.63, Appointments v6.24, salon v0.52, service worker `yoursalon-v77`. The audit-log change ships these versions once it is merged:
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. On `main` right now, after the audit log (PR #6): Earnings v2.64, Appointments v6.25, salon v0.53, service worker `yoursalon-v78`, booking v3.55. This change ships when it is merged:
 
 | Room | File | Version in this change |
 |---|---|---|
-| Earnings | `app.html` | v2.64 |
-| Appointments | `appt.html` | v6.25 |
-| Shell | `salon.html` | v0.53 (`SHELL_V` matches the page) |
-| Service worker | `sw.js` | `yoursalon-v78` |
-| Booking page | `book.html` | v3.55 (not changed in PR #2) |
+| Earnings | `app.html` | v2.65 |
+| Appointments | `appt.html` | v6.26 |
+| Shell | `salon.html` | v0.53 (unchanged; `SHELL_V` matches the page) |
+| Service worker | `sw.js` | `yoursalon-v79` |
+| Booking page | `book.html` | v3.56 |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
 
@@ -83,11 +83,35 @@ Follow the money for a date: what changed, who was paid, and the balance before 
 
 The existing owner unlock is unchanged. It is not synced, not written into the audit log, and not described in the app.
 
+## Nov 16, 2026 — Stripe and booking deposits removed
+
+Shahbaz sells Your Salon only through the App Store. He does not take booking deposits. The booking page is a request form again: name, phone, service, time, then send. There is no card step.
+
+- `book.html` no longer loads Stripe.js, no longer has the publishable key, and no longer calls `createPaymentIntent`.
+- Appointments publish still writes the public salon profile (hours, services, prices, taken slots). The same write now deletes `stripeSk`, `stripePk`, `depositAmount`, and any other field whose name contains “stripe” or “whsec”. That scrub runs the next time the owner publishes, which the appointments page already does when hours or services change. Until then, a secret already stored on `public/{salonId}` is still readable, because rules cannot hide one field.
+- `functions-index.js` no longer contains `createPaymentIntent`. The function that is already deployed stays in Firebase until Shahbaz runs:
+
+```
+firebase functions:delete createPaymentIntent --project telemetry-eagle
+```
+
+Do not deploy functions. Do not deploy rules. Nothing in this change was deployed.
+
+- The App Store paywall stays. On iPhone it buys `com.yoursalon.pro.monthly` through StoreKit. The old Stripe Checkout URL in the paywall was not used by that button; it has been removed. `thankyou.html` no longer links to a Stripe payment page.
+- The five-tap owner unlock is unchanged.
+
+**Shahbaz still has to do these by hand:**
+
+1. In the Stripe dashboard, revoke `rk_live_…Z84J` (it is in public git history, in `MGMStudio.html` from June 15, 2026) and any other live or restricted keys for this account.
+2. Run the `firebase functions:delete` command above, from a machine where he is logged in.
+3. Open the appointments page once while signed in, so the publish scrub deletes Stripe fields off the live `public/{salonId}` document.
+
+Firestore rules are a separate pull request and are not deployed. That request still refuses client writes that set a secret field. Clearing those fields (this publish) has to stay allowed, or the scrub and the rest of the publish would be rejected together.
+
 **Later.**
 
 - Sync delete-tombstones, so a delete on one device is not brought back by an older copy on another.
-- A Stripe secret must never be written onto `public/{salonId}` documents. No secret key belongs in this repo or in a page the site serves.
-- Firestore security rules are **not** in this repo. They live in the Firebase / Google Cloud console.
+- Firestore security rules are in a separate pull request. They are not deployed. A secret must not be stored on `public/{salonId}`.
 - Google Cloud billing free trial may have expired around **Oct 8, 2026**. If sign-in or sync is down, check billing. The Spark free tier was expected to cost nothing at this scale, but the trial itself needed a billing account on the project.
 - Android stays parked. Closed testing still wanted 12 opted-in testers, and that was not pursued. Android users can install the PWA from Chrome. Details from September are in `your-salon-google-play-handoff.md`.
 
