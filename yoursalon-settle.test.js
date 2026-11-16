@@ -394,6 +394,8 @@ check('before and new work split around the latest payment', function () {
   assert.strictEqual(split.newOwedCents, 12000);
   assert.strictEqual(split.beforeCents, 8300);
   assert.strictEqual(split.newCents, 12000);
+  assert.strictEqual(Math.max(0, split.paidCents - split.beforeOwedCents), 0);
+  assert.strictEqual(split.beforeCents + split.newCents, split.totalCents);
   assert.strictEqual(split.totalCents, 20300);
   assert.strictEqual(split.totalCents, YS.runningBalance(47100, pays).dueCents);
 });
