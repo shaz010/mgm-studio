@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` before this change: Earnings v2.66, Appointments v6.27, salon v0.54, service worker `yoursalon-v81`, booking v3.56. This change ships Earnings v2.68 and `yoursalon-v83` when it is merged. The shell is unchanged. Firestore rules from `main` are deployed on `telemetry-eagle`.
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` (verified 2026-11-16 3:54 PM PT, after PR #11): Earnings v2.68, Appointments v6.27, salon v0.54, service worker `yoursalon-v83`, booking v3.56. Earnings shows "Still owed from before" separately from new work since the last payment, at the top and as a Previous unpaid row in the Salon owes me panel. Firestore rules from `main` are deployed on `telemetry-eagle`.
 
 | Room | File | Live version |
 |---|---|---|
-| Earnings | `app.html` | v2.68 (this change; v2.66 is what is live) |
+| Earnings | `app.html` | v2.68 (live) |
 | Appointments | `appt.html` | v6.27 |
 | Shell | `salon.html` | v0.54 |
-| Service worker | `sw.js` | `yoursalon-v83` (this change; `yoursalon-v81` is what is live) |
+| Service worker | `sw.js` | `yoursalon-v83` (live) |
 | Booking page | `book.html` | v3.56 |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
