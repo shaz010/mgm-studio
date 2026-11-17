@@ -79,18 +79,45 @@ service cloud.firestore {
 
     match /requests/{requestId} {
       // The visitor who just booked watches this one document by id.
-      // They cannot list the inbox or change anyone's request.
+      // Listing requests is owner-only. A list would include names and phones.
       allow get: if true;
-      // Slot shading queries only pending requests. Any other list
-      // (the owner's full inbox, including approved) requires sign-in,
-      // because a non-pending document fails this rule for anonymous users.
-      allow list: if signedIn() || resource.data.status == 'pending';
+      allow list: if signedIn();
       allow create: if requestFieldsOk();
       allow update: if signedIn()
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['status', 'dismissedAt', 'declinedAt'])
         && request.resource.data.status in ['approved', 'declined', 'dismissed'];
       allow delete: if false;
+    }
+
+    function busyFieldsOk(slotId) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['salon', 'date', 'time', 'dur', 'requestId'])
+        && d.salon is string && d.salon.size() > 0 && d.salon.size() < 80
+        && d.date is string && d.date.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && d.time is string && d.time.matches('^\\d{2}:\\d{2}$')
+        && d.dur is number && d.dur >= 5 && d.dur <= 720
+        && d.requestId is string && d.requestId == slotId && d.requestId.size() < 80;
+    }
+    function busyMatchesRequest(slotId) {
+      let req = getAfter(/databases/$(database)/documents/requests/$(slotId)).data;
+      let d = request.resource.data;
+      return existsAfter(/databases/$(database)/documents/requests/$(slotId))
+        && req.salon == d.salon
+        && req.date == d.date
+        && req.time == d.time
+        && req.dur == d.dur;
+    }
+
+    // Times that are held. No names, phones, or notes. Anyone can read them.
+    // A visitor can create one only in the same write as their own pending request.
+    match /busySlots/{slotId} {
+      allow get, list: if true;
+      allow create: if busyFieldsOk(slotId) && busyMatchesRequest(slotId)
+        && (signedIn() || getAfter(/databases/$(database)/documents/requests/$(slotId)).data.status == 'pending');
+      allow update: if signedIn() && busyFieldsOk(slotId)
+        && request.resource.data.requestId == resource.data.requestId;
+      allow delete: if signedIn();
     }
 
     // Logged from the paywall with the public REST API. Create only.

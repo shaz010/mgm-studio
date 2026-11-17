@@ -16,15 +16,15 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` (verified 2026-11-16 3:54 PM PT, after PR #11): Earnings v2.68, Appointments v6.27, salon v0.54, service worker `yoursalon-v83`, booking v3.56. Earnings shows "Still owed from before" separately from new work since the last payment, at the top and as a Previous unpaid row in the Salon owes me panel. Firestore rules from `main` are deployed on `telemetry-eagle`.
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` before this change: Earnings v2.68, Appointments v6.27, salon v0.54, service worker `yoursalon-v83`, booking v3.56. This change ships booking v3.57, Appointments v6.28, and `yoursalon-v84` when it is merged. The new Firestore rules in this pull request are **not** deployed.
 
 | Room | File | Live version |
 |---|---|---|
 | Earnings | `app.html` | v2.68 (live) |
-| Appointments | `appt.html` | v6.27 |
+| Appointments | `appt.html` | v6.28 (this change; v6.27 is what is live) |
 | Shell | `salon.html` | v0.54 |
-| Service worker | `sw.js` | `yoursalon-v83` (live) |
-| Booking page | `book.html` | v3.56 |
+| Service worker | `sw.js` | `yoursalon-v84` (this change; `yoursalon-v83` is what is live) |
+| Booking page | `book.html` | v3.57 (this change; v3.56 is what is live) |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
 
@@ -151,11 +151,24 @@ What the rules allow, matching the pages that are actually live:
 
 - `users/{uid}` and anything under it — only that signed-in owner. This is the cloud copy of the salon’s own books.
 - `public/{salonId}` — anyone can read one salon profile (the booking page does). Only a signed-in owner can publish it. A client cannot add `stripeSk`, `stripePk`, or the other secret field names. The owner can delete those fields (the appointments publish does that). A write that sets a new value is refused. Rules cannot hide a field that is already stored, so a secret must not be kept on this document at all.
-- `requests` — a visitor can create one pending request with the fields the booking form sends, and can read a single request by its id (the confirmation watcher). A visitor can list only requests that are still pending (the page shades those times). They cannot approve, decline, dismiss, or delete. The signed-in owner can list the inbox and change status to approved, declined, or dismissed, and nothing else on the row.
+- `requests` — a visitor can create one pending request and can read that one document by its id (the confirmation watcher). A visitor cannot list requests, so names and phone numbers are not available as a query. The signed-in owner can list the inbox and change status to approved, declined, or dismissed.
+- `busySlots` — anyone can read these. Each document is only a salon id, a date, a start time, a duration, and the request id. A visitor can create one only in the same save as their own pending request, and the time has to match that request. Only the signed-in owner can change or delete one. The booking page shades taken times from this list. It does not read other people’s requests.
 - `trial_requests`, `founder_unlocks`, `trial_activations` — the paywall can create a log row. Nobody can read them back.
 - Everything else is denied. There is no Cloud Function left in this project.
 
-Pending requests are still readable by anyone who queries status `pending`. That is the existing slot-shading flow, and those rows include a name and phone. Tightening that further would need a small booking-page change, which this rules pass does not do.
+**Booking privacy — deploy rules before merging this pull request.** The rules on `main` still let anyone list pending requests, which includes names and phones. This pull request stops that, and adds `busySlots`.
+
+Deploy order, so live booking does not break:
+
+1. Deploy these rules first, from this branch, before the new pages are on `main`:
+
+```
+firebase deploy --only firestore:rules --project telemetry-eagle
+```
+
+2. Then merge. The new booking page writes the request and its busy slot together, and reads only busy slots to shade times. Appointments, once the owner is signed in, writes a busy slot for each pending request already in the inbox (one-time backfill, no separate script). Declining or dismissing a request removes its busy slot. Approving keeps the slot in step with that time, and the public profile’s taken list still covers the appointment.
+
+If the pages were merged first, a new booking still saves the request alone when the busy-slot write is refused, so the request is not lost. Slot shading for those requests waits until the rules are deployed and the owner opens Appointments. Do not deploy until Shahbaz says so.
 
 The same checks can be re-run locally without touching production:
 
