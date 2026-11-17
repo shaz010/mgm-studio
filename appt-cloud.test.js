@@ -20,7 +20,7 @@ assert.ok(appt.indexOf('function localEmulatorMode()') >= 0, 'emulator hook is l
 ['status:\'approved\'', 'status:\'declined\'', 'status:\'dismissed\''].forEach(function (s) {
   assert.ok(appt.indexOf(s) >= 0, 'missing cloud write ' + s);
 });
-assert.ok(appt.indexOf('collection(\'requests\').doc(r._id).update({status:\'approved\'') >= 0, 'approve uses the request update');
+assert.ok(appt.indexOf('batch.update(db.collection(\'requests\').doc(r._id),{status:\'approved\'})') >= 0, 'approve updates the request and keeps its busy slot');
 assert.ok(!/collection\('requests'\)[^;]{0,180}price/.test(appt), 'request writes do not include price');
 console.log('ok  appt.html source waits for sign-in and does not write request price');
 

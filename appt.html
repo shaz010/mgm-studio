@@ -3574,7 +3574,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.27 · booking sync waits for sign-in';
+var VERSION='v6.28 · busy times stay private';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3916,6 +3916,7 @@ function clearFirestoreRequests(cb){
             batch.update(d.ref,{status:'dismissed',dismissedAt:Date.now()});
           }
         });
+        snap.forEach(function(d){batch.delete(db.collection('busySlots').doc(d.id));});
         return batch.commit();
       })
       .then(safeCb)
@@ -4416,6 +4417,7 @@ function listenRequests(){
           pendingReqs.push(r);
         });
         pendingReqs.sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0);});
+        pendingReqs.forEach(holdBusySlot);
         // auto-confirm trusted clients (still conflict-checked)
         pendingReqs.forEach(function(r){ if(isTrustedPhone(r.phone)&&!reqConflict(r)){autoApprove(r);} });
         renderReqBadge();
@@ -4528,6 +4530,15 @@ function reqConflict(r){
   });
 }
 function slotMins(t){if(!t)return 0;var p=(''+t).split(':');return (+p[0])*60+(+p[1]||0);}
+function holdBusySlot(r){
+  if(!fbReady||!fbUser||!r||!r._id||!r.date||!r.time)return;
+  var parts=String(r.time).split(':');
+  var time=('0'+parts[0]).slice(-2)+':'+('0'+(parts[1]||'00')).slice(-2);
+  if(!/^\d{2}:\d{2}$/.test(time))return;
+  db.collection('busySlots').doc(r._id).set({
+    salon:SALON_ID,date:r.date,time:time,dur:(+r.dur||60),requestId:r._id
+  },{merge:true}).catch(function(e){console.warn('busy slot',e);});
+}
 
 /* ---- approve / decline ---- */
 var _approved={};
@@ -4545,7 +4556,12 @@ function commitApproved(r,silent){
   addClientFromBooking(r);
   if(apptPrice>0){var _c2=clientForReq(r);if(_c2){_c2.savedPrice=apptPrice;save(CLIENTS,clients);}}
   if(!fbUser){toast('Booked on this device. Sign in to sync bookings so the client is notified.',1,4200);}
-  else if(fbReady&&r._id)db.collection('requests').doc(r._id).update({status:'approved'}).catch(function(e){console.warn('approve notify rejected',e);toast("Booked here — but the cloud refused the update, so the client wasn't notified",1,4200);});
+  else if(fbReady&&r._id){
+    var batch=db.batch();
+    batch.update(db.collection('requests').doc(r._id),{status:'approved'});
+    batch.set(db.collection('busySlots').doc(r._id),{salon:SALON_ID,date:r.date,time:r.time,dur:(+r.dur||60),requestId:r._id});
+    batch.commit().catch(function(e){console.warn('approve notify rejected',e);toast("Booked here — but the cloud refused the update, so the client wasn't notified",1,4200);});
+  }
   pendingReqs=pendingReqs.filter(function(x){return x._id!==r._id;});
   if(!silent){
     viewDate=parseDate(r.date);dayMode='day';
@@ -4672,7 +4688,10 @@ function declineRequest(id){
   try{softChimeDown();}catch(e){}
   if(!fbUser){toast('Sign in to sync bookings — the client was not notified',1,4200);}
   else if(fbReady&&r._id){
-    db.collection('requests').doc(r._id).update({status:'declined',declinedAt:Date.now()})
+    var batch=db.batch();
+    batch.update(db.collection('requests').doc(r._id),{status:'declined',declinedAt:Date.now()});
+    batch.delete(db.collection('busySlots').doc(r._id));
+    batch.commit()
       .then(function(){toast('Declined — the client sees it instantly',2);})
       .catch(function(e){console.warn('decline rejected',e);toast("Cloud refused the decline — check Firestore rules (card will return)",1,4200);});
   }else{toast('Declined',2);}

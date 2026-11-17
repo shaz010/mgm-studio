@@ -9,7 +9,7 @@ const {
 } = require('@firebase/rules-unit-testing');
 const {
   doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc,
-  collection, query, where, getDocs, Timestamp, deleteField,
+  collection, query, where, getDocs, Timestamp, deleteField, writeBatch,
 } = require('firebase/firestore');
 
 const OWNER = 'owner-uid';
@@ -130,19 +130,43 @@ check('visitor can create a valid booking request and cannot create a privileged
   await assertSucceeds(getDoc(ref));
 });
 
-check('visitor can list only pending requests; the owner can list and close them', async () => {
+check('anonymous cannot list requests, and can only read one by id', async () => {
   const pending = await addDoc(collection(db(null), 'requests'), validRequest());
-  await assertSucceeds(setDoc(doc(db(OWNER), 'requests', 'old-one'), validRequest({ status: 'pending' })));
-  await updateAsOwnerApproved('old-one');
-  const pendingQ = query(collection(db(null), 'requests'), where('salon', '==', 'mgm-studio'), where('status', '==', 'pending'));
-  await assertSucceeds(getDocs(pendingQ));
-  const allQ = query(collection(db(null), 'requests'), where('salon', '==', 'mgm-studio'));
-  await assertFails(getDocs(allQ));
+  await assertSucceeds(getDoc(pending));
+  await assertFails(getDocs(query(collection(db(null), 'requests'), where('salon', '==', 'mgm-studio'), where('status', '==', 'pending'))));
+  await assertFails(getDocs(query(collection(db(null), 'requests'), where('salon', '==', 'mgm-studio'))));
   await assertSucceeds(getDocs(query(collection(db(OWNER), 'requests'), where('salon', '==', 'mgm-studio'))));
   await assertSucceeds(updateDoc(doc(db(OWNER), 'requests', pending.id), { status: 'approved' }));
   await assertSucceeds(updateDoc(doc(db(OWNER), 'requests', pending.id), { status: 'declined', declinedAt: Date.now() }));
   await assertSucceeds(updateDoc(doc(db(OWNER), 'requests', pending.id), { status: 'dismissed', dismissedAt: Date.now() }));
   await assertFails(updateDoc(doc(db(OWNER), 'requests', pending.id), { phone: '555-0199' }));
+});
+
+function busySlot(id, extra) {
+  return Object.assign({
+    salon: 'mgm-studio', date: '2026-11-16', time: '10:00', dur: 60, requestId: id,
+  }, extra || {});
+}
+
+check('anonymous books a time without exposing other customers', async () => {
+  const id = 'req-privacy-1';
+  const anon = db(null);
+  const batch = writeBatch(anon);
+  batch.set(doc(anon, 'requests', id), validRequest());
+  batch.set(doc(anon, 'busySlots', id), busySlot(id));
+  await assertSucceeds(batch.commit());
+  await assertFails(setDoc(doc(db(null), 'busySlots', 'no-request'), busySlot('no-request')));
+  await assertFails(setDoc(doc(db(null), 'busySlots', id), busySlot(id, { name: 'Ada' })));
+  await assertFails(deleteDoc(doc(db(null), 'busySlots', id)));
+  const listed = await assertSucceeds(getDocs(query(collection(db(null), 'busySlots'), where('salon', '==', 'mgm-studio'))));
+  listed.forEach(function (d) {
+    const data = d.data();
+    if (data.name || data.phone || data.notes) throw new Error('busy slot leaked customer details');
+    if (!data.time || !data.date) throw new Error('busy slot missing the time');
+  });
+  await assertSucceeds(setDoc(doc(db(OWNER), 'busySlots', id), busySlot(id)));
+  await assertSucceeds(deleteDoc(doc(db(OWNER), 'busySlots', id)));
+  await assertSucceeds(setDoc(doc(db(OWNER), 'busySlots', id), busySlot(id)));
 });
 
 async function updateAsOwnerApproved(id) {
