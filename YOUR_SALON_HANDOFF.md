@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` before this change: Earnings v2.68, Appointments v6.28, salon v0.54, service worker `yoursalon-v84`, booking v3.57. This change ships Earnings v2.69 and `yoursalon-v85` when it is merged.
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` now (PR #13 merged 2026-11-18 9:59 AM PT, verified live): Earnings v2.69, Appointments v6.28, salon v0.54, service worker `yoursalon-v85`, booking v3.57.
 
 | Room | File | Live version |
 |---|---|---|
-| Earnings | `app.html` | v2.69 (this change; v2.68 is what is live) |
+| Earnings | `app.html` | v2.69 (live) |
 | Appointments | `appt.html` | v6.28 |
 | Shell | `salon.html` | v0.54 |
-| Service worker | `sw.js` | `yoursalon-v85` (this change; `yoursalon-v84` is what is live) |
+| Service worker | `sw.js` | `yoursalon-v85` (live) |
 | Booking page | `book.html` | v3.57 |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
