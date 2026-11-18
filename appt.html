@@ -846,7 +846,8 @@ datalist{display:none}
 .cd-more{margin-top:12px;width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-bright);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer}
 .cd-more:active{border-color:var(--gold);color:var(--gold)}
 .lrow.sel{box-shadow:0 0 0 1.5px var(--gold)}
-.cb-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.cb-sticky{position:sticky;top:0;z-index:4;background:#111117;margin:0 -24px 8px;padding:12px 24px 8px}
+.cb-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:0}
 .cb-top .sheet-title{font-size:22px!important}
 .cb-topsub{font-size:15px;color:var(--muted);margin-top:3px}
 .cb-edit{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;border:1.5px solid #e2b340;background:rgba(226,179,64,.18);color:#f0d48a;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit}
@@ -868,6 +869,15 @@ datalist{display:none}
 .cb-price{font-size:18px;font-weight:800;color:var(--gold);flex-shrink:0}
 .cb-appt.ip{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
 .cb-ip{font-size:11.5px;font-weight:800;color:var(--gold);margin-top:4px;letter-spacing:.3px}
+.cb-status{font-size:12px;font-weight:800;color:#f0d48a;margin-top:4px}
+.cb-saved{margin:8px 0 12px;font-size:14px;font-weight:700;color:#f0d48a}
+.cb-client-edit label,.cb-edit-card label{display:block;margin-top:10px;font-size:13px;color:var(--text2);font-weight:600}
+.cb-client-edit input,.cb-edit-card input,.cb-edit-card select{border:1.5px solid #d4b15a;background:#0c0c10;font-size:16px;min-height:44px}
+.cb-edit-card{border:1px solid rgba(226,179,64,.45);border-radius:14px;padding:12px;margin-bottom:10px;background:#0c0c10}
+.cb-edit-card .date-stepper{margin-top:4px}
+#clientBookingsModal .sheet{padding-bottom:0}
+.cb-savebar{position:sticky;bottom:0;z-index:5;display:flex;gap:8px;background:#111117;margin-top:12px;margin-left:-24px;margin-right:-24px;padding:12px 24px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid rgba(226,179,64,.45)}
+.cb-savebar .btn{flex:1}
 .price-tools{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .hair-toggle{padding:8px 11px;border-radius:8px;border:1.5px solid #555;background:#1a1a1a;color:#999;cursor:pointer;font-size:12px;font-weight:800;white-space:nowrap;flex-shrink:0;transition:all .12s;-webkit-tap-highlight-color:transparent}
 .hair-toggle.on{border-color:var(--gold);color:#1a1208;background:var(--gold)}
@@ -1442,13 +1452,19 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 
 <!-- CLIENT BOOKINGS (tap avatar) -->
 <div class="modal" id="clientBookingsModal" onclick="if(event.target===this)closeSheet('clientBookingsModal')">
-  <div class="sheet">
+  <div class="sheet" style="padding-top:0">
+    <div class="cb-sticky">
     <div class="sheet-grip"></div>
     <div class="cb-top">
       <div><div class="sheet-title" id="cbTitle" style="margin:0">Client</div><div class="cb-topsub" id="cbSub"></div></div>
       <button type="button" class="cb-edit" id="cbEdit" onclick="editClientFromBookings()"><i class="ti ti-pencil"></i> Edit</button>
     </div>
+    </div>
     <div id="cbList" style="margin-top:6px"></div>
+    <div class="cb-savebar" id="cbSaveBar" style="display:none">
+      <button type="button" class="btn btn-ghost" id="cbCancel" onclick="cancelClientBookingsEdit()">Cancel</button>
+      <button type="button" class="btn" id="cbSave" onclick="saveClientBookings()"><i class="ti ti-check"></i> Save</button>
+    </div>
   </div>
 </div>
 
@@ -2824,6 +2840,24 @@ function saveAppt(){
   }
   go();
 }
+function persistAppt(prevRec,rec){
+  if(prevRec&&prevRec.splitFrozen){rec.splitPct=prevRec.splitPct;rec.splitFrozen=true;}
+  if((rec.status==='done'||rec.splitFrozen)&&window.YS)rec=YS.applyFrozenSplit(rec,getSplit(),'price');
+  var id=rec.id,existed=false;
+  appts=appts.map(function(a){if(a.id!==id)return a;existed=true;return rec;});
+  if(!existed)appts.push(rec);
+  var was=prevRec?(prevRec.status||'confirmed'):'';
+  var now=rec.status||'confirmed';
+  if(prevRec&&now==='done'&&was!=='done')applyStockForAppt(id);
+  else if(prevRec&&was==='done'&&now!=='done')revertStockForAppt(id);
+  save(APPTS,appts);
+  try{
+    (YS.planSaveEvents(prevRec,rec)||[]).forEach(function(p){p.source='appt';logAudit(p);});
+    if(prevRec&&was!==now)logAudit(YS.planStatusEvent(Object.assign({_src:'appt'},rec),was,now));
+  }catch(e){}
+  if(typeof publishAvailability==='function')publishAvailability();
+  return rec;
+}
 function commitSave(){
   var name=$('fName').value.trim(),date=$('fDate').value,time=$('fTime').value;
   var service=$('fService').value.trim();
@@ -2836,23 +2870,17 @@ function commitSave(){
     date:date,time:time,dur:+$('fDur').value||0,price:+$('fPrice').value||0,tip:+$('fTip').value||0,
     notes:$('fNotes').value.trim(),status:prevStatus
   });
-  if(prevRec&&prevRec.splitFrozen){rec.splitPct=prevRec.splitPct;rec.splitFrozen=true;}
-  if(rec.status==='done'||rec.splitFrozen)rec=YS.applyFrozenSplit(rec,getSplit(),'price');
   var wasEdit=!!editingId;
   // link this booking to a stable client id (rename-safe) — create the client if new
   var _cn=normName(name);
   var _cli=clients.find(function(c){return normName(c.name)===_cn;});
   if(!_cli){_cli={id:uid(),name:name,phone:rec.phone,email:''};clients.push(_cli);save(CLIENTS,clients);}
   rec.cid=_cli.id;
-  if(editingId){appts=appts.map(function(a){return a.id===editingId?rec:a})}
-  else{appts.push(rec)}
-  save(APPTS,appts);
-  try{(YS.planSaveEvents(prevRec,rec)||[]).forEach(function(p){p.source='appt';logAudit(p);});}catch(e){}
+  persistAppt(prevRec,rec);
   viewDate=parseDate(date);
   editingId=null;
   toast(wasEdit?'Updated':'Booked in');
   showView('day');
-  if(typeof publishAvailability==='function')publishAvailability();
 }
 function cancelEdit(){editingId=null;showView('day')}
 function deleteFromSheet(){
@@ -3208,14 +3236,23 @@ function openClientSheet(id){
   }
   $('clientModal').classList.add('show');
 }
+function saveClientFields(id,name,phone,email,priceStr){
+  name=(name||'').trim();if(!name){toast('Add a name',1);return false;}
+  phone=(phone||'').trim();email=(email||'').trim();
+  var prev=id?clients.find(function(c){return c.id===id;}):null;
+  var sp=parseFloat(priceStr);
+  var nextPrice=(!isNaN(sp)&&sp>0)?sp:0;
+  var prevPrice=prev&&prev.savedPrice>0?+prev.savedPrice:0;
+  if(prev&&prev.name===name&&(prev.phone||'')===phone&&(prev.email||'')===email&&prevPrice===nextPrice)return true;
+  var rec=Object.assign({},prev||{},{id:id||uid(),name:name,phone:phone,email:email});
+  if(nextPrice>0)rec.savedPrice=nextPrice; else delete rec.savedPrice;
+  if(id){clients=clients.map(function(c){return c.id===id?rec:c;});}else{clients.push(rec);}
+  save(CLIENTS,clients);
+  return true;
+}
 function saveClient(){
-  var name=$('csName').value.trim();if(!name){toast('Add a name',1);return;}
-  var prev=clientId?clients.find(function(c){return c.id===clientId;}):null;
-  var rec=Object.assign({},prev||{},{id:clientId||uid(),name:name,phone:$('csPhone').value.trim(),email:$('csEmail').value.trim()});
-  var sp=parseFloat($('csPrice').value);
-  if(!isNaN(sp)&&sp>0)rec.savedPrice=sp; else delete rec.savedPrice;
-  if(clientId){clients=clients.map(function(c){return c.id===clientId?rec:c})}else{clients.push(rec)}
-  save(CLIENTS,clients);closeSheet('clientModal');renderClients();toast('Client saved');
+  if(!saveClientFields(clientId,$('csName').value,$('csPhone').value,$('csEmail').value,$('csPrice').value))return;
+  closeSheet('clientModal');renderClients();toast('Client saved');
 }
 function bookAgain(){
   if(!clientId)return;
@@ -3253,18 +3290,97 @@ function deleteClient(){
     if(typeof publishAvailability==='function')publishAvailability();
   },{danger:true,yesLabel:'Delete'});
 }
-var _cbClientId=null;
+var _cbClientId=null,_cbEditing=false;
 function editClientFromBookings(){
-  var id=_cbClientId;if(!id)return;
+  if(!_cbClientId)return;
+  _cbEditing=true;
+  renderClientBookings();
+}
+function cancelClientBookingsEdit(){
+  _cbEditing=false;
+  renderClientBookings();
+}
+function openBookingEditor(id){
   closeSheet('clientBookingsModal');
-  openClientSheet(id);
+  sheetId=id;
+  editFromSheet();
+}
+function cbCard(id){
+  var cards=document.querySelectorAll('#cbList .cb-edit-card');
+  for(var i=0;i<cards.length;i++){if(cards[i].getAttribute('data-aid')===String(id))return cards[i];}
+  return null;
+}
+function cbDateTyped(el){
+  var card=el.closest?el.closest('.cb-edit-card'):null;
+  var btn=card&&card.querySelector('[data-open-date]');
+  if(btn)btn.textContent=YS.dateSpoken(el.value,true)||'Pick a date';
+  var note=card&&card.querySelector('.date-notice');
+  if(!note)return;
+  if(el.value&&el.value!==todayStr()){note.style.display='block';note.textContent='Not today: '+YS.dateSpoken(el.value);}
+  else{note.style.display='none';note.textContent='';}
+}
+function shiftBookingDate(id,dir){
+  var card=cbCard(id);if(!card)return;
+  var input=card.querySelector('input[data-k="date"]');if(!input)return;
+  var cur=input.value;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(cur||''))cur=todayStr();
+  var next=dir<0?YS.prevYMD(cur):YS.nextYMD(cur);
+  if(!next)return;
+  input.value=next;
+  cbDateTyped(input);
+}
+function openBookingDate(id){
+  var card=cbCard(id);if(!card)return;
+  var el=card.querySelector('input[data-k="date"]');if(!el)return;
+  try{ if(typeof el.showPicker==='function'){ el.showPicker(); return; } }catch(e){}
+  try{ el.focus(); }catch(e2){}
+  try{ el.click(); }catch(e3){}
+}
+function hm(t){t=String(t||'');var p=t.split(':');if(p.length<2)return '';return ('0'+p[0]).slice(-2)+':'+('0'+p[1]).slice(-2);}
+function bookingChanged(prev,next){
+  return (prev.date||'')!==(next.date||'')||hm(prev.time)!==hm(next.time)||(prev.service||'')!==(next.service||'')||(+prev.price||0)!==(+next.price||0)||(+prev.tip||0)!==(+next.tip||0)||(prev.status||'confirmed')!==(next.status||'confirmed');
+}
+function saveClientBookings(){
+  if(!$('cbName'))return;
+  if(!saveClientFields(_cbClientId,$('cbName').value,$('cbPhone').value,$('cbEmail').value,$('cbPrice').value))return;
+  var cards=document.querySelectorAll('#cbList .cb-edit-card');
+  for(var i=0;i<cards.length;i++){
+    var card=cards[i],aid=card.getAttribute('data-aid');
+    var prev=appts.find(function(a){return String(a.id)===String(aid);});
+    if(!prev)continue;
+    var date=card.querySelector('[data-k="date"]').value;
+    var time=card.querySelector('[data-k="time"]').value;
+    if(!date){toast('Each booking needs a date',1);return;}
+    if(!time){toast('Each booking needs a time',1);return;}
+    var next=Object.assign({},prev,{
+      date:date,
+      time:hm(time)||time,
+      service:card.querySelector('[data-k="service"]').value.trim(),
+      price:+card.querySelector('[data-k="price"]').value||0,
+      tip:+card.querySelector('[data-k="tip"]').value||0,
+      status:card.querySelector('[data-k="status"]').value||prev.status||'confirmed'
+    });
+    if(!bookingChanged(prev,next))continue;
+    persistAppt(prev,next);
+  }
+  _cbEditing=false;
+  renderClientBookings();
+  renderClients();
+  if(typeof renderDay==='function')renderDay();
+  toast('Saved');
 }
 function openClientBookings(id){
-  reload();
-  var c=clients.find(function(x){return x.id===id});if(!c)return;
+  _cbEditing=false;
   _cbClientId=id;
-  $('cbTitle').textContent=c.name;
+  renderClientBookings();
+}
+function renderClientBookings(){
+  reload();
+  var c=clients.find(function(x){return x.id===_cbClientId;});if(!c)return;
+  $('cbTitle').textContent=_cbEditing?'Editing':c.name;
   $('cbSub').textContent=c.phone?c.phone:'No phone';
+  var editBtn=$('cbEdit');if(editBtn)editBtn.style.display=_cbEditing?'none':'';
+  var bar=$('cbSaveBar');if(bar)bar.style.display=_cbEditing?'flex':'none';
   var today=todayStr();
   var mine=appts.filter(function(a){return sameClient(a,c)&&a.status!=='cancelled';});
   var upcoming=mine.filter(function(a){return a.date>=today&&a.status!=='done'&&a.status!=='noshow';})
@@ -3272,9 +3388,10 @@ function openClientBookings(id){
   var past=mine.filter(function(a){return !(a.date>=today&&a.status!=='done'&&a.status!=='noshow');})
               .sort(function(a,b){return ((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||''));});
   function row(a){
+    if(_cbEditing)return bookingEditCard(a);
     var ip=isInProgress(a);
-    return '<div class="cb-appt'+(ip?' ip':'')+'" onclick="closeSheet(\'clientBookingsModal\');openSheet(\''+a.id+'\')">'+
-      '<div class="cb-when"><div class="cb-date">'+fmtReqDate(a.date)+'</div><div class="cb-time">'+to12(a.time)+'</div>'+(ip?'<div class="cb-ip">● In progress</div>':'')+'</div>'+
+    return '<div class="cb-appt'+(ip?' ip':'')+'" onclick="openBookingEditor(\''+jsq(a.id)+'\')">'+
+      '<div class="cb-when"><div class="cb-date">'+fmtReqDate(a.date)+'</div><div class="cb-time">'+to12(a.time)+'</div><div class="cb-status">'+esc(stLabel(a.status||'confirmed'))+'</div>'+(ip?'<div class="cb-ip">● In progress</div>':'')+'</div>'+
       '<div class="cb-mid"><div class="cb-svc">'+esc(a.service||'—')+'</div>'+(a.notes?'<div class="cb-note">'+esc(a.notes)+'</div>':'')+'</div>'+
       '<div class="cb-price">'+fmt$(a.price)+'</div></div>';
   }
@@ -3282,8 +3399,40 @@ function openClientBookings(id){
   if(upcoming.length){html+='<div class="cb-head">Upcoming</div>'+upcoming.map(row).join('');}
   if(past.length){html+='<div class="cb-head" style="margin-top:14px">History</div>'+past.slice(0,8).map(row).join('');}
   if(!html){html='<div class="empty" style="padding:24px 0"><i class="ti ti-calendar-off"></i><div class="empty-t">No bookings yet</div><div class="empty-s">When you book '+esc(c.name)+', their appointments show here.</div></div>';}
-  $('cbList').innerHTML=buildClientProfileHTML(c)+html;
+  if(_cbEditing){
+    html='<div class="cb-client-edit">'+
+      '<label>Name <input id="cbName" value="'+esc(c.name)+'"></label>'+
+      '<label>Phone <input id="cbPhone" type="tel" value="'+esc(c.phone||'')+'"></label>'+
+      '<label>Email <input id="cbEmail" type="email" value="'+esc(c.email||'')+'"></label>'+
+      '<label>Saved price <input id="cbPrice" type="number" inputmode="decimal" min="0" step="1" value="'+(c.savedPrice>0?esc(String(c.savedPrice)):'')+'" placeholder="—"></label>'+
+      '</div>'+html;
+  }else{
+    html=buildClientProfileHTML(c)+'<div class="cb-saved">Saved price: '+(c.savedPrice>0?fmt$(c.savedPrice):'—')+'</div>'+html;
+  }
+  $('cbList').innerHTML=html;
   $('clientBookingsModal').classList.add('show');
+}
+function bookingEditCard(a){
+  var spoken=YS.dateSpoken(a.date,true)||'Pick a date';
+  var off=a.date&&a.date!==todayStr();
+  var statuses=['confirmed','done','noshow','cancelled'];
+  var cur=a.status||'confirmed';
+  if(statuses.indexOf(cur)<0)statuses.unshift(cur);
+  var opts=statuses.map(function(s){return '<option value="'+s+'"'+(s===cur?' selected':'')+'>'+esc(stLabel(s))+'</option>';}).join('');
+  return '<div class="cb-edit-card" data-aid="'+esc(a.id)+'">'+
+    '<div class="date-stepper">'+
+      '<button type="button" class="date-step" data-step="-1" data-aid="'+esc(a.id)+'" onclick="shiftBookingDate(this.getAttribute(\'data-aid\'),-1)">−1 day</button>'+
+      '<button type="button" class="date-open" data-open-date="1" data-aid="'+esc(a.id)+'" onclick="openBookingDate(this.getAttribute(\'data-aid\'))">'+esc(spoken)+'</button>'+
+      '<button type="button" class="date-step" data-step="1" data-aid="'+esc(a.id)+'" onclick="shiftBookingDate(this.getAttribute(\'data-aid\'),1)">+1 day</button>'+
+    '</div>'+
+    '<label>Calendar <input data-k="date" type="date" value="'+esc(a.date||'')+'" oninput="cbDateTyped(this)" onchange="cbDateTyped(this)"></label>'+
+    '<div class="date-notice"'+(off?'':' style="display:none"')+'>'+(off?('Not today: '+esc(YS.dateSpoken(a.date))):'')+'</div>'+
+    '<label>Time <input data-k="time" type="time" value="'+esc(hm(a.time)||'')+'"></label>'+
+    '<label>Service <input data-k="service" type="text" value="'+esc(a.service||'')+'"></label>'+
+    '<label>Price <input data-k="price" type="number" inputmode="decimal" min="0" step="1" value="'+esc(a.price!=null?String(a.price):'')+'"></label>'+
+    '<label>Tip <input data-k="tip" type="number" inputmode="decimal" min="0" step="1" value="'+esc(a.tip!=null?String(a.tip):'0')+'"></label>'+
+    '<label>Status <select data-k="status">'+opts+'</select></label>'+
+    '</div>';
 }
 
 /* ===== STOCK / INVENTORY ===== */
@@ -3655,7 +3804,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.31 · Date can be changed on iPhone';
+var VERSION='v6.32 · Edit a client and their bookings in place';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

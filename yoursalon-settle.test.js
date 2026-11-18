@@ -533,15 +533,20 @@ check('a done visit keeps its date change in the audit, and the date can move a 
   assert.ok(auditAt > 0 && auditAt < settleAt, 'What happened sits above settlements');
 });
 
-check('a client booking sheet can open the editor, and Save stays put', function () {
+check('a client booking sheet edits in place, and a row opens the full form', function () {
   var appt = require('fs').readFileSync(__dirname + '/appt.html', 'utf8');
   assert.ok(appt.indexOf('id="cbEdit"') >= 0);
-  assert.ok(appt.indexOf('editClientFromBookings') >= 0);
-  var edit = appt.slice(appt.indexOf('function editClientFromBookings'), appt.indexOf('function openClientBookings'));
-  assert.ok(edit.indexOf("closeSheet('clientBookingsModal')") >= 0);
-  assert.ok(edit.indexOf('openClientSheet(id)') >= 0);
+  var edit = appt.slice(appt.indexOf('function editClientFromBookings'), appt.indexOf('function cancelClientBookingsEdit'));
+  assert.ok(edit.indexOf('_cbEditing=true') >= 0, 'Edit stays on this sheet');
+  assert.ok(edit.indexOf("closeSheet('clientBookingsModal')") < 0);
+  var open = appt.slice(appt.indexOf('function openBookingEditor'), appt.indexOf('function cbCard'));
+  assert.ok(open.indexOf('editFromSheet()') >= 0, 'a booking row opens the full edit form');
+  assert.ok(appt.indexOf('persistAppt(prev,next)') >= 0);
+  assert.ok(appt.indexOf('function persistAppt') >= 0);
+  assert.ok(appt.indexOf('shiftBookingDate(this.getAttribute') >= 0);
+  assert.ok(appt.indexOf('function openBookingDate') >= 0);
+  assert.ok(appt.indexOf('id="cbSave"') >= 0);
   assert.ok(appt.indexOf('position:sticky;bottom:0') >= 0);
-  assert.ok(appt.indexOf('id="csSaveRow"') >= 0);
 });
 
 if (failed) {
