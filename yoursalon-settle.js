@@ -20,14 +20,15 @@
     return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
   }
 
-  /* "Thu 30 Oct". Used so a past date in the Add form is obvious. */
-  function dateSpoken(ymdStr) {
+  /* "Thu 30 Oct", or "Tue 3 Nov 2026" when withYear is set. Local noon, not UTC. */
+  function dateSpoken(ymdStr, withYear) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(String(ymdStr || ''))) return '';
     var p = String(ymdStr).split('-');
     var d = new Date(+p[0], +p[1] - 1, +p[2], 12, 0, 0);
     var wd = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()];
     var mo = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
-    return wd + ' ' + d.getDate() + ' ' + mo;
+    var s = wd + ' ' + d.getDate() + ' ' + mo;
+    return withYear ? (s + ' ' + d.getFullYear()) : s;
   }
 
   function daysBeforeToday(ymdStr, todayYmd) {
@@ -955,6 +956,8 @@
   var api = {
     localYMD: localYMD,
     dateSpoken: dateSpoken,
+    prevYMD: prevYMD,
+    nextYMD: nextYMD,
     daysBeforeToday: daysBeforeToday,
     defaultAddDate: defaultAddDate,
     needsPastDateConfirm: needsPastDateConfirm,

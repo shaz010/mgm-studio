@@ -505,6 +505,34 @@ check('the main Add button uses today, and a day cell keeps its day', function (
   assert.ok(appt.indexOf('needsPastDateConfirm') >= 0);
 });
 
+check('a done visit keeps its date change in the audit, and the date can move a day', function () {
+  assert.strictEqual(YS.dateSpoken('2026-11-03', true), 'Tue 3 Nov 2026');
+  assert.strictEqual(YS.nextYMD('2026-11-03'), '2026-11-04');
+  assert.strictEqual(YS.prevYMD('2026-11-03'), '2026-11-02');
+  var before = { id: 'hidi', name: 'Hidi', date: '2026-11-03', time: '10:00', status: 'done', service: 'Cut', price: 80, doneAt: 1, splitFrozen: true, splitPct: 60, chargeCents: 8000, meCents: 4800, tipCents: 0 };
+  var after = Object.assign({}, before, { date: '2026-11-04' });
+  var ev = YS.planSaveEvents(before, after);
+  var edit = ev.filter(function (e) { return e.type === 'appointment.edit'; })[0];
+  assert.ok(edit, 'date change plans an edit');
+  assert.strictEqual(edit.before.date, '2026-11-03');
+  assert.strictEqual(edit.after.date, '2026-11-04');
+  assert.strictEqual(after.status, 'done');
+  assert.strictEqual(after.doneAt, 1);
+  var appt = require('fs').readFileSync(__dirname + '/appt.html', 'utf8');
+  var app = require('fs').readFileSync(__dirname + '/app.html', 'utf8');
+  var dateAt = appt.indexOf('id="whenBlock"');
+  var picksAt = appt.indexOf('id="favRow"');
+  assert.ok(dateAt > 0 && dateAt < picksAt, 'date sits above Quick picks');
+  assert.ok(appt.indexOf('function openDatePicker') >= 0);
+  assert.ok(appt.indexOf('el.showPicker') >= 0);
+  assert.ok(appt.indexOf('shiftFormDate(1)') >= 0);
+  assert.ok(appt.indexOf('input[type=date],input[type=time]{-webkit-appearance:auto') >= 0);
+  assert.ok(appt.indexOf('Object.assign({},prevRec||{}') >= 0);
+  var auditAt = app.indexOf('id="auditCard"');
+  var settleAt = app.indexOf('id="settleCard"');
+  assert.ok(auditAt > 0 && auditAt < settleAt, 'What happened sits above settlements');
+});
+
 check('a client booking sheet can open the editor, and Save stays put', function () {
   var appt = require('fs').readFileSync(__dirname + '/appt.html', 'utf8');
   assert.ok(appt.indexOf('id="cbEdit"') >= 0);
