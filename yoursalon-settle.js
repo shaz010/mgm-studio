@@ -943,6 +943,90 @@
     return toCsv(headers, rows);
   }
 
+  /* The six first-run sample bookings. A row is a sample only when the id,
+     name, and phone all match. A real client who shares a sample name is kept. */
+  var SAMPLE_APPTS = [
+    { id: 'da1', name: 'Jessica Miller', phone: '555-0101' },
+    { id: 'da2', name: 'Sarah Thompson', phone: '555-0102' },
+    { id: 'da3', name: 'Amanda Chen', phone: '555-0103' },
+    { id: 'da4', name: 'Rachel Torres', phone: '555-0104' },
+    { id: 'da5', name: 'Lisa Park', phone: '555-0105' },
+    { id: 'da6', name: 'Emma Wilson', phone: '555-0106' }
+  ];
+  var SAMPLE_CLIENTS = [
+    { id: 'dc1', name: 'Jessica Miller', phone: '555-0101' },
+    { id: 'dc2', name: 'Sarah Thompson', phone: '555-0102' },
+    { id: 'dc3', name: 'Amanda Chen', phone: '555-0103' },
+    { id: 'dc4', name: 'Rachel Torres', phone: '555-0104' },
+    { id: 'dc5', name: 'Lisa Park', phone: '555-0105' },
+    { id: 'dc6', name: 'Emma Wilson', phone: '555-0106' }
+  ];
+
+  function sampleDigits(p) { return String(p || '').replace(/\D/g, ''); }
+
+  function matchesSample(row, samples) {
+    if (!row || row.id == null) return false;
+    var id = String(row.id);
+    var name = String(row.name || '').trim();
+    var phone = sampleDigits(row.phone);
+    for (var i = 0; i < samples.length; i++) {
+      var s = samples[i];
+      if (id === s.id && name === s.name && phone === sampleDigits(s.phone)) return true;
+    }
+    return false;
+  }
+
+  function isSampleAppt(row) { return matchesSample(row, SAMPLE_APPTS); }
+  function isSampleClient(row) { return matchesSample(row, SAMPLE_CLIENTS); }
+
+  function dropSampleRows(records, kind) {
+    var pred = kind === 'client' ? isSampleClient : isSampleAppt;
+    return (records || []).filter(function (r) { return !pred(r); });
+  }
+
+  function readJsonArray(getItem, key) {
+    try {
+      var v = JSON.parse(getItem(key) || '[]');
+      return Array.isArray(v) ? v : [];
+    } catch (e) { return []; }
+  }
+
+  /* Remove exact sample rows, tombstone those ids, and write one audit line.
+     Any other row is left alone. Safe to run on every load. */
+  function purgeSamples(getItem, setItem) {
+    var appts = readJsonArray(getItem, 'ap_appts');
+    var clients = readJsonArray(getItem, 'ap_clients');
+    var keptA = dropSampleRows(appts, 'appt');
+    var keptC = dropSampleRows(clients, 'client');
+    var removedA = appts.filter(isSampleAppt);
+    var removedC = clients.filter(isSampleClient);
+    if (removedA.length) setItem('ap_appts', JSON.stringify(keptA));
+    if (removedC.length) setItem('ap_clients', JSON.stringify(keptC));
+    var tombs = readJsonArray(getItem, 'ys_tombstones');
+    var nextTombs = tombs;
+    removedA.forEach(function (r) {
+      nextTombs = appendAudit(nextTombs, makeTombstone('ap_appt', r.id, Date.now(), 'Removed sample bookings'));
+    });
+    removedC.forEach(function (r) {
+      nextTombs = appendAudit(nextTombs, makeTombstone('ap_client', r.id, Date.now(), 'Removed sample bookings'));
+    });
+    if (nextTombs !== tombs) setItem('ys_tombstones', JSON.stringify(nextTombs));
+    if (removedA.length || removedC.length) {
+      if (getItem('ys_sample_audited') !== '1') {
+        storeAudit(getItem, setItem, {
+          type: 'data.cleanup',
+          entityType: 'ap_appt',
+          entityId: 'samples',
+          summary: 'Removed sample bookings',
+          source: 'appt',
+          actor: 'this device'
+        });
+        setItem('ys_sample_audited', '1');
+      }
+    }
+    return { removedAppts: removedA.length, removedClients: removedC.length };
+  }
+
   function tombstoneId(entityType, entityId) { return 'tomb-' + entityType + '-' + String(entityId); }
 
   function makeTombstone(entityType, entityId, at, summary) {
@@ -1013,7 +1097,11 @@
     tombstoneId: tombstoneId,
     makeTombstone: makeTombstone,
     isTombstoned: isTombstoned,
-    filterTombstones: filterTombstones
+    filterTombstones: filterTombstones,
+    isSampleAppt: isSampleAppt,
+    isSampleClient: isSampleClient,
+    dropSampleRows: dropSampleRows,
+    purgeSamples: purgeSamples
   };
 
   root.YS = api;

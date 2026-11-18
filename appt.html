@@ -545,12 +545,10 @@ body.theme-noir .ap-breakdown{background:#000;border-color:#1c1c26}
 /* 5th tile (TAKE-HOME) alone on last row → span full width so it's centred & hero */
 .day-stats>.dstat:last-child:nth-child(odd){grid-column:1/-1}
 /* ── Demo banner ── */
-#demoBanner{display:none;background:linear-gradient(110deg,rgba(103,232,249,.1),rgba(167,139,250,.12),rgba(245,168,255,.08));border:1px solid rgba(167,139,250,.35);border-radius:14px;padding:14px 16px;margin:0 0 14px}
-#demoBanner.show{display:block}
-.demo-title{font-size:14px;font-weight:700;color:#e0e0e0;margin-bottom:4px}
-.demo-sub{font-size:12.5px;color:#999;line-height:1.55;margin-bottom:12px}
-.demo-clear{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(167,139,250,.5);background:rgba(167,139,250,.15);color:#a78bfa;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent}
-.demo-clear:active{opacity:.7}
+.cb-edit-card.cb-invalid{border-color:#e85d5d}
+.cb-invalid-msg{color:#ff8a8a;font-size:13px;font-weight:800;margin-top:8px}
+.cb-appt.cancelled{opacity:.72}
+.cb-appt.cancelled .cb-svc{text-decoration:line-through}
 /* ── Coach marks tour ── */
 #coachOverlay{position:fixed;inset:0;z-index:800;pointer-events:none;transition:opacity .3s;opacity:0}
 #coachOverlay.show{pointer-events:all;opacity:1}
@@ -1184,15 +1182,6 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 
   <!-- DAY VIEW -->
   <div class="view active" id="view-day">
-    <!-- First-run demo banner — hidden until demo data is active -->
-    <div id="demoBanner">
-      <div class="demo-title">✨ Welcome to Your Salon</div>
-      <div class="demo-sub">This is sample data so you can see everything in action — appointments, earnings, take-home splits. Explore freely. Take the tour to see exactly how it all works.</div>
-      <div style="display:flex;gap:8px;margin-top:2px">
-        <button class="demo-clear" style="flex:1" onclick="openTourPicker()"><i class="ti ti-player-play"></i> Take the tour</button>
-        <button class="demo-clear" style="flex:1;background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);color:#666" onclick="clearDemoData()"><i class="ti ti-trash"></i> Clear &amp; start</button>
-      </div>
-    </div>
     <div id="needsClose" class="nc-box" style="display:none"></div>
     <div class="seg" id="daySeg">
       <button class="seg-btn on" data-m="day" onclick="setDayMode('day')"><i class="ti ti-calendar"></i> Day</button>
@@ -1993,60 +1982,13 @@ function jsq(n){return String(n).replace(/'/g,"\\'");}
 var appts=load(APPTS,[]);
 var clients=load(CLIENTS,[]);
 var customSvc=load(CUSTOM,[]);   /* [{name,mode}] your own services, kept forever */
-
-/* ===== FIRST-RUN DEMO DATA ===========================================
-   Fires once, only when the app has zero appointments and has never been
-   seen before. Writes 6 realistic bookings so every panel looks alive.
-   Cleared by the banner button → _ys_demo_seen flag blocks re-injection.
-   ===================================================================== */
-(function(){
-  if(localStorage.getItem('_ys_demo_seen'))return;
-  if(appts.length>0){localStorage.setItem('_ys_demo_seen','1');return;}
-  function relDay(n){var d=new Date();d.setDate(d.getDate()+n);var y=d.getFullYear(),m=d.getMonth()+1,da=d.getDate();return y+'-'+(m<10?'0':'')+m+'-'+(da<10?'0':'')+da;}
-  var demoClients=[
-    {id:'dc1',name:'Jessica Miller', phone:'555-0101',email:'',notes:''},
-    {id:'dc2',name:'Sarah Thompson', phone:'555-0102',email:'',notes:''},
-    {id:'dc3',name:'Amanda Chen',    phone:'555-0103',email:'',notes:''},
-    {id:'dc4',name:'Rachel Torres',  phone:'555-0104',email:'',notes:''},
-    {id:'dc5',name:'Lisa Park',      phone:'555-0105',email:'',notes:''},
-    {id:'dc6',name:'Emma Wilson',    phone:'555-0106',email:'',notes:''}
-  ];
-  var demoAppts=[
-    {id:'da1',name:'Jessica Miller', phone:'555-0101',service:'Colour & Balayage',  date:relDay(-4),time:'10:00',dur:120,price:285,tip:40,notes:'',          status:'done',     cid:'dc1'},
-    {id:'da2',name:'Sarah Thompson', phone:'555-0102',service:'Cut & Style',        date:relDay(-3),time:'11:30',dur:60, price:95, tip:15,notes:'',          status:'done',     cid:'dc2'},
-    {id:'da3',name:'Amanda Chen',    phone:'555-0103',service:'Full Highlights',    date:relDay(-2),time:'09:00',dur:150,price:220,tip:30,notes:'Foils only', status:'done',     cid:'dc3'},
-    {id:'da4',name:'Rachel Torres',  phone:'555-0104',service:'Blowout & Style',    date:relDay(-1),time:'14:00',dur:45, price:75, tip:10,notes:'',          status:'done',     cid:'dc4'},
-    {id:'da5',name:'Lisa Park',      phone:'555-0105',service:'Cut & Colour',       date:relDay(0), time:'10:30',dur:90, price:175,tip:0, notes:'',          status:'confirmed',cid:'dc5'},
-    {id:'da6',name:'Emma Wilson',    phone:'555-0106',service:'Root Touch-Up',      date:relDay(1), time:'13:00',dur:60, price:120,tip:0, notes:'',          status:'confirmed',cid:'dc6'}
-  ];
-  try{
-    localStorage.setItem('ap_appts',   JSON.stringify(demoAppts));
-    localStorage.setItem('ap_clients', JSON.stringify(demoClients));
-    localStorage.setItem('_ys_demo_active','1');
-    appts=demoAppts; clients=demoClients;
-  }catch(e){}
-})();
-
-function clearDemoData(){
-  try{
-    localStorage.removeItem('ap_appts');
-    localStorage.removeItem('ap_clients');
-    localStorage.removeItem('_ys_demo_active');
-    localStorage.setItem('_ys_demo_seen','1');
-    appts=[];clients=[];
-    var b=document.getElementById('demoBanner');
-    if(b)b.classList.remove('show');
-    renderDay();
-    toast("You're all set — add your first real appointment!");
-  }catch(e){}
-}
-
-document.addEventListener('DOMContentLoaded',function(){
-  if(localStorage.getItem('_ys_demo_active')){
-    var b=document.getElementById('demoBanner');
-    if(b)b.classList.add('show');
-  }
-});
+try{
+  if(window.YS&&YS.purgeSamples)YS.purgeSamples(function(k){return localStorage.getItem(k);},function(k,v){localStorage.setItem(k,v);});
+  localStorage.removeItem('_ys_demo_active');
+  localStorage.removeItem('_ys_demo_seen');
+  appts=load(APPTS,[]);
+  clients=load(CLIENTS,[]);
+}catch(e){}
 var stock=load(STOCK,[]);        /* [{id,name,qty,min,unit,used}] inventory */
 function reload(){appts=load(APPTS,[]);clients=load(CLIENTS,[]);customSvc=load(CUSTOM,[]);stock=load(STOCK,[]);try{stripTombstonedAppts();}catch(e){}}
 
@@ -3116,7 +3058,7 @@ function renderClients(){
       '<div class="lrow-av cb-tap" onclick="event.stopPropagation();openClientBookings(\''+c.id+'\')">'+esc((c.name[0]||'?').toUpperCase())+'<span class="lrow-av-badge"><i class="ti ti-calendar"></i></span></div>'+
       '<div class="lrow-body"><div class="lrow-name">'+esc(c.name)+'</div><div class="lrow-sub">'+(c.phone?esc(c.phone):'No phone')+'</div></div>'+
       '<div class="lrow-right"><div class="lrow-rv">'+count+'</div><div class="lrow-rl">visit'+(count===1?'':'s')+'</div></div>'+
-      '<button class="lrow-edit" onclick="event.stopPropagation();openClientSheet(\''+c.id+'\')" title="Edit client"><i class="ti ti-pencil"></i></button></div>';
+      '<button class="lrow-edit" onclick="event.stopPropagation();editClientFromList(\''+jsq(c.id)+'\')" title="Edit client"><i class="ti ti-pencil"></i></button></div>';
   }).join('');
   renderSalonBreakdown();
   if(_cdClientId){var _sr=document.querySelector('#clientsList .lrow[data-cid="'+_cdClientId+'"]');if(_sr)_sr.classList.add('sel');}
@@ -3300,10 +3242,14 @@ function cancelClientBookingsEdit(){
   _cbEditing=false;
   renderClientBookings();
 }
-function openBookingEditor(id){
+function openBookingStatus(id){
   closeSheet('clientBookingsModal');
-  sheetId=id;
-  editFromSheet();
+  openSheet(id);
+}
+function editClientFromList(id){
+  openClientBookings(id);
+  _cbEditing=true;
+  renderClientBookings();
 }
 function cbCard(id){
   var cards=document.querySelectorAll('#cbList .cb-edit-card');
@@ -3342,23 +3288,44 @@ function bookingChanged(prev,next){
 }
 function saveClientBookings(){
   if(!$('cbName'))return;
-  if(!saveClientFields(_cbClientId,$('cbName').value,$('cbPhone').value,$('cbEmail').value,$('cbPrice').value))return;
   var cards=document.querySelectorAll('#cbList .cb-edit-card');
+  var invalid=[];
   for(var i=0;i<cards.length;i++){
-    var card=cards[i],aid=card.getAttribute('data-aid');
+    var card=cards[i];
+    var dateEl=card.querySelector('[data-k="date"]');
+    var timeEl=card.querySelector('[data-k="time"]');
+    var date=dateEl?dateEl.value:'';
+    var time=timeEl?timeEl.value:'';
+    var msg=card.querySelector('.cb-invalid-msg');
+    if(!date||!time){
+      card.classList.add('cb-invalid');
+      if(!msg){msg=document.createElement('div');msg.className='cb-invalid-msg';card.appendChild(msg);}
+      msg.textContent=!date&&!time?'This booking needs a date and a time.':(!date?'This booking needs a date.':'This booking needs a time.');
+      invalid.push(card);
+    }else{
+      card.classList.remove('cb-invalid');
+      if(msg)msg.textContent='';
+    }
+  }
+  if(invalid.length){
+    try{invalid[0].scrollIntoView({block:'center'});}catch(e){}
+    toast(invalid.length===1?'One booking still needs a date or time':(invalid.length+' bookings still need a date or time'),1);
+    return;
+  }
+  if(!saveClientFields(_cbClientId,$('cbName').value,$('cbPhone').value,$('cbEmail').value,$('cbPrice').value))return;
+  for(var j=0;j<cards.length;j++){
+    var card2=cards[j],aid=card2.getAttribute('data-aid');
     var prev=appts.find(function(a){return String(a.id)===String(aid);});
     if(!prev)continue;
-    var date=card.querySelector('[data-k="date"]').value;
-    var time=card.querySelector('[data-k="time"]').value;
-    if(!date){toast('Each booking needs a date',1);return;}
-    if(!time){toast('Each booking needs a time',1);return;}
+    var date2=card2.querySelector('[data-k="date"]').value;
+    var time2=card2.querySelector('[data-k="time"]').value;
     var next=Object.assign({},prev,{
-      date:date,
-      time:hm(time)||time,
-      service:card.querySelector('[data-k="service"]').value.trim(),
-      price:+card.querySelector('[data-k="price"]').value||0,
-      tip:+card.querySelector('[data-k="tip"]').value||0,
-      status:card.querySelector('[data-k="status"]').value||prev.status||'confirmed'
+      date:date2,
+      time:hm(time2)||time2,
+      service:card2.querySelector('[data-k="service"]').value.trim(),
+      price:+card2.querySelector('[data-k="price"]').value||0,
+      tip:+card2.querySelector('[data-k="tip"]').value||0,
+      status:card2.querySelector('[data-k="status"]').value||prev.status||'confirmed'
     });
     if(!bookingChanged(prev,next))continue;
     persistAppt(prev,next);
@@ -3382,15 +3349,19 @@ function renderClientBookings(){
   var editBtn=$('cbEdit');if(editBtn)editBtn.style.display=_cbEditing?'none':'';
   var bar=$('cbSaveBar');if(bar)bar.style.display=_cbEditing?'flex':'none';
   var today=todayStr();
-  var mine=appts.filter(function(a){return sameClient(a,c)&&a.status!=='cancelled';});
-  var upcoming=mine.filter(function(a){return a.date>=today&&a.status!=='done'&&a.status!=='noshow';})
+  var mine=appts.filter(function(a){return sameClient(a,c);});
+  var cancelled=mine.filter(function(a){return a.status==='cancelled';})
+                    .sort(function(a,b){return ((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||''));});
+  var active=mine.filter(function(a){return a.status!=='cancelled';});
+  var upcoming=active.filter(function(a){return a.date>=today&&a.status!=='done'&&a.status!=='noshow';})
                    .sort(function(a,b){return ((a.date||'')+(a.time||'')).localeCompare((b.date||'')+(b.time||''));});
-  var past=mine.filter(function(a){return !(a.date>=today&&a.status!=='done'&&a.status!=='noshow');})
+  var past=active.filter(function(a){return !(a.date>=today&&a.status!=='done'&&a.status!=='noshow');})
               .sort(function(a,b){return ((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||''));});
   function row(a){
     if(_cbEditing)return bookingEditCard(a);
     var ip=isInProgress(a);
-    return '<div class="cb-appt'+(ip?' ip':'')+'" onclick="openBookingEditor(\''+jsq(a.id)+'\')">'+
+    var cx=a.status==='cancelled'?' cancelled':'';
+    return '<div class="cb-appt'+(ip?' ip':'')+cx+'" data-aid="'+esc(a.id)+'" onclick="openBookingStatus(\''+jsq(a.id)+'\')">'+
       '<div class="cb-when"><div class="cb-date">'+fmtReqDate(a.date)+'</div><div class="cb-time">'+to12(a.time)+'</div><div class="cb-status">'+esc(stLabel(a.status||'confirmed'))+'</div>'+(ip?'<div class="cb-ip">● In progress</div>':'')+'</div>'+
       '<div class="cb-mid"><div class="cb-svc">'+esc(a.service||'—')+'</div>'+(a.notes?'<div class="cb-note">'+esc(a.notes)+'</div>':'')+'</div>'+
       '<div class="cb-price">'+fmt$(a.price)+'</div></div>';
@@ -3398,6 +3369,7 @@ function renderClientBookings(){
   var html='';
   if(upcoming.length){html+='<div class="cb-head">Upcoming</div>'+upcoming.map(row).join('');}
   if(past.length){html+='<div class="cb-head" style="margin-top:14px">History</div>'+past.slice(0,8).map(row).join('');}
+  if(cancelled.length){html+='<div class="cb-head" style="margin-top:14px">Cancelled</div>'+cancelled.map(row).join('');}
   if(!html){html='<div class="empty" style="padding:24px 0"><i class="ti ti-calendar-off"></i><div class="empty-t">No bookings yet</div><div class="empty-s">When you book '+esc(c.name)+', their appointments show here.</div></div>';}
   if(_cbEditing){
     html='<div class="cb-client-edit">'+
@@ -3804,7 +3776,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.32 · Edit a client and their bookings in place';
+var VERSION='v6.33 · sample bookings are gone';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3883,6 +3855,8 @@ function stripTombstonedAppts(){
     if(!Array.isArray(tombs)||!tombs.length)return;
     var left=YS.filterTombstones(appts,tombs,'ap_appt');
     if(left.length!==appts.length){appts=left;save(APPTS,appts);}
+    var cleft=YS.filterTombstones(clients,tombs,'ap_client');
+    if(cleft.length!==clients.length){clients=cleft;save(CLIENTS,clients);}
   }catch(e){}
 }
 function apCalc(){
@@ -4169,10 +4143,6 @@ function _nukeStorage(){
   keys.forEach(function(k){try{localStorage.removeItem(k);}catch(_){}});
   try{localStorage.clear();}catch(_){}
   if(wasUnlocked){try{localStorage.setItem('cp_unlocked','1');}catch(_){}}
-  /* prevent demo data re-injection after wipe — _nukeStorage clears _ys_demo_seen,
-     which causes the first-run IIFE to re-fire and inject Lisa Park (today, In Progress).
-     Mark demo as already seen so the ghost appointment never comes back. */
-  try{localStorage.setItem('_ys_demo_seen','1');}catch(_){}
   /* write erase TIMESTAMP after clearing — survives multiple reloads for 60 s,
      so rapid reloads (update checks, room-switches) can't bypass the guard */
   var _eraseNow=Date.now();
@@ -6099,7 +6069,7 @@ document.addEventListener('click',function(e){
        body:'In Safari: tap the Share button (box with arrow) → "Add to Home Screen". It opens like a real app, works offline, and loads instantly every time.'},
       {sel:null,pos:'center',
        title:'You\'re all set 🎉',
-       body:'Explore freely with the sample data. When you\'re ready to go live, tap "Clear & start" on the welcome banner above.'}
+       body:'Your real bookings are the only ones here. Add a client when you are ready, and the day view fills in as you work.'}
     ]},
     2:{name:'Know your tools',color:'#3b82f6',steps:[
       {sel:null,pos:'center',

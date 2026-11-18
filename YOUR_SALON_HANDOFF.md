@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` before this change (PR #16 merged): Earnings v2.70, Appointments v6.32, salon v0.54, service worker `yoursalon-v89`, booking v3.57. This change ships Earnings v2.71 and `yoursalon-v90` when it is merged. It is pending until then.
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` before this change (PR #17 merged): Earnings v2.71, Appointments v6.32, salon v0.54, service worker `yoursalon-v90`, booking v3.57. This change ships Appointments v6.33, salon v0.55, and `yoursalon-v91` when it is merged. It is pending until then.
 
 | Room | File | Live version |
 |---|---|---|
-| Earnings | `app.html` | v2.71 (this change; pending until merged. v2.70 is what is live) |
-| Appointments | `appt.html` | v6.32 (live) |
-| Shell | `salon.html` | v0.54 |
-| Service worker | `sw.js` | `yoursalon-v90` (this change; pending until merged. `yoursalon-v89` is what is live) |
+| Earnings | `app.html` | v2.71 (live, PR #17) |
+| Appointments | `appt.html` | v6.33 (this change; pending until merged. v6.32 is what is live) |
+| Shell | `salon.html` | v0.55 (this change; pending until merged. v0.54 is what is live) |
+| Service worker | `sw.js` | `yoursalon-v91` (this change; pending until merged. `yoursalon-v90` is what is live) |
 | Booking page | `book.html` | v3.57 |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
@@ -89,7 +89,13 @@ The existing owner unlock is unchanged. It is not synced, not written into the a
 
 **iPhone date edit (live, PR #15).** On the iPhone app, the appointment date field did not open its picker. Every text field on the form uses `-webkit-appearance: none`, and iOS WKWebView will not open the wheel for a date input styled that way. Desktop Chrome still does. The weekday line under the field does not cover it, and nothing resets the date on blur. Date and time now sit at the top of the add and edit form, above Quick picks. The date input uses the normal iOS appearance again. A large button shows the day, for example “Tue 3 Nov 2026”, and opens the picker. −1 day and +1 day change the date even if the picker does not open. Saving a Done appointment keeps its status and writes an appointment.edit audit event with the old date and the new date. The same `ap_appts` save is what the shell already syncs. On Earnings, What happened sits just under the Salon owes me numbers, and the To date no longer spills out of the card.
 
-**Edit a client’s bookings in place (live, PR #16).** Edit on the client bookings sheet no longer leaves that sheet. It turns the name, phone, email, and saved price into fields, and each listed booking into fields for its date, time, service, price, tip, and status. The date uses the same iPhone controls as the appointment form: a day button, the native calendar, and −1 day / +1 day. Save writes the client the same way Save client does, and writes each booking that actually changed through the same appointment save, including an appointment.edit audit event. A Done visit stays Done and keeps its frozen split. Cancel throws the edits away. Outside Edit, tapping a booking opens its full edit form. Nothing is rewritten until Save.
+**Edit a client’s bookings in place (live, PR #16).** Edit on the client bookings sheet turns the name, phone, email, saved price, and each listed booking into fields. The date uses the same iPhone controls as the appointment form. Save writes the client the same way Save client does, and writes each changed booking through the same appointment save. A Done visit stays Done and keeps its frozen split.
+
+**Sample bookings removed, and two sheet fixes (pending until this pull request is merged).** A fresh device used to write six sample clients (Jessica Miller through Emma Wilson, phones 555-0101 through 555-0106, ids dc1–dc6 and da1–da6) whenever `_ys_demo_seen` was missing and there were no appointments yet. That flag lived only on the device, so a reinstall or a new phone seeded them again, and sync then copied them to the cloud. Nothing seeds them now. On every load, an exact sample row (id and name and phone) is removed, tombstoned, and kept out of the cloud merge. A real client who happens to be named Lisa Park, with any other id or phone, is left alone. The first removal writes one audit line, “Removed sample bookings.”
+
+Tapping a booking on the client sheet opens the quick status sheet again (Done, No-show, Cancelled), not the full edit form. The pencil on the client list opens the same in-place Edit mode as the Edit button on the bookings sheet. Save checks every booking first and saves nothing if any card is missing a date or time, and it marks the card that failed. A booking set to Cancelled stays on the sheet, marked cancelled, so it can be set back.
+
+**Smoke test before merge.** `tests/smoke.spec.js` loads the pages from a local server. A fresh device must show no sample names. A device that already has the six sample rows plus real bookings must drop only the samples, and Earnings must total the real bookings only. It also checks that Add opens on today, a booking tap opens the status sheet, both edit paths change a date once and write an audit line, and Done still works, with no console errors. Run `npm run test:smoke` before merging an Appointments or Earnings change.
 
 **Settlements.** A closed settlement groups finished visits that were not already in one, up to a chosen end date (today if you leave the date). The record keeps an id, start date, end date, the owed cents at close, when it was closed, and the visit ids. Appointments and payments are not rewritten. Nothing is closed automatically. Until the first close, the whole balance stays in the current period.
 
