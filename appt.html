@@ -277,6 +277,10 @@ body.fx-off .trade-opt.on{animation:none!important}
 .ctitle{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;display:flex;align-items:center;gap:7px}
 .ctitle i{color:var(--gold);font-size:15px}
 label{display:block;font-size:13px;color:var(--text2);margin-bottom:5px;margin-top:14px;font-weight:500}
+#fDate{font-size:17px;font-weight:700}
+#fDate.date-off{border-color:#e2b340;background:#1a1608}
+.date-spoken{display:block;margin-top:8px;color:var(--gold);font-weight:800;font-size:16px;letter-spacing:.2px}
+.date-notice{margin-top:8px;padding:10px 12px;border-radius:10px;border:1.5px solid #e2b340;background:rgba(226,179,64,.16);color:#f0d48a;font-size:15px;font-weight:800;line-height:1.35}
 label:first-of-type{margin-top:0}
 /* ── Service-first flow: name+phone rise up after service chosen ── */
 .svc-label-row{display:flex;align-items:center;justify-content:space-between;margin-top:0;margin-bottom:5px}
@@ -1247,9 +1251,14 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       </div>
 
       <div class="row2" style="margin-top:16px">
-        <div><label>Date</label><input id="fDate" type="date" oninput="checkConflict()"></div>
+        <div>
+          <label>Date</label>
+          <input id="fDate" type="date" oninput="checkConflict();refreshDateNotice()">
+        </div>
         <div><label>Time</label><input id="fTime" type="time" oninput="checkConflict()"></div>
       </div>
+      <div id="fDateSpoken" class="date-spoken"></div>
+      <div id="fDateNotice" class="date-notice" style="display:none"></div>
       <div class="row2">
         <div><label>Duration (min)</label><input id="fDur" type="number" inputmode="numeric" placeholder="60" oninput="checkConflict()"></div>
         <div><label>Price ($) <button type="button" class="tour-help-chip" onclick="tourHelp(1,7)">? help</button></label><input id="fPrice" type="number" inputmode="decimal" placeholder="0" oninput="priceManual=true;apCalc()"></div>
@@ -1723,7 +1732,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="sheet-title" id="cfTitle">Are you sure?</div>
     <div class="sheet-sub" id="cfMsg" style="margin-bottom:18px"></div>
     <div class="btn-row">
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('confirmModal')">Cancel</button>
+      <button class="btn btn-ghost btn-sm" id="cfNo" style="flex:1" onclick="closeSheet('confirmModal')">Cancel</button>
       <button class="btn btn-sm" id="cfYes" style="flex:1">Confirm</button>
     </div>
   </div>
@@ -2461,8 +2470,9 @@ function saveView(){try{save('ap_view',{d:dayMode,w:weekMode});}catch(e){}}
 function openAddAt(ds,time){
   viewDate=parseDate(ds);
   openAdd();
-  $('fDate').value=ds;
+  $('fDate').value=YS.defaultAddDate(true, ds, todayStr());
   if(time)$('fTime').value=time;
+  refreshDateNotice();
   checkConflict();
 }
 function renderWeekGrid(){
@@ -2702,7 +2712,8 @@ function openAdd(){
   var _w=$('clientFieldsWrap'),_h=$('chooseSvcHint');
   if(_w)_w.classList.remove('cfw-show');
   if(_h)_h.classList.remove('hint-done');
-  $('fDate').value=ymd(viewDate);$('fTime').value='';$('fDur').value='';$('fPrice').value='';$('fTip').value='';$('fNotes').value='';
+  $('fDate').value=YS.defaultAddDate(false, '', todayStr());$('fTime').value='';$('fDur').value='';$('fPrice').value='';$('fTip').value='';$('fNotes').value='';
+  refreshDateNotice();
   if(typeof apCalc==='function')apCalc();
   $('conflictWarn').classList.remove('show');
   $('svcMore').style.display='none';$('svcMoreBtn').innerHTML='<i class="ti ti-chevron-down"></i> More services';
@@ -2717,6 +2728,18 @@ function onNamePick(){
   var n=$('fName').value.trim().toLowerCase();
   var c=clients.find(function(x){return x.name&&x.name.toLowerCase()===n});
   if(c&&!$('fPhone').value)$('fPhone').value=c.phone||'';
+}
+function dateSpoken(ymdStr){return YS.dateSpoken(ymdStr);}
+function refreshDateNotice(){
+  var v=$('fDate')?$('fDate').value:'';
+  var spoken=dateSpoken(v);
+  var lab=$('fDateSpoken');if(lab)lab.textContent=spoken||'';
+  var note=$('fDateNotice');
+  var off=!!(v&&v!==todayStr());
+  if($('fDate'))$('fDate').classList.toggle('date-off',off);
+  if(!note)return;
+  if(off){note.style.display='block';note.textContent='Not today: '+spoken;}
+  else{note.style.display='none';note.textContent='';}
 }
 function checkConflict(){
   var date=$('fDate').value,time=$('fTime').value,dur=+$('fDur').value||0;
@@ -2745,11 +2768,18 @@ function saveAppt(){
   if(!date){toast('Pick a date',1);return;}
   if(!time){toast('Pick a time',1);return;}
   var price=+$('fPrice').value||0;
-  if(price<=0){
-    askConfirm('No price entered — this books at $0. Add a price, or book it anyway?',function(){commitSave();},{title:'No price set',yesLabel:'Book at $0'});
+  var go=function(){
+    if(price<=0){
+      askConfirm('No price entered — this books at $0. Add a price, or book it anyway?',function(){commitSave();},{title:'No price set',yesLabel:'Book at $0'});
+      return;
+    }
+    commitSave();
+  };
+  if(YS.needsPastDateConfirm(!editingId, date, todayStr())){
+    askConfirm('Save for '+dateSpoken(date)+'?', go, {title:'Not today', yesLabel:'Save', noLabel:'Change date'});
     return;
   }
-  commitSave();
+  go();
 }
 function commitSave(){
   var name=$('fName').value.trim(),date=$('fDate').value,time=$('fTime').value;
@@ -2881,7 +2911,7 @@ function editFromSheet(){
   fillClientList();
   $('fName').value=a.name;$('fPhone').value=a.phone||'';
   $('fService').value=a.service||'';
-  $('fDate').value=a.date;$('fTime').value=a.time;$('fDur').value=a.dur||'';$('fPrice').value=a.price||'';$('fTip').value=a.tip||'';if(typeof apCalc==='function')apCalc();
+  $('fDate').value=a.date;$('fTime').value=a.time;$('fDur').value=a.dur||'';$('fPrice').value=a.price||'';$('fTip').value=a.tip||'';if(typeof apCalc==='function')apCalc();refreshDateNotice();
   $('fNotes').value=a.notes||'';$('fCustom').value='';
   $('conflictWarn').classList.remove('show');
   $('svcMore').style.display='none';$('svcMoreBtn').innerHTML='<i class="ti ti-chevron-down"></i> More services';
@@ -3566,6 +3596,7 @@ function askConfirm(msg,onYes,opts){
   opts=opts||{};
   $('cfTitle').textContent=opts.title||'Are you sure?';
   $('cfMsg').textContent=msg;
+  var no=$('cfNo');if(no)no.textContent=opts.noLabel||'Cancel';
   var yes=$('cfYes');
   yes.textContent=opts.yesLabel||'Confirm';
   yes.className='btn btn-sm'+(opts.danger?' btn-danger':'');
@@ -3574,7 +3605,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.28 · busy times stay private';
+var VERSION='v6.29 · Add starts on today';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
