@@ -486,6 +486,36 @@ check('each finished visit is paid, partly paid, or still owed, oldest first', f
   assert.ok(!jobs.byId.soon);
 });
 
+check('the main Add button uses today, and a day cell keeps its day', function () {
+  assert.strictEqual(YS.defaultAddDate(false, '2026-10-30', '2026-11-03'), '2026-11-03');
+  assert.strictEqual(YS.defaultAddDate(true, '2026-10-30', '2026-11-03'), '2026-10-30');
+  var wd = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date(2026, 9, 30, 12).getDay()];
+  assert.strictEqual(YS.dateSpoken('2026-10-30'), wd + ' 30 Oct');
+  assert.strictEqual(YS.daysBeforeToday('2026-10-30', '2026-11-03'), 4);
+  assert.strictEqual(YS.needsPastDateConfirm(true, '2026-10-30', '2026-11-03'), true);
+  assert.strictEqual(YS.needsPastDateConfirm(true, '2026-11-02', '2026-11-03'), false);
+  assert.strictEqual(YS.needsPastDateConfirm(false, '2026-10-30', '2026-11-03'), false);
+  var appt = require('fs').readFileSync(__dirname + '/appt.html', 'utf8');
+  var open = appt.slice(appt.indexOf('function openAdd()'), appt.indexOf('function fillClientList'));
+  assert.ok(open.indexOf('defaultAddDate(false') >= 0, 'main Add uses today');
+  assert.ok(open.indexOf('ymd(viewDate)') < 0, 'main Add does not copy the day on screen');
+  var at = appt.slice(appt.indexOf('function openAddAt'), appt.indexOf('function renderWeekGrid'));
+  assert.ok(at.indexOf('defaultAddDate(true') >= 0, 'a day cell still prefills that day');
+  assert.ok(appt.indexOf('id="fDateNotice"') >= 0);
+  assert.ok(appt.indexOf('needsPastDateConfirm') >= 0);
+});
+
+check('a client booking sheet can open the editor, and Save stays put', function () {
+  var appt = require('fs').readFileSync(__dirname + '/appt.html', 'utf8');
+  assert.ok(appt.indexOf('id="cbEdit"') >= 0);
+  assert.ok(appt.indexOf('editClientFromBookings') >= 0);
+  var edit = appt.slice(appt.indexOf('function editClientFromBookings'), appt.indexOf('function openClientBookings'));
+  assert.ok(edit.indexOf("closeSheet('clientBookingsModal')") >= 0);
+  assert.ok(edit.indexOf('openClientSheet(id)') >= 0);
+  assert.ok(appt.indexOf('position:sticky;bottom:0') >= 0);
+  assert.ok(appt.indexOf('id="csSaveRow"') >= 0);
+});
+
 if (failed) {
   console.error('\n' + failed + ' failed');
   process.exit(1);

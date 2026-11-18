@@ -20,6 +20,37 @@
     return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
   }
 
+  /* "Thu 30 Oct". Used so a past date in the Add form is obvious. */
+  function dateSpoken(ymdStr) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(ymdStr || ''))) return '';
+    var p = String(ymdStr).split('-');
+    var d = new Date(+p[0], +p[1] - 1, +p[2], 12, 0, 0);
+    var wd = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()];
+    var mo = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
+    return wd + ' ' + d.getDate() + ' ' + mo;
+  }
+
+  function daysBeforeToday(ymdStr, todayYmd) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(ymdStr || ''))) return 0;
+    todayYmd = todayYmd || localYMD(new Date());
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(todayYmd))) return 0;
+    var a = String(ymdStr).split('-');
+    var b = String(todayYmd).split('-');
+    var da = new Date(+a[0], +a[1] - 1, +a[2], 12, 0, 0);
+    var db = new Date(+b[0], +b[1] - 1, +b[2], 12, 0, 0);
+    return Math.round((db.getTime() - da.getTime()) / 86400000);
+  }
+
+  /* Main Add uses today. A day-cell tap keeps that day. */
+  function defaultAddDate(fromCell, cellDay, todayYmd) {
+    if (fromCell && /^\d{4}-\d{2}-\d{2}$/.test(String(cellDay || ''))) return cellDay;
+    return todayYmd;
+  }
+
+  function needsPastDateConfirm(isNew, ymdStr, todayYmd) {
+    return !!isNew && daysBeforeToday(ymdStr, todayYmd) > 1;
+  }
+
   function localYM(d) {
     d = d || new Date();
     return d.getFullYear() + '-' + pad2(d.getMonth() + 1);
@@ -923,6 +954,10 @@
 
   var api = {
     localYMD: localYMD,
+    dateSpoken: dateSpoken,
+    daysBeforeToday: daysBeforeToday,
+    defaultAddDate: defaultAddDate,
+    needsPastDateConfirm: needsPastDateConfirm,
     localYM: localYM,
     startOfLocalWeek: startOfLocalWeek,
     centsOf: centsOf,
