@@ -83,6 +83,7 @@ html.in-shell #updateBar,html.in-shell #updBanner{display:none!important}
 label{display:block;font-size:13px;color:var(--text2);margin-bottom:5px;margin-top:12px;font-weight:500}
 label:first-of-type{margin-top:0}
 input,select{width:100%;padding:9px 12px;background:#1a1a1a;border:1.5px solid #444;border-radius:8px;color:#fff;font-size:16px;font-weight:500;outline:none;transition:border .2s;-webkit-appearance:none}
+input[type=date],input[type=time]{-webkit-appearance:auto;appearance:auto;font-size:16px;min-height:44px;min-width:0;max-width:100%;color-scheme:dark}
 input:focus,select:focus{border-color:var(--gold);background:#1e1e1e}
 input::placeholder{color:#555;font-weight:400}
 input[type=number]{-moz-appearance:textfield}
@@ -695,10 +696,12 @@ body.theme-light .bal-row b{color:#111}
 .pay-seg{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}
 .pay-seg button{border:1px solid #334;background:#12161c;color:#c5d7ee;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
 .pay-seg button.on{background:#1c3a55;border-color:#7eb8ff;color:#fff}
-.pay-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.pay-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:8px}
+.pay-form > div{min-width:0}
 .pay-form label{font-size:11px;color:#8aa4c4;font-weight:700}
-.pay-form input,.pay-form select{width:100%;margin-top:3px}
+.pay-form input,.pay-form select{width:100%;max-width:100%;min-width:0;margin-top:3px;box-sizing:border-box}
 .pay-form .pay-wide{grid-column:1/-1}
+@media(max-width:640px){.pay-form{grid-template-columns:minmax(0,1fr)}}
 .pay-row{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;padding:8px 52px 8px 0;border-top:1px solid #2a2a2a;font-size:13px}
 .pay-row.voided{opacity:.5}
 .pay-row.voided .pay-amt{text-decoration:line-through}
@@ -1905,6 +1908,19 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
           <button class="btn-paid-main" type="button" onclick="openPayForm()"><i class="ti ti-cash" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Record a payment</button>
         </div>
       </div>
+      <div class="card" id="auditCard" style="margin-bottom:14px">
+        <div class="ctitle"><i class="ti ti-history"></i>What happened</div>
+        <div class="pay-form">
+          <div><label>From <input id="auditFrom" type="date"></label></div>
+          <div><label>To <input id="auditTo" type="date"></label></div>
+          <div class="pay-wide" style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-paid-main" type="button" onclick="showAudit()">Show this date</button>
+            <button class="btn-invoice" type="button" onclick="exportAuditCsv()">Export CSV</button>
+          </div>
+        </div>
+        <div class="audit-status" id="auditStatus"></div>
+        <div id="auditOut"></div>
+      </div>
       <div class="card" id="settleCard" style="margin-bottom:14px">
         <div class="ctitle"><i class="ti ti-calendar-check"></i>Settlements</div>
         <div id="settleBody"></div>
@@ -1941,19 +1957,6 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
           <div class="pay-wide"><button class="btn-paid-main" type="button" onclick="recordPayment()"><i class="ti ti-check" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Save payment</button></div>
         </div>
         <div id="payList"></div>
-      </div>
-      <div class="card" id="auditCard" style="margin-bottom:14px">
-        <div class="ctitle"><i class="ti ti-history"></i>What happened</div>
-        <div class="pay-form">
-          <div><label>From <input id="auditFrom" type="date"></label></div>
-          <div><label>To <input id="auditTo" type="date"></label></div>
-          <div class="pay-wide" style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn-paid-main" type="button" onclick="showAudit()">Show this date</button>
-            <button class="btn-invoice" type="button" onclick="exportAuditCsv()">Export CSV</button>
-          </div>
-        </div>
-        <div class="audit-status" id="auditStatus"></div>
-        <div id="auditOut"></div>
       </div>
       <div id="needsClose" class="nc-box" style="display:none"></div>
       <div class="card" id="owedCard" style="margin-bottom:14px">
@@ -4818,7 +4821,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.69 · paid and still-owed visits in their own boxes';
+var VERSION='app v2.70 · What happened sits near the top';
 /* ===== In-app confirm (native confirm() silently fails in iOS PWA / WKWebView) ===== */
 var _cpCfFn=null,_cpCfNo=null;
 function askConfirm(msg,onYes,opts){

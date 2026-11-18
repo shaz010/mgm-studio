@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` now (PR #14 merged 2026-11-18 ~11:09 AM PT, verified live): Earnings v2.69, Appointments v6.30, salon v0.54, service worker `yoursalon-v87`, booking v3.57.
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` before this change: Earnings v2.69, Appointments v6.30, salon v0.54, service worker `yoursalon-v87`, booking v3.57. This change ships Earnings v2.70, Appointments v6.31, and `yoursalon-v88` when it is merged. It is pending until then.
 
 | Room | File | Live version |
 |---|---|---|
-| Earnings | `app.html` | v2.69 |
-| Appointments | `appt.html` | v6.30 (live) |
+| Earnings | `app.html` | v2.70 (this change; pending until merged. v2.69 is what is live) |
+| Appointments | `appt.html` | v6.31 (this change; pending until merged. v6.30 is what is live) |
 | Shell | `salon.html` | v0.54 |
-| Service worker | `sw.js` | `yoursalon-v87` (live) |
+| Service worker | `sw.js` | `yoursalon-v88` (this change; pending until merged. `yoursalon-v87` is what is live) |
 | Booking page | `book.html` | v3.57 |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
@@ -86,6 +86,8 @@ The existing owner unlock is unchanged. It is not synced, not written into the a
 **Add form date (live, PR #14).** The main Add button starts on today, in the device’s local date. It no longer copies the day you were just looking at, which is how a run of past jobs could silently keep the previous job’s date. Tapping an empty cell in the week grid still prefills that day on purpose. The form spells the weekday under the date. If that day is not today, a notice says so, for example “Not today: Thu 30 Oct”. Saving a new job more than one day in the past asks “Save for Thu 30 Oct?” with Save and Change date. Existing appointments are not rewritten.
 
 **Edit a client from their bookings (live, PR #14).** Tapping a client on the phone opens their bookings. That sheet now has an Edit button in the header. It closes the bookings and opens the existing Edit client sheet. Save client stays pinned to the bottom of that sheet, including in landscape and when the keyboard is up. Saved clients are not rewritten by this change.
+
+**iPhone date edit (pending until this pull request is merged).** On the iPhone app, the appointment date field did not open its picker. Every text field on the form uses `-webkit-appearance: none`, and iOS WKWebView will not open the wheel for a date input styled that way. Desktop Chrome still does. The weekday line under the field does not cover it, and nothing resets the date on blur. Date and time now sit at the top of the add and edit form, above Quick picks. The date input uses the normal iOS appearance again. A large button shows the day, for example “Tue 3 Nov 2026”, and opens the picker. −1 day and +1 day change the date even if the picker does not open. Saving a Done appointment keeps its status and writes an appointment.edit audit event with the old date and the new date. The same `ap_appts` save is what the shell already syncs. On Earnings, What happened sits just under the Salon owes me numbers, and the To date no longer spills out of the card.
 
 **Settlements.** A closed settlement groups finished visits that were not already in one, up to a chosen end date (today if you leave the date). The record keeps an id, start date, end date, the owed cents at close, when it was closed, and the visit ids. Appointments and payments are not rewritten. Nothing is closed automatically. Until the first close, the whole balance stays in the current period.
 

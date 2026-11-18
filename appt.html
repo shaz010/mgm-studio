@@ -279,8 +279,15 @@ body.fx-off .trade-opt.on{animation:none!important}
 label{display:block;font-size:13px;color:var(--text2);margin-bottom:5px;margin-top:14px;font-weight:500}
 #fDate{font-size:17px;font-weight:700}
 #fDate.date-off{border-color:#e2b340;background:#1a1608}
-.date-spoken{display:block;margin-top:8px;color:var(--gold);font-weight:800;font-size:16px;letter-spacing:.2px}
-.date-notice{margin-top:8px;padding:10px 12px;border-radius:10px;border:1.5px solid #e2b340;background:rgba(226,179,64,.16);color:#f0d48a;font-size:15px;font-weight:800;line-height:1.35}
+.when-block{margin:0 0 16px}
+.date-stepper{display:flex;align-items:stretch;gap:8px}
+.date-step,.date-open{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.date-step{flex:0 0 auto;min-height:52px;padding:0 10px;border-radius:12px;border:1.5px solid #e2b340;background:transparent;color:#f0d48a;font-weight:800;font-size:15px}
+.date-open{flex:1;min-height:52px;padding:10px 8px;border-radius:12px;border:1.5px solid #e2b340;background:#1a1608;color:#f0d48a;font-weight:800;font-size:17px;line-height:1.25}
+.date-step:active,.date-open:active{transform:scale(.98)}
+.date-native-label,.when-time-label{display:block;margin-top:10px;font-size:13px;color:var(--text2);font-weight:500}
+.date-spoken{display:block;margin-top:8px;color:var(--gold);font-weight:800;font-size:16px;letter-spacing:.2px;pointer-events:none}
+.date-notice{margin-top:8px;padding:10px 12px;border-radius:10px;border:1.5px solid #e2b340;background:rgba(226,179,64,.16);color:#f0d48a;font-size:16px;font-weight:800;line-height:1.35;pointer-events:none}
 label:first-of-type{margin-top:0}
 /* ── Service-first flow: name+phone rise up after service chosen ── */
 .svc-label-row{display:flex;align-items:center;justify-content:space-between;margin-top:0;margin-bottom:5px}
@@ -299,6 +306,8 @@ label:first-of-type{margin-top:0}
 }
 .client-fields-wrap.cfw-show{max-height:240px;opacity:1;transform:translateY(0)}
 input,select,textarea{width:100%;padding:10px 12px;background:#000;border:1.5px solid #3a3a44;border-radius:8px;color:#fff;font-size:16px;font-weight:500;outline:none;transition:border .2s;-webkit-appearance:none;font-family:inherit}
+/* iOS WKWebView will not open the wheel picker on a date or time input whose appearance is none. */
+input[type=date],input[type=time]{-webkit-appearance:auto;appearance:auto;font-size:17px;min-height:44px;min-width:0;max-width:100%;color-scheme:dark}
 input:focus,select:focus,textarea:focus{border-color:var(--gold);background:#1e1e1e}
 input::placeholder,textarea::placeholder{color:#555;font-weight:400}
 input[type=number]{-moz-appearance:textfield}
@@ -1230,6 +1239,21 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="card">
       <div class="ctitle"><i class="ti ti-calendar-plus"></i><span id="addTitle">New appointment</span><button type="button" class="sec-help-inline" onclick="showSectionHelp('Adding an appointment','This form books any appointment. Start by tapping a service chip — that unlocks the client name and phone fields. Fill in the price (your split calculates live), add any tip, then tap Save. The appointment lands in Day view instantly.',1,4)">? how this works</button></div>
 
+      <div class="when-block" id="whenBlock">
+        <div class="date-stepper">
+          <button type="button" class="date-step" onclick="shiftFormDate(-1)">−1 day</button>
+          <button type="button" class="date-open" id="fDateOpen" onclick="openDatePicker()">Pick a date</button>
+          <button type="button" class="date-step" onclick="shiftFormDate(1)">+1 day</button>
+        </div>
+        <label class="date-native-label">Calendar
+          <input id="fDate" type="date" oninput="checkConflict();refreshDateNotice()" onchange="refreshDateNotice()">
+        </label>
+        <div id="fDateNotice" class="date-notice" style="display:none"></div>
+        <label class="when-time-label">Time
+          <input id="fTime" type="time" oninput="checkConflict()">
+        </label>
+      </div>
+
       <!-- Client name + phone hidden, rise up when CHOOSE SERVICE(S) is tapped -->
       <div class="client-fields-wrap" id="clientFieldsWrap">
         <label>Client name <button type="button" class="tour-help-chip" onclick="tourHelp(1,6)">? help</button></label>
@@ -1258,15 +1282,6 @@ body.a11y-big .cdp-chip{font-size:13.5px}
       </div>
 
       <div class="row2" style="margin-top:16px">
-        <div>
-          <label>Date</label>
-          <input id="fDate" type="date" oninput="checkConflict();refreshDateNotice()">
-        </div>
-        <div><label>Time</label><input id="fTime" type="time" oninput="checkConflict()"></div>
-      </div>
-      <div id="fDateSpoken" class="date-spoken"></div>
-      <div id="fDateNotice" class="date-notice" style="display:none"></div>
-      <div class="row2">
         <div><label>Duration (min)</label><input id="fDur" type="number" inputmode="numeric" placeholder="60" oninput="checkConflict()"></div>
         <div><label>Price ($) <button type="button" class="tour-help-chip" onclick="tourHelp(1,7)">? help</button></label><input id="fPrice" type="number" inputmode="decimal" placeholder="0" oninput="priceManual=true;apCalc()"></div>
       </div>
@@ -2743,13 +2758,31 @@ function dateSpoken(ymdStr){return YS.dateSpoken(ymdStr);}
 function refreshDateNotice(){
   var v=$('fDate')?$('fDate').value:'';
   var spoken=dateSpoken(v);
+  var full=YS.dateSpoken(v,true);
+  var btn=$('fDateOpen');if(btn)btn.textContent=full||'Pick a date';
   var lab=$('fDateSpoken');if(lab)lab.textContent=spoken||'';
   var note=$('fDateNotice');
   var off=!!(v&&v!==todayStr());
   if($('fDate'))$('fDate').classList.toggle('date-off',off);
+  if(btn)btn.classList.toggle('date-off',off);
   if(!note)return;
   if(off){note.style.display='block';note.textContent='Not today: '+spoken;}
   else{note.style.display='none';note.textContent='';}
+}
+function shiftFormDate(dir){
+  var cur=$('fDate')&&$('fDate').value;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(cur||''))cur=todayStr();
+  var next=dir<0?YS.prevYMD(cur):YS.nextYMD(cur);
+  if(!next||!$('fDate'))return;
+  $('fDate').value=next;
+  refreshDateNotice();
+  checkConflict();
+}
+function openDatePicker(){
+  var el=$('fDate');if(!el)return;
+  try{ if(typeof el.showPicker==='function'){ el.showPicker(); return; } }catch(e){}
+  try{ el.focus(); }catch(e2){}
+  try{ el.click(); }catch(e3){}
 }
 function checkConflict(){
   var date=$('fDate').value,time=$('fTime').value,dur=+$('fDur').value||0;
@@ -2796,13 +2829,13 @@ function commitSave(){
   var service=$('fService').value.trim();
   var prevRec=editingId?(appts.find(function(a){return a.id===editingId})||null):null;
   var prevStatus=prevRec?(prevRec.status||'confirmed'):'confirmed';
-  var rec={
+  var rec=Object.assign({},prevRec||{},{
     id:editingId||uid(),
     name:name,phone:$('fPhone').value.trim(),
     service:service,
     date:date,time:time,dur:+$('fDur').value||0,price:+$('fPrice').value||0,tip:+$('fTip').value||0,
     notes:$('fNotes').value.trim(),status:prevStatus
-  };
+  });
   if(prevRec&&prevRec.splitFrozen){rec.splitPct=prevRec.splitPct;rec.splitFrozen=true;}
   if(rec.status==='done'||rec.splitFrozen)rec=YS.applyFrozenSplit(rec,getSplit(),'price');
   var wasEdit=!!editingId;
@@ -3622,7 +3655,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.30 · Edit a client from their bookings';
+var VERSION='v6.31 · Date can be changed on iPhone';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
