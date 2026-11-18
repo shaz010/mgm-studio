@@ -595,20 +595,65 @@ check('a done visit keeps its date change in the audit, and the date can move a 
   assert.ok(auditAt > 0 && auditAt < settleAt, 'What happened sits above settlements');
 });
 
-check('a client booking sheet edits in place, and a row opens the full form', function () {
+check('a client booking sheet edits in place, and a row opens the status sheet', function () {
   var appt = require('fs').readFileSync(__dirname + '/appt.html', 'utf8');
   assert.ok(appt.indexOf('id="cbEdit"') >= 0);
   var edit = appt.slice(appt.indexOf('function editClientFromBookings'), appt.indexOf('function cancelClientBookingsEdit'));
   assert.ok(edit.indexOf('_cbEditing=true') >= 0, 'Edit stays on this sheet');
   assert.ok(edit.indexOf("closeSheet('clientBookingsModal')") < 0);
-  var open = appt.slice(appt.indexOf('function openBookingEditor'), appt.indexOf('function cbCard'));
-  assert.ok(open.indexOf('editFromSheet()') >= 0, 'a booking row opens the full edit form');
-  assert.ok(appt.indexOf('persistAppt(prev,next)') >= 0);
-  assert.ok(appt.indexOf('function persistAppt') >= 0);
-  assert.ok(appt.indexOf('shiftBookingDate(this.getAttribute') >= 0);
-  assert.ok(appt.indexOf('function openBookingDate') >= 0);
-  assert.ok(appt.indexOf('id="cbSave"') >= 0);
-  assert.ok(appt.indexOf('position:sticky;bottom:0') >= 0);
+  assert.ok(appt.indexOf('openBookingStatus(') >= 0);
+  assert.ok(appt.indexOf('function openBookingStatus') >= 0);
+  var status = appt.slice(appt.indexOf('function openBookingStatus'), appt.indexOf('function editClientFromList'));
+  assert.ok(status.indexOf('openSheet(id)') >= 0, 'a booking row opens the quick status sheet');
+  assert.ok(status.indexOf('editFromSheet') < 0);
+  assert.ok(appt.indexOf('editClientFromList(') >= 0);
+  assert.ok(appt.indexOf('Jessica Miller') < 0, 'sample clients are not seeded');
+  assert.ok(appt.indexOf('clearDemoData') < 0);
+  var save = appt.slice(appt.indexOf('function saveClientBookings'), appt.indexOf('function openClientBookings'));
+  assert.ok(save.indexOf('if(invalid.length)') >= 0);
+  assert.ok(save.indexOf('persistAppt(prev,next)') > save.indexOf('if(invalid.length)'));
+  assert.ok(save.indexOf('Cancelled</div>') >= 0 || appt.indexOf('>Cancelled</div>') >= 0);
+});
+
+check('only exact sample rows are removed', function () {
+  var rows = [
+    { id: 'da5', name: 'Lisa Park', phone: '555-0105', price: 175 },
+    { id: 'da1', name: 'Jessica Miller', phone: '555-0101' },
+    { id: 'real', name: 'Lisa Park', phone: '555-2222', price: 80 },
+    { id: 'da5', name: 'Lisa Park', phone: '555-9999' },
+    { id: 'mine', name: 'Ronak', phone: '555-1111', price: 35 }
+  ];
+  assert.strictEqual(YS.isSampleAppt(rows[0]), true);
+  assert.strictEqual(YS.isSampleAppt(rows[2]), false);
+  assert.strictEqual(YS.isSampleAppt(rows[3]), false);
+  var kept = YS.dropSampleRows(rows, 'appt');
+  assert.deepStrictEqual(kept.map(function (r) { return r.id; }), ['real', 'da5', 'mine']);
+  var clients = [
+    { id: 'dc5', name: 'Lisa Park', phone: '555-0105' },
+    { id: 'c9', name: 'Lisa Park', phone: '416-555-0199' }
+  ];
+  assert.deepStrictEqual(YS.dropSampleRows(clients, 'client').map(function (r) { return r.id; }), ['c9']);
+  var mem = {
+    ap_appts: JSON.stringify(rows),
+    ap_clients: JSON.stringify(clients)
+  };
+  var first = YS.purgeSamples(function (k) { return mem[k] == null ? null : mem[k]; }, function (k, v) { mem[k] = v; });
+  assert.strictEqual(first.removedAppts, 2);
+  assert.strictEqual(first.removedClients, 1);
+  var left = JSON.parse(mem.ap_appts);
+  assert.deepStrictEqual(left.map(function (r) { return r.id; }), ['real', 'da5', 'mine']);
+  assert.strictEqual(left.filter(function (r) { return r.id === 'da5'; })[0].phone, '555-9999');
+  assert.strictEqual(left.filter(function (r) { return r.id === 'real'; })[0].name, 'Lisa Park');
+  var tombs = JSON.parse(mem.ys_tombstones);
+  assert.ok(tombs.some(function (t) { return t.entityId === 'da1' && t.entityType === 'ap_appt'; }));
+  assert.ok(tombs.some(function (t) { return t.entityId === 'dc5' && t.entityType === 'ap_client'; }));
+  assert.strictEqual(mem.ys_sample_audited, '1');
+  var audits = JSON.parse(mem['ys_audit_' + YS.localYMD(new Date()).slice(0, 7)]);
+  assert.ok(audits.some(function (e) { return e.summary === 'Removed sample bookings'; }));
+  var second = YS.purgeSamples(function (k) { return mem[k] == null ? null : mem[k]; }, function (k, v) { mem[k] = v; });
+  assert.strictEqual(second.removedAppts, 0);
+  var audits2 = JSON.parse(mem['ys_audit_' + YS.localYMD(new Date()).slice(0, 7)]);
+  assert.strictEqual(audits2.filter(function (e) { return e.summary === 'Removed sample bookings'; }).length, 1);
 });
 
 if (failed) {

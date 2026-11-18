@@ -262,7 +262,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.54 · settlements sync with the ledger</div>
+    <div class="ver">salon v0.55 · sample bookings stay off the cloud</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -309,6 +309,13 @@
 
 <script src="yoursalon-settle.js"></script>
 <script src="yoursalon-settle.js"></script>
+<script>
+try{
+  if(window.YS&&YS.purgeSamples)YS.purgeSamples(function(k){return localStorage.getItem(k);},function(k,v){localStorage.setItem(k,v);});
+  localStorage.removeItem('_ys_demo_active');
+  localStorage.removeItem('_ys_demo_seen');
+}catch(e){}
+</script>
 <script>
   /* shell guard: if the shell ever gets served INTO its own iframe
      (e.g. offline fallback), self-heal by loading a room instead
@@ -536,7 +543,7 @@
     try{tombs=JSON.parse(lsGet('ys_tombstones')||'[]')||[];}catch(e){tombs=[];}
     if(!Array.isArray(tombs)||!tombs.length||!(window.YS&&YS.filterTombstones))return false;
     var did=false;
-    [['ap_appts','ap_appt'],['cp_appts','cp_appt']].forEach(function(pair){
+    [['ap_appts','ap_appt'],['cp_appts','cp_appt'],['ap_clients','ap_client']].forEach(function(pair){
       var arr=[];
       try{arr=JSON.parse(lsGet(pair[0])||'[]')||[];}catch(e){arr=[];}
       if(!Array.isArray(arr))return;
@@ -548,6 +555,16 @@
 
   function isRecArray(val){try{var a=JSON.parse(val);return Array.isArray(a)&&a.length>0&&a[0]&&typeof a[0]==='object'&&('id' in a[0]);}catch(e){return false;}}
   // Union two record arrays by id. The "winner" side overrides conflicting ids; non-conflicts from both survive (never lose a record).
+  function withoutSamples(json,key){
+    if(!window.YS||!YS.dropSampleRows)return json;
+    var kind=key==='ap_clients'?'client':(key==='ap_appts'?'appt':'');
+    if(!kind)return json;
+    try{
+      var arr=JSON.parse(json);
+      if(!Array.isArray(arr))return json;
+      return JSON.stringify(YS.dropSampleRows(arr,kind));
+    }catch(e){return json;}
+  }
   function mergeRecArrays(localStr,cloudStr,localNewer){
     var L=[],C=[];try{L=JSON.parse(localStr)||[];}catch(e){L=[];}try{C=JSON.parse(cloudStr)||[];}catch(e){C=[];}
     var winner=localNewer?L:C, loser=localNewer?C:L;
@@ -613,6 +630,10 @@
         meta[k]=Math.max(lt,ct);
         return;
       }
+      if(k==='ap_appts'||k==='ap_clients'){
+        if(lv!=null)lv=withoutSamples(lv,k);
+        if(cv!=null)cv=withoutSamples(cv,k);
+      }
       if(lv==null){ lsSet(k,cv); meta[k]=ct; changed=true; return; }
       if(lv===cv){ if(ct>lt)meta[k]=ct; return; }
       if(isRecArray(lv)||isRecArray(cv)){      // record arrays -> union (no record ever lost)
@@ -648,6 +669,8 @@
 
   function startUserSync(uid){
     if(!fdb){ return; }
+    try{if(window.YS&&YS.purgeSamples)YS.purgeSamples(lsGet,lsSet);}catch(e){}
+    try{localStorage.removeItem('_ys_demo_active');localStorage.removeItem('_ys_demo_seen');}catch(e){}
     _uid=uid; _snap=snapshotLocal();
     if(_userUnsub){ _userUnsub(); _userUnsub=null; }
     var ref=fdb.collection('users').doc(uid);
@@ -693,7 +716,7 @@
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.54';
+  var SHELL_V='v0.55';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{
