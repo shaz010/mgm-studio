@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` now (PR #16 merged 2026-11-18 11:51 AM PT, verified live): Earnings v2.70, Appointments v6.32, salon v0.54, service worker `yoursalon-v89`, booking v3.57.
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` before this change (PR #16 merged): Earnings v2.70, Appointments v6.32, salon v0.54, service worker `yoursalon-v89`, booking v3.57. This change ships Earnings v2.71 and `yoursalon-v90` when it is merged. It is pending until then.
 
 | Room | File | Live version |
 |---|---|---|
-| Earnings | `app.html` | v2.70 (live, PR #15) |
+| Earnings | `app.html` | v2.71 (this change; pending until merged. v2.70 is what is live) |
 | Appointments | `appt.html` | v6.32 (live) |
 | Shell | `salon.html` | v0.54 |
-| Service worker | `sw.js` | `yoursalon-v89` (live) |
+| Service worker | `sw.js` | `yoursalon-v90` (this change; pending until merged. `yoursalon-v89` is what is live) |
 | Booking page | `book.html` | v3.57 |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
@@ -99,7 +99,9 @@ The Salon owes me screen lists each past settlement as Paid, Partly paid, or Unp
 
 **Before and new.** Once any payment is on the books, the top of Salon owes me is its own block: “Still owed from before” and “New work since last payment,” with a smaller total. The panel under it repeats that same previous-unpaid amount in a gold row, then Owed, Paid, and Still due for the new work only. Owed is the Done work since the last payment. Paid is whatever was left after the older work was covered, usually $0. Still due is what remains of that new work, the same figure as the big “New work” number. “Total due” is previous unpaid plus that still due, and it matches the running balance and the smaller total above. With no payments yet, both the top block and the previous-unpaid row stay hidden, and the panel is the single number plus the all-time Owed / Paid / Still due line.
 
-**Appointment list boxes.** On the Appointments list, finished visits that payments have fully covered sit in one outlined box, “Paid / settled” (muted green). Finished visits the salon still owes, including one the last payment only partly covered, sit in a gold box, “Salon still owes me,” with that box’s total. A partly covered visit says how much is left. Inside the gold box, “From before last payment” and “New since last payment” match the headline numbers. Payments cover the oldest finished visit first. Nothing is written back onto the visits. Bookings that are not Done stay grey, outside both boxes.
+**Appointment list boxes.** On the Appointments list, finished visits that payments have fully covered sit in one outlined box, “Paid / settled” (muted green). Finished visits the salon still owes, including one the last payment only partly covered, sit in a gold box, “Salon still owes me,” with that box’s total. A partly covered visit says how much is left. Inside the gold box, “From before last payment” and “New since last payment” match the headline numbers. Bookings that are not Done stay grey, outside both boxes.
+
+**Oldest job date (pending until this pull request is merged).** Inside each of those two groups, the payment now covers the oldest job date first, then the earlier start time, then the earlier Done time, then the id. It used to cover whoever was marked Done first, so a November visit marked Done early could be paid ahead of an October visit marked Done later. With $268 paid, Kori through Abbas ($260) are covered, Ronak (Oct 30, $21) is partly paid with $13 left, and Nick Webb ($15) and Hidi ($55), both Nov 3, stay unpaid. The before total stays $83 and the new-work total stays $204. Which group a visit belongs to is unchanged: “before last payment” is still the work marked Done before that payment (or, with no Done time, a job date on or before the payment date). Closed settlements still count as before. The Previous unpaid row, the two headline numbers, and the gold-box subtotals stay the same sums. Only which visit carries the partial amount changes. Nothing is written back onto the visits.
 
 A visit is “new” when it was marked Done after that payment. The time comes from the audit log (the status change to Done) or from a `doneAt` time on the visit if one is stored. Nothing is written back onto old visits to invent that time. If neither time exists, the visit date is compared with the payment date, and the payment’s own calendar day counts as before. Visits already inside a closed settlement stay in “before,” so a closed unpaid settlement is not mixed into the new work.
 

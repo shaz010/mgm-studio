@@ -465,9 +465,12 @@
     };
   }
 
-  /* Payments cover finished visits oldest first: work from before the last
-     payment, then work from after it. A visit the payment only partly covers
-     stays unpaid, with the remainder on that visit. Nothing is stored. */
+  /* Payments cover finished visits oldest job date first, inside each group:
+     work from before the last payment, then work from after it. Inside a
+     group the order is job date, then start time, then when it was marked
+     Done, then id. Which group a visit is in still follows when it was marked
+     Done, not the job date. A visit the payment only partly covers stays
+     unpaid, with the remainder on that visit. Nothing is stored. */
   function allocateJobs(rows, payments, opts) {
     opts = opts || {};
     var doneMap = doneMillisFromEvents(opts.events);
@@ -489,12 +492,14 @@
     });
     jobs.sort(function (a, b) {
       if (a.isNew !== b.isNew) return a.isNew ? 1 : -1;
+      var d = a.date.localeCompare(b.date);
+      if (d) return d;
+      var t = a.time.localeCompare(b.time);
+      if (t) return t;
       if (a.doneMs != null && b.doneMs != null && a.doneMs !== b.doneMs) return a.doneMs - b.doneMs;
       if (a.doneMs != null && b.doneMs == null) return -1;
       if (a.doneMs == null && b.doneMs != null) return 1;
-      var d = a.date.localeCompare(b.date);
-      if (d) return d;
-      return a.time.localeCompare(b.time);
+      return a.id.localeCompare(b.id);
     });
     var pool = sumPaymentCents(payments);
     var byId = {};

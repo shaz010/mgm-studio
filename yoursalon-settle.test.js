@@ -486,6 +486,68 @@ check('each finished visit is paid, partly paid, or still owed, oldest first', f
   assert.ok(!jobs.byId.soon);
 });
 
+check('payments cover the oldest job date first, even if it was marked done later', function () {
+  var payAt = new Date(2026, 10, 10, 12).getTime();
+  var early = new Date(2026, 10, 1, 9).getTime();
+  var late = new Date(2026, 10, 9, 18).getTime();
+  function job(id, name, date, meCents, doneMs, time) {
+    return { id: id, name: name, date: date, time: time || '10:00', status: 'done', _src: 'appt', me: meCents / 100, tip: 0, charge: meCents / 100, doneAt: doneMs };
+  }
+  var rows = [
+    job('kori', 'Kori', '2026-10-02', 4000, late),
+    job('sam', 'Sam', '2026-10-06', 3000, late),
+    job('leila', 'Leila', '2026-10-09', 4500, late),
+    job('omar', 'Omar', '2026-10-14', 3500, late),
+    job('priya', 'Priya', '2026-10-18', 5000, late),
+    job('noah', 'Noah', '2026-10-22', 2000, late),
+    job('abbas', 'Abbas', '2026-10-27', 4000, late),
+    job('ronak', 'Ronak', '2026-10-30', 2100, late, '11:00'),
+    job('nick', 'Nick Webb', '2026-11-03', 1500, early, '10:00'),
+    job('hidi', 'Hidi', '2026-11-03', 5500, early + 60000, '15:00'),
+    job('june', 'June', '2026-11-12', 8000, payAt + 86400000),
+    job('camille', 'Camille', '2026-11-14', 6400, payAt + 2 * 86400000),
+    job('reese', 'Reese', '2026-11-16', 6000, payAt + 3 * 86400000)
+  ];
+  var pays = [pay('salon', 26800, payAt)];
+  var jobs = YS.allocateJobs(rows, pays);
+  var split = YS.splitAtLastPayment(rows, pays);
+  ['kori', 'sam', 'leila', 'omar', 'priya', 'noah', 'abbas'].forEach(function (id) {
+    assert.strictEqual(jobs.byId[id].state, 'paid', id);
+    assert.strictEqual(jobs.byId[id].bucket, 'before', id);
+  });
+  assert.strictEqual(jobs.byId.ronak.state, 'partial');
+  assert.strictEqual(jobs.byId.ronak.leftCents, 1300);
+  assert.strictEqual(jobs.byId.ronak.paidCents, 800);
+  assert.strictEqual(jobs.byId.ronak.bucket, 'before');
+  assert.strictEqual(jobs.byId.nick.state, 'unpaid');
+  assert.strictEqual(jobs.byId.nick.leftCents, 1500);
+  assert.strictEqual(jobs.byId.hidi.state, 'unpaid');
+  assert.strictEqual(jobs.byId.hidi.leftCents, 5500);
+  assert.strictEqual(jobs.byId.hidi.bucket, 'before');
+  assert.strictEqual(jobs.byId.june.bucket, 'new');
+  assert.strictEqual(jobs.byId.june.state, 'unpaid');
+  assert.strictEqual(jobs.unpaidBeforeCents, 8300);
+  assert.strictEqual(jobs.unpaidNewCents, 20400);
+  assert.strictEqual(split.beforeCents, 8300);
+  assert.strictEqual(split.newCents, 20400);
+  assert.strictEqual(jobs.unpaidBeforeCents, split.beforeCents);
+  assert.strictEqual(jobs.unpaidNewCents, split.newCents);
+  var tie = [
+    job('later', 'Later', '2026-10-01', 1000, early, '15:00'),
+    job('sooner', 'Sooner', '2026-10-01', 1000, late, '09:00')
+  ];
+  var tieJobs = YS.allocateJobs(tie, [pay('tie', 1000, payAt)]);
+  assert.strictEqual(tieJobs.byId.sooner.state, 'paid');
+  assert.strictEqual(tieJobs.byId.later.state, 'unpaid');
+  var idTie = [
+    job('b', 'B', '2026-10-01', 500, early, '09:00'),
+    job('a', 'A', '2026-10-01', 500, early, '09:00')
+  ];
+  var idJobs = YS.allocateJobs(idTie, [pay('id', 500, payAt)]);
+  assert.strictEqual(idJobs.byId.a.state, 'paid');
+  assert.strictEqual(idJobs.byId.b.state, 'unpaid');
+});
+
 check('the main Add button uses today, and a day cell keeps its day', function () {
   assert.strictEqual(YS.defaultAddDate(false, '2026-10-30', '2026-11-03'), '2026-11-03');
   assert.strictEqual(YS.defaultAddDate(true, '2026-10-30', '2026-11-03'), '2026-10-30');
