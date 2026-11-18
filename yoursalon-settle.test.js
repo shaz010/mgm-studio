@@ -450,6 +450,42 @@ check('a voided latest payment is ignored and closed settlements stay before', f
   assert.strictEqual(split.totalCents, YS.runningBalance(17000, pays).dueCents);
 });
 
+check('each finished visit is paid, partly paid, or still owed, oldest first', function () {
+  var rows = [];
+  var events = [];
+  for (var i = 0; i < 10; i++) {
+    rows.push(doneRow('old' + i, 3510, '2026-11-16'));
+    events.push(doneAt('old' + i, 1000 + i));
+  }
+  rows.push(doneRow('n1', 4000, '2026-11-16'));
+  rows.push(doneRow('n2', 4000, '2026-11-16'));
+  rows.push(doneRow('n3', 4000, '2026-11-16'));
+  events.push(doneAt('n1', 8000));
+  events.push(doneAt('n2', 8001));
+  events.push(doneAt('n3', 8002));
+  rows.push({ id: 'soon', name: 'Upcoming', date: '2026-11-20', status: 'confirmed', _src: 'appt', me: 50, tip: 0, charge: 50 });
+  var pays = [pay('salon', 26800, 5000)];
+  var jobs = YS.allocateJobs(rows, pays, { events: events });
+  var split = YS.splitAtLastPayment(rows, pays, { events: events });
+  var paid = 0, partial = null, beforeLeft = 0, newLeft = 0;
+  Object.keys(jobs.byId).forEach(function (id) {
+    var j = jobs.byId[id];
+    if (j.state === 'paid') paid++;
+    if (j.state === 'partial') partial = j;
+    if (j.leftCents > 0 && j.bucket === 'before') beforeLeft += j.leftCents;
+    if (j.leftCents > 0 && j.bucket === 'new') newLeft += j.leftCents;
+  });
+  assert.strictEqual(paid, 7);
+  assert.strictEqual(partial.id, 'old7');
+  assert.strictEqual(partial.leftCents, 1280);
+  assert.strictEqual(beforeLeft, 8300);
+  assert.strictEqual(newLeft, 12000);
+  assert.strictEqual(jobs.unpaidBeforeCents, split.beforeCents);
+  assert.strictEqual(jobs.unpaidNewCents, split.newCents);
+  assert.strictEqual(jobs.unpaidCents, split.totalCents);
+  assert.ok(!jobs.byId.soon);
+});
+
 if (failed) {
   console.error('\n' + failed + ' failed');
   process.exit(1);
