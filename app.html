@@ -663,6 +663,12 @@ td{padding:12px 10px;vertical-align:middle}
   body.theme-light .tbl-wrap tbody tr:hover{background:#fff}
   body.theme-light .tbl-wrap td:first-child{border-color:#eee}
   body.theme-light .tbl-wrap td.actions-cell{border-color:#eee}
+  .tbl-wrap tbody.job-box{display:block;border:1.5px solid #6d9a78;border-radius:14px;padding:8px 8px 2px;margin:0 0 14px}
+  .tbl-wrap tbody.job-unpaid{border-color:#e2b340}
+  .tbl-wrap tbody.job-box tr{margin-bottom:8px}
+  .tbl-wrap tbody.job-box tr.box-h,.tbl-wrap tbody.job-box tr.box-sub{border:none;background:transparent;padding:2px 6px 6px;margin:0}
+  .tbl-wrap tbody.job-box tr.box-h td,.tbl-wrap tbody.job-box tr.box-sub td{display:block;border:none;text-align:left;padding:0}
+  .tbl-wrap tbody.job-box tr.box-h td::before,.tbl-wrap tbody.job-box tr.box-sub td::before{content:none}
 }
 
 /* MGM */
@@ -709,6 +715,27 @@ body.theme-light .bal-line{color:#334}
 .sum-note{font-size:12px;color:#9a8a62;margin:-8px 0 14px;line-height:1.4}
 .settle-tag{display:inline-block;margin-left:6px;font-size:10px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:#e3b341;border:1px solid rgba(227,179,65,.5);border-radius:20px;padding:1px 6px;vertical-align:1px}
 tr.not-owed{opacity:.72}
+tbody.job-paid tr td:first-child{box-shadow:inset 2px 0 0 #6d9a78}
+tbody.job-paid tr td:last-child{box-shadow:inset -2px 0 0 #6d9a78}
+tbody.job-paid tr:first-child td{box-shadow:inset 0 2px 0 #6d9a78}
+tbody.job-paid tr:last-child td{box-shadow:inset 0 -2px 0 #6d9a78}
+tbody.job-paid tr:first-child td:first-child{box-shadow:inset 2px 2px 0 #6d9a78}
+tbody.job-paid tr:first-child td:last-child{box-shadow:inset -2px 2px 0 #6d9a78}
+tbody.job-paid tr:last-child td:first-child{box-shadow:inset 2px -2px 0 #6d9a78}
+tbody.job-paid tr:last-child td:last-child{box-shadow:inset -2px -2px 0 #6d9a78}
+tbody.job-unpaid tr td:first-child{box-shadow:inset 2px 0 0 #e2b340}
+tbody.job-unpaid tr td:last-child{box-shadow:inset -2px 0 0 #e2b340}
+tbody.job-unpaid tr:first-child td{box-shadow:inset 0 2px 0 #e2b340}
+tbody.job-unpaid tr:last-child td{box-shadow:inset 0 -2px 0 #e2b340}
+tbody.job-unpaid tr:first-child td:first-child{box-shadow:inset 2px 2px 0 #e2b340}
+tbody.job-unpaid tr:first-child td:last-child{box-shadow:inset -2px 2px 0 #e2b340}
+tbody.job-unpaid tr:last-child td:first-child{box-shadow:inset 2px -2px 0 #e2b340}
+tbody.job-unpaid tr:last-child td:last-child{box-shadow:inset -2px -2px 0 #e2b340}
+tr.box-h td{font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:10px 12px}
+tbody.job-paid tr.box-h td{color:#b7d7c0;background:rgba(109,154,120,.12)}
+tbody.job-unpaid tr.box-h td{color:#f0d48a;background:rgba(226,179,64,.12)}
+tr.box-sub td{font-size:11px;font-weight:700;color:#cbb98a;padding:8px 12px 4px}
+.part-note{display:block;margin-top:3px;font-size:11px;font-weight:800;color:#e2b340}
 .nc-box{margin:0 0 14px;border:1px solid rgba(227,179,65,.45);background:rgba(227,179,65,.08);border-radius:12px;padding:12px 12px 4px}
 .nc-h{display:flex;gap:8px;align-items:flex-start;margin-bottom:4px}
 .nc-h .ti{color:#e3b341;font-size:16px;margin-top:1px;flex-shrink:0}
@@ -2498,18 +2525,27 @@ function renderTable(){
   $('tableView').style.display=activeFilter==='weekly'?'none':'block';
   $('weeklyView').style.display=activeFilter==='weekly'?'block':'none';
   if(activeFilter==='weekly'){renderWeekly();return;}
-  const tbody=$('tBody'),empty=$('emptyMsg');
-  if(!filtered.length){tbody.innerHTML='';empty.innerHTML=loadAppts().length?'<i class="ti ti-search-off"></i>No matches for this filter.':'<i class="ti ti-calendar-plus"></i>No bookings yet.<br><span style="font-size:12px;color:#888">Add one in the Appointments app to start tracking your earnings.</span>';empty.style.display='block';return;}
+  const empty=$('emptyMsg');
+  var table=document.querySelector('#tableView .tbl-wrap table');
+  if(!filtered.length){
+    paintJobTable([{cls:'', html:''}]);
+    empty.innerHTML=loadAppts().length?'<i class="ti ti-search-off"></i>No matches for this filter.':'<i class="ti ti-calendar-plus"></i>No bookings yet.<br><span style="font-size:12px;color:#888">Add one in the Appointments app to start tracking your earnings.</span>';
+    empty.style.display='block';
+    return;
+  }
   empty.style.display='none';
-  tbody.innerHTML=filtered.map(a=>{
-    const d=new Date(a.date+'T12:00:00');
-    const ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    const[h,m]=a.time.split(':');const hr=+h;
-    const ts=(hr%12||12)+':'+m+(hr>=12?'pm':'am');
-    const _op=String(_lhOpenId)===String(a.id);
-    const _owed=YS.countsTowardOwed(a);
-    return`<tr class="led-row${_op?' open':''}${_owed?'':' not-owed'}" onclick="toggleLedgerHistory('${a.id}')">
-      <td class="td-c" data-label="Client">${a.name}${settleTag(a)}</td><td class="td-m" data-label="Date">${ds}</td>
+  paintJobTable(jobChunks(filtered));
+}
+function ledgerRow(a, info){
+  const d=new Date(a.date+'T12:00:00');
+  const ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const parts=String(a.time||'00:00').split(':');
+  const hr=+parts[0]||0, m=parts[1]||'00';
+  const _op=String(_lhOpenId)===String(a.id);
+  const _owed=YS.countsTowardOwed(a);
+  const part=info&&info.state==='partial'?'<span class="part-note">Partly paid: '+moneyLabel(info.leftCents)+' left</span>':'';
+  return`<tr class="led-row${_op?' open':''}${_owed?'':' not-owed'}" onclick="toggleLedgerHistory('${a.id}')">
+      <td class="td-c" data-label="Client">${a.name}${settleTag(a)}${part}</td><td class="td-m" data-label="Date">${ds}</td>
       <td class="td-m" style="color:#555" data-label="Week">Wk${weekNum(a.date)}</td>
       <td class="td-cat" data-label="Category">${a.cat||'—'}</td>
       <td class="td-g r" data-label="Charge">${fmt(a.charge)}</td>
@@ -2519,7 +2555,64 @@ function renderTable(){
       <td class="td-g r" data-label="My total">${fmt(YS.addMoney(a.me,a.tip))}</td>
       <td class="lh-chev-cell"><i class="ti ti-chevron-${_op?'down':'right'} lh-chev"></i></td>
     </tr>${_op?`<tr class="lh-row"><td class="lh-cell" colspan="10"><div class="lh-panel"><div class="lh-search"><i class="ti ti-search"></i><input type="text" placeholder="Search this client's visits…" oninput="lhFilter(this.value)"></div><div id="lhList">${lhRowsHtml()}</div></div></td></tr>`:''}`;
-  }).join('');
+}
+function jobChunks(filtered){
+  var events=[];
+  try{events=YS.readAudit(function(k){return localStorage.getItem(k);},'','');}catch(e){}
+  var alloc=YS.allocateJobs(data, loadPayments(), {events:events, settlements:loadSettlements()});
+  var paid=[], before=[], neu=[], rest=[];
+  filtered.forEach(function(a){
+    if(!YS.countsTowardOwed(a)){rest.push(a);return;}
+    var info=alloc.byId[String(a.id)];
+    var item={a:a, info:info};
+    if(info&&info.state==='paid')paid.push(item);
+    else if(info&&info.bucket==='new')neu.push(item);
+    else before.push(item);
+  });
+  function byDate(x,y){
+    var d=String(x.a.date||'').localeCompare(String(y.a.date||''));
+    if(d)return d;
+    return String(x.a.time||'').localeCompare(String(y.a.time||''));
+  }
+  paid.sort(byDate); before.sort(byDate); neu.sort(byDate);
+  rest.sort(function(a,b){var d=String(a.date||'').localeCompare(String(b.date||''));return d||String(a.time||'').localeCompare(String(b.time||''));});
+  function head(text){return '<tr class="box-h"><td colspan="10">'+text+'</td></tr>';}
+  function sub(text){return '<tr class="box-sub"><td colspan="10">'+text+'</td></tr>';}
+  var chunks=[];
+  if(paid.length)chunks.push({cls:'job-box job-paid', html:head('Paid / settled')+paid.map(function(it){return ledgerRow(it.a, it.info);}).join('')});
+  if(before.length||neu.length){
+    var left=0;
+    before.concat(neu).forEach(function(it){left+=it.info?it.info.leftCents:(YS.centsOf(it.a.me)+YS.centsOf(it.a.tip));});
+    var html=head('Salon still owes me · '+moneyLabel(left));
+    if(before.length){
+      var bleft=0; before.forEach(function(it){bleft+=it.info?it.info.leftCents:0;});
+      html+=sub('From before last payment · '+moneyLabel(bleft));
+      html+=before.map(function(it){return ledgerRow(it.a, it.info);}).join('');
+    }
+    if(neu.length){
+      var nleft=0; neu.forEach(function(it){nleft+=it.info?it.info.leftCents:0;});
+      html+=sub('New since last payment · '+moneyLabel(nleft));
+      html+=neu.map(function(it){return ledgerRow(it.a, it.info);}).join('');
+    }
+    chunks.push({cls:'job-box job-unpaid', html:html});
+  }
+  if(rest.length)chunks.push({cls:'job-open', html:rest.map(function(a){return ledgerRow(a, null);}).join('')});
+  return chunks;
+}
+function paintJobTable(chunks){
+  var table=document.querySelector('#tableView .tbl-wrap table');
+  if(!table)return;
+  var thead=table.querySelector('thead');
+  table.innerHTML='';
+  if(thead)table.appendChild(thead);
+  if(!chunks.length)chunks=[{cls:'', html:''}];
+  chunks.forEach(function(chunk, i){
+    var tb=document.createElement('tbody');
+    if(i===0)tb.id='tBody';
+    tb.className=chunk.cls||'';
+    tb.innerHTML=chunk.html||'';
+    table.appendChild(tb);
+  });
 }
 var _lhOpenId=null,_lhSearch='';
 function toggleLedgerHistory(id){ _lhOpenId=(String(_lhOpenId)===String(id))?null:id; _lhSearch=''; renderTable(); }
@@ -4725,7 +4818,7 @@ try{ maybeShowTradePicker(); }catch(e){ console.error('tradePicker failed:',e); 
 try{ applyName();var _cn=document.getElementById('cfgName');if(_cn)_cn.value=getName(); }catch(e){ console.error('applyName failed:',e); }
 
 /* live-session update check — version poll that rides the network-first SW (no swipe-kill needed) */
-var VERSION='app v2.68 · before and new, plus previous unpaid';
+var VERSION='app v2.69 · paid and still-owed visits in their own boxes';
 /* ===== In-app confirm (native confirm() silently fails in iOS PWA / WKWebView) ===== */
 var _cpCfFn=null,_cpCfNo=null;
 function askConfirm(msg,onYes,opts){

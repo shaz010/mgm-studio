@@ -433,6 +433,67 @@
     };
   }
 
+  /* Payments cover finished visits oldest first: work from before the last
+     payment, then work from after it. A visit the payment only partly covers
+     stays unpaid, with the remainder on that visit. Nothing is stored. */
+  function allocateJobs(rows, payments, opts) {
+    opts = opts || {};
+    var doneMap = doneMillisFromEvents(opts.events);
+    var latest = latestLivePayment(payments);
+    var claimed = claimedSettlementIds(opts.settlements || []);
+    var jobs = [];
+    (rows || []).forEach(function (a) {
+      if (!countsTowardOwed(a) || !a || a.id == null || a.id === '') return;
+      var inSettlement = !!claimed[String(a.id)];
+      var doneMs = doneMillisForRow(a, doneMap);
+      jobs.push({
+        id: String(a.id),
+        owedCents: centsOf(a.me) + centsOf(a.tip),
+        isNew: isNewSinceLastPayment(a, latest, doneMs, inSettlement),
+        doneMs: doneMs,
+        date: String(a.date || ''),
+        time: String(a.time || '')
+      });
+    });
+    jobs.sort(function (a, b) {
+      if (a.isNew !== b.isNew) return a.isNew ? 1 : -1;
+      if (a.doneMs != null && b.doneMs != null && a.doneMs !== b.doneMs) return a.doneMs - b.doneMs;
+      if (a.doneMs != null && b.doneMs == null) return -1;
+      if (a.doneMs == null && b.doneMs != null) return 1;
+      var d = a.date.localeCompare(b.date);
+      if (d) return d;
+      return a.time.localeCompare(b.time);
+    });
+    var pool = sumPaymentCents(payments);
+    var byId = {};
+    var unpaidBefore = 0;
+    var unpaidNew = 0;
+    jobs.forEach(function (job) {
+      var cover = Math.min(Math.max(pool, 0), job.owedCents);
+      var left = job.owedCents - cover;
+      pool -= cover;
+      var state = left === 0 ? 'paid' : (cover > 0 ? 'partial' : 'unpaid');
+      byId[job.id] = {
+        id: job.id,
+        owedCents: job.owedCents,
+        paidCents: cover,
+        leftCents: left,
+        state: state,
+        bucket: job.isNew ? 'new' : 'before'
+      };
+      if (left > 0) {
+        if (job.isNew) unpaidNew += left;
+        else unpaidBefore += left;
+      }
+    });
+    return {
+      byId: byId,
+      unpaidBeforeCents: unpaidBefore,
+      unpaidNewCents: unpaidNew,
+      unpaidCents: unpaidBefore + unpaidNew
+    };
+  }
+
   function migratedPaymentId(ym) { return 'mig-cp_paid-' + ym; }
 
   /* Each old "this month is paid" flag becomes one payment. The id is the
@@ -884,6 +945,7 @@
     latestLivePayment: latestLivePayment,
     doneMillisFromEvents: doneMillisFromEvents,
     splitAtLastPayment: splitAtLastPayment,
+    allocateJobs: allocateJobs,
     migratedPaymentId: migratedPaymentId,
     migratePaidMonths: migratePaidMonths,
     mergePaymentLists: mergePaymentLists,
