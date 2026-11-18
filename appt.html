@@ -837,9 +837,16 @@ datalist{display:none}
 .cd-more{margin-top:12px;width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-bright);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer}
 .cd-more:active{border-color:var(--gold);color:var(--gold)}
 .lrow.sel{box-shadow:0 0 0 1.5px var(--gold)}
-.cb-top{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.cb-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
 .cb-top .sheet-title{font-size:22px!important}
 .cb-topsub{font-size:15px;color:var(--muted);margin-top:3px}
+.cb-edit{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;border:1.5px solid #e2b340;background:rgba(226,179,64,.18);color:#f0d48a;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit}
+.cb-edit:active{transform:scale(.96)}
+#clientModal .sheet{padding-bottom:0}
+#clientModal .cs-fields input{border:1.5px solid #d4b15a;background:#0c0c10}
+#clientModal .cs-fields input:focus{border-color:#ffe08a;box-shadow:0 0 0 3px rgba(226,179,64,.28)}
+#clientModal .cs-fields .ap-price-wrap{border-color:#d4b15a}
+#clientModal .cs-save{position:sticky;bottom:0;z-index:3;background:#111117;margin-top:16px;margin-left:-24px;margin-right:-24px;padding:12px 24px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid rgba(226,179,64,.45)}
 .cb-head{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--gold);margin:10px 0 10px;font-weight:800}
 .cb-appt{display:flex;align-items:center;gap:14px;background:var(--bg2);border:1px solid var(--border-bright);border-radius:14px;padding:15px 16px;margin-bottom:10px;cursor:pointer;transition:background .12s}
 .cb-appt:active{background:var(--gold-dim)}
@@ -1398,20 +1405,22 @@ body.a11y-big .cdp-chip{font-size:13.5px}
   <div class="sheet">
     <div class="sheet-grip"></div>
     <div class="sheet-title" id="csTitle">Add client</div>
-    <label>Name</label><input id="csName" placeholder="Client name">
-    <label>Phone</label><input id="csPhone" type="tel" placeholder="(555) 123-4567">
-    <label>Email <span style="color:#666;font-weight:400">(optional)</span></label><input id="csEmail" type="email" placeholder="name@email.com">
-    <label>Saved price <span style="color:#666;font-weight:400">(auto-remembered)</span></label>
-    <div class="ap-price-wrap"><span class="ap-price-cur">$</span><input id="csPrice" type="number" inputmode="decimal" min="0" step="1" placeholder="—" class="ap-price-in"></div>
-    <div style="font-size:12px;color:var(--muted);margin:7px 0 2px;line-height:1.5">Their go-to price — auto-fills when you approve their bookings. Edit anytime (e.g. if they change their look).</div>
-    <div class="btn-row" style="margin-top:16px">
+    <div class="cs-fields">
+      <label>Name</label><input id="csName" placeholder="Client name">
+      <label>Phone</label><input id="csPhone" type="tel" placeholder="(555) 123-4567">
+      <label>Email <span style="color:#666;font-weight:400">(optional)</span></label><input id="csEmail" type="email" placeholder="name@email.com">
+      <label>Saved price <span style="color:#666;font-weight:400">(auto-remembered)</span></label>
+      <div class="ap-price-wrap"><span class="ap-price-cur">$</span><input id="csPrice" type="number" inputmode="decimal" min="0" step="1" placeholder="—" class="ap-price-in"></div>
+      <div style="font-size:12px;color:var(--muted);margin:7px 0 2px;line-height:1.5">Their go-to price — auto-fills when you approve their bookings. Edit anytime (e.g. if they change their look).</div>
+      <div class="btn-row" id="csRebook" style="display:none">
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="bookAgain()"><i class="ti ti-repeat"></i> Book again</button>
+      </div>
+      <div class="btn-row" id="csDel" style="display:none">
+        <button class="btn btn-danger btn-sm" style="flex:1" onclick="deleteClient()"><i class="ti ti-trash"></i> Delete client</button>
+      </div>
+    </div>
+    <div class="btn-row cs-save" id="csSaveRow">
       <button class="btn" onclick="saveClient()"><i class="ti ti-check"></i> Save client</button>
-    </div>
-    <div class="btn-row" id="csRebook" style="display:none">
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="bookAgain()"><i class="ti ti-repeat"></i> Book again</button>
-    </div>
-    <div class="btn-row" id="csDel" style="display:none">
-      <button class="btn btn-danger btn-sm" style="flex:1" onclick="deleteClient()"><i class="ti ti-trash"></i> Delete client</button>
     </div>
   </div>
 </div>
@@ -1422,6 +1431,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="sheet-grip"></div>
     <div class="cb-top">
       <div><div class="sheet-title" id="cbTitle" style="margin:0">Client</div><div class="cb-topsub" id="cbSub"></div></div>
+      <button type="button" class="cb-edit" id="cbEdit" onclick="editClientFromBookings()"><i class="ti ti-pencil"></i> Edit</button>
     </div>
     <div id="cbList" style="margin-top:6px"></div>
   </div>
@@ -3210,9 +3220,16 @@ function deleteClient(){
     if(typeof publishAvailability==='function')publishAvailability();
   },{danger:true,yesLabel:'Delete'});
 }
+var _cbClientId=null;
+function editClientFromBookings(){
+  var id=_cbClientId;if(!id)return;
+  closeSheet('clientBookingsModal');
+  openClientSheet(id);
+}
 function openClientBookings(id){
   reload();
   var c=clients.find(function(x){return x.id===id});if(!c)return;
+  _cbClientId=id;
   $('cbTitle').textContent=c.name;
   $('cbSub').textContent=c.phone?c.phone:'No phone';
   var today=todayStr();
@@ -3605,7 +3622,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.29 · Add starts on today';
+var VERSION='v6.30 · Edit a client from their bookings';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){

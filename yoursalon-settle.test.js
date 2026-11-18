@@ -505,6 +505,17 @@ check('the main Add button uses today, and a day cell keeps its day', function (
   assert.ok(appt.indexOf('needsPastDateConfirm') >= 0);
 });
 
+check('a client booking sheet can open the editor, and Save stays put', function () {
+  var appt = require('fs').readFileSync(__dirname + '/appt.html', 'utf8');
+  assert.ok(appt.indexOf('id="cbEdit"') >= 0);
+  assert.ok(appt.indexOf('editClientFromBookings') >= 0);
+  var edit = appt.slice(appt.indexOf('function editClientFromBookings'), appt.indexOf('function openClientBookings'));
+  assert.ok(edit.indexOf("closeSheet('clientBookingsModal')") >= 0);
+  assert.ok(edit.indexOf('openClientSheet(id)') >= 0);
+  assert.ok(appt.indexOf('position:sticky;bottom:0') >= 0);
+  assert.ok(appt.indexOf('id="csSaveRow"') >= 0);
+});
+
 if (failed) {
   console.error('\n' + failed + ' failed');
   process.exit(1);
