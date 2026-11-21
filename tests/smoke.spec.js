@@ -171,7 +171,7 @@ test('Add opens on today, a booking tap opens status, and both edit paths save o
   expect(errors).toEqual([]);
 });
 
-test('name and phone stay visible above the date, and a new booking saves them', async ({ page }) => {
+test('the service pill reveals name and phone above the date, and a new booking saves', async ({ page }) => {
   const errors = watchErrors(page);
   await page.addInitScript(function () {
     localStorage.setItem('ap_prefs', JSON.stringify({ svcMode: 'hair', splitPct: 60 }));
@@ -183,35 +183,59 @@ test('name and phone stay visible above the date, and a new booking saves them',
   });
   await page.goto('/appt.html');
   await page.waitForTimeout(300);
-  const place = await page.evaluate(function () {
+  const hidden = await page.evaluate(function () {
     var sc = document.getElementById('tradeScreen');
     if (sc) sc.style.display = 'none';
     openAdd();
+    var wrap = document.getElementById('clientFieldsWrap');
+    return {
+      shown: wrap.classList.contains('cfw-show'),
+      height: wrap.getBoundingClientRect().height,
+      pill: document.getElementById('chooseSvcHint').textContent
+    };
+  });
+  expect(hidden.shown).toBe(false);
+  expect(hidden.height).toBeLessThan(2);
+  expect(hidden.pill).toContain('CHOOSE SERVICE');
+
+  await page.locator('#chooseSvcHint').click();
+  await page.waitForTimeout(900);
+  const shown = await page.evaluate(function () {
+    var wrap = document.getElementById('clientFieldsWrap');
     var name = document.getElementById('fName');
     var phone = document.getElementById('fPhone');
     var date = document.getElementById('fDate');
-    var ns = getComputedStyle(name);
-    var ps = getComputedStyle(phone);
     return {
-      nameSeen: ns.display !== 'none' && ns.visibility !== 'hidden' && name.getBoundingClientRect().height > 0,
-      phoneSeen: ps.display !== 'none' && ps.visibility !== 'hidden' && phone.getBoundingClientRect().height > 0,
-      nameAbove: name.getBoundingClientRect().bottom <= date.getBoundingClientRect().top
+      open: wrap.classList.contains('cfw-show'),
+      height: wrap.getBoundingClientRect().height,
+      nameSeen: name.getBoundingClientRect().height > 0,
+      phoneSeen: phone.getBoundingClientRect().height > 0,
+      nameAbove: name.getBoundingClientRect().top < date.getBoundingClientRect().top
     };
   });
-  expect(place.nameSeen).toBe(true);
-  expect(place.phoneSeen).toBe(true);
-  expect(place.nameAbove).toBe(true);
+  expect(shown.open).toBe(true);
+  expect(shown.height).toBeGreaterThan(40);
+  expect(shown.nameSeen).toBe(true);
+  expect(shown.phoneSeen).toBe(true);
+  expect(shown.nameAbove).toBe(true);
 
+  await page.evaluate(function () { clientId = 'c1'; bookAgain(); });
+  await page.waitForTimeout(900);
   const filled = await page.evaluate(function () {
-    clientId = 'c1';
-    bookAgain();
-    return { name: document.getElementById('fName').value, phone: document.getElementById('fPhone').value };
+    var wrap = document.getElementById('clientFieldsWrap');
+    return {
+      name: document.getElementById('fName').value,
+      phone: document.getElementById('fPhone').value,
+      seen: wrap.classList.contains('cfw-show') && wrap.getBoundingClientRect().height > 40
+    };
   });
   expect(filled.name).toBe('Hidi');
   expect(filled.phone).toBe('555-0188');
+  expect(filled.seen).toBe(true);
 
   const saved = await page.evaluate(function () {
     openAdd();
+    _revealClientFields();
     document.getElementById('fName').value = 'Nia Cole';
     document.getElementById('fPhone').value = '555-0144';
     document.getElementById('fService').value = 'Cut';
