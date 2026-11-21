@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` (PR #20 merged 2026-11-21 11:06 AM PT): Earnings v2.71, Appointments v6.35, salon v0.56, service worker `yoursalon-v93`, booking v3.57. This change ships Appointments v6.36 and `yoursalon-v94` when it is merged. PR open, awaiting Shahbaz OK.
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` (PR #22 merged 2026-11-21 11:48 AM PT): Earnings v2.71, Appointments v6.36, salon v0.56, service worker `yoursalon-v94`, booking v3.57.
 
 | Room | File | Live version |
 |---|---|---|
 | Earnings | `app.html` | v2.71 (live, PR #17) |
-| Appointments | `appt.html` | v6.36 (this change; PR open, awaiting Shahbaz OK. v6.35 is what is live) |
+| Appointments | `appt.html` | v6.36 (live) |
 | Shell | `salon.html` | v0.56 (live, PR #20) |
-| Service worker | `sw.js` | `yoursalon-v94` (this change; PR open, awaiting Shahbaz OK. `yoursalon-v93` is what is live) |
+| Service worker | `sw.js` | `yoursalon-v94` (live) |
 | Booking page | `book.html` | v3.57 |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
@@ -91,7 +91,7 @@ The existing owner unlock is unchanged. It is not synced, not written into the a
 
 **Edit a client’s bookings in place (live, PR #16).** Edit on the client bookings sheet turns the name, phone, email, saved price, and each listed booking into fields. The date uses the same iPhone controls as the appointment form. Save writes the client the same way Save client does, and writes each changed booking through the same appointment save. A Done visit stays Done and keeps its frozen split.
 
-**Status sheet after a new booking (PR open, awaiting Shahbaz OK).** Saving a new appointment on the Add form opens the same quick status sheet (Confirmed, Done, No-show, Cancelled) so it can be marked right away. Editing an existing appointment does not open it. Closing the sheet leaves the booking Confirmed. A confirmed card on the day view says “Tap to mark Done.” The past-time needs-closing list is unchanged.
+**Status sheet after a new booking (live since 2026-11-21 11:48 AM PT, PR #22).** Saving a new appointment on the Add form opens the same quick status sheet (Confirmed, Done, No-show, Cancelled) so it can be marked right away. Editing an existing appointment does not open it. Closing the sheet leaves the booking Confirmed. A confirmed card on the day view says “Tap to mark Done.” The past-time needs-closing list is unchanged.
 
 **Client identity repair (live since 2026-11-21 11:06 AM PT, PR #20).** Changing a client’s name or phone now updates that client and every booking that belongs to them, and writes a client edit to the audit log. The Clients list no longer makes a second card when a booking’s phone differs but the name, or the client id, already matches. Delete client is on the bookings sheet, including Edit. Done visits stay in Earnings. Bookings that are not Done are removed only if that box is ticked, and each removed booking is tombstoned so sync cannot bring it back. A restored visit wins over an older tombstone. One repair pass, matched by exact id and fields, puts Abbas’s Oct 29 haircut back, drops the duplicate Abbas, Kori, Joni V, and Azita cards, fixes Kori’s and Azita’s phones on the named bookings, and renames Joni V’s card back. After that, Salon still owes me stays $287. Sample tombstones are not touched.
 
