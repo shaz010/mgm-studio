@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` before this change (PR #18 merged): Earnings v2.71, Appointments v6.33, salon v0.55, service worker `yoursalon-v91`, booking v3.57. This change ships Appointments v6.34 and `yoursalon-v92` when it is merged. It is pending until then.
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` (PR #19 merged 2026-11-21 10:17 AM PT): Earnings v2.71, Appointments v6.34, salon v0.55, service worker `yoursalon-v92`, booking v3.57.
 
 | Room | File | Live version |
 |---|---|---|
 | Earnings | `app.html` | v2.71 (live, PR #17) |
-| Appointments | `appt.html` | v6.34 (this change; pending until merged. v6.33 is what is live) |
+| Appointments | `appt.html` | v6.34 (live) |
 | Shell | `salon.html` | v0.55 (live, PR #18) |
-| Service worker | `sw.js` | `yoursalon-v92` (this change; pending until merged. `yoursalon-v91` is what is live) |
+| Service worker | `sw.js` | `yoursalon-v92` (live) |
 | Booking page | `book.html` | v3.57 |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
@@ -91,7 +91,7 @@ The existing owner unlock is unchanged. It is not synced, not written into the a
 
 **Edit a client’s bookings in place (live, PR #16).** Edit on the client bookings sheet turns the name, phone, email, saved price, and each listed booking into fields. The date uses the same iPhone controls as the appointment form. Save writes the client the same way Save client does, and writes each changed booking through the same appointment save. A Done visit stays Done and keeps its frozen split.
 
-**Name and phone reveal above the date (pending until this pull request is merged).** The orange CHOOSE SERVICE(S) pill is back. Name and phone stay hidden until that pill is tapped, then they rise into view with the same animation as before. They now live directly under the New appointment title, above the date, so the reveal puts them at the top. Edit and Book again open them already filled. Typing a saved name still fills the phone. Saving still requires a name, a phone, a service, a date, and a time.
+**Name and phone reveal above the date (live since 2026-11-21 10:17 AM PT, PR #19).** The orange CHOOSE SERVICE(S) pill is back. Name and phone stay hidden until that pill is tapped, then they rise into view with the same animation as before. They now live directly under the New appointment title, above the date, so the reveal puts them at the top. Edit and Book again open them already filled. Typing a saved name still fills the phone. Saving still requires a name, a phone, a service, a date, and a time.
 
 **Sample bookings removed, and two sheet fixes (live since 2026-11-18 1:35 PM PT, PR #18, Appointments v6.33, shell v0.55, sw yoursalon-v91).** A fresh device used to write six sample clients (Jessica Miller through Emma Wilson, phones 555-0101 through 555-0106, ids dc1–dc6 and da1–da6) whenever `_ys_demo_seen` was missing and there were no appointments yet. That flag lived only on the device, so a reinstall or a new phone seeded them again, and sync then copied them to the cloud. Nothing seeds them now. On every load, an exact sample row (id and name and phone) is removed, tombstoned, and kept out of the cloud merge. A real client who happens to be named Lisa Park, with any other id or phone, is left alone. The first removal writes one audit line, “Removed sample bookings.”
 
