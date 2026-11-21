@@ -412,3 +412,96 @@ test('the client repair leaves one of each person and $287 owed', async ({ page 
   expect(body).toContain('$287.00');
   expect(errors).toEqual([]);
 });
+
+async function fillNewBooking(page, person) {
+  await page.evaluate(function (p) {
+    var sc = document.getElementById('tradeScreen');
+    if (sc) sc.style.display = 'none';
+    openAdd();
+    _revealClientFields();
+    document.getElementById('fName').value = p.name;
+    document.getElementById('fPhone').value = p.phone;
+    document.getElementById('fService').value = p.service;
+    document.getElementById('fDate').value = YS.nextYMD(todayStr());
+    document.getElementById('fTime').value = p.time;
+    document.getElementById('fPrice').value = p.price;
+  }, person);
+  await page.locator('button[onclick="saveAppt()"]').click();
+}
+
+async function expectQuickStatus(page, name) {
+  await expect(page.locator('#apptModal')).toHaveClass(/show/);
+  await expect(page.locator('#dName')).toHaveText(name);
+  await expect(page.locator('#statusGrid .status-opt[data-s="done"]')).toHaveText('Done');
+  await expect(page.locator('#statusGrid .status-opt[data-s="noshow"]')).toHaveText('No-show');
+  await expect(page.locator('#statusGrid .status-opt[data-s="cancelled"]')).toHaveText('Cancelled');
+}
+
+test('a new booking on a fresh device opens the status sheet, and dismissing leaves it Confirmed', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.addInitScript(function () {
+    localStorage.setItem('ap_prefs', JSON.stringify({ svcMode: 'hair', splitPct: 60 }));
+    localStorage.setItem('combo_trade', 'hair');
+  });
+  await page.goto('/appt.html');
+  await page.waitForTimeout(300);
+  await fillNewBooking(page, { name: 'Nia Cole', phone: '555-0144', service: 'Cut', time: '11:00', price: '40' });
+  await expectQuickStatus(page, 'Nia Cole');
+  await page.locator('#apptModal button[onclick="closeSheet(\'apptModal\')"]').click();
+  await expect(page.locator('#apptModal')).not.toHaveClass(/show/);
+  await expect(page.locator('.appt-tap')).toHaveText('Tap to mark Done');
+  const kept = await page.evaluate(function () {
+    return JSON.parse(localStorage.getItem('ap_appts') || '[]').filter(function (a) { return a.name === 'Nia Cole'; }).map(function (a) { return a.status; });
+  });
+  expect(kept).toEqual(['confirmed']);
+
+  await page.locator('.appt.confirmed').click();
+  await page.locator('#apptModal button[onclick="editFromSheet()"]').click();
+  await page.locator('button[onclick="saveAppt()"]').click();
+  await expect(page.locator('#apptModal')).not.toHaveClass(/show/);
+  const afterEdit = await page.evaluate(function () {
+    var rows = JSON.parse(localStorage.getItem('ap_appts') || '[]').filter(function (a) { return a.name === 'Nia Cole'; });
+    return { count: rows.length, status: rows[0] && rows[0].status };
+  });
+  expect(afterEdit.count).toBe(1);
+  expect(afterEdit.status).toBe('confirmed');
+  expect(errors).toEqual([]);
+});
+
+test('a new booking on a device that already has data opens the status sheet, and Done shows in Earnings', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.addInitScript(function () {
+    if (localStorage.getItem('ys_smoke_status_seed') === '1') return;
+    localStorage.setItem('ap_prefs', JSON.stringify({ svcMode: 'hair', splitPct: 60 }));
+    localStorage.setItem('combo_trade', 'hair');
+    localStorage.setItem('cp_unlocked', '1');
+    localStorage.setItem('cp_prefs', JSON.stringify({ trade: 'hair', tourDone: true, rate: 60 }));
+    localStorage.setItem('ap_clients', JSON.stringify([{ id: 'c1', name: 'Hidi', phone: '555-0188' }]));
+    localStorage.setItem('ap_appts', JSON.stringify([
+      { id: 'a1', name: 'Hidi', phone: '555-0188', cid: 'c1', service: 'Color', date: '2026-12-01', time: '10:00', price: 90, tip: 0, status: 'confirmed' }
+    ]));
+    localStorage.setItem('ys_smoke_status_seed', '1');
+  });
+  await page.goto('/appt.html');
+  await page.waitForTimeout(300);
+  await fillNewBooking(page, { name: 'June Park', phone: '555-0177', service: 'Cut', time: '15:00', price: '40' });
+  await expectQuickStatus(page, 'June Park');
+  await page.locator('#statusGrid .status-opt[data-s="done"]').click();
+  const marked = await page.evaluate(function () {
+    var rows = JSON.parse(localStorage.getItem('ap_appts') || '[]');
+    return {
+      june: rows.filter(function (a) { return a.name === 'June Park'; })[0].status,
+      hidi: rows.filter(function (a) { return a.id === 'a1'; })[0].status,
+      count: rows.length
+    };
+  });
+  expect(marked.june).toBe('done');
+  expect(marked.hidi).toBe('confirmed');
+  expect(marked.count).toBe(2);
+  await page.goto('/app.html');
+  await page.evaluate(function () { showTab('hist'); });
+  await expect(page.locator('#pHist')).toContainText('June Park');
+  await page.evaluate(function () { showTab('mgm'); });
+  await expect(page.locator('#pMgm')).toContainText('$24.00');
+  expect(errors).toEqual([]);
+});
