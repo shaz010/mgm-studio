@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` (PR #19 merged 2026-11-21 10:17 AM PT): Earnings v2.71, Appointments v6.34, salon v0.55, service worker `yoursalon-v92`, booking v3.57.
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` before this change (PR #19 merged): Earnings v2.71, Appointments v6.34, salon v0.55, service worker `yoursalon-v92`, booking v3.57. This change ships Appointments v6.35, salon v0.56, and `yoursalon-v93` when it is merged. It is pending until then.
 
 | Room | File | Live version |
 |---|---|---|
 | Earnings | `app.html` | v2.71 (live, PR #17) |
-| Appointments | `appt.html` | v6.34 (live) |
-| Shell | `salon.html` | v0.55 (live, PR #18) |
-| Service worker | `sw.js` | `yoursalon-v92` (live) |
+| Appointments | `appt.html` | v6.35 (this change; pending until merged. v6.34 is what is live) |
+| Shell | `salon.html` | v0.56 (this change; pending until merged. v0.55 is what is live) |
+| Service worker | `sw.js` | `yoursalon-v93` (this change; pending until merged. `yoursalon-v92` is what is live) |
 | Booking page | `book.html` | v3.57 |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
@@ -90,6 +90,8 @@ The existing owner unlock is unchanged. It is not synced, not written into the a
 **iPhone date edit (live, PR #15).** On the iPhone app, the appointment date field did not open its picker. Every text field on the form uses `-webkit-appearance: none`, and iOS WKWebView will not open the wheel for a date input styled that way. Desktop Chrome still does. The weekday line under the field does not cover it, and nothing resets the date on blur. Date and time now sit at the top of the add and edit form, above Quick picks. The date input uses the normal iOS appearance again. A large button shows the day, for example “Tue 3 Nov 2026”, and opens the picker. −1 day and +1 day change the date even if the picker does not open. Saving a Done appointment keeps its status and writes an appointment.edit audit event with the old date and the new date. The same `ap_appts` save is what the shell already syncs. On Earnings, What happened sits just under the Salon owes me numbers, and the To date no longer spills out of the card.
 
 **Edit a client’s bookings in place (live, PR #16).** Edit on the client bookings sheet turns the name, phone, email, saved price, and each listed booking into fields. The date uses the same iPhone controls as the appointment form. Save writes the client the same way Save client does, and writes each changed booking through the same appointment save. A Done visit stays Done and keeps its frozen split.
+
+**Client identity repair (pending until this pull request is merged).** Changing a client’s name or phone now updates that client and every booking that belongs to them, and writes a client edit to the audit log. The Clients list no longer makes a second card when a booking’s phone differs but the name, or the client id, already matches. Delete client is on the bookings sheet, including Edit. Done visits stay in Earnings. Bookings that are not Done are removed only if that box is ticked, and each removed booking is tombstoned so sync cannot bring it back. A restored visit wins over an older tombstone. One repair pass, matched by exact id and fields, puts Abbas’s Oct 29 haircut back, drops the duplicate Abbas, Kori, Joni V, and Azita cards, fixes Kori’s and Azita’s phones on the named bookings, and renames Joni V’s card back. After that, Salon still owes me stays $287. Sample tombstones are not touched.
 
 **Name and phone reveal above the date (live since 2026-11-21 10:17 AM PT, PR #19).** The orange CHOOSE SERVICE(S) pill is back. Name and phone stay hidden until that pill is tapped, then they rise into view with the same animation as before. They now live directly under the New appointment title, above the date, so the reveal puts them at the top. Edit and Book again open them already filled. Typing a saved name still fills the phone. Saving still requires a name, a phone, a service, a date, and a time.
 

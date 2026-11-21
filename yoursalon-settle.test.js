@@ -227,6 +227,15 @@ check('saving, status, price, and tip each plan an audit event', function () {
   var st = YS.planStatusEvent({ id: 'a1', name: 'Ada', _src: 'appt', splitPct: 60 }, 'confirmed', 'done');
   assert.strictEqual(st.type, 'status.change');
   assert.strictEqual(st.summary, 'Ada confirmed → done');
+  var phoneEdit = YS.planClientEdit({ id: 'k1', name: 'Kori', phone: '111' }, { id: 'k1', name: 'Kori', phone: '9495004779' });
+  assert.strictEqual(phoneEdit.type, 'client.edit');
+  assert.strictEqual(phoneEdit.entityType, 'ap_client');
+  assert.strictEqual(phoneEdit.before.phone, '111');
+  assert.strictEqual(phoneEdit.after.phone, '9495004779');
+  var nameEdit = YS.planClientEdit({ id: 'j1', name: 'Joni', phone: '2213218523' }, { id: 'j1', name: 'Joni V', phone: '2213218523' });
+  assert.strictEqual(nameEdit.after.name, 'Joni V');
+  assert.strictEqual(nameEdit.before.name, 'Joni');
+  assert.strictEqual(YS.planClientEdit({ id: 'k1', name: 'Kori', phone: '111' }, { id: 'k1', name: 'Kori', phone: '111' }), null);
 });
 
 check('day follow-through shows frozen work, tips, payments, and the balance before and after', function () {
@@ -654,6 +663,142 @@ check('only exact sample rows are removed', function () {
   assert.strictEqual(second.removedAppts, 0);
   var audits2 = JSON.parse(mem['ys_audit_' + YS.localYMD(new Date()).slice(0, 7)]);
   assert.strictEqual(audits2.filter(function (e) { return e.summary === 'Removed sample bookings'; }).length, 1);
+});
+
+check('a phone change follows the client onto their bookings', function () {
+  var appts = [
+    { id: 'b1', name: 'Kori', phone: '111', cid: 'k1', status: 'done' },
+    { id: 'b2', name: 'Kori', phone: '111', status: 'confirmed' },
+    { id: 'b3', name: 'Kori', phone: '999', status: 'done' }
+  ];
+  var next = YS.cascadeClientToBookings(appts, { id: 'k1', name: 'Kori', phone: '9495004779' }, 'Kori', '111');
+  assert.strictEqual(next[0].phone, '9495004779');
+  assert.strictEqual(next[1].phone, '9495004779');
+  assert.strictEqual(next[1].cid, 'k1');
+  assert.strictEqual(next[2].phone, '999');
+});
+
+check('reconcile does not invent a second client', function () {
+  var clients = [{ id: 'a1', name: 'Abbas', phone: '9494497366' }];
+  var bookings = [{ id: 'job', name: 'Abbas', phone: '2531425214', status: 'done' }];
+  var once = YS.linkOrCreateClients(clients, bookings, []);
+  assert.strictEqual(once.created, 0);
+  assert.strictEqual(once.linked, 1);
+  assert.strictEqual(once.clients.length, 1);
+  assert.strictEqual(once.bookings[0].cid, 'a1');
+  var linked = YS.linkOrCreateClients(once.clients, [{ id: 'job2', name: 'Abbas', phone: '000', cid: 'a1', status: 'done' }], []);
+  assert.strictEqual(linked.created, 0);
+  assert.strictEqual(linked.clients.length, 1);
+});
+
+check('a restored visit wins over an older tombstone, and a client tombstone sticks', function () {
+  var oldTomb = { id: 'tomb-ap_appt-mw15tezltj5a', entityType: 'ap_appt', entityId: 'mw15tezltj5a', at: 1000 };
+  var restored = { id: 'tomb-ap_appt-mw15tezltj5a', entityType: 'ap_appt', entityId: 'mw15tezltj5a', at: 5000, restored: true };
+  var merged = YS.mergeTombstoneLists([oldTomb], [restored]);
+  assert.strictEqual(merged[0].restored, true);
+  assert.strictEqual(YS.isTombstoned(merged, 'ap_appt', 'mw15tezltj5a'), false);
+  var kept = YS.filterTombstones([{ id: 'mw15tezltj5a', name: 'Abbas' }], merged, 'ap_appt');
+  assert.strictEqual(kept.length, 1);
+  var clientTomb = YS.makeTombstone('ap_client', 'c179528581047886446', 9, 'Deleted');
+  var people = YS.filterTombstones([
+    { id: 'c179528581047886446', name: 'Abbas' },
+    { id: 'mw15tezlauq7', name: 'Abbas' }
+  ], [clientTomb], 'ap_client');
+  assert.deepStrictEqual(people.map(function (c) { return c.id; }), ['mw15tezlauq7']);
+});
+
+check('the known client repair is exact and can run twice', function () {
+  var input = {
+    appts: [
+      { id: 'mw15ae9mlkxt', name: 'Kori', phone: '111', cid: 'mw15ae9n8a7d', status: 'done' },
+      { id: 'mwqqpgzv7f6j', name: 'Kori', phone: '111', status: 'confirmed', date: '2026-11-21', time: '15:00' },
+      { id: 'mw15hleo4kf8', name: 'Azita Mokhtari', phone: '0854561258', cid: 'mw15hleoew7i', service: "Women's Haircut", date: '2026-10-17', time: '10:30', price: 75, tip: 10, status: 'done' }
+    ],
+    clients: [
+      { id: 'mw15tezlauq7', name: 'Abbas', phone: '111', savedPrice: 0 },
+      { id: 'c179528581047886446', name: 'Abbas', phone: '2531425214' },
+      { id: 'other-abbas', name: 'Abbas', phone: '2531425214' },
+      { id: 'mw15ae9n8a7d', name: 'Kori', phone: '111' },
+      { id: 'c179528576482889101', name: 'Kori', phone: '9495004779' },
+      { id: 'mw15f85ogbl4', name: 'Joni', phone: '000' },
+      { id: 'mwjvyy5qxjqo', name: 'Joni', phone: '999' },
+      { id: 'c179503812995115368', name: 'Joni V', phone: '2213218523' },
+      { id: 'mw15hleoew7i', name: 'Azita Mokhtari', phone: '111', savedPrice: 0 },
+      { id: 'c179528685177351426', name: 'Azita Mokhtari', phone: '0854561258' }
+    ],
+    tombs: [
+      { id: 'tomb-ap_appt-mw15tezltj5a', entityType: 'ap_appt', entityId: 'mw15tezltj5a', at: 1000 },
+      { id: 'tomb-ap_appt-mwqqksnqmt2h', entityType: 'ap_appt', entityId: 'mwqqksnqmt2h', at: 1000 },
+      { id: 'tomb-ap_appt-da1', entityType: 'ap_appt', entityId: 'da1', at: 1000 }
+    ]
+  };
+  var once = YS.repairClientData(input);
+  assert.strictEqual(once.changed, true);
+  var abbasJob = once.appts.filter(function (a) { return a.id === 'mw15tezltj5a'; })[0];
+  assert.strictEqual(abbasJob.name, 'Abbas');
+  assert.strictEqual(abbasJob.meCents, 2400);
+  assert.strictEqual(abbasJob.status, 'done');
+  assert.strictEqual(YS.isTombstoned(once.tombs, 'ap_appt', 'mw15tezltj5a'), false);
+  assert.strictEqual(YS.isTombstoned(once.tombs, 'ap_appt', 'mwqqksnqmt2h'), true);
+  assert.strictEqual(YS.isTombstoned(once.tombs, 'ap_appt', 'da1'), true);
+  assert.ok(!once.clients.some(function (c) { return c.id === 'c179528581047886446'; }));
+  assert.ok(once.clients.some(function (c) { return c.id === 'other-abbas'; }));
+  assert.strictEqual(once.clients.filter(function (c) { return c.name === 'Kori' && c.id === 'mw15ae9n8a7d'; })[0].phone, '9495004779');
+  assert.strictEqual(once.appts.filter(function (a) { return a.id === 'mw15ae9mlkxt'; })[0].phone, '9495004779');
+  assert.strictEqual(once.appts.filter(function (a) { return a.id === 'mwqqpgzv7f6j'; })[0].phone, '111');
+  assert.strictEqual(once.clients.filter(function (c) { return c.id === 'mw15f85ogbl4'; })[0].name, 'Joni V');
+  assert.strictEqual(once.clients.filter(function (c) { return c.id === 'mwjvyy5qxjqo'; })[0].name, 'Joni');
+  assert.strictEqual(once.clients.filter(function (c) { return c.id === 'mw15tezlauq7'; })[0].savedPrice, 40);
+  assert.strictEqual(once.clients.filter(function (c) { return c.id === 'mw15hleoew7i'; })[0].phone, '9492467660');
+  assert.strictEqual(once.clients.filter(function (c) { return c.id === 'mw15hleoew7i'; })[0].savedPrice, 75);
+  assert.strictEqual(once.appts.filter(function (a) { return a.id === 'mw15hleo4kf8'; })[0].phone, '9492467660');
+  assert.strictEqual(once.appts.filter(function (a) { return a.id === 'mw15hleo4kf8'; })[0].cid, 'mw15hleoew7i');
+  assert.ok(!once.clients.some(function (c) { return c.id === 'c179528685177351426'; }));
+  var twice = YS.repairClientData(once);
+  assert.strictEqual(twice.changed, false);
+  assert.strictEqual(twice.appts.filter(function (a) { return a.id === 'mw15tezltj5a'; }).length, 1);
+  var names = ['Abbas', 'Kori', 'Joni V', 'Azita Mokhtari'];
+  names.forEach(function (name) {
+    var real = twice.clients.filter(function (c) { return c.name === name && String(c.id).indexOf('c1795') !== 0 && c.id !== 'other-abbas' && c.id !== 'mwjvyy5qxjqo'; });
+    assert.strictEqual(real.length, 1, name);
+  });
+  var untouched = YS.repairClientData({ appts: [{ id: 'x', name: 'Hidi', phone: '555-0188', status: 'done' }], clients: [{ id: 'c1', name: 'Hidi', phone: '555-0188' }], tombs: [] });
+  assert.strictEqual(untouched.changed, false);
+  assert.ok(!untouched.appts.some(function (a) { return a.id === 'mw15tezltj5a'; }));
+  var mem = { ap_appts: '[]', ap_clients: '[]', ys_tombstones: JSON.stringify([{ id: 'tomb-ap_appt-mw15tezltj5a', entityType: 'ap_appt', entityId: 'mw15tezltj5a', at: 1000 }]) };
+  var get = function (k) { return mem[k] == null ? null : mem[k]; };
+  var set = function (k, v) { mem[k] = v; };
+  YS.applyClientRepair(get, set);
+  var audits = JSON.parse(mem['ys_audit_' + YS.localYMD(new Date()).slice(0, 7)]);
+  assert.strictEqual(audits.filter(function (e) { return e.type === 'client.edit' || e.summary === 'Repaired duplicate clients'; }).length, 1);
+  assert.strictEqual(audits[0].summary, 'Repaired duplicate clients');
+  YS.applyClientRepair(get, set);
+  var auditsAgain = JSON.parse(mem['ys_audit_' + YS.localYMD(new Date()).slice(0, 7)]);
+  assert.strictEqual(auditsAgain.filter(function (e) { return e.summary === 'Repaired duplicate clients'; }).length, 1);
+});
+
+check('the repaired books still leave $287 owed', function () {
+  var payAt = new Date(2026, 10, 10, 12).getTime();
+  var beforeDone = new Date(2026, 10, 9, 12).getTime();
+  var rows = [
+    { id: 'older', name: 'Older', date: '2026-10-01', time: '09:00', status: 'done', me: 236, tip: 0, doneAt: beforeDone },
+    { id: 'mw15tezltj5a', name: 'Abbas', date: '2026-10-29', time: '13:00', status: 'done', me: 24, tip: 0, doneAt: beforeDone },
+    { id: 'ronak', name: 'Ronak', date: '2026-10-30', time: '11:00', status: 'done', me: 21, tip: 0, doneAt: beforeDone },
+    { id: 'nick', name: 'Nick Webb', date: '2026-11-03', time: '10:00', status: 'done', me: 15, tip: 0, doneAt: beforeDone },
+    { id: 'hidi', name: 'Hidi', date: '2026-11-03', time: '15:00', status: 'done', me: 55, tip: 0, doneAt: beforeDone },
+    { id: 'new1', name: 'June', date: '2026-11-12', time: '10:00', status: 'done', me: 204, tip: 0, doneAt: payAt + 86400000 },
+    { id: 'mwqqpgzv7f6j', name: 'Kori', date: '2026-11-21', time: '15:00', status: 'confirmed', me: 40, tip: 0 }
+  ];
+  var pays = [{ id: 'p', amountCents: 26800, date: '2026-11-10', createdAt: payAt, voided: false }];
+  var jobs = YS.allocateJobs(rows, pays);
+  var split = YS.splitAtLastPayment(rows, pays);
+  assert.strictEqual(jobs.byId.ronak.leftCents, 1300);
+  assert.strictEqual(jobs.byId.nick.state, 'unpaid');
+  assert.strictEqual(jobs.byId.hidi.state, 'unpaid');
+  assert.strictEqual(split.beforeCents, 8300);
+  assert.strictEqual(split.newCents, 20400);
+  assert.strictEqual(split.totalCents, 28700);
+  assert.ok(!jobs.byId.mwqqpgzv7f6j);
 });
 
 if (failed) {
