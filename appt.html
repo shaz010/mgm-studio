@@ -1238,6 +1238,15 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="card">
       <div class="ctitle"><i class="ti ti-calendar-plus"></i><span id="addTitle">New appointment</span><button type="button" class="sec-help-inline" onclick="showSectionHelp('Adding an appointment','This form books any appointment. Start by tapping a service chip — that unlocks the client name and phone fields. Fill in the price (your split calculates live), add any tip, then tap Save. The appointment lands in Day view instantly.',1,4)">? how this works</button></div>
 
+      <!-- Client name + phone hidden, rise up when CHOOSE SERVICE(S) is tapped -->
+      <div class="client-fields-wrap" id="clientFieldsWrap">
+        <label>Client name <button type="button" class="tour-help-chip" onclick="tourHelp(1,6)">? help</button></label>
+        <input id="fName" list="clientList" placeholder="Start typing a name…" autocomplete="off" oninput="onNamePick()">
+        <datalist id="clientList"></datalist>
+        <label>Phone <span style="color:var(--gold);font-weight:400">(required)</span></label>
+        <input id="fPhone" type="tel" placeholder="(555) 123-4567" autocomplete="off">
+      </div>
+
       <div class="when-block" id="whenBlock">
         <div class="date-stepper">
           <button type="button" class="date-step" onclick="shiftFormDate(-1)">−1 day</button>
@@ -1251,15 +1260,6 @@ body.a11y-big .cdp-chip{font-size:13.5px}
         <label class="when-time-label">Time
           <input id="fTime" type="time" oninput="checkConflict()">
         </label>
-      </div>
-
-      <!-- Client name + phone hidden, rise up when CHOOSE SERVICE(S) is tapped -->
-      <div class="client-fields-wrap" id="clientFieldsWrap">
-        <label>Client name <button type="button" class="tour-help-chip" onclick="tourHelp(1,6)">? help</button></label>
-        <input id="fName" list="clientList" placeholder="Start typing a name…" autocomplete="off" oninput="onNamePick()">
-        <datalist id="clientList"></datalist>
-        <label>Phone <span style="color:var(--gold);font-weight:400">(required)</span></label>
-        <input id="fPhone" type="tel" placeholder="(555) 123-4567" autocomplete="off">
       </div>
 
       <div class="svc-label-row">
@@ -3215,6 +3215,7 @@ function bookAgain(){
   var p=(+c.savedPrice>0)?+c.savedPrice:((last&&+last.price>0)?+last.price:0);
   if(p>0){$('fPrice').value=p;priceManual=true;}
   if(typeof apCalc==='function')apCalc();
+  _revealClientFields();
   toast(((c.name||'Client').split(' ')[0])+' pre-filled — just pick date & time');
 }
 function deleteClient(){
@@ -3776,7 +3777,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.33 · sample bookings are gone';
+var VERSION='v6.34 · name and phone stay on the Add form';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
