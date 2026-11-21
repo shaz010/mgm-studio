@@ -849,6 +849,7 @@ datalist{display:none}
 .cb-top .sheet-title{font-size:22px!important}
 .cb-topsub{font-size:15px;color:var(--muted);margin-top:3px}
 .cb-edit{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;border:1.5px solid #e2b340;background:rgba(226,179,64,.18);color:#f0d48a;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit}
+#cbDelete{border-color:#e85d5d;background:transparent;color:#ff8a8a}
 .cb-edit:active{transform:scale(.96)}
 #clientModal .sheet{padding-bottom:0}
 #clientModal .cs-fields input{border:1.5px solid #d4b15a;background:#0c0c10}
@@ -1446,7 +1447,10 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="sheet-grip"></div>
     <div class="cb-top">
       <div><div class="sheet-title" id="cbTitle" style="margin:0">Client</div><div class="cb-topsub" id="cbSub"></div></div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+      <button type="button" class="cb-edit" id="cbDelete" onclick="confirmDeleteClient(_cbClientId)"><i class="ti ti-trash"></i> Delete</button>
       <button type="button" class="cb-edit" id="cbEdit" onclick="editClientFromBookings()"><i class="ti ti-pencil"></i> Edit</button>
+      </div>
     </div>
     </div>
     <div id="cbList" style="margin-top:6px"></div>
@@ -1761,6 +1765,10 @@ body.a11y-big .cdp-chip{font-size:13.5px}
     <div class="sheet-grip"></div>
     <div class="sheet-title" id="cfTitle">Are you sure?</div>
     <div class="sheet-sub" id="cfMsg" style="margin-bottom:18px"></div>
+    <label id="cfExtra" style="display:none;align-items:flex-start;gap:8px;margin:0 0 14px;font-size:14px;font-weight:700;color:var(--text)">
+      <input id="cfCheck" type="checkbox" style="width:18px;height:18px;margin-top:2px;flex:none">
+      <span id="cfCheckLabel"></span>
+    </label>
     <div class="btn-row">
       <button class="btn btn-ghost btn-sm" id="cfNo" style="flex:1" onclick="closeSheet('confirmModal')">Cancel</button>
       <button class="btn btn-sm" id="cfYes" style="flex:1">Confirm</button>
@@ -1984,10 +1992,12 @@ var clients=load(CLIENTS,[]);
 var customSvc=load(CUSTOM,[]);   /* [{name,mode}] your own services, kept forever */
 try{
   if(window.YS&&YS.purgeSamples)YS.purgeSamples(function(k){return localStorage.getItem(k);},function(k,v){localStorage.setItem(k,v);});
+  if(window.YS&&YS.applyClientRepair)YS.applyClientRepair(function(k){return localStorage.getItem(k);},function(k,v){localStorage.setItem(k,v);});
   localStorage.removeItem('_ys_demo_active');
   localStorage.removeItem('_ys_demo_seen');
   appts=load(APPTS,[]);
   clients=load(CLIENTS,[]);
+  try{stripTombstonedAppts();}catch(e2){}
 }catch(e){}
 var stock=load(STOCK,[]);        /* [{id,name,qty,min,unit,used}] inventory */
 function reload(){appts=load(APPTS,[]);clients=load(CLIENTS,[]);customSvc=load(CUSTOM,[]);stock=load(STOCK,[]);try{stripTombstonedAppts();}catch(e){}}
@@ -3024,23 +3034,24 @@ function _backfillCids(){
   if(changed)save(APPTS,appts);
 }
 function reconcileClients(){
-  var changed=false;
-  function ensure(name,phone){
-    if(!name)return;
-    var an=name.toLowerCase(), ap=(''+(phone||'')).replace(/\D/g,'');
-    var exists=clients.find(function(c){
-      if(!c.name||c.name.toLowerCase()!==an)return false;
-      var cp=(''+(c.phone||'')).replace(/\D/g,'');
-      // same name: same person only if phones match, or one side has no phone
-      return (!ap||!cp||ap===cp);
-    });
-    if(!exists){clients.push({id:'c'+Date.now()+Math.floor(Math.random()*99999),name:name,phone:phone||'',email:'',notes:''});changed=true;}
-    else if(phone&&!exists.phone){exists.phone=phone;changed=true;}
+  var tombs=[];
+  try{tombs=JSON.parse(localStorage.getItem('ys_tombstones')||'[]')||[];}catch(e){tombs=[];}
+  var linked=YS.linkOrCreateClients(clients, appts, tombs);
+  var changed=linked.created||linked.linked;
+  if(changed){
+    clients=linked.clients;
+    if(linked.linked){appts=linked.bookings;save(APPTS,appts);}
+    save(CLIENTS,clients);
   }
-  appts.forEach(function(a){ensure(a.name,a.phone);});
-  _cpBookings().forEach(function(a){ensure(a.name,a.phone);});
-  try{var cc=JSON.parse(localStorage.getItem('cp_clients')||'[]');if(Array.isArray(cc))cc.forEach(function(c){ensure(c.name,c.phone);});}catch(e){}
-  if(changed)save(CLIENTS,clients);
+  function ensureName(name,phone){
+    if(!name)return;
+    var an=normName(name);
+    if(clients.some(function(c){return normName(c.name)===an;}))return;
+    clients.push({id:'c'+Date.now()+Math.floor(Math.random()*99999),name:name,phone:phone||'',email:'',notes:''});
+    save(CLIENTS,clients);
+  }
+  _cpBookings().forEach(function(a){ensureName(a.name,a.phone);});
+  try{var cc=JSON.parse(localStorage.getItem('cp_clients')||'[]');if(Array.isArray(cc))cc.forEach(function(c){ensureName(c.name,c.phone);});}catch(e){}
 }
 function renderClients(){
   reload();
@@ -3186,10 +3197,20 @@ function saveClientFields(id,name,phone,email,priceStr){
   var nextPrice=(!isNaN(sp)&&sp>0)?sp:0;
   var prevPrice=prev&&prev.savedPrice>0?+prev.savedPrice:0;
   if(prev&&prev.name===name&&(prev.phone||'')===phone&&(prev.email||'')===email&&prevPrice===nextPrice)return true;
+  var oldName=prev?prev.name:'';
+  var oldPhone=prev?(prev.phone||''):'';
   var rec=Object.assign({},prev||{},{id:id||uid(),name:name,phone:phone,email:email});
   if(nextPrice>0)rec.savedPrice=nextPrice; else delete rec.savedPrice;
   if(id){clients=clients.map(function(c){return c.id===id?rec:c;});}else{clients.push(rec);}
   save(CLIENTS,clients);
+  if(prev&&(oldName!==name||oldPhone!==phone)){
+    var nextAppts=YS.cascadeClientToBookings(appts,{id:rec.id,name:name,phone:phone},oldName,oldPhone);
+    var moved=false;
+    for(var i=0;i<nextAppts.length;i++){if(nextAppts[i]!==appts[i]){moved=true;break;}}
+    if(moved){appts=nextAppts;save(APPTS,appts);}
+    var editEv=YS.planClientEdit({id:rec.id,name:oldName,phone:oldPhone},{id:rec.id,name:name,phone:phone});
+    if(editEv)logAudit(editEv);
+  }
   return true;
 }
 function saveClient(){
@@ -3218,20 +3239,34 @@ function bookAgain(){
   _revealClientFields();
   toast(((c.name||'Client').split(' ')[0])+' pre-filled — just pick date & time');
 }
-function deleteClient(){
-  if(!clientId)return;
-  var c=clients.find(function(x){return x.id===clientId;});if(!c)return;
-  var apptCount=appts.filter(function(a){return sameClient(a,c);}).length;
-  var msg=apptCount>0
-    ?'Delete '+c.name+' AND their '+apptCount+' appointment'+(apptCount===1?'':'s')+'? This cannot be undone.'
-    :'Delete '+c.name+'?';
-  askConfirm(msg,function(){
-    clients=clients.filter(function(x){return x.id!==clientId;});
-    if(apptCount>0){appts=appts.filter(function(a){return !sameClient(a,c);});save(APPTS,appts);}
-    save(CLIENTS,clients);
-    closeSheet('clientModal');renderClients();toast('Deleted');
-    if(typeof publishAvailability==='function')publishAvailability();
-  },{danger:true,yesLabel:'Delete'});
+function confirmDeleteClient(id){
+  id=id||_cbClientId||clientId;
+  var c=clients.find(function(x){return x.id===id;});if(!c)return;
+  clientId=id;
+  askConfirm('Delete '+c.name+'? Done visits stay in Earnings.',function(dropFuture){
+    performDeleteClient(c,!!dropFuture);
+  },{title:'Delete client',yesLabel:'Delete',danger:true,checkbox:'Also remove bookings that are not Done'});
+}
+function deleteClient(){confirmDeleteClient(clientId);}
+function performDeleteClient(c,dropFuture){
+  if(!c)return;
+  buryClient(c.id,'Deleted client '+c.name);
+  var removed=[];
+  if(dropFuture){
+    removed=appts.filter(function(a){return sameClient(a,c)&&a.status!=='done';});
+    removed.forEach(function(a){buryAppt(a.id,'Removed not-done booking for '+c.name);});
+    appts=appts.filter(function(a){return !(sameClient(a,c)&&a.status!=='done');});
+    save(APPTS,appts);
+  }
+  clients=clients.filter(function(x){return x.id!==c.id;});
+  save(CLIENTS,clients);
+  logAudit({type:'client.delete',entityType:'ap_client',entityId:c.id,summary:'Deleted client '+c.name,before:{name:c.name,phone:c.phone||''},after:{removedBookings:removed.map(function(a){return a.id;})},source:'appt'});
+  closeSheet('clientModal');
+  closeSheet('clientBookingsModal');
+  renderClients();
+  if(typeof renderDay==='function')renderDay();
+  toast('Deleted');
+  if(typeof publishAvailability==='function')publishAvailability();
 }
 var _cbClientId=null,_cbEditing=false;
 function editClientFromBookings(){
@@ -3768,6 +3803,11 @@ function askConfirm(msg,onYes,opts){
   opts=opts||{};
   $('cfTitle').textContent=opts.title||'Are you sure?';
   $('cfMsg').textContent=msg;
+  var extra=$('cfExtra'),box=$('cfCheck'),lab=$('cfCheckLabel');
+  if(extra){
+    if(opts.checkbox){extra.style.display='flex';if(box)box.checked=false;if(lab)lab.textContent=opts.checkbox;}
+    else extra.style.display='none';
+  }
   var no=$('cfNo');if(no)no.textContent=opts.noLabel||'Cancel';
   var yes=$('cfYes');
   yes.textContent=opts.yesLabel||'Confirm';
@@ -3777,7 +3817,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.34 · name and phone stay on the Add form';
+var VERSION='v6.35 · client edits follow their bookings';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -3842,11 +3882,13 @@ function logAudit(partial){
   if(!partial.source)partial.source='appt';
   try{return YS.storeAudit(function(k){return localStorage.getItem(k);},function(k,v){localStorage.setItem(k,v);},partial);}catch(e){return null;}
 }
-function buryAppt(id,summary){
+function buryAppt(id,summary){buryRecord('ap_appt',id,summary);}
+function buryClient(id,summary){buryRecord('ap_client',id,summary);}
+function buryRecord(type,id,summary){
   try{
     var list=JSON.parse(localStorage.getItem('ys_tombstones')||'[]');
     if(!Array.isArray(list))list=[];
-    var next=YS.appendAudit(list,YS.makeTombstone('ap_appt',id,Date.now(),summary||''));
+    var next=YS.appendAudit(list,YS.makeTombstone(type,id,Date.now(),summary||''));
     localStorage.setItem('ys_tombstones',JSON.stringify(next));
   }catch(e){}
 }
@@ -4993,7 +5035,8 @@ try{applyAwake();}catch(e){}
 invTrade=getPrefs().invTrade||'stylist';
 $('cfYes').onclick=function(){
   $('confirmModal').classList.remove('show');
-  var fn=_cfYes;_cfYes=null;if(fn)fn();
+  var checked=$('cfCheck')&&$('cfCheck').checked;
+  var fn=_cfYes;_cfYes=null;if(fn)fn(!!checked);
 };
 try{var _sv=load('ap_view',null);if(_sv){
   if(_sv.w)weekMode=_sv.w;

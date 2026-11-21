@@ -253,3 +253,162 @@ test('the service pill reveals name and phone above the date, and a new booking 
   expect(saved[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   expect(errors).toEqual([]);
 });
+
+test('editing a phone does not duplicate the client, and delete keeps Done work', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.addInitScript(function () {
+    localStorage.setItem('ap_prefs', JSON.stringify({ svcMode: 'hair', splitPct: 60 }));
+    localStorage.setItem('combo_trade', 'hair');
+    localStorage.setItem('ap_clients', JSON.stringify([{ id: 'c1', name: 'Hidi', phone: '555-0188' }]));
+    localStorage.setItem('ap_appts', JSON.stringify([
+      { id: 'done1', name: 'Hidi', phone: '555-0188', cid: 'c1', service: 'Cut', date: '2026-11-03', time: '10:00', price: 80, tip: 0, status: 'done' },
+      { id: 'soon1', name: 'Hidi', phone: '555-0188', cid: 'c1', service: 'Color', date: '2026-11-21', time: '15:00', price: 90, tip: 0, status: 'confirmed' }
+    ]));
+  });
+  await page.goto('/appt.html');
+  await page.evaluate(function () {
+    var sc = document.getElementById('tradeScreen');
+    if (sc) sc.style.display = 'none';
+    editClientFromList('c1');
+  });
+  await expect(page.locator('#cbDelete')).toBeVisible();
+  await page.locator('#cbPhone').fill('555-0199');
+  await page.locator('#cbSave').click();
+  await page.waitForTimeout(300);
+  const edited = await page.evaluate(function () {
+    var clients = JSON.parse(localStorage.getItem('ap_clients') || '[]');
+    var appts = JSON.parse(localStorage.getItem('ap_appts') || '[]');
+    var audits = [];
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k.indexOf('ys_audit_') === 0 && k !== 'ys_audit_months') audits = audits.concat(JSON.parse(localStorage.getItem(k) || '[]'));
+    }
+    return {
+      clients: clients.length,
+      phones: appts.map(function (a) { return a.phone; }),
+      audit: audits.some(function (e) { return e.type === 'client.edit' && e.after && e.after.phone === '555-0199' && e.before && e.before.phone === '555-0188'; })
+    };
+  });
+  expect(edited.clients).toBe(1);
+  expect(edited.phones).toEqual(['555-0199', '555-0199']);
+  expect(edited.audit).toBe(true);
+
+  await page.evaluate(function () { openClientBookings('c1'); });
+  await page.locator('#cbDelete').click();
+  await expect(page.locator('#cfCheck')).toBeVisible();
+  await page.locator('#cfYes').click();
+  await page.waitForTimeout(200);
+  const kept = await page.evaluate(function () {
+    return {
+      clients: JSON.parse(localStorage.getItem('ap_clients') || '[]').length,
+      ids: JSON.parse(localStorage.getItem('ap_appts') || '[]').map(function (a) { return a.id; })
+    };
+  });
+  expect(kept.clients).toBe(0);
+  expect(kept.ids).toContain('done1');
+  expect(kept.ids).toContain('soon1');
+
+  await page.evaluate(function () {
+    var clients = JSON.parse(localStorage.getItem('ap_clients') || '[]');
+    clients.push({ id: 'c1', name: 'Hidi', phone: '555-0199' });
+    localStorage.setItem('ap_clients', JSON.stringify(clients));
+  });
+  await page.reload();
+  await page.waitForTimeout(400);
+  const afterMerge = await page.evaluate(function () {
+    showView('clients');
+    return JSON.parse(localStorage.getItem('ap_clients') || '[]').length;
+  });
+  expect(afterMerge).toBe(0);
+  expect(errors).toEqual([]);
+});
+
+test('the client repair leaves one of each person and $287 owed', async ({ page }) => {
+  const errors = watchErrors(page);
+  const payAt = new Date(2026, 10, 10, 12).getTime();
+  const beforeDone = new Date(2026, 10, 9, 12).getTime();
+  await page.addInitScript(function (seed) {
+    if (localStorage.getItem('ys_smoke_repair_seed') === '1') return;
+    localStorage.setItem('ap_prefs', JSON.stringify({ svcMode: 'hair', splitPct: 60 }));
+    localStorage.setItem('cp_unlocked', '1');
+    localStorage.setItem('cp_prefs', JSON.stringify({ trade: 'hair', tourDone: true, rate: 100 }));
+    localStorage.setItem('cp_payments', JSON.stringify([{ id: 'p', amountCents: 26800, date: '2026-11-10', createdAt: seed.payAt, voided: false }]));
+    localStorage.setItem('cp_appts', JSON.stringify(seed.money));
+    localStorage.setItem('ap_clients', JSON.stringify(seed.clients));
+    localStorage.setItem('ap_appts', JSON.stringify(seed.appts));
+    localStorage.setItem('ys_tombstones', JSON.stringify(seed.tombs));
+    localStorage.setItem('ys_smoke_repair_seed', '1');
+  }, {
+    payAt: payAt,
+    money: [
+      // $236 of other finished work, minus Kori's done cut ($24) and Azita's cut plus tip ($55), which are real rows in ap_appts. Abbas's restored $24 is not in this stand-in. With Ronak, Nick, and Hidi that is $351 before the $268 payment.
+      { id: 'older', name: 'Older', date: '2026-10-01', time: '09:00', charge: 157, tip: 0, status: 'done', splitPct: 100, splitFrozen: true, doneAt: beforeDone, cat: 'Hair' },
+      { id: 'ronak', name: 'Ronak', date: '2026-10-30', time: '11:00', charge: 21, tip: 0, status: 'done', splitPct: 100, splitFrozen: true, doneAt: beforeDone, cat: 'Hair' },
+      { id: 'nick', name: 'Nick Webb', date: '2026-11-03', time: '10:00', charge: 15, tip: 0, status: 'done', splitPct: 100, splitFrozen: true, doneAt: beforeDone, cat: 'Hair' },
+      { id: 'hidi', name: 'Hidi', date: '2026-11-03', time: '15:00', charge: 55, tip: 0, status: 'done', splitPct: 100, splitFrozen: true, doneAt: beforeDone, cat: 'Hair' },
+      { id: 'june', name: 'June', date: '2026-11-12', time: '10:00', charge: 204, tip: 0, status: 'done', splitPct: 100, splitFrozen: true, doneAt: payAt + 86400000, cat: 'Hair' }
+    ],
+    clients: [
+      { id: 'mw15tezlauq7', name: 'Abbas', phone: '111' },
+      { id: 'c179528581047886446', name: 'Abbas', phone: '2531425214' },
+      { id: 'mw15ae9n8a7d', name: 'Kori', phone: '111' },
+      { id: 'c179528576482889101', name: 'Kori', phone: '9495004779' },
+      { id: 'mw15f85ogbl4', name: 'Joni', phone: '000' },
+      { id: 'mwjvyy5qxjqo', name: 'Joni', phone: '999' },
+      { id: 'c179503812995115368', name: 'Joni V', phone: '2213218523' },
+      { id: 'mw15hleoew7i', name: 'Azita Mokhtari', phone: '111' },
+      { id: 'c179528685177351426', name: 'Azita Mokhtari', phone: '0854561258' }
+    ],
+    appts: [
+      { id: 'mw15ae9mlkxt', name: 'Kori', phone: '111', cid: 'mw15ae9n8a7d', status: 'done', date: '2026-10-02', time: '10:00', price: 40, tip: 0 },
+      { id: 'mwqqpgzv7f6j', name: 'Kori', phone: '111', status: 'confirmed', date: '2026-11-21', time: '15:00', price: 40, tip: 0, service: 'Cut' },
+      { id: 'mw15hleo4kf8', name: 'Azita Mokhtari', phone: '0854561258', cid: 'mw15hleoew7i', service: "Women's Haircut", date: '2026-10-17', time: '10:30', price: 75, tip: 10, status: 'done' }
+    ],
+    tombs: [{ id: 'tomb-ap_appt-mw15tezltj5a', entityType: 'ap_appt', entityId: 'mw15tezltj5a', at: 1000 }]
+  });
+  await page.goto('/appt.html');
+  await page.waitForTimeout(400);
+  const repaired = await page.evaluate(function () {
+    var clients = JSON.parse(localStorage.getItem('ap_clients') || '[]');
+    var appts = JSON.parse(localStorage.getItem('ap_appts') || '[]');
+    function one(name) {
+      return clients.filter(function (c) { return c.name === name && String(c.id).indexOf('c1795') !== 0 && c.id !== 'mwjvyy5qxjqo'; }).length;
+    }
+    return {
+      abbas: one('Abbas'),
+      kori: one('Kori'),
+      joni: one('Joni V'),
+      azita: one('Azita Mokhtari'),
+      otherJoni: clients.filter(function (c) { return c.id === 'mwjvyy5qxjqo'; })[0].name,
+      koriBooking: appts.filter(function (a) { return a.id === 'mwqqpgzv7f6j'; })[0].status,
+      azitaPhone: appts.filter(function (a) { return a.id === 'mw15hleo4kf8'; })[0].phone,
+      restored: appts.some(function (a) { return a.id === 'mw15tezltj5a' && a.meCents === 2400; }),
+      repairAudit: (function () {
+        var audits = [];
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && k.indexOf('ys_audit_') === 0 && k !== 'ys_audit_months') audits = audits.concat(JSON.parse(localStorage.getItem(k) || '[]'));
+        }
+        return audits.filter(function (e) { return e.summary === 'Repaired duplicate clients'; }).length;
+      })()
+    };
+  });
+  expect(repaired.abbas).toBe(1);
+  expect(repaired.kori).toBe(1);
+  expect(repaired.joni).toBe(1);
+  expect(repaired.azita).toBe(1);
+  expect(repaired.otherJoni).toBe('Joni');
+  expect(repaired.koriBooking).toBe('confirmed');
+  expect(repaired.azitaPhone).toBe('9492467660');
+  expect(repaired.restored).toBe(true);
+  expect(repaired.repairAudit).toBe(1);
+  await page.goto('/app.html');
+  await page.evaluate(function () { showTab('mgm'); });
+  await page.waitForTimeout(400);
+  const owed = await page.locator('#mgmOwed, #mgmSplitTotal, #rowDue, body').first().innerText();
+  const body = await page.locator('body').innerText();
+  expect(body).toContain('$83.00');
+  expect(body).toContain('$204.00');
+  expect(body).toContain('$287.00');
+  expect(errors).toEqual([]);
+});

@@ -262,7 +262,7 @@
     <iframe id="roomAppt" class="room hide" title="Appointments" allow="web-share; clipboard-write"></iframe>
     <div id="shellReqBanner" onclick="openApptRequests()"><i class="ti ti-bell-ringing"></i><span id="shellReqTxt">New booking request — tap to review</span></div>
     <button id="updPill" class="upd-pill" onclick="applyShellUpdate()"><i class="ti ti-sparkles"></i> Update ready — tap to refresh</button>
-    <div class="ver">salon v0.55 · sample bookings stay off the cloud</div>
+    <div class="ver">salon v0.56 · a restored visit stays restored</div>
   </div>
 
   <!-- ===== Auth overlay (Step 1: login only) ===== -->
@@ -312,6 +312,7 @@
 <script>
 try{
   if(window.YS&&YS.purgeSamples)YS.purgeSamples(function(k){return localStorage.getItem(k);},function(k,v){localStorage.setItem(k,v);});
+  if(window.YS&&YS.applyClientRepair)YS.applyClientRepair(function(k){return localStorage.getItem(k);},function(k,v){localStorage.setItem(k,v);});
   localStorage.removeItem('_ys_demo_active');
   localStorage.removeItem('_ys_demo_seen');
 }catch(e){}
@@ -511,7 +512,7 @@ try{
   }
 
   /* ===== SYNC ENGINE (Step 2) — mirrors shared localStorage <-> Firestore, merge-safe ===== */
-  var SYNC_KEYS=['ap_appts','ap_clients','ap_custom','ap_stock','ap_prefs','cp_appts','cp_clients','cp_prefs','cp_paid','cp_payments','cp_settlements','combo_trade'];
+  var SYNC_KEYS=['ap_appts','ap_clients','ap_custom','ap_stock','ap_prefs','cp_appts','cp_clients','cp_prefs','cp_paid','cp_payments','cp_settlements','combo_trade','ys_client_repair_v1'];
   var META_KEY='salon_sync_meta';
   var _uid=null, _userUnsub=null, _pushTimer=null, _reloadTimer=null, _snap={};
   var _lastSync=parseInt((function(){try{return localStorage.getItem('salon_lastSync');}catch(e){return '0';}})()||'0',10)||0;
@@ -591,7 +592,18 @@ try{
         meta[k]=Math.max(lt,ct);
         return;
       }
-      if(k==='ys_tombstones'||/^ys_audit_\d{4}-\d{2}$/.test(k)){
+      if(k==='ys_tombstones'){
+        var tla=[],tca=[];
+        try{tla=JSON.parse(lv||'[]')||[];}catch(e){tla=[];}
+        try{tca=JSON.parse(cv||'[]')||[];}catch(e){tca=[];}
+        if(!Array.isArray(tla))tla=[]; if(!Array.isArray(tca))tca=[];
+        var tmerged=(window.YS&&YS.mergeTombstoneLists)?YS.mergeTombstoneLists(tla,tca):tla.concat(tca);
+        function tsig(list){return (list||[]).map(function(e){return (e&&e.id)+':'+(e&&e.restored?1:0);}).sort().join(',');}
+        if(tsig(tmerged)!==tsig(tla)){lsSet(k,JSON.stringify(tmerged));changed=true;}
+        meta[k]=Math.max(lt,ct);
+        return;
+      }
+      if(/^ys_audit_\d{4}-\d{2}$/.test(k)){
         var la=[],ca=[];
         try{la=JSON.parse(lv||'[]')||[];}catch(e){la=[];}
         try{ca=JSON.parse(cv||'[]')||[];}catch(e){ca=[];}
@@ -670,6 +682,7 @@ try{
   function startUserSync(uid){
     if(!fdb){ return; }
     try{if(window.YS&&YS.purgeSamples)YS.purgeSamples(lsGet,lsSet);}catch(e){}
+    try{if(window.YS&&YS.applyClientRepair)YS.applyClientRepair(lsGet,lsSet);}catch(e){}
     try{localStorage.removeItem('_ys_demo_active');localStorage.removeItem('_ys_demo_seen');}catch(e){}
     _uid=uid; _snap=snapshotLocal();
     if(_userUnsub){ _userUnsub(); _userUnsub=null; }
@@ -716,7 +729,7 @@ try{
   setTimeout(_checkUpd,8000);
   setInterval(_checkUpd,90000);
   /* ===== shell self-update check (rooms cache-bust themselves; this covers the shell) ===== */
-  var SHELL_V='v0.55';
+  var SHELL_V='v0.56';
   function applyShellUpdate(){ location.replace(location.pathname+'?v='+Date.now()); }
   function checkShellUpdate(){
     try{

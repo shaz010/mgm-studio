@@ -794,6 +794,24 @@
     return events;
   }
 
+  /* A client name or phone edit. Email and saved price are not audited here. */
+  function planClientEdit(before, after) {
+    if (!before || !after) return null;
+    var bn = before.name || '';
+    var an = after.name || '';
+    var bp = before.phone || '';
+    var ap = after.phone || '';
+    if (bn === an && bp === ap) return null;
+    return {
+      type: 'client.edit',
+      entityType: 'ap_client',
+      entityId: after.id,
+      summary: 'Edited ' + (an || 'client'),
+      before: { name: bn, phone: bp },
+      after: { name: an, phone: ap }
+    };
+  }
+
   function planStatusEvent(rec, fromStatus, toStatus) {
     var name = (rec && rec.name) || 'Appointment';
     return {
@@ -1033,9 +1051,199 @@
     return { id: tombstoneId(entityType, entityId), entityType: entityType, entityId: String(entityId), at: at || Date.now(), summary: summary || '' };
   }
 
-  function isTombstoned(list, entityType, entityId) {
+  function findTombstone(list, entityType, entityId) {
     var id = tombstoneId(entityType, entityId);
-    return (list || []).some(function (t) { return t && String(t.id) === id; });
+    for (var i = 0; i < (list || []).length; i++) {
+      if (list[i] && String(list[i].id) === id) return list[i];
+    }
+    return null;
+  }
+
+  function isTombstoned(list, entityType, entityId) {
+    var t = findTombstone(list, entityType, entityId);
+    return !!(t && !t.restored);
+  }
+
+  /* A restored marker wins over an older tombstone, so a booking put back
+     on one device is not deleted again when the cloud still has the old tomb. */
+  function mergeTombstoneLists(a, b) {
+    var byId = {};
+    var order = [];
+    function take(list) {
+      (list || []).forEach(function (r) {
+        if (!r || r.id == null) return;
+        var id = String(r.id);
+        var prev = byId[id];
+        if (!prev) { byId[id] = r; order.push(id); return; }
+        if (r.restored && !prev.restored) { byId[id] = r; return; }
+        if (prev.restored && !r.restored) return;
+        var pt = +prev.at || 0;
+        var rt = +r.at || 0;
+        if (r.restored && prev.restored) { if (rt >= pt) byId[id] = r; return; }
+        if (rt < pt) byId[id] = r;
+      });
+    }
+    take(a);
+    take(b);
+    return order.map(function (id) { return byId[id]; });
+  }
+
+  function personDigits(p) { return String(p || '').replace(/\D/g, ''); }
+  function personName(s) { return String(s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+
+  /* Copy a client's new name and phone onto that client's bookings. */
+  function cascadeClientToBookings(appts, client, oldName, oldPhone) {
+    if (!client || client.id == null) return appts || [];
+    var id = String(client.id);
+    var oldN = personName(oldName);
+    var oldP = personDigits(oldPhone);
+    return (appts || []).map(function (a) {
+      if (!a) return a;
+      var byCid = a.cid && String(a.cid) === id;
+      var byPair = !a.cid && oldN && personName(a.name) === oldN && personDigits(a.phone) === oldP;
+      if (!byCid && !byPair) return a;
+      if (a.name === client.name && personDigits(a.phone) === personDigits(client.phone) && String(a.cid || '') === id) return a;
+      return Object.assign({}, a, { name: client.name, phone: client.phone || '', cid: id });
+    });
+  }
+
+  /* Never invent a second client when the booking already points at one,
+     or when the name is already on the list under a different phone. */
+  function linkOrCreateClients(clients, bookings, tombs) {
+    var list = (clients || []).map(function (c) { return Object.assign({}, c); });
+    var rows = (bookings || []).map(function (a) { return a ? Object.assign({}, a) : a; });
+    var created = 0;
+    var linked = 0;
+    rows.forEach(function (a, i) {
+      if (!a || !String(a.name || '').trim()) return;
+      if (a.cid && isTombstoned(tombs, 'ap_client', a.cid)) return;
+      if (a.cid && list.some(function (c) { return String(c.id) === String(a.cid); })) return;
+      var an = personName(a.name);
+      var match = null;
+      for (var j = 0; j < list.length; j++) {
+        if (personName(list[j].name) === an) { match = list[j]; break; }
+      }
+      if (match) {
+        if (String(a.cid || '') !== String(match.id)) {
+          rows[i] = Object.assign({}, a, { cid: match.id });
+          linked++;
+        }
+        return;
+      }
+      var id = 'c' + Date.now() + '-' + i + '-' + Math.floor(Math.random() * 1000);
+      list.push({ id: id, name: String(a.name).trim(), phone: a.phone || '', email: '', notes: '' });
+      rows[i] = Object.assign({}, a, { cid: id });
+      created++;
+    });
+    return { clients: list, bookings: rows, created: created, linked: linked };
+  }
+
+  var REPAIR_DUPES = [
+    { id: 'c179528581047886446', name: 'Abbas', phone: '2531425214' },
+    { id: 'c179528576482889101', name: 'Kori', phone: '9495004779' },
+    { id: 'c179503812995115368', name: 'Joni V', phone: '2213218523' },
+    { id: 'c179528685177351426', name: 'Azita Mokhtari', phone: '0854561258' }
+  ];
+
+  function exactPerson(row, spec) {
+    return !!(row && String(row.id) === spec.id && String(row.name || '').trim() === spec.name && personDigits(row.phone) === personDigits(spec.phone));
+  }
+
+  function repairClientData(input) {
+    var appts = (input && input.appts || []).map(function (a) { return Object.assign({}, a); });
+    var clients = (input && input.clients || []).map(function (c) { return Object.assign({}, c); });
+    var tombs = (input && input.tombs || []).map(function (t) { return Object.assign({}, t); });
+    var changed = false;
+    function addTomb(entityType, entityId, summary) {
+      if (findTombstone(tombs, entityType, entityId)) return;
+      tombs.push(makeTombstone(entityType, entityId, Date.now(), summary || 'Repaired duplicate clients'));
+      changed = true;
+    }
+    var abbasAppt = 'mw15tezltj5a';
+    var abbasTomb = findTombstone(tombs, 'ap_appt', abbasAppt);
+    if (abbasTomb && !abbasTomb.restored) {
+      if (!appts.some(function (a) { return a && String(a.id) === abbasAppt; })) {
+        appts.push({
+          id: abbasAppt,
+          name: 'Abbas',
+          service: "Men's Haircut",
+          date: '2026-10-29',
+          time: '13:00',
+          price: 40,
+          tip: 0,
+          status: 'done',
+          cid: 'mw15tezlauq7',
+          phone: '9494497366',
+          splitPct: 60,
+          splitFrozen: true,
+          meCents: 2400,
+          salonCents: 1600,
+          chargeCents: 4000,
+          tipCents: 0
+        });
+      }
+      abbasTomb.restored = true;
+      changed = true;
+    }
+    REPAIR_DUPES.forEach(function (spec) {
+      var idx = -1;
+      for (var i = 0; i < clients.length; i++) if (exactPerson(clients[i], spec)) idx = i;
+      if (idx < 0) return;
+      clients.splice(idx, 1);
+      changed = true;
+      addTomb('ap_client', spec.id, 'Repaired duplicate clients');
+    });
+    clients.forEach(function (c) {
+      if (!c) return;
+      if (String(c.id) === 'mw15ae9n8a7d' && String(c.name || '').trim() === 'Kori' && personDigits(c.phone) !== '9495004779') {
+        c.phone = '9495004779'; changed = true;
+      }
+      if (String(c.id) === 'mw15f85ogbl4' && (String(c.name || '').trim() !== 'Joni V' || personDigits(c.phone) !== '2213218523')) {
+        c.name = 'Joni V'; c.phone = '2213218523'; changed = true;
+      }
+      if (String(c.id) === 'mw15tezlauq7' && String(c.name || '').trim() === 'Abbas' && (personDigits(c.phone) !== '9494497366' || +c.savedPrice !== 40)) {
+        c.phone = '9494497366'; c.savedPrice = 40; changed = true;
+      }
+      if (String(c.id) === 'mw15hleoew7i' && String(c.name || '').trim() === 'Azita Mokhtari' && (personDigits(c.phone) !== '9492467660' || +c.savedPrice !== 75)) {
+        c.phone = '9492467660'; c.savedPrice = 75; changed = true;
+      }
+    });
+    appts.forEach(function (a) {
+      if (!a) return;
+      if (String(a.id) === 'mw15ae9mlkxt' && (personDigits(a.phone) !== '9495004779' || String(a.cid || '') !== 'mw15ae9n8a7d')) {
+        a.phone = '9495004779'; a.cid = 'mw15ae9n8a7d'; changed = true;
+      }
+      if (String(a.id) === 'mw15hleo4kf8' && personDigits(a.phone) === '0854561258') {
+        a.phone = '9492467660';
+        if (!a.cid) a.cid = 'mw15hleoew7i';
+        changed = true;
+      }
+    });
+    return { appts: appts, clients: clients, tombs: tombs, changed: changed };
+  }
+
+  function applyClientRepair(getItem, setItem) {
+    var result = repairClientData({
+      appts: readJsonArray(getItem, 'ap_appts'),
+      clients: readJsonArray(getItem, 'ap_clients'),
+      tombs: readJsonArray(getItem, 'ys_tombstones')
+    });
+    if (!result.changed) return result;
+    setItem('ap_appts', JSON.stringify(result.appts));
+    setItem('ap_clients', JSON.stringify(result.clients));
+    setItem('ys_tombstones', JSON.stringify(result.tombs));
+    if (getItem('ys_client_repair_v1') !== '1') {
+      storeAudit(getItem, setItem, {
+        type: 'data.cleanup',
+        entityType: 'ap_client',
+        entityId: 'repair',
+        summary: 'Repaired duplicate clients',
+        source: 'appt',
+        actor: 'this device'
+      });
+      setItem('ys_client_repair_v1', '1');
+    }
+    return result;
   }
 
   function filterTombstones(records, tombs, entityType) {
@@ -1086,6 +1294,7 @@
     readAudit: readAudit,
     moneySnap: moneySnap,
     planSaveEvents: planSaveEvents,
+    planClientEdit: planClientEdit,
     planStatusEvent: planStatusEvent,
     followMoney: followMoney,
     csvEscape: csvEscape,
@@ -1097,7 +1306,12 @@
     tombstoneId: tombstoneId,
     makeTombstone: makeTombstone,
     isTombstoned: isTombstoned,
+    mergeTombstoneLists: mergeTombstoneLists,
     filterTombstones: filterTombstones,
+    cascadeClientToBookings: cascadeClientToBookings,
+    linkOrCreateClients: linkOrCreateClients,
+    repairClientData: repairClientData,
+    applyClientRepair: applyClientRepair,
     isSampleAppt: isSampleAppt,
     isSampleClient: isSampleClient,
     dropSampleRows: dropSampleRows,

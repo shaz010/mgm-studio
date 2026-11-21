@@ -1,6 +1,6 @@
 // Your Salon service worker — network-first, self-healing.
 // Bumping CACHE forces old caches to be wiped on activate, so a stale worker can't get stuck.
-const CACHE = 'yoursalon-v92';
+const CACHE = 'yoursalon-v93';
 const ASSETS = ['./', './salon.html', './app.html', './appt.html', './yoursalon-settle.js', './index.html',
   './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 

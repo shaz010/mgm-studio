@@ -1977,6 +1977,10 @@ body.wit-on #witBanner{display:inline-flex;align-items:center;justify-content:ce
 
 <script src="yoursalon-settle.js"></script>
 <script>
+try{
+  if(window.YS&&YS.purgeSamples)YS.purgeSamples(function(k){return localStorage.getItem(k);},function(k,v){localStorage.setItem(k,v);});
+  if(window.YS&&YS.applyClientRepair)YS.applyClientRepair(function(k){return localStorage.getItem(k);},function(k,v){localStorage.setItem(k,v);});
+}catch(e){}
 function getName(){try{var p=JSON.parse(localStorage.getItem('cp_prefs')||'{}');return (p.name||'').trim();}catch(e){return '';}}
 // Single source of truth for the commission split (0–1). Prefers the Appointments split (supports booth-renter 100%),
 // falls back to the Earnings rate, then 60%. Both rooms stay in sync via saveSettings mirroring.
