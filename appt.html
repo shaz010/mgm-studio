@@ -677,6 +677,7 @@ body.section-help-on .sec-help-inline{display:inline-flex}
 .appt-name{font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .appt-svc{font-size:13px;color:var(--text2);margin-top:2px;line-height:1.35}
 .appt-meta{font-size:12px;color:var(--muted);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.appt-tap{font-size:11px;font-weight:700;color:var(--gold)}
 .appt-price{font-size:15px;font-weight:700;color:var(--green);white-space:nowrap;padding-top:1px}
 .appt.cancelled{opacity:.5}.appt.cancelled .appt-name{text-decoration:line-through}
 .appt.noshow{opacity:.6}
@@ -2611,7 +2612,7 @@ function renderDay(){
       '<div class="appt-time"><div class="appt-t1">'+to12(a.time).replace(' ','<span style="font-size:11px"> ')+'</span></div><div class="appt-t2">'+(a.dur?a.dur+' min':'')+'</div></div>'+
       '<div class="appt-body"><div class="appt-name">'+esc(a.name)+'</div>'+
       '<div class="appt-svc">'+esc(a.service||'—')+'</div>'+
-      '<div class="appt-meta">'+(ip?'<span class="pill ip">● In progress</span>':'<span class="pill '+st+'">'+stLabel(st)+'</span>')+(a.phone?'<span><i class="ti ti-phone" style="font-size:11px"></i> '+esc(a.phone)+'</span>':'')+'</div></div>'+
+      '<div class="appt-meta">'+(ip?'<span class="pill ip">● In progress</span>':'<span class="pill '+st+'">'+stLabel(st)+'</span>')+(st==='confirmed'&&!ip?'<span class="appt-tap">Tap to mark Done</span>':'')+(a.phone?'<span><i class="ti ti-phone" style="font-size:11px"></i> '+esc(a.phone)+'</span>':'')+'</div></div>'+
       '<div class="appt-price">'+fmt$(a.price)+'</div></div>';
   }).join('');
 }
@@ -2823,6 +2824,7 @@ function commitSave(){
     notes:$('fNotes').value.trim(),status:prevStatus
   });
   var wasEdit=!!editingId;
+  var savedId=rec.id;
   // link this booking to a stable client id (rename-safe) — create the client if new
   var _cn=normName(name);
   var _cli=clients.find(function(c){return normName(c.name)===_cn;});
@@ -2833,6 +2835,7 @@ function commitSave(){
   editingId=null;
   toast(wasEdit?'Updated':'Booked in');
   showView('day');
+  if(!wasEdit)openSheet(savedId);
 }
 function cancelEdit(){editingId=null;showView('day')}
 function deleteFromSheet(){
@@ -3817,7 +3820,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.35 · client edits follow their bookings';
+var VERSION='v6.36 · status sheet after a new booking';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
