@@ -289,22 +289,9 @@ label{display:block;font-size:13px;color:var(--text2);margin-bottom:5px;margin-t
 .date-spoken{display:block;margin-top:8px;color:var(--gold);font-weight:800;font-size:16px;letter-spacing:.2px;pointer-events:none}
 .date-notice{margin-top:8px;padding:10px 12px;border-radius:10px;border:1.5px solid #e2b340;background:rgba(226,179,64,.16);color:#f0d48a;font-size:16px;font-weight:800;line-height:1.35;pointer-events:none}
 label:first-of-type{margin-top:0}
-/* ── Service-first flow: name+phone rise up after service chosen ── */
 .svc-label-row{display:flex;align-items:center;justify-content:space-between;margin-top:0;margin-bottom:5px}
 .svc-label-row label{margin:0;font-size:13px;color:var(--text2);font-weight:500}
-.choose-svc-hint{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;letter-spacing:1.5px;color:#1a1208;cursor:pointer;padding:6px 13px;border-radius:50px;background:linear-gradient(110deg,#FFB800,#ff8a00);-webkit-tap-highlight-color:transparent;white-space:nowrap;flex-shrink:0;transition:opacity .4s ease,transform .4s ease;animation:hintPulse 4.5s ease-in-out infinite}
-.choose-svc-hint:active{transform:scale(.93)}
-.choose-svc-hint.hint-done{opacity:0;pointer-events:none;transform:scale(.7)}
-@keyframes hintPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,184,0,0)}50%{box-shadow:0 0 14px 4px rgba(255,184,0,.45)}}
-.client-fields-wrap{
-  overflow:hidden;max-height:0;opacity:0;
-  transform:translateY(36px);
-  transition:
-    max-height .8s cubic-bezier(.4,0,.2,1),
-    opacity .55s ease .1s,
-    transform .7s cubic-bezier(.34,1.4,.64,1) .05s;
-}
-.client-fields-wrap.cfw-show{max-height:240px;opacity:1;transform:translateY(0)}
+.client-fields-wrap{margin-bottom:8px}
 input,select,textarea{width:100%;padding:10px 12px;background:#000;border:1.5px solid #3a3a44;border-radius:8px;color:#fff;font-size:16px;font-weight:500;outline:none;transition:border .2s;-webkit-appearance:none;font-family:inherit}
 /* iOS WKWebView will not open the wheel picker on a date or time input whose appearance is none. */
 input[type=date],input[type=time]{-webkit-appearance:auto;appearance:auto;font-size:17px;min-height:44px;min-width:0;max-width:100%;color-scheme:dark}
@@ -1236,7 +1223,15 @@ body.a11y-big .cdp-chip{font-size:13.5px}
   <!-- ADD/EDIT VIEW -->
   <div class="view" id="view-add">
     <div class="card">
-      <div class="ctitle"><i class="ti ti-calendar-plus"></i><span id="addTitle">New appointment</span><button type="button" class="sec-help-inline" onclick="showSectionHelp('Adding an appointment','This form books any appointment. Start by tapping a service chip — that unlocks the client name and phone fields. Fill in the price (your split calculates live), add any tip, then tap Save. The appointment lands in Day view instantly.',1,4)">? how this works</button></div>
+      <div class="ctitle"><i class="ti ti-calendar-plus"></i><span id="addTitle">New appointment</span><button type="button" class="sec-help-inline" onclick="showSectionHelp('Adding an appointment','This form books any appointment. Name and phone are at the top. Pick a date, tap a service chip, fill in the price (your split calculates live), add any tip, then tap Save. The appointment lands in Day view instantly.',1,4)">? how this works</button></div>
+
+      <div class="client-fields-wrap cfw-show" id="clientFieldsWrap">
+        <label>Client name <button type="button" class="tour-help-chip" onclick="tourHelp(1,6)">? help</button></label>
+        <input id="fName" list="clientList" placeholder="Start typing a name…" autocomplete="off" oninput="onNamePick()">
+        <datalist id="clientList"></datalist>
+        <label>Phone <span style="color:var(--gold);font-weight:400">(required)</span></label>
+        <input id="fPhone" type="tel" placeholder="(555) 123-4567" autocomplete="off">
+      </div>
 
       <div class="when-block" id="whenBlock">
         <div class="date-stepper">
@@ -1253,18 +1248,8 @@ body.a11y-big .cdp-chip{font-size:13.5px}
         </label>
       </div>
 
-      <!-- Client name + phone hidden, rise up when CHOOSE SERVICE(S) is tapped -->
-      <div class="client-fields-wrap" id="clientFieldsWrap">
-        <label>Client name <button type="button" class="tour-help-chip" onclick="tourHelp(1,6)">? help</button></label>
-        <input id="fName" list="clientList" placeholder="Start typing a name…" autocomplete="off" oninput="onNamePick()">
-        <datalist id="clientList"></datalist>
-        <label>Phone <span style="color:var(--gold);font-weight:400">(required)</span></label>
-        <input id="fPhone" type="tel" placeholder="(555) 123-4567" autocomplete="off">
-      </div>
-
       <div class="svc-label-row">
         <label>Service <button type="button" class="tour-help-chip" onclick="tourHelp(1,5)">? help</button></label>
-        <span class="choose-svc-hint" id="chooseSvcHint" onclick="_revealClientFields()"><i class="ti ti-hand-finger" style="font-size:13px"></i> CHOOSE SERVICE(S)</span>
       </div>
       <input id="fService" placeholder="Tap services below to combine, or type your own…" oninput="syncChips()">
       <div id="svcSelected" class="svc-selected"></div>
@@ -2244,17 +2229,8 @@ function toggleSvcCat(head){
   head.classList.toggle('open',!open);
 }
 function _revealClientFields(){
-  /* Called by button tap (and edit path) — shows name+phone, hides button */
-  var wrap=$('clientFieldsWrap'),hint=$('chooseSvcHint');
+  var wrap=$('clientFieldsWrap');
   if(wrap)wrap.classList.add('cfw-show');
-  if(hint)hint.classList.add('hint-done');
-  setTimeout(function(){try{$('fName').focus();}catch(e){}},720);
-}
-function _collapseClientFields(){
-  /* Called when all services are removed — collapse fields, bring button back */
-  var wrap=$('clientFieldsWrap'),hint=$('chooseSvcHint');
-  if(wrap)wrap.classList.remove('cfw-show');
-  if(hint)hint.classList.remove('hint-done');
 }
 function syncChips(){
   var have=servicesInField().map(function(s){return s.toLowerCase()});
@@ -2262,8 +2238,6 @@ function syncChips(){
     c.classList.toggle('sel',have.indexOf((c.dataset.name||'').toLowerCase())>=0);
   });
   renderSelectedSvc();
-  /* Auto-collapse only — never auto-reveal (button tap does that) */
-  if(!($('fService').value||'').trim())_collapseClientFields();
 }
 function renderSelectedSvc(){
   var el=$('svcSelected');if(!el)return;
@@ -2691,10 +2665,8 @@ function openAdd(){
   $('addTitle').textContent='New appointment';
   $('editExtra').style.display='none';
   $('fName').value='';$('fPhone').value='';$('fService').value='';$('fCustom').value='';
-  /* reset service-first reveal */
-  var _w=$('clientFieldsWrap'),_h=$('chooseSvcHint');
-  if(_w)_w.classList.remove('cfw-show');
-  if(_h)_h.classList.remove('hint-done');
+  var _w=$('clientFieldsWrap');
+  if(_w)_w.classList.add('cfw-show');
   $('fDate').value=YS.defaultAddDate(false, '', todayStr());$('fTime').value='';$('fDur').value='';$('fPrice').value='';$('fTip').value='';$('fNotes').value='';
   refreshDateNotice();
   if(typeof apCalc==='function')apCalc();
@@ -3776,7 +3748,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.33 · sample bookings are gone';
+var VERSION='v6.34 · name and phone stay on the Add form';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -6050,7 +6022,7 @@ document.addEventListener('click',function(e){
        action:function(){openAdd();}},
       {sel:'#fService',pos:'bottom',
        title:'Choose the service first',
-       body:'Tap any chip below to pick a service — this unlocks the rest of the form. The client name and phone fields slide in automatically once you make a selection.',
+       body:'Tap any chip below to add that service. You can tap more than one. Name and phone stay at the top of the form.',
        action:function(){try{_revealClientFields();}catch(e){}}},
       {sel:'#fName',pos:'top',
        title:'Now enter the client\'s name',
@@ -6408,13 +6380,13 @@ document.addEventListener('click',function(e){
     {sel:'button[onclick*="showView(\'clients\')"],.gear-btn[aria-label="Clients"]', title:'Clients', body:'Jump straight to your client address book — visit history, contact details, and notes for everyone you\'ve worked on.'},
     {sel:'button[onclick="openSettings()"]',         title:'Settings',         body:'Opens your Settings — set your trade, commission rate, theme, backup, and more.'},
     /* ── Add / form area ── */
-    {sel:'button[onclick*="addAppt"],button[onclick*="openAdd"],.add-btn', title:'Add appointment', body:'Open the form to book a new appointment. Choose a service first — that unlocks the client name and phone fields.'},
-    {sel:'.svc-chip,.svc-cat button',      title:'Service chip',         body:'Tap to select a service for this booking. Choosing a service also reveals the client name and phone number fields.'},
-    {sel:'#fName',   title:'Client name',   body:'Type your client\'s name here. This field appears after you choose a service.'},
+    {sel:'button[onclick*="addAppt"],button[onclick*="openAdd"],.add-btn', title:'Add appointment', body:'Open the form to book a new appointment. Name and phone are at the top, then the date and the service chips.'},
+    {sel:'.svc-chip,.svc-cat button',      title:'Service chip',         body:'Tap to select a service for this booking. Tap more than one to combine them.'},
+    {sel:'#fName',   title:'Client name',   body:'Type your client\'s name here. If they are already saved, their phone fills in.'},
     {sel:'#fPhone',  title:'Client phone',  body:'Optional phone number. Stored in your client book and auto-fills next time.'},
     {sel:'#fPrice',  title:'Service price', body:'The charge for this appointment. Used to calculate your take-home after commission and tip.'},
     {sel:'#fTip',    title:'Tip',           body:'Enter any tip your client added. It\'s tracked separately and added to your total earnings for the day.'},
-    {sel:'#fService',title:'Service field', body:'Type or select the service performed. Choosing a service also reveals the client name and phone fields.'},
+    {sel:'#fService',title:'Service field', body:'Type a service or tap the chips below. Several services can sit in one booking.'},
     {sel:'input[name="notes"],#anotes',    title:'Notes',                body:'Private notes for this appointment — colour formula, client preferences, anything useful for next time.'},
     {sel:'button[onclick*="saveAppt"],button[onclick*="save"].primary', title:'Save appointment', body:'Saves this booking to your day. You\'ll see it in the timeline and it counts toward your daily earnings total.'},
     /* ── Day view ── */
