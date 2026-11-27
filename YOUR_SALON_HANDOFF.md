@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` (PR #24 squash-merged 2026-11-27 12:58 PM PT, `fff9275`, Pages deploy succeeded, verified live): Earnings v2.71, Appointments v6.37, salon v0.56, service worker `yoursalon-v95`, booking v3.57.
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` (PR #25 squash-merged 2026-11-27 1:10 PM PT, `f73ba17`, Pages deploy succeeded, verified live): Earnings v2.71, Appointments v6.38, salon v0.56, service worker `yoursalon-v96`, booking v3.57.
 
 | Room | File | Live version |
 |---|---|---|
 | Earnings | `app.html` | v2.71 (live, PR #17) |
-| Appointments | `appt.html` | v6.37 (live, PR #24) |
+| Appointments | `appt.html` | v6.38 (live, PR #25) |
 | Shell | `salon.html` | v0.56 (live, PR #20) |
-| Service worker | `sw.js` | `yoursalon-v95` (live, PR #24) |
+| Service worker | `sw.js` | `yoursalon-v96` (live, PR #25) |
 | Booking page | `book.html` | v3.57 |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
@@ -231,4 +231,4 @@ Harmless leftovers on the Mac, delete whenever: `project.pbxproj.bak-*` and `web
 
 **The request text is permanent.** Shahbaz gets a text when a client self-books, before he opens the app. This repo does not call an SMS API. The only signal that leaves the client’s phone is `_sendRec` in `book.html`: it creates the pending `requests` document with the name, phone, service, date, time, and status `pending`. That write is what the text depends on. Do not remove it or change that payload. Inside the app the wording stays exactly `New booking request — tap to review` (and `booking requests waiting — tap to review` when there is more than one), from `renderReqBadge` to the shell banner. `node yoursalon-request-text.test.js` fails if the write or that wording is taken out. The five-tap unlock on the Your Salon icon is still there.
 
-**Confirmation text, not live yet.** Approving a request opens the “let them know” sheet once. It was opening again because that sheet had no memory of already being shown, and focusing the message restarted its slide-up. A later approve of the same request, or a dismiss, does not bring it back. The message wording and Send in Messages are unchanged. Appointments v6.38 and service worker `yoursalon-v96` are in that pull request, not on `main` until it is merged.
+**Confirmation text is live.** PR #25 squash-merged 2026-11-27 1:10 PM PT with Shahbaz’s OK. Merge commit `f73ba171127a818dd021f4815006ca12ff34d038`. GitHub Pages deploy of that commit succeeded (run 46068513456). Checked live on getcommissionpro.com: Appointments v6.38, service worker `yoursalon-v96`. Approving a request opens the “let them know” sheet once. It was opening again because that sheet had no memory of already being shown, and focusing the message restarted its slide-up. A later approve of the same request, or a dismiss, does not bring it back. The message wording and Send in Messages are unchanged. The booking page is still v3.57 and still writes a pending request. The request banner wording is unchanged. The five-tap unlock is still on the Your Salon icon. The edited-price fix is still in the live appointments page. No production data was changed.
