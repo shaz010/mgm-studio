@@ -801,6 +801,26 @@ check('the repaired books still leave $287 owed', function () {
   assert.ok(!jobs.byId.mwqqpgzv7f6j);
 });
 
+check('an edited self-booking price beats the service preset', function () {
+  var req = { _id: 'req-ronak', name: 'Ronak', phone: '555-1111', service: "Men's Haircut", date: '2026-11-29', time: '10:00', price: 0, status: 'pending' };
+  var hidi = { id: 'hidi', name: 'Hidi', phone: '555-0188', service: 'Color', date: '2026-12-01', time: '11:00', price: 80, status: 'done' };
+  var ronak = { id: 'ronak', name: 'Ronak', phone: '(555) 1111', service: "Men's Haircut", date: '2026-11-29', time: '10:00', price: 35, status: 'confirmed', viaBooking: true };
+  var rows = [hidi, ronak];
+  assert.strictEqual(YS.priceShownForRequest(req, rows, 55, null, 0), 35);
+  assert.strictEqual(rows[0].price, 80);
+  assert.strictEqual(rows[1].price, 35);
+  assert.strictEqual(YS.bookingForRequest(req, rows).id, 'ronak');
+  assert.strictEqual(YS.priceShownForRequest(req, [hidi], 55, 35, 40), 35);
+  assert.strictEqual(YS.priceShownForRequest(req, [], 55, null, 40), 40);
+  assert.strictEqual(YS.priceShownForRequest(req, [], 55, null, 0), 55);
+  var cancelled = { id: 'old', name: 'Ronak', phone: '555-1111', date: '2026-11-29', time: '10:00', price: 35, status: 'cancelled' };
+  assert.strictEqual(YS.bookingForRequest(req, [cancelled]), null);
+  assert.strictEqual(YS.priceShownForRequest(req, [cancelled], 55, null, 0), 55);
+  assert.strictEqual(YS.splitCharge(YS.priceShownForRequest(req, rows, 55, null, 0), 60).me, 21);
+  assert.strictEqual(YS.splitCharge(hidi.price, 60).me, 48);
+  assert.notStrictEqual(YS.splitCharge(55, 60).me, 21);
+});
+
 if (failed) {
   console.error('\n' + failed + ' failed');
   process.exit(1);

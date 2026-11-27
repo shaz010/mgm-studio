@@ -1091,6 +1091,42 @@
   function personDigits(p) { return String(p || '').replace(/\D/g, ''); }
   function personName(s) { return String(s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
 
+  /* The appointment a pending self-booking belongs to.
+     requestId wins. Otherwise the same phone, day, and start time.
+     Cancelled and no-show rows are not this booking. */
+  function bookingForRequest(request, appointments) {
+    var list = appointments || [];
+    var reqId = request && (request._id || request.id);
+    var i, byId = null, bySlot = null;
+    for (i = 0; i < list.length; i++) {
+      var a = list[i];
+      if (!a || !request) continue;
+      var st = String(a.status || '').toLowerCase();
+      if (st === 'cancelled' || st === 'noshow') continue;
+      if (reqId && a.requestId && String(a.requestId) === String(reqId)) { byId = a; continue; }
+      if (a.requestId && reqId && String(a.requestId) !== String(reqId)) continue;
+      var ap = personDigits(a.phone), rp = personDigits(request.phone);
+      if (!ap || !rp || ap !== rp) continue;
+      if ((a.date || '') !== (request.date || '')) continue;
+      if (String(a.time || '') !== String(request.time || '')) continue;
+      bySlot = a;
+    }
+    return byId || bySlot;
+  }
+
+  /* Price for a self-booked request. The saved appointment wins over a
+     typed override, which wins over the service preset. A request stored
+     at 0 (the booking page always writes 0) is not a price. */
+  function priceShownForRequest(request, appointments, preset, override, saved) {
+    var appt = bookingForRequest(request, appointments);
+    if (appt && appt.price != null && appt.price !== '' && isFinite(+appt.price)) return +appt.price;
+    if (override != null && override !== '' && isFinite(+override)) return +override;
+    if (request && isFinite(+request.price) && +request.price > 0) return +request.price;
+    if (isFinite(+saved) && +saved > 0) return +saved;
+    if (isFinite(+preset)) return +preset;
+    return 0;
+  }
+
   /* Copy a client's new name and phone onto that client's bookings. */
   function cascadeClientToBookings(appts, client, oldName, oldPhone) {
     if (!client || client.id == null) return appts || [];
@@ -1308,6 +1344,8 @@
     isTombstoned: isTombstoned,
     mergeTombstoneLists: mergeTombstoneLists,
     filterTombstones: filterTombstones,
+    bookingForRequest: bookingForRequest,
+    priceShownForRequest: priceShownForRequest,
     cascadeClientToBookings: cascadeClientToBookings,
     linkOrCreateClients: linkOrCreateClients,
     repairClientData: repairClientData,

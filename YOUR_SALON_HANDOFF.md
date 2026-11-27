@@ -1,5 +1,5 @@
 # YOUR SALON PRO — HANDOFF
-**Last updated: Nov 18, 2026**
+**Last updated: Nov 27, 2026**
 Read this first in any new session about Your Salon Pro (the live app and the site).
 
 This file is the canonical handoff. Two older copies were **not** rewritten on Nov 16 and still describe September:
@@ -218,3 +218,15 @@ The logged-in Mac user `shahbazmirshahimac.com` has an empty Xcode shell under D
 The Sep 29 “copy files into ~/Downloads/mgm-push and push from Terminal” bridge is how edits were shipped from that Mac. It is not how this repo’s cloud sessions push. Cloud sessions commit on a branch and open a pull request. **Do not merge to `main` unless the owner asked** — `main` deploys the live site.
 
 Harmless leftovers on the Mac, delete whenever: `project.pbxproj.bak-*` and `web-push/` under the Xcode project, and `~/Downloads/_to_delete/` from a broken clone on Sep 29.
+
+---
+
+## Nov 27, 2026 — edited self-booking price, and the request text stays
+
+Not live until this pull request is merged. It carries Appointments v6.37 and service worker `yoursalon-v95`. Earnings, the shell, and the booking page version strings are unchanged.
+
+**The price bug.** A self-booking is stored on the request with price 0. The pending card was painting the price-book preset (`combinedHairPrice`) every time, so a $55 service still showed $55 after the appointment had been edited to $35. Approving again after a reload could also add a second appointment at that preset. The price the owner types is now the appointment’s price. The pending card, the day card, the client booking row, and Earnings (once it is Done) all read that same price. A replay of an approval keeps the edited price and does not add another row. Other bookings are not rewritten. The request document still does not get a price — the rules do not allow it.
+
+**Ronak, if her row is still $55.** Check that one appointment in `ap_appts`. If its `price` is already 35, nothing is wrong with the stored row; the list was showing the preset. If it is still 55, change only that row’s `price` to 35. If that visit is already Done, recompute its frozen cent amounts from 35 at the split already stored on it. Do not change any other appointment, payment, settlement, or the $287 total’s other rows. Do not run that edit against production from a cloud session.
+
+**The request text is permanent.** Shahbaz gets a text when a client self-books, before he opens the app. This repo does not call an SMS API. The only signal that leaves the client’s phone is `_sendRec` in `book.html`: it creates the pending `requests` document with the name, phone, service, date, time, and status `pending`. That write is what the text depends on. Do not remove it or change that payload. Inside the app the wording stays exactly `New booking request — tap to review` (and `booking requests waiting — tap to review` when there is more than one), from `renderReqBadge` to the shell banner. `node yoursalon-request-text.test.js` fails if the write or that wording is taken out. The five-tap unlock on the Your Salon icon is still there.

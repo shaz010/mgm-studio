@@ -1284,7 +1284,7 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 
       <div class="row2" style="margin-top:16px">
         <div><label>Duration (min)</label><input id="fDur" type="number" inputmode="numeric" placeholder="60" oninput="checkConflict()"></div>
-        <div><label>Price ($) <button type="button" class="tour-help-chip" onclick="tourHelp(1,7)">? help</button></label><input id="fPrice" type="number" inputmode="decimal" placeholder="0" oninput="priceManual=true;apCalc()"></div>
+        <div><label>Price ($) <button type="button" class="tour-help-chip" onclick="tourHelp(1,7)">? help</button></label><input id="fPrice" type="number" inputmode="decimal" placeholder="0" oninput="priceManual=true;_priceDraft=this.value;apCalc()"></div>
       </div>
       <div><label>Tip received ($) <button type="button" class="tour-help-chip" onclick="tourHelp(1,8)">? help</button></label><input id="fTip" type="number" inputmode="decimal" placeholder="0" oninput="apCalc()"></div>
 
@@ -1747,16 +1747,16 @@ body.a11y-big .cdp-chip{font-size:13.5px}
 </div>
 
 <!-- CONFIRM DIALOG (in-app, works everywhere) -->
-<div class="modal" id="approvePriceModal" onclick="if(event.target===this)closeSheet('approvePriceModal')" ontouchend="if(event.target===this){event.preventDefault();closeSheet('approvePriceModal');}">
+<div class="modal" id="approvePriceModal" onclick="if(event.target===this)dismissApprovePrice()" ontouchend="if(event.target===this){event.preventDefault();dismissApprovePrice();}">
   <div class="sheet" style="max-width:420px">
     <div class="sheet-grip"></div>
     <div class="sheet-title">Set the price</div>
     <div class="sheet-sub" id="apPriceWho" style="margin-bottom:6px;font-weight:700"></div>
     <div id="apReqDetails" style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:10px;padding:8px 10px;background:rgba(255,255,255,.05);border-radius:10px;display:none"></div>
-    <div class="ap-price-wrap"><span class="ap-price-cur">$</span><input id="apPriceInput" type="number" inputmode="decimal" min="0" step="1" placeholder="0" class="ap-price-in"></div>
+    <div class="ap-price-wrap"><span class="ap-price-cur">$</span><input id="apPriceInput" type="number" inputmode="decimal" min="0" step="1" placeholder="0" class="ap-price-in" oninput="noteApprovePrice(this.value)"></div>
     <div class="sheet-sub" id="apPriceHint" style="margin:9px 0 18px;font-size:12px"></div>
     <div class="btn-row">
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeSheet('approvePriceModal');openRequests();" ontouchend="event.preventDefault();closeSheet('approvePriceModal');openRequests();">← Back</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="backFromApprovePrice()" ontouchend="event.preventDefault();backFromApprovePrice();">← Back</button>
       <button class="btn btn-sm" style="flex:1" onclick="confirmApprovePrice()">Approve &amp; book</button>
     </div>
   </div>
@@ -2621,6 +2621,7 @@ function stLabel(s){return {confirmed:'Confirmed',done:'Done',noshow:'No-show',c
 /* ===== ADD / EDIT ===== */
 var editingId=null;
 var priceManual=false;
+var _priceDraft=null;
 /* ── Starburst: fires when + Add is tapped ──
    Canvas overlay, gravity-driven particles, auto-removes. ── */
 function _starBurst(){
@@ -2698,7 +2699,7 @@ function _starBurst(){
 
 function openAdd(){
   try{if(typeof _emptyBtnBurst==='function')_emptyBtnBurst();}catch(e){}
-  editingId=null;priceManual=false;
+  editingId=null;priceManual=false;_priceDraft=null;
   $('addTitle').textContent='New appointment';
   $('editExtra').style.display='none';
   $('fName').value='';$('fPhone').value='';$('fService').value='';$('fCustom').value='';
@@ -2779,7 +2780,7 @@ function saveAppt(){
   if(!service){toast('Pick or type a service',1);return;}
   if(!date){toast('Pick a date',1);return;}
   if(!time){toast('Pick a time',1);return;}
-  var price=+$('fPrice').value||0;
+  var price=(priceManual&&_priceDraft!=null)?(+_priceDraft||0):(+$('fPrice').value||0);
   var go=function(){
     if(price<=0){
       askConfirm('No price entered — this books at $0. Add a price, or book it anyway?',function(){commitSave();},{title:'No price set',yesLabel:'Book at $0'});
@@ -2816,11 +2817,13 @@ function commitSave(){
   var service=$('fService').value.trim();
   var prevRec=editingId?(appts.find(function(a){return a.id===editingId})||null):null;
   var prevStatus=prevRec?(prevRec.status||'confirmed'):'confirmed';
+  var priceNum=(priceManual&&_priceDraft!=null)?(+_priceDraft||0):(+$('fPrice').value||0);
+  _priceDraft=null;
   var rec=Object.assign({},prevRec||{},{
     id:editingId||uid(),
     name:name,phone:$('fPhone').value.trim(),
     service:service,
-    date:date,time:time,dur:+$('fDur').value||0,price:+$('fPrice').value||0,tip:+$('fTip').value||0,
+    date:date,time:time,dur:+$('fDur').value||0,price:priceNum,tip:+$('fTip').value||0,
     notes:$('fNotes').value.trim(),status:prevStatus
   });
   var wasEdit=!!editingId;
@@ -2931,7 +2934,7 @@ function revertStockForAppt(id){
 function editFromSheet(){
   var a=appts.find(function(x){return x.id===sheetId});if(!a)return;
   closeSheet('apptModal');
-  editingId=a.id;priceManual=true;
+  editingId=a.id;priceManual=true;_priceDraft=null;
   $('addTitle').textContent='Edit appointment';
   $('editExtra').style.display='flex';
   fillClientList();
@@ -3820,7 +3823,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.36 · status sheet after a new booking';
+var VERSION='v6.37 · edited self-booking price sticks';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4788,6 +4791,14 @@ function holdBusySlot(r){
 
 /* ---- approve / decline ---- */
 var _approved={};
+var REQ_PRICES='ap_req_prices';
+var _apPriceDraft=null;
+function reqPriceMap(){try{var o=JSON.parse(localStorage.getItem(REQ_PRICES)||'{}');return (o&&typeof o==='object'&&!Array.isArray(o))?o:{};}catch(e){return {};}}
+function reqPriceOverride(id){if(!id)return null;var m=reqPriceMap();if(!Object.prototype.hasOwnProperty.call(m,id))return null;var n=+m[id];return isFinite(n)?n:null;}
+function saveReqPrice(id,n){if(!id||!isFinite(+n))return;var m=reqPriceMap();m[id]=+n;try{localStorage.setItem(REQ_PRICES,JSON.stringify(m));}catch(e){}}
+function clearReqPrice(id){if(!id)return;var m=reqPriceMap();if(!Object.prototype.hasOwnProperty.call(m,id))return;delete m[id];try{localStorage.setItem(REQ_PRICES,JSON.stringify(m));}catch(e){}}
+function noteApprovePrice(v){_apPriceDraft=v;if(_apR&&_apR._id)saveReqPrice(_apR._id,parseFloat(v));}
+function approvePriceRaw(){return _apPriceDraft!=null?_apPriceDraft:(($('apPriceInput')||{}).value);}
 function commitApproved(r,silent){
   if(r._id){ if(_approved[r._id])return; _approved[r._id]=true; }
   var noteParts=[];
@@ -4796,11 +4807,21 @@ function commitApproved(r,silent){
   var _cf=clientForReq(r);
   var _saved=(_cf&&+_cf.savedPrice>0)?+_cf.savedPrice:0;
   var hp=combinedHairPrice(r.service,r.hairData);
-  var apptPrice=(+r.price>0)?(+r.price):(_saved>0?_saved:hp.price);
-  appts.push({id:'a'+Date.now()+Math.floor(Math.random()*999),name:r.name,phone:r.phone||'',service:r.service||'',date:r.date,time:r.time,dur:(+r.dur||60),price:apptPrice,notes:noteParts.join(' | '),status:'confirmed',viaBooking:true});
-  save(APPTS,appts);
+  var explicit=(r&&r._explicitPrice!=null&&isFinite(+r._explicitPrice))?+r._explicitPrice:null;
+  var existing=(window.YS&&YS.bookingForRequest)?YS.bookingForRequest(r,appts):null;
+  var apptPrice=explicit!=null?explicit:((window.YS&&YS.priceShownForRequest)?YS.priceShownForRequest(r,existing?[existing]:[],hp.price,reqPriceOverride(r._id),_saved):((+r.price>0)?(+r.price):(_saved>0?_saved:hp.price)));
+  if(existing){
+    var next=Object.assign({},existing,{requestId:r._id||existing.requestId||'',viaBooking:true});
+    if(explicit!=null)next.price=explicit;
+    apptPrice=+next.price;
+    if(+next.price!==+existing.price||(r._id&&!existing.requestId))persistAppt(existing,next);
+  }else{
+    appts.push({id:'a'+Date.now()+Math.floor(Math.random()*999),name:r.name,phone:r.phone||'',service:r.service||'',date:r.date,time:r.time,dur:(+r.dur||60),price:apptPrice,notes:noteParts.join(' | '),status:'confirmed',viaBooking:true,requestId:r._id||''});
+    save(APPTS,appts);
+  }
+  if(r._id)clearReqPrice(r._id);
   addClientFromBooking(r);
-  if(apptPrice>0){var _c2=clientForReq(r);if(_c2){_c2.savedPrice=apptPrice;save(CLIENTS,clients);}}
+  if((!existing||explicit!=null)&&apptPrice>0){var _c2=clientForReq(r);if(_c2){_c2.savedPrice=apptPrice;save(CLIENTS,clients);}}
   if(!fbUser){toast('Booked on this device. Sign in to sync bookings so the client is notified.',1,4200);}
   else if(fbReady&&r._id){
     var batch=db.batch();
@@ -4899,7 +4920,8 @@ function openApprovePrice(r){
   var c=clientForReq(r);
   var saved=(c&&+c.savedPrice>0)?+c.savedPrice:0;
   var hp=combinedHairPrice(r.service,r.hairData);
-  var suggested=(+r.price>0)?(+r.price):(saved>0?saved:(+(hp&&hp.price)||0));
+  var suggested=(window.YS&&YS.priceShownForRequest)?YS.priceShownForRequest(r,appts,+(hp&&hp.price)||0,reqPriceOverride(r._id),saved):((+r.price>0)?(+r.price):(saved>0?saved:(+(hp&&hp.price)||0)));
+  _apPriceDraft=suggested>0?String(suggested):'';
   var who=$('apPriceWho');if(who)who.textContent=(r.name||'Client')+' · '+(r.service||'Service');
   /* populate request details so Shaz can review before committing */
   var det=$('apReqDetails');
@@ -4922,11 +4944,24 @@ function openApprovePrice(r){
   var m=$('approvePriceModal');if(m)m.classList.add('show');
   setTimeout(function(){if(inp)inp.focus();},120);
 }
+function keepApprovePrice(){
+  if(!_apR)return;
+  var v=parseFloat(approvePriceRaw());if(isNaN(v)||v<0)return;
+  if(_apR._id)saveReqPrice(_apR._id,v);
+  var existing=(window.YS&&YS.bookingForRequest)?YS.bookingForRequest(_apR,appts):null;
+  if(existing&&+existing.price!==v)persistAppt(existing,Object.assign({},existing,{price:v,requestId:_apR._id||existing.requestId||'',viaBooking:true}));
+}
+function dismissApprovePrice(){keepApprovePrice();closeSheet('approvePriceModal');}
+function backFromApprovePrice(){dismissApprovePrice();openRequests();}
 function confirmApprovePrice(){
-  var r=_apR;_apR=null;closeSheet('approvePriceModal');
+  var r=_apR;_apR=null;
+  var v=parseFloat(approvePriceRaw());if(isNaN(v)||v<0)v=0;
+  _apPriceDraft=null;
+  closeSheet('approvePriceModal');
   if(!r)return;
-  var v=parseFloat($('apPriceInput').value);if(isNaN(v)||v<0)v=0;
   r.price=v;
+  r._explicitPrice=v;
+  if(r._id)saveReqPrice(r._id,v);
   commitApproved(r,false);
 }
 function declineRequest(id){
@@ -4956,6 +4991,10 @@ function renderRequests(){
     var clash=reqConflict(r);
     var trusted=isTrustedPhone(r.phone);
     var hp=combinedHairPrice(r.service,r.hairData);
+    var _c=clientForReq(r);
+    var _saved=(_c&&+_c.savedPrice>0)?+_c.savedPrice:0;
+    var shown=(window.YS&&YS.priceShownForRequest)?YS.priceShownForRequest(r,appts,hp.price,reqPriceOverride(r._id),_saved):hp.price;
+    var samePrice=Math.round((+shown)*100)===Math.round((+hp.price)*100);
     var pill=r.custom?'<span class="req-pill custom">Custom time</span>':'<span class="req-pill pending">Pending</span>';
     if(r.customSvc)pill='<span class="req-pill custom">Off-menu service</span>'+pill;
     return '<div class="req-card">'+
@@ -4966,7 +5005,7 @@ function renderRequests(){
         '<i class="ti ti-phone"></i> '+(r.phone?esc(r.phone):'<span style="color:#888">no number given</span>')+'</div>'+
         (r.notes?'<div class="req-notes">“'+esc(r.notes)+'”</div>':'')+
         (r.hair?'<div class="req-hair"><i class="ti ti-windsock"></i> '+esc(r.hair)+'</div>':'')+
-        (hp.base>0?'<div class="req-price">'+fmt$(hp.price)+(hp.applied&&hp.why.length?' <span class="req-why">auto · '+esc(hp.why.join(' · '))+'</span>':'')+'</div>':'')+
+        ((hp.base>0||shown>0)?'<div class="req-price">'+fmt$(shown)+(samePrice&&hp.applied&&hp.why.length?' <span class="req-why">auto · '+esc(hp.why.join(' · '))+'</span>':'')+'</div>':'')+
       '</div>'+pill+'</div>'+
       '<div class="req-acts">'+
         '<div class="req-btn app" onclick="approveRequest(\''+r._id+'\')"><i class="ti ti-check"></i> Approve</div>'+
