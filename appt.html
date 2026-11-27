@@ -3823,7 +3823,7 @@ function askConfirm(msg,onYes,opts){
 }
 
 /* ===== SETTINGS / CLEAR ===== */
-var VERSION='v6.37 · edited self-booking price sticks';
+var VERSION='v6.38 · confirmation text opens once';
 
 /* ---- tap-away keyboard dismiss (iOS) ---- */
 document.addEventListener('touchstart',function(e){
@@ -4856,18 +4856,36 @@ function addClientFromBooking(r){
 function autoApprove(r){commitApproved(r,true);}
 /* ---- client confirmation text on approve ---- */
 var _confirmPhone='';
+var _confirmShown={};
+var _confirmOpenedAt=0;
+function confirmKey(r){
+  if(!r)return '';
+  if(r._id)return 'id:'+r._id;
+  return 'slot:'+(r.phone||'')+'|'+(r.date||'')+'|'+(r.time||'');
+}
 function showBookingConfirm(r){
   if(!r)return;
+  var key=confirmKey(r);
+  if(key&&_confirmShown[key])return;
+  if(key)_confirmShown[key]=1;
   var when=fmtReqDate(r.date)+(r.time?(' at '+to12(r.time)):'');
   var who=(r.name||'there').split(' ')[0];
   var salon='';try{var cp=JSON.parse(localStorage.getItem('cp_prefs')||'{}');salon=(cp.salon||cp.name||'');}catch(e){}
   var msg='Hi '+who+'! Your '+(r.service||'appointment')+' on '+when+' is confirmed 🎉 See you then!'+(salon?(' — '+salon):'');
   var cal=_gcalLink(r); if(cal)msg+='\n\n📅 Add to your calendar: '+cal;
   _confirmPhone=(r.phone||'');
-  var ta=$('confirmText'); if(ta){ta.value=msg;setTimeout(function(){try{ta.scrollTop=0;ta.setSelectionRange(0,0);}catch(e){}},50);}
+  var ta=$('confirmText'); if(ta){ta.value=msg;ta.scrollTop=0;}
   var nm=$('confirmWho'); if(nm)nm.textContent=r.name||'your client';
   var sb=$('confirmSend'); if(sb)sb.style.display=_confirmPhone?'flex':'none';
-  var m=$('bookConfirmModal'); if(m)m.classList.add('show');
+  var m=$('bookConfirmModal'); if(!m||m.classList.contains('show'))return;
+  var sheet=m.querySelector('.sheet');
+  if(sheet)sheet.style.animation='';
+  _confirmOpenedAt=Date.now();
+  m.classList.add('show');
+  if(sheet){
+    var stopAnim=function(){sheet.style.animation='none';};
+    sheet.addEventListener('animationend',stopAnim,{once:true});
+  }
 }
 function _gcalLink(r){
   try{
@@ -4879,7 +4897,10 @@ function _gcalLink(r){
     return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(r.service||'Appointment')+'&dates='+fmt(sd)+'/'+fmt(ed);
   }catch(e){return '';}
 }
-function closeConfirm(){var m=$('bookConfirmModal');if(m)m.classList.remove('show');}
+function closeConfirm(){
+  if(_confirmOpenedAt&&Date.now()-_confirmOpenedAt<450)return;
+  var m=$('bookConfirmModal');if(m)m.classList.remove('show');
+}
 function sendConfirm(){
   var num=(_confirmPhone||'').replace(/[^0-9+]/g,'');if(!num){copyConfirm();return;}
   var body=encodeURIComponent(($('confirmText')||{}).value||'');
@@ -5718,6 +5739,9 @@ document.addEventListener('click',function(e){
     if(t.matches('.trade-screen')){ if(!vis(t))return; if(typeof closeTradePicker==='function')closeTradePicker(); else t.style.display='none'; return; }
     if(t.matches('.modal')){
       if(!vis(t))return;
+      /* The confirm sheet is shown from the approve click. That same click
+         must not dismiss it, and a later listener must not open it again. */
+      if(t.id==='bookConfirmModal'){closeConfirm();return;}
       t.classList.remove('show'); t.classList.remove('open');
       try{document.body.classList.remove('modal-open');}catch(_){}
     }
