@@ -505,3 +505,67 @@ test('a new booking on a device that already has data opens the status sheet, an
   await expect(page.locator('#pMgm')).toContainText('$24.00');
   expect(errors).toEqual([]);
 });
+
+test('editing a self-booked price sticks on the pending list, the booking, and Earnings', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.addInitScript(function () {
+    if (localStorage.getItem('ys_smoke_price_seed') === '1') return;
+    localStorage.setItem('ys_smoke_price_seed', '1');
+    localStorage.setItem('cp_unlocked', '1');
+    localStorage.setItem('ap_prefs', JSON.stringify({ svcMode: 'hair', splitPct: 60, bookingOpen: true }));
+    localStorage.setItem('cp_prefs', JSON.stringify({ trade: 'hair', tourDone: true, rate: 60, prices: { "Men's Haircut": 55 } }));
+    localStorage.setItem('ap_appts', JSON.stringify([
+      { id: 'hidi1', name: 'Hidi', phone: '555-0188', service: 'Color', date: '2026-11-03', time: '11:00', dur: 60, price: 80, tip: 0, status: 'done' }
+    ]));
+  });
+  await page.goto('/appt.html');
+  await page.waitForTimeout(300);
+  const saved = await page.evaluate(function () {
+    var req = { _id: 'req-ronak', name: 'Ronak', phone: '555-1111', service: "Men's Haircut", date: '2026-11-29', time: '10:00', dur: 60, price: 0, status: 'pending' };
+    _apR = req;
+    var inp = document.getElementById('apPriceInput');
+    inp.value = '35';
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+    inp.value = '55';
+    confirmApprovePrice();
+    _approved = {};
+    commitApproved({ _id: 'req-ronak', name: 'Ronak', phone: '555-1111', service: "Men's Haircut", date: '2026-11-29', time: '10:00', dur: 60, price: 0, status: 'pending' }, true);
+    var rows = JSON.parse(localStorage.getItem('ap_appts') || '[]');
+    var ronak = rows.filter(function (a) { return a.name === 'Ronak'; });
+    var hidi = rows.filter(function (a) { return a.id === 'hidi1'; })[0];
+    fbUser = { uid: 'owner' };
+    fbReady = true;
+    pendingReqs = [req];
+    renderRequests();
+    var card = document.getElementById('reqList').innerText;
+    if (ronak[0]) setApptStatusById(ronak[0].id, 'done');
+    rows = JSON.parse(localStorage.getItem('ap_appts') || '[]');
+    ronak = rows.filter(function (a) { return a.name === 'Ronak'; });
+    hidi = rows.filter(function (a) { return a.id === 'hidi1'; })[0];
+    return {
+      count: ronak.length,
+      price: ronak[0] && ronak[0].price,
+      status: ronak[0] && ronak[0].status,
+      hidiPrice: hidi && hidi.price,
+      hidiStatus: hidi && hidi.status,
+      card: card
+    };
+  });
+  expect(saved.count).toBe(1);
+  expect(saved.price).toBe(35);
+  expect(saved.status).toBe('done');
+  expect(saved.hidiPrice).toBe(80);
+  expect(saved.hidiStatus).toBe('done');
+  expect(saved.card).toContain('Ronak');
+  expect(saved.card).toContain('$35');
+  expect(saved.card).not.toContain('$55');
+  await page.goto('/app.html');
+  await page.evaluate(function () { showTab('hist'); });
+  const hist = await page.locator('#tableView').innerText();
+  expect(hist).toContain('Ronak');
+  expect(hist).toContain('$35.00');
+  expect(hist).toContain('Hidi');
+  expect(hist).toContain('$80.00');
+  expect(hist).not.toContain('$55.00');
+  expect(errors).toEqual([]);
+});

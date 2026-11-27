@@ -1228,6 +1228,9 @@ function _sendFailed(){
   $('bookBtn').disabled=false;$('bookBtn').innerHTML='<i class="ti ti-send"></i> Confirm & book';
   alert('Could not send — please try again.');
 }
+/* PERMANENT: this pending request is the self-booking notice. The owner
+   is texted from this create before he opens the app. Do not remove the
+   write, the pending status, or the name, phone, service, date, and time. */
 function _sendRec(rec){
   var ref=db.collection('requests').doc();
   var slot={salon:rec.salon,date:rec.date,time:rec.time,dur:rec.dur,requestId:ref.id};
