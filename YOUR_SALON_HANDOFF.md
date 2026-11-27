@@ -16,14 +16,14 @@ This file is the canonical handoff. Two older copies were **not** rewritten on N
 
 **Local Xcode: 1.2, build 8, is on the Mac and is not uploaded.** It is not the live App Store build.
 
-**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` (PR #22 merged 2026-11-21 11:48 AM PT with Shahbaz's OK, verified live): Earnings v2.71, Appointments v6.36, salon v0.56, service worker `yoursalon-v94`, booking v3.57.
+**Web is what the installed app loads.** `main` on GitHub deploys to GitHub Pages at getcommissionpro.com. Merging to `main` goes live. Live on `main` (PR #24 squash-merged 2026-11-27 12:58 PM PT, `fff9275`, Pages deploy succeeded, verified live): Earnings v2.71, Appointments v6.37, salon v0.56, service worker `yoursalon-v95`, booking v3.57.
 
 | Room | File | Live version |
 |---|---|---|
 | Earnings | `app.html` | v2.71 (live, PR #17) |
-| Appointments | `appt.html` | v6.36 (live, PR #22) |
+| Appointments | `appt.html` | v6.37 (live, PR #24) |
 | Shell | `salon.html` | v0.56 (live, PR #20) |
-| Service worker | `sw.js` | `yoursalon-v94` (live, PR #22) |
+| Service worker | `sw.js` | `yoursalon-v95` (live, PR #24) |
 | Booking page | `book.html` | v3.57 |
 
 Shared settlement math: `yoursalon-settle.js`. Check: `yoursalon-settle.test.js`.
@@ -223,7 +223,7 @@ Harmless leftovers on the Mac, delete whenever: `project.pbxproj.bak-*` and `web
 
 ## Nov 27, 2026 — edited self-booking price, and the request text stays
 
-Not live until this pull request is merged. It carries Appointments v6.37 and service worker `yoursalon-v95`. Earnings, the shell, and the booking page version strings are unchanged.
+**Live.** PR #24 squash-merged 2026-11-27 12:58 PM PT with Shahbaz’s OK. Merge commit `fff927541eb45d3cedc9bdbc73357949cd82fa07`. GitHub Pages deploy of that commit succeeded (run 46067238675). Checked live on getcommissionpro.com: Appointments v6.37, service worker `yoursalon-v95`, booking page still v3.57 and still writes a pending `requests` document, shell banner wording unchanged, five-tap unlock still on the Your Salon icon. Earnings stays v2.71. The shell stays v0.56. No production data repair was run.
 
 **The price bug.** A self-booking is stored on the request with price 0. The pending card was painting the price-book preset (`combinedHairPrice`) every time, so a $55 service still showed $55 after the appointment had been edited to $35. Approving again after a reload could also add a second appointment at that preset. The price the owner types is now the appointment’s price. The pending card, the day card, the client booking row, and Earnings (once it is Done) all read that same price. A replay of an approval keeps the edited price and does not add another row. Other bookings are not rewritten. The request document still does not get a price — the rules do not allow it.
 
