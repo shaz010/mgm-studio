@@ -569,3 +569,42 @@ test('editing a self-booked price sticks on the pending list, the booking, and E
   expect(hist).not.toContain('$55.00');
   expect(errors).toEqual([]);
 });
+
+test('the confirmation text opens once per booking and does not come back', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/appt.html');
+  await page.waitForTimeout(300);
+  const first = await page.evaluate(function () {
+    showBookingConfirm({ _id: 'req-ronak', name: 'Ronak', phone: '555-1111', service: 'Cut', date: '2026-11-29', time: '10:00' });
+    var modal = document.getElementById('bookConfirmModal');
+    var text = document.getElementById('confirmText').value;
+    var send = document.getElementById('confirmSend').textContent;
+    return { open: modal.classList.contains('show'), text: text, send: send };
+  });
+  expect(first.open).toBe(true);
+  expect(first.text).toContain('Hi Ronak!');
+  expect(first.text).toContain('is confirmed');
+  expect(first.send).toContain('Send in Messages');
+  await page.waitForTimeout(500);
+  const again = await page.evaluate(function () {
+    closeConfirm();
+    var modal = document.getElementById('bookConfirmModal');
+    var closed = !modal.classList.contains('show');
+    showBookingConfirm({ _id: 'req-ronak', name: 'Ronak', phone: '555-1111', service: 'Cut', date: '2026-11-29', time: '10:00' });
+    showBookingConfirm({ _id: 'req-ronak', name: 'Ronak', phone: '555-1111', service: 'Cut', date: '2026-11-29', time: '10:00' });
+    _approved = {};
+    commitApproved({ _id: 'req-ronak', name: 'Ronak', phone: '555-1111', service: 'Cut', date: '2026-11-29', time: '10:00', dur: 60, price: 35 }, false);
+    return { closed: closed, stayedClosed: !modal.classList.contains('show') };
+  });
+  expect(again.closed).toBe(true);
+  expect(again.stayedClosed).toBe(true);
+  const next = await page.evaluate(function () {
+    showBookingConfirm({ _id: 'req-nia', name: 'Nia', phone: '555-0144', service: 'Color', date: '2026-12-02', time: '15:00' });
+    var modal = document.getElementById('bookConfirmModal');
+    return { open: modal.classList.contains('show'), text: document.getElementById('confirmText').value };
+  });
+  expect(next.open).toBe(true);
+  expect(next.text).toContain('Hi Nia!');
+  expect(next.text).toContain('is confirmed');
+  expect(errors).toEqual([]);
+});
